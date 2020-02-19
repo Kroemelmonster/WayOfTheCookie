@@ -1,0 +1,74 @@
+package Mouse3DPositionSystem
+
+import ClosureEvents
+import PlayerData
+import Board
+import Cell
+
+import MouseContext
+import ClosureTimers
+
+class Mouse3DPositionSystem
+    static boolean currentlyProcessing = false
+
+    @inline
+    static function setEnabled(Player p, boolean enable)
+        p.mouse3DEnabled = enable
+    
+    static function setup()
+        EventListener.add(EVENT_PLAYER_MOUSE_DOWN)  ->
+            let p = GetTriggerPlayerData()
+            p.mousePressed = true
+            if p.mouseOverButton != null
+                p.mouseOverButton.triggerOnMouseDown()
+
+        EventListener.add(EVENT_PLAYER_MOUSE_UP)  ->
+            let x = BlzGetTriggerPlayerMouseX()
+            let y = BlzGetTriggerPlayerMouseY()
+            let p = GetTriggerPlayerData()
+            p.mousePressed = false
+            nullTimer() ->
+                p.mousePressedIndex ++
+                if p.mousePressedIndex > 10000
+                    p.mousePressedIndex = 0
+
+            if p.mouseOverButton != null
+                p.mouseOverButton.triggerOnMouseUp()
+            else if x != 0.0 and y != 0.0
+                onMouseEvent(vec2(x, y), p, true)
+
+        EventListener.add(EVENT_PLAYER_MOUSE_MOVE)  ->
+            let x = BlzGetTriggerPlayerMouseX()
+            let y = BlzGetTriggerPlayerMouseY()
+
+            if x != 0.0 and y != 0.0
+                onMouseEvent(vec2(x, y), GetTriggerPlayerData(), false)
+
+    private static function canPlayerInteract(Player p) returns boolean
+        return p.playingBoard != null and p.mouse3DEnabled and currentlyProcessing == false
+
+    private static function onMouseEvent(vec2 coord, Player p, boolean isClickEvent)
+        if canPlayerInteract(p) == false
+            return
+        if isClickEvent
+             
+        let cell = p.playingBoard.getCellBasedOnCoords(coord)
+        Cell nearby = null
+
+        if cell != null
+            let angle = (cell.getCoord().angleTo(coord).degrees() + 390.0) % 360
+            nearby = cell.getNeighbour((angle / 60.0).floor())
+
+        if isClickEvent
+            onMouseClick(mousePosition(cell, nearby), p, BlzGetTriggerPlayerMouseButton())
+        else
+            MouseContext.onMouseEnter(p, mousePosition(cell, nearby))
+            
+    
+    private static function onMouseClick(mousePosition mP, Player p, mousebuttontype btn)
+        if btn == MOUSE_BUTTON_TYPE_LEFT
+            MouseContext.onMouseSelect(p, mP)
+        else if btn == MOUSE_BUTTON_TYPE_RIGHT
+            currentlyProcessing = true
+            MouseContext.onOrder(p, mP)
+            currentlyProcessing = false

@@ -1,0 +1,37 @@
+package BuffType
+import WarcryBuff
+import BoardStack
+import Buff
+
+
+interface BuffCreateListener
+    function create(BoardStack stack) returns Buff
+
+public class BuffTypeSet
+    static BuffType WARCRY 
+
+    static function setup()
+        WARCRY = WarcryBuff.setup()
+
+
+public class BuffType
+    protected string icon
+    protected string name
+    protected BuffCreateListener listener
+
+    construct(string icon, string name, BuffCreateListener listener)
+        this.icon = icon
+        this.name = name
+        this.listener = listener
+
+    @inline
+    function createNew(BoardStack stack) returns Buff
+        return listener.create(stack)
+
+    @inline
+    function getIcon() returns string
+        return icon
+
+    @inline
+    function toString() returns string
+        return "BuffType '"+name+"'"

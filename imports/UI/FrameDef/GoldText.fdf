@@ -1,0 +1,41 @@
+IncludeFile "UI\FrameDef\UI\EscMenuMainPanel.fdf",
+
+Frame "FRAME" "GoldTextSmall" {
+    Frame "BACKDROP" "GoldTextIcon" {
+        Width 0.008,
+        Height 0.008,
+        SetPoint RIGHT, "GoldTextSmall", RIGHT, 0, -0.002,
+        BackdropBackground "UI\Textures\gold-single.dds",
+        BackdropBlendAll,
+    }
+
+    Frame "TEXT" "GoldTextText" INHERITS "EscMenuButtonTextTemplate" {
+        UseActiveContext,
+        SetPoint LEFT, "GoldTextSmall", LEFT, 0, 0.0,
+        SetPoint RIGHT, "GoldTextSmall", RIGHT, -0.01, 0.0,
+        Height 0.01,
+        FrameFont "MasterFont", 0.006,"",
+        FontColor 1.0 1.0 1.0 1.0,
+        FontJustificationH JUSTIFYRIGHT,
+    }
+}
+
+Frame "FRAME" "GoldText" {
+    Frame "BACKDROP" "GoldTextIcon" {
+        Width 0.01,
+        Height 0.01,
+        SetPoint RIGHT, "GoldText", RIGHT, 0, -0.002,
+        BackdropBackground "UI\Textures\gold-single.dds",
+        BackdropBlendAll,
+    }
+
+    Frame "TEXT" "GoldTextText" INHERITS "EscMenuButtonTextTemplate" {
+        UseActiveContext,
+        SetPoint LEFT, "GoldText", LEFT, 0, 0.0,
+        SetPoint RIGHT, "GoldText", RIGHT, -0.01, 0.0,
+        Height 0.01,
+        FrameFont "MasterFont", 0.008,"",
+        FontColor 1.0 1.0 1.0 1.0,
+        FontJustificationH JUSTIFYRIGHT,
+    }
+}

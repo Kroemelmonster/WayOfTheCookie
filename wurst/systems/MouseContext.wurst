@@ -1,0 +1,72 @@
+package MouseContext
+
+import BoardStack
+import Cell
+import PlayerData
+
+import UIController
+import initlater UIInitiativeWindow
+import initlater Mouse3DPositionSystem
+import initlater UITooltip
+import OrderSystem
+
+class MouseContext
+    /** Use this to force a player to select a cell **/
+    static function forcePlayerSelect(Player p, Cell cell)
+        p.currentSelectedStack = null
+        onMouseSelect(p, mousePosition(cell, null))
+
+    /** Use this to simulate a Mouse Entering **/
+    static function forceMouseEnter(Player p, Cell cell)
+        onMouseEnter(p, mousePosition(cell, null))
+
+    static function forceMouseLeave(Player p)
+        onMouseLeave(p)
+
+    /** is used when any userinput should be interpreted as a Highlight of a cell / stack **/
+    static function onMouseEnter(Player p, mousePosition mP)
+        // dont have to do anything if it is the same cell ( even if both are null )
+        if mP.cell == p.currentMousePosition.cell and mP.nearbyCell == p.currentMousePosition.nearbyCell
+            return
+        resetHighlight(p)
+
+        if mP.cell != null
+            let stack = mP.cell.getStack()
+            if stack != null
+                UIInitiativeWindow.highlightStack(p, stack)
+
+        p.currentMousePosition = mP
+        UIController.triggerOnPlayerCellHighlight(p)
+
+    /** is used as an interpreted version of a userinput leaving ANY cell / stack **/
+    static function onMouseLeave(Player p)
+        resetHighlight(p)
+
+    /** is used as an interpreted version of a userinput selecting ANY cell / stack **/
+    static function onMouseSelect(Player p, mousePosition mP)
+        let stack = getStackToSelect(p, mP)
+
+        p.currentSelectedStack = stack
+        UIController.selectStack(p, stack)
+        UIController.triggerOnPlayerCellHighlight(p)
+
+    /** is used as an interpreted version of a userinput ordering ANY cell / stack **/
+    static function onOrder(Player p, mousePosition mP)
+        OrderSystem.sendSimpleTargetOrder(p, mP.cell)
+
+    private static function getStackToSelect(Player p, mousePosition mP) returns BoardStack
+        let currentStack = p.playingBoard.getInitiative().getCurrentStack()
+        if mP.cell == null
+            return currentStack
+        if mP.cell.getStack() == null
+            return currentStack
+        return mP.cell.getStack()
+
+    @inline
+    static function enableMouseMovement(Player p, boolean enable)
+        Mouse3DPositionSystem.setEnabled(p, enable)
+    
+    private static function resetHighlight(Player p)
+        UIInitiativeWindow.resetHighlight(p)
+        UITooltip.hide(p)
+

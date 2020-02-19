@@ -1,0 +1,60 @@
+package WarcryAction
+
+import Action
+import InstantAction
+import Icons
+
+import initlater BoardStack
+import Abilities
+import OrderSystem
+import BoardController
+import UITooltip
+import WarcryAnimation
+import BuffController
+import BuffType
+
+public class WarcryAction extends InstantAction
+    private Tooltip tooltip
+    
+    private static constant int COST = 1
+    private static constant int COOLDOWN = 0
+    private static constant int MAXRANGE = 2
+    private constant static oskeytype KEY = OSKEY_Y
+    private static BuffType BUFF
+
+    static function setup()
+        BUFF = BuffTypeSet.WARCRY
+
+    construct(BoardStack stack)
+        super(stack, Icons.bTNBattleRoar, "Warcry")
+        charge = 2
+        tooltip = Tooltip.create(name, "Y")
+        tooltip.setCost(COST)
+        
+        tooltip.addLine(Tooltip.stat("Target", "Self"))
+        tooltip.addLine(Tooltip.stat("Range", MAXRANGE))
+        tooltip.addLine("")
+        tooltip.addLine("Gebrüll und so")
+        
+    override function canActivate() returns boolean
+        return charge > 0
+
+    override function activate()
+        let anim = new WarcryAnimation(stack) () ->
+            BuffController.addBuff(BUFF, stack, 3)
+        anim.onFinish() () ->
+            charge --
+            cooldown = COOLDOWN + 1
+            BoardController.spendActionPoints(stack, COST, true)
+            OrderSystem.endOrder(stack.getBoard())
+
+    override function showTooltip()
+        tooltip.display(stack.getPlayer(), false)
+
+    override function canBeActivatedByKey(oskeytype key) returns boolean
+        return key == KEY
+
+    ondestroy
+        if tooltip != null
+            destroy tooltip
+        

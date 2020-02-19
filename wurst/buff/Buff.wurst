@@ -1,0 +1,36 @@
+package Buff
+
+import initlater BoardStack
+import initlater BuffType
+
+public abstract class Buff
+    protected BuffType bType
+    protected BoardStack stack
+    protected int duration
+
+    construct(BuffType bType, BoardStack stack, int duration)
+        this.bType = bType
+        this.stack = stack
+        this.duration = duration
+
+    function tick() returns boolean
+        duration --
+        onTick()
+        if duration <= 0
+            onFinish()
+            return true
+
+        return false
+
+    function getBuffType() returns BuffType
+        return bType
+
+    function getIcon() returns string
+        return bType.getIcon()
+
+    protected abstract function onTick()
+
+    protected abstract function onFinish()
+
+    function kill()
+        onFinish()

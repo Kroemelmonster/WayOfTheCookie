@@ -1,0 +1,110 @@
+package UIStackSplitDialog
+import ClosureFrames
+
+import PlayerData
+
+import UIDialog
+import UISlider
+
+import initlater MainController
+import initlater Stack
+
+public class StackSplitDialogInfo
+    protected Stack stack
+    protected int amount
+    protected int maxAmount
+
+public class UIStackSplitDialog extends UIDialog
+    private UISlider slider
+    private framehandle editBoxOriginal
+    private framehandle editBoxNew
+    private framehandle stackIcon
+    private framehandle acceptButton
+
+    construct()
+        super()
+
+        slider = new UISlider(pane)
+        slider.getFrame().setPoint(FRAMEPOINT_TOP, pane, FRAMEPOINT_TOP, 0, -0.065)
+        slider.getFrame().setLevel(1000)
+        slider.onSliderValueChange() -> 
+            let p = GetTriggerPlayerData()
+            setStackValues(p, slider.getValue())
+
+        stackIcon = createFrame("BACKDROP", "", pane, "", 0)
+        ..setSize(0.04, 0.04)
+        ..setPoint(FRAMEPOINT_TOPLEFT, pane, FRAMEPOINT_TOPLEFT, 0, -0.02)
+
+        createFrame("CenteredText", pane, 0, 0)
+        ..setPoint(FRAMEPOINT_TOP, pane, FRAMEPOINT_TOP, 0, -0.02)
+        ..setSize(0.05, 0.022)
+        ..setText("Original")
+
+        editBoxOriginal = createFrame("EscMenuEditBoxTemplate", pane, 0, 0)
+        ..setPoint(FRAMEPOINT_TOP, pane, FRAMEPOINT_TOP, 0, -0.037)
+        ..setSize(0.05, 0.027)
+        ..onEditboxEnter() -> 
+            let p = GetTriggerPlayerData()
+            setStackValues(p, editBoxOriginal.getText().toInt())
+
+
+        createFrame("CenteredText", pane, 0, 0)
+        ..setPoint(FRAMEPOINT_TOPRIGHT, pane, FRAMEPOINT_TOPRIGHT, 0, -0.02)
+        ..setSize(0.05, 0.022)
+        ..setText("New Stack")
+
+        editBoxNew = createFrame("EscMenuEditBoxTemplate", pane, 0, 0)
+        ..setPoint(FRAMEPOINT_TOPRIGHT, pane, FRAMEPOINT_TOPRIGHT, 0, -0.037)
+        ..setSize(0.05, 0.027)
+        ..onEditboxEnter() -> 
+            let p = GetTriggerPlayerData()
+            setStackValues(p, p.dialogInfo.splitInfo.maxAmount - editBoxNew.getText().toInt())
+
+        acceptButton = createFrame("DialogAcceptButton", pane, 0, 0)
+        ..setPoint(FRAMEPOINT_BOTTOMLEFT, pane, FRAMEPOINT_BOTTOMLEFT, 0.0, 0.0)
+        ..onClick() ->
+            split(GetTriggerPlayerData())
+        getFrame("DialogButtonText").setText("Split")
+
+    override function cancelInner(Player p)
+
+    private function setStackValues(Player p, int amount)
+        let info = p.dialogInfo.splitInfo
+        info.amount = amount
+        if amount > info.maxAmount
+            info.amount = info.stack.getAmount()
+        if amount < 1
+            info.amount = 1
+
+        update(p)
+
+    private function split(Player p)
+        let info = p.dialogInfo.splitInfo
+        MainController.splitStack(p.hero, info.stack, info.amount)
+        hide(p)
+
+    function show(Player p, Stack stack)
+        let info = p.dialogInfo.splitInfo
+        info.stack = stack
+        info.amount = (stack.getAmount() / 2).round()
+        info.maxAmount = stack.getAmount() - 1
+        if info.maxAmount == 1
+            return
+        
+        super.show(p)
+
+        if p.isLocal()
+            slider.setMinMax(1, info.maxAmount)
+            stackIcon.setTexture(info.stack.getStackType().icon, 0, true)
+
+
+        update(p)
+
+    private function update(Player p)
+        let info = p.dialogInfo.splitInfo
+        if p.isLocal()
+            slider.setValue(info.amount)
+            editBoxOriginal.setText((info.maxAmount + 1 - info.amount).toString())
+            editBoxNew.setText(info.amount.toString())
+
+        

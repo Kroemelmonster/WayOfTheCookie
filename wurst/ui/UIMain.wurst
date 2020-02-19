@@ -1,0 +1,49 @@
+package UIMain
+
+import FramehandleNames
+
+import UIActionWindow
+import UITooltip
+import UIStackWindow
+import UIInitiativeWindow
+import UIWorldConsole
+import UINPCWindow
+import UIStackSellDialog
+
+public function framehandle.toString() returns string
+	var str = "FrameHandle "
+	str += this.getName()
+	str += " enabled " + this.isEnabled().toString()
+	return str
+
+class UIMain
+	static function removeBlizzardUI()
+		getFrame("ConsoleUIBackdrop").setVisible(false)
+		setOriginFramesVisible(false)
+		getOriginFrame(ORIGIN_FRAME_WORLD_FRAME, 0).setAllPoints(GAME_UI)
+
+		// DONT SHOW FPS AND STUFF
+		getFrame(FramehandleDefaultNames.consoleUI).setVisible(false)
+
+		//getOriginFrame(ORIGIN_FRAME_MINIMAP).setVisible(true)
+
+		//SHOW FPS AND STUFF 
+
+		/*
+		getFrame(FramehandleDefaultNames.consoleUI)
+		..setAbsPoint(FRAMEPOINT_BOTTOM, 0.4, -1.0)
+		..setAbsPoint(FRAMEPOINT_TOP, 0.4, 1.0)
+		getFrame("ResourceBarFrame")..setVisible(true)
+		*/
+
+
+	
+	static function loadOwnUI()
+		// Log.info("Build nice UI")
+		loadTOCFile("UI\\Framedef.toc")	
+		UIStackWindow.setup()
+		UIActionWindow.setup()
+		UIWorldConsole.setup()
+		UIInitiativeWindow.setup()
+		UINPCWindow.setup()
+		UITooltip.setup()

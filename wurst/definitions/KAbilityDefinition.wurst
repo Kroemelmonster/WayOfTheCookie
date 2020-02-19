@@ -1,0 +1,48 @@
+package KAbilityDefinition
+import KAbility
+import WalkAndAttackAction
+import WaitAction
+import DefendAction
+import SummonLesserSkeletonAction
+import CounterAttackPAction
+import WarcryAction
+
+public class KAbilitySet
+    static KAbility MELEE
+    static KAbility RANGED
+    static KAbility CAN_WAIT
+    static KAbility CAN_DEFEND
+    static KAbility CAN_COUNTERATTACK
+    static KAbility WARCRY
+
+    static KAbility SUMMON_LESSER_SKELETON
+
+class KAbilityDefinition
+    static function setup()
+        KAbilitySet.MELEE = new KAbility("Melee", "This Unit can attackos others in melee Range")
+            ..addGenerateListener() stack ->
+            stack.addAction(new WalkAndAttackAction(stack))
+
+        KAbilitySet.RANGED = new KAbility("Ranged", "This Unit can attack other in tha range")
+            ..addGenerateListener() stack ->
+            stack.addAction(new WalkAndAttackAction(stack))
+
+        KAbilitySet.CAN_WAIT = new KAbility()
+            ..addGenerateListener() stack ->
+            stack.addAction(new WaitAction(stack))
+
+        KAbilitySet.CAN_DEFEND = new KAbility()
+            ..addGenerateListener() stack ->
+            stack.addAction(new DefendAction(stack))
+
+        KAbilitySet.SUMMON_LESSER_SKELETON = new KAbility("Summon Lesser Skeleton", "This unit can summon a lesser Skeleton")
+            ..addGenerateListener() stack ->
+            stack.addAction(new SummonLesserSkeletonAction(stack))
+
+        KAbilitySet.WARCRY = new KAbility("Warcy", "ROOAR")
+            ..addGenerateListener() stack ->
+            stack.addAction(new WarcryAction(stack))
+        
+        KAbilitySet.CAN_COUNTERATTACK = new KAbility()
+            ..addGenerateListener() stack ->
+            stack.addPassive(new CounterAttackPAction(stack))

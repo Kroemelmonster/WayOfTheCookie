@@ -1,0 +1,131 @@
+package Cell
+
+import LinkedList
+
+import HexagonalGridUtil
+import BoardStack
+import PlayerData
+import Action
+import initlater Board
+import KUtil
+
+public class Cell
+    private static constant MODEL_FILE_INNER = "HexicModularInner.mdl"
+    private static constant MODEL_FILE_OUTER = "HexicModularOuter.mdl"
+    private static constant INNER_DEFAULT_COLOR = color(20, 20, 20)
+    private static constant INNER_SELECT_COLOR = color(139, 15, 240)
+    private static constant INNER_INTERACTABLE_COLOR = color(120, 120, 120)
+    private static constant INNER_INTERACTABLE_NEGATIVE_COLOR = color(200, 20, 20)
+    private static constant INNER_INTERACTABLE_POSITIVE_COLOR = color(20, 200, 20)
+    private static constant INNER_INTERACTABLE_NEUTRAL_COLOR = color(255, 255, 255)
+
+    private static constant OUTER_DEFAULT_COLOR = color(255, 255, 255)
+    private static constant OUTER_ALPHA = 90
+    
+
+    private vec2 center
+    private effect innerModel
+    private effect outerModel
+    private Board board
+    private hex hex
+    private BoardStack stack
+
+    construct(Board board, hex hex)
+        this.board = board
+        this.hex = hex
+        this.center = hex.toCoord() + board.getCoord()
+
+        this.innerModel = addEffect(MODEL_FILE_INNER, vec3(center.x, center.y, 10))
+        this.innerModel.setColor(INNER_DEFAULT_COLOR)
+        this.innerModel.setScale(SCALING)
+
+        this.outerModel = addEffect(MODEL_FILE_OUTER, vec3(center.x, center.y, 11))
+        this.outerModel.setColor(OUTER_DEFAULT_COLOR)
+        this.outerModel.setAlpha(OUTER_ALPHA)
+        this.outerModel.setScale(SCALING)
+
+    /** GETTER / SETTER **/
+    function getHex() returns hex
+        return hex
+
+    function getCoord() returns vec2
+        return center
+    
+    function getBoard() returns Board
+        return board
+    
+    function getStack() returns BoardStack
+        return stack
+
+    /** FUNCTIONALS **/
+    function removeStack()
+        this.stack = null
+        this.outerModel.setColor(OUTER_DEFAULT_COLOR)
+    
+    function setStack(BoardStack stack)
+        this.stack = stack
+        this.outerModel.setColor(stack.getPlayer().c)
+
+    function placeStack(BoardStack stack)
+        setStack(stack)
+        stack.place(this)
+
+    @inline
+    function forEachCellsInRange(range r, LLItrClosure<Cell> itr)
+        board.forEachCellsInRange(this, r, itr)
+
+    @inline
+    function getAllCellsInRange(range r) returns LinkedList<Cell>
+        return board.getAllCellsInRange(this, r)
+
+    @inline
+    function forEachNeighbour(LLItrClosure<Cell> itr)
+        board.forEachNeighbour(this, itr)
+
+    @inline
+    function getNeighbour(int index) returns Cell
+        return board.getNeighbour(this, index)
+
+    @inline
+    function getDistanceTo(Cell otherCell) returns int
+        return board.getDistanceTo(this, otherCell)
+    
+    @inline
+    function toString() returns string
+        return hex.toString()
+
+    /**  VISUALS  **/
+     // ! this method is already behind localPlayer
+    function draw(Player p, Action action, boolean canGiveOrders, Cell currentStackCell, Cell currentSelectedCell)
+        if this == currentStackCell
+            // later aligator
+        
+        var innerColor = INNER_DEFAULT_COLOR
+        var alpha = 20
+
+        if action != null
+            var cellResult = CellResult.NONE
+            if canGiveOrders
+                cellResult = action.getHighlightResultForCell(p, this)
+            if cellResult == CellResult.NONE
+                cellResult = action.getPreviewResultForCell(this)
+
+            if this == currentSelectedCell
+                innerColor = INNER_SELECT_COLOR
+
+            switch(cellResult)
+                case CellResult.DEFAULT
+                    innerColor = INNER_INTERACTABLE_COLOR
+                case CellResult.NEGATIVE
+                    innerColor = INNER_INTERACTABLE_NEGATIVE_COLOR
+                case CellResult.POSITIVE
+                    innerColor = INNER_INTERACTABLE_POSITIVE_COLOR
+                case CellResult.NEUTRAL
+                    innerColor = INNER_INTERACTABLE_NEUTRAL_COLOR
+                default
+        
+        if this == p.currentMousePosition.cell or this == currentSelectedCell
+            alpha = 90
+
+        innerModel.setColor(innerColor)
+        innerModel.setAlpha(alpha)

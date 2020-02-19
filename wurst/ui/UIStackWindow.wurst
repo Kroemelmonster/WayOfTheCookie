@@ -1,0 +1,117 @@
+package UIStackWindow
+
+import PlayerData
+
+import initlater BoardStack
+import initlater Stack
+import UIButton
+import UITooltip
+import StackType
+
+public class UIStackWindowInfo
+    BoardStack boardStack
+    StackType stack
+
+class UIStackWindow
+    private static framehandle frame
+    private static framehandle pane
+    private static framehandle icon
+    private static ButtonBorder iconBorder
+
+    private static framehandle header
+    private static framehandle subHeader
+    private static framehandle text
+
+    private static framehandle array buffs
+
+    private static constant MAX_BUFFS = 10
+
+    static function setup()
+        frame = createFrame("UnitWindow", GAME_UI, 0, 0)
+        frame.setPoint(FRAMEPOINT_TOPRIGHT,  GAME_UI, FRAMEPOINT_TOPRIGHT)
+        frame.setVisible(false)
+        pane = getFrame("WindowPane")
+
+        icon = getFrame("UnitWindowIcon")
+        iconBorder = new ButtonBorder(icon)
+
+        header = getFrame("UnitWindowHeader")
+        subHeader = getFrame("UnitWindowSubHeader")
+        text = getFrame("UntiWindowText")
+
+        let buffBar = getFrame("UnitWindowBuffs")
+
+        for int i = 0 to MAX_BUFFS
+            buffs[i] = createFrame("BACKDROP", "Buff", buffBar, "", 0)
+            ..setPoint(FRAMEPOINT_TOPLEFT, buffBar, FRAMEPOINT_TOPLEFT)
+            ..setWidth(0.017)
+            ..setHeight(0.017)
+            ..setVisible(false)
+    
+    static function update(Player p)
+        if p.isLocal()
+            if p.stackWindowInfo.boardStack != null
+                if p.stackWindowInfo.boardStack .isAlive()
+                    updateForBoardStack(p.stackWindowInfo.boardStack)
+                    frame.setVisible(true)
+                else
+                    p.stackWindowInfo.boardStack = null
+                    frame.setVisible(false)
+                
+            else if p.stackWindowInfo.stack != null
+                updateForStack(p.stackWindowInfo.stack)
+                frame.setVisible(true)
+            else
+                frame.setVisible(false)
+
+    private static function updateForStack(StackType stackType)
+        icon.setTexture(stackType.icon, 0, true)
+        iconBorder.setBorder(BorderColor.NONE)
+        header.setText(stackType.name)
+        subHeader.setText("")
+
+        var str = ""
+        
+        str += Tooltip.stat("Health", stackType.maxHp) + "|n"
+        str += Tooltip.stat("Attack", stackType.attack) + "|n"
+        str += Tooltip.stat("Defence", stackType.defence) + "|n"
+        str += Tooltip.stat("Damage", stackType.damage) + "|n"
+        str += Tooltip.stat("Attackrange", stackType.attackRange) + "|n"
+        str += Tooltip.stat("Initiative", stackType.initiative) + "|n"
+        str += Tooltip.stat("ActionPoints", stackType.actionPoints) + "|n"
+        text.setText(str)
+
+        var counter = 0
+        while counter < MAX_BUFFS
+            buffs[counter].setVisible(false)
+            counter++
+
+    private static function updateForBoardStack(BoardStack stack)
+        icon.setTexture(stack.getIcon(), 0, true)
+        iconBorder.setBorder(stack.getPlayer().borderColor)
+        header.setText(stack.getName())
+        subHeader.setText(stack.stats.getAmount().toString() + " / "+stack.stats.getStartAmount().toString())
+
+        var str = ""
+        
+        str += "Health : " + Tooltip.coloredInt(Tooltip.COLOR_PRIMARY, stack.stats.getHp()) + " / "+ Tooltip.coloredInt(Tooltip.COLOR_PRIMARY, stack.stats.getMaxHp()) +"|n"
+        str += Tooltip.stat("Attack", stack.stats.getAttack()) + "|n"
+        str += Tooltip.stat("Defence", stack.stats.getDefence()) + "|n"
+        str += Tooltip.stat("Damage", stack.stats.getDamage()) + "|n"
+        str += Tooltip.stat("Attackrange", stack.stats.getAttackRange()) + "|n"
+        str += Tooltip.stat("Initiative", stack.stats.getInitiative()) + "|n"
+        str += Tooltip.stat("ActionPoints", stack.stats.getMaxActionPoints()) + "|n"
+        text.setText(str)
+
+        let itr = stack.buffIterator()
+        var counter = 0
+        while counter < MAX_BUFFS
+            buffs[counter].setVisible(itr.hasNext())
+            if itr.hasNext()
+                let b = itr.next()
+                buffs[counter].setTexture(b.getIcon(), 0, true)
+            
+
+            counter++
+        
+        destroy itr

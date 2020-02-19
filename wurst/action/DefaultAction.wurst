@@ -1,0 +1,32 @@
+package DefaultAction
+
+import initlater BoardStack
+import Action
+import initlater Cell
+import TargetList
+import LinkedList
+
+public abstract class DefaultAction extends Action
+    protected TargetList targets
+
+    protected static constant KI_MOVEPOINTS = 100.0
+
+    construct(BoardStack stack, string name)
+        super(stack, null, name)
+        this.isDefault = true
+
+    override function canActivate() returns boolean
+        return false
+
+    abstract function getTargets(boolean shouldBeAbleToAttackThisTurn) returns LinkedList<BoardStack>
+
+    abstract function caclulatePath(Cell target, Cell preferedCell) returns Cell
+
+    override function showTooltip() // you can never show a tooltip here
+
+    override function canBeActivatedByKey(oskeytype key) returns boolean
+        return false
+
+    ondestroy
+        if targets != null
+            destroy targets

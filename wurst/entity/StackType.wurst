@@ -1,0 +1,73 @@
+package StackType
+
+import StackSoundSet
+import LinkedList
+import KAbility
+import KUtil
+
+public class StackType
+    integer unitId
+    integer armyUnitId
+    StackSoundSet soundSet
+    string icon
+    string name
+
+    integer level
+    integer leadership
+    integer value
+
+    integer initiative
+    integer actionPoints
+
+    integer maxHp
+    range damage
+    range attackRange
+    int attack
+    int defence
+
+    LinkedList<KAbility> abilities = new LinkedList<KAbility>()
+
+    construct(integer unitId, integer armyUnitId, string icon, StackSoundSet soundSet, string name, int level, int leadership, int value)
+        this.unitId = unitId
+        this.armyUnitId = armyUnitId
+        this.soundSet = soundSet
+        this.icon = icon
+        this.name = name
+        this.level = level
+        this.leadership = leadership
+        this.value = value
+
+    function addAbility(KAbility abil)
+        abilities.add(abil)
+
+    @inline
+    function setMaxHp(int value)
+        maxHp = value
+    
+    @inline
+    function setDamage(range value)
+        damage = value
+
+    @inline
+    function getCost() returns int
+        return value
+
+    @inline
+    function setAttackRange(range value)
+        attackRange = value
+
+    @inline
+    function setInitiative(int value)
+        initiative = value
+
+    @inline
+    function setActionPoints(int value)
+        actionPoints = value
+
+    @inline
+    function setAttack(int value)
+        attack = value
+
+    @inline
+    function setDefence(int value)
+        defence = value

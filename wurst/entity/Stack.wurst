@@ -1,0 +1,98 @@
+package Stack
+import StackType
+
+public class Stack
+    protected StackType stackType
+    protected int amount
+
+    construct(StackType stackType, int amount)
+        this.stackType = stackType
+        this.amount = amount
+
+    @inline
+    function getStackType() returns StackType
+        return stackType
+
+    @inline
+    function getAmount() returns int
+        return amount
+
+    @inline
+    function setAmount(int value)
+        amount = value
+
+    function toString() returns string
+        return "Stack [" + stackType.name + ", " + amount.toString() + "]"
+
+public class Army
+    static constant MAX_SIZE = 8
+    protected Stack array[MAX_SIZE] stacks
+
+    @inline
+    function setStack(int i, Stack stack)
+        stacks[i] = stack
+
+    function addStackAt(int i, StackType stackType, int amount)
+        if stacks[i] == null
+            stacks[i] = new Stack(stackType, amount)
+        
+    function remove(int i)
+        if stacks[i] == null
+            destroy stacks[i]
+            stacks[i] = null
+
+    function getStack(int i) returns Stack
+        if i >= 0 and i < MAX_SIZE
+            return stacks[i]
+        return null
+
+    function hasStack(Stack stack) returns boolean
+        for int i = 0 to MAX_SIZE - 1
+            if stack == stacks[i]
+                return true
+        return false
+
+    function addStackAtFree(StackType stackType, int amount) returns boolean
+        let index = getNextFreeIndex()
+        if index == -1
+            return false
+        addStackAt(index, stackType, amount)
+        return true
+    
+    function addStack(StackType stackType, int amount) returns boolean
+        let targetStack = getNextStackWithStackType(stackType)
+        if targetStack != null
+            targetStack.setAmount(targetStack.getAmount() + amount)
+            return true
+        return addStackAtFree(stackType, amount)
+    
+    function getFirstStack() returns Stack
+        for int i = 0 to MAX_SIZE - 1
+            if stacks[i] != null
+                return stacks[i]
+        return null
+
+    function toString() returns string
+        var str = "Army [ "
+        for int i = 0 to MAX_SIZE -1
+            if stacks[i] != null
+                str += stacks[i].toString() +", "
+        str += " ]"
+        return str
+
+    private function getNextFreeIndex() returns int
+        for int i = 0 to MAX_SIZE - 1
+            if stacks[i] == null
+                return i
+        return -1
+
+    private function getNextStackWithStackType(StackType stackType) returns Stack
+        for int i = 0 to MAX_SIZE - 1
+            if stacks[i] != null and stacks[i].stackType == stackType
+                return stacks[i]
+        return null
+    
+    ondestroy
+        for int i = 0 to MAX_SIZE -1
+            if stacks[i] != null
+                destroy stacks[i]

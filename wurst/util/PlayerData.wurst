@@ -1,0 +1,112 @@
+package PlayerData
+
+import initlater Cell
+import initlater Board
+import initlater BoardStack
+import initlater Hero
+import initlater UIButton
+import initlater UIStackWindow
+import initlater UIWorldConsole
+import initlater UINPCWindow
+import initlater UIDialog
+
+import LinkedList
+
+constant KEY_TRIGGER = CreateTrigger()..addAction(function onKeyPress)
+
+public abstract class KeyPressListener
+    abstract function onEvent(Player p, oskeytype key)
+
+public function registerPlayerOnAnyKeyPresses(player p)
+    for k = 0x00 to 0xFF
+        let key = ConvertOsKeyType(k)
+        // only register meta key shift
+        BlzTriggerRegisterPlayerKeyEvent(KEY_TRIGGER, p, key, 0, true)
+        BlzTriggerRegisterPlayerKeyEvent(KEY_TRIGGER, p, key, 1, true)
+
+public tuple mousePosition(Cell cell, Cell nearbyCell)
+
+public Player array playerData
+constant LinkedList<Player> activePlayers = new LinkedList<Player>
+
+public class Player
+    boolean mousePressed = false
+    int mousePressedIndex = 0
+    Button mouseOverButton = null
+
+    DialogInfo dialogInfo = new DialogInfo()
+
+    UIWorldConsoleInfo worldConsoleInfo = new UIWorldConsoleInfo()
+    UINPCWindowInfo npcWindowInfo = new UINPCWindowInfo()
+    UIStackWindowInfo stackWindowInfo = new UIStackWindowInfo()
+
+
+    mousePosition currentMousePosition
+
+    BoardStack currentSelectedStack
+
+    Board playingBoard
+    Hero hero
+    boolean mouse3DEnabled = true
+    boolean isConntrolledByKI
+    BorderColor borderColor
+    color c
+
+    KeyPressListener keyPressListener
+
+    player blzPlayer
+
+    static Player NEUTRAL_AGGRESIVE
+
+    private construct(player p, int i, BorderColor color)
+        blzPlayer = p
+        isConntrolledByKI = p.isIngame() == false
+        
+        let playerColor = i <= 2 ? i.toPlayerColor() : PLAYER_COLOR_PEANUT
+        this.c = playerColor.toColor()
+        this.borderColor = color
+        blzPlayer.setColor(playerColor)
+
+        if isConntrolledByKI == false
+            registerPlayerOnAnyKeyPresses(p)
+            activePlayers.add(this)
+
+    function isLocal() returns boolean
+        return blzPlayer == localPlayer
+
+    function toString() returns string
+        return blzPlayer.getNameColored()
+
+    function setCameraBoundsToRect(rect r)
+        blzPlayer.setCameraBoundsToRect(r)
+        blzPlayer.setCameraPosition(r.getCenter())
+
+    function onAnyKeyPress(KeyPressListener listener)
+        this.keyPressListener = listener
+
+    static function setup()
+        playerData[players[0].getId()] = new Player(players[0], 0, BorderColor.RED)
+        playerData[players[1].getId()] = new Player(players[1], 1, BorderColor.BLUE)
+        playerData[players[PLAYER_NEUTRAL_AGGRESSIVE].getId()] = new Player(players[PLAYER_NEUTRAL_AGGRESSIVE], PLAYER_NEUTRAL_AGGRESSIVE, BorderColor.BLACK)
+        
+        NEUTRAL_AGGRESIVE = playerData[players[PLAYER_NEUTRAL_AGGRESSIVE].getId()]
+
+    static function forEachActive(LLItrClosure<Player> itr)
+        activePlayers.forEach(itr)
+
+
+public function player.getData() returns Player
+    return playerData[this.getId()]
+
+public function GetTriggerPlayerData() returns Player
+    return GetTriggerPlayer().getData()
+
+function onKeyPress()
+    let p = GetTriggerPlayerData()
+    let key = BlzGetTriggerPlayerKey()
+    let isDown = BlzGetTriggerPlayerIsKeyDown()
+
+    if isDown and p.keyPressListener != null
+        p.keyPressListener.onEvent(p, key)
+
+        

@@ -1,0 +1,78 @@
+package UIController
+
+import initlater Board
+import initlater PlayerData
+import initlater Cell
+import initlater BoardStack
+import initlater Action
+
+import initlater UIInitiativeWindow
+import initlater UIActionWindow
+import initlater OrderSystem
+import initlater InitiativeList
+import initlater MouseContext
+import UIStackWindow
+import ClosureTimers
+import UIMain
+import UIWorldConsole
+
+class UIController
+
+    static function selectStack(Player p, BoardStack stack)
+        UIActionWindow.update(p)
+        p.stackWindowInfo.boardStack = stack
+            
+    static function triggerOnActionChange(Board board)
+        let currentStack = board.getInitiative().getCurrentStack()
+        let currentPlayer = currentStack.getPlayer()
+
+        currentStack.getCurrentAction().onAnyStackCellChange()
+
+        board.draw(currentPlayer)
+        UIActionWindow.update(currentPlayer)
+
+    static function triggerOnStackCreationOrDeathChange(Board board)
+        triggerOnAnyStackCellChange(board)
+        UIInitiativeWindow.refresh(board.getInitiative())
+        
+    static function triggerOnAnyStackCellChange(Board board)
+        board.forEachStack() (BoardStack stack) ->
+            stack.getDefaultAction().onAnyStackCellChange()
+
+        board.drawAll()
+
+    static function triggerOnPlayerCellHighlight(Player p)
+        if OrderSystem.canOrder(p)
+            // currentSelectStack is also the current stack inintaitve
+            p.currentSelectedStack.getCurrentAction().recalculateHighlight(p)
+
+        
+        p.playingBoard.draw(p)
+
+    static function triggerOnStackAmountChange(BoardStack stack)
+        UIInitiativeWindow.refresh(stack.getPlayer().playingBoard.getInitiative())
+    
+    static function onTrunEnd(BoardStack stack)
+        stack.setHighlight(false)
+        UIActionWindow.hide(stack.getPlayer())
+
+    static function onTurnStart(BoardStack stack)
+        UIInitiativeWindow.refresh(stack.getPlayer().playingBoard.getInitiative())
+        MouseContext.forcePlayerSelect(stack.getPlayer(), stack.getCell())
+        stack.getPlayer().playingBoard.drawAll()
+
+    static function triggerOnActionPointChange(BoardStack stack)
+        UIActionWindow.update(stack.getPlayer())
+        stack.getDefaultAction().onAnyStackCellChange()
+        stack.getBoard().drawAll()
+
+    private static function switchToCombat(Player p)
+        if p.dialogInfo.current != null
+            p.dialogInfo.current.cancel(p)
+        p.stackWindowInfo.stack = null
+        UIWorldConsole.setVisible(p, false)
+
+    static function switchToCombat(Board b)
+        switchToCombat(b.getPlayer(0))
+        switchToCombat(b.getPlayer(1))
+        

@@ -1,0 +1,37 @@
+package MoveAnimation
+
+import LinkedList
+
+import Animation
+import initlater BoardStack
+import initlater Cell
+import Abilities
+
+public class MoveAnimation extends Animation
+    private int index = 0
+    private vec2 current
+    private LinkedList<Cell> path 
+
+    construct(BoardStack stack, LinkedList<Cell> path)
+        super(stack)
+        this.path = path
+        moveToNext()
+        
+    function getCellsWalked() returns integer
+        return index
+
+    override function tick(real delta) returns boolean
+        if index >= path.size()
+            return stack.getCurrentOrder() == 0
+        if stack.isInRangeOf(current, 20.0)
+            index ++
+
+            if index < path.size()
+                moveToNext()
+
+        return false
+
+    private function moveToNext()
+        current = path.get(index).getCoord()
+        stack.issuePointOrder("move", current)
+        

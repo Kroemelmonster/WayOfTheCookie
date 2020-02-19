@@ -1,0 +1,17 @@
+package WarcryAnimation
+
+import initlater BoardStack
+import initlater Cell
+import CastAnimation
+
+import Abilities
+import Animation
+
+public class WarcryAnimation extends CastAnimation
+
+    construct(BoardStack stack, AnimationListener listener)
+        super(stack, null, listener)
+
+    override function onCastExecute()
+        flashEffect(Abilities.roarCaster, stack.getCell().getCoord())
+    

@@ -1,0 +1,91 @@
+package Action
+
+import UITooltip
+
+import initlater Cell
+import initlater BoardStack
+import PlayerData
+import UIController
+import initlater SummonLesserSkeletonAction
+import initlater OrderSystem
+import initlater WarcryAction
+
+public enum CellResult
+    DEFAULT
+    POSITIVE
+    NEGATIVE
+    NEUTRAL
+    NONE
+
+public abstract class Action
+    protected BoardStack stack
+    protected string btn
+    protected string name
+    protected boolean isInstant = false
+    protected boolean isDefault = false
+    protected int cooldown
+    protected int charge = -1
+    protected int maxCharge = -1
+
+    construct(BoardStack stack, string btn, string name)
+        this.stack = stack
+        this.btn = btn
+        this.name = name
+    
+    static function setup()
+        SummonLesserSkeletonAction.setup()
+        WarcryAction.setup()
+
+    function getPreviewResultForCell(Cell cell) returns CellResult
+        return CellResult.NONE
+
+    abstract function getHighlightResultForCell(Player p, Cell cell) returns CellResult
+
+    function onAnyStackCellChange()
+        recalculatePreview()
+        if OrderSystem.canOrder(stack.getPlayer())
+            recalculateHighlight(stack.getPlayer())
+
+    protected abstract function recalculatePreview()
+
+    abstract function recalculateHighlight(Player p)
+
+    abstract function sendTargetOrder(Cell cell) returns boolean
+
+    function getCooldown() returns int
+        return cooldown
+
+    function tickCooldown()
+        if cooldown > 0
+            cooldown -= 1
+
+    abstract function canActivate() returns boolean
+
+    function activate()
+
+    function isInstant() returns boolean
+        return isInstant
+    
+    function isDefault() returns boolean
+        return isDefault
+
+    function getButton() returns string
+        return btn
+
+    function getCharge() returns int
+        return charge
+
+    abstract function canBeActivatedByKey(oskeytype key) returns boolean
+
+    abstract function showTooltip()
+
+    @inline
+    function getName() returns string
+        return name
+
+    @inline
+    function toString() returns string
+        return "Action '"+getName()+"'"
+
+    function hideTooltip()
+        UITooltip.hide(stack.getPlayer())

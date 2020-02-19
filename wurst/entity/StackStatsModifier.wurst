@@ -1,0 +1,10 @@
+package StackStatsModifier
+import KUtil
+
+public class StackStatsModifer
+    int damageMulti = 100
+
+    construct()
+
+    static function calculate(range basis, int multi) returns range
+        return range((basis.min * (multi / 100.0)).round(), (basis.max * (multi / 100.0)).round())

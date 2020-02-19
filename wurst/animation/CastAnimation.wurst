@@ -1,0 +1,38 @@
+package CastAnimation
+
+import Animation
+import initlater BoardStack
+import initlater Cell
+import UnitDefinition
+
+public abstract class CastAnimation extends Animation
+    protected Cell target
+    protected real cd
+
+    construct(BoardStack stack, Cell target, AnimationListener listener)
+        super(stack)
+        this.target = target
+        if target == null
+            stack.issueImmediateOrder(AbilityTypesIds.SELFCAST_SPELL_ORDER)
+        else
+            stack.issuePointOrder(AbilityTypesIds.TARGET_SPELL_ORDER, target)
+        cd = -1 // do not count down
+        stack.doOnNextCast() -> 
+            // TODO this is the default backswing
+            cd = 0.5
+            onCastExecute()
+            listener.execute()
+            destroy listener
+
+    override function tick(real delta) returns boolean
+        if cd < 0
+            return false
+        cd -= delta
+
+        if cd >= 0.00
+            return false
+        
+        return true
+
+    abstract function onCastExecute()
+        

@@ -1,0 +1,28 @@
+package Scheduler
+
+import ClosureTimers
+
+import initlater Board
+import UIController
+import UIWorldConsole
+import PlayerData
+import UIStackWindow
+import UINPCWindow
+
+class Scheduler
+    static function setup()
+        Player.forEachActive() p ->
+            doPeriodically(ANIMATION_PERIOD) cb ->
+                if p.playingBoard != null
+                    p.playingBoard.tick(ANIMATION_PERIOD)
+
+            doPeriodically(0.2) cb ->
+                UIWorldConsole.update(p)
+                UIStackWindow.update(p)
+            doPeriodically(0.2) cb ->
+                UINPCWindow.update(p)
+
+                
+                
+            
+    

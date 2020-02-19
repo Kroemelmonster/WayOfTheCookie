@@ -1,0 +1,231 @@
+package UIButton
+
+import ClosureFrames
+
+import UI
+
+import PlayerData
+import initlater MouseContext
+import Textures
+
+public enum BorderColor
+    RED
+    BLUE
+    BLACK
+    PRIMARY
+    NONE
+
+public class ButtonBorder
+    private framehandle self
+
+    construct(framehandle ref)
+        self = createFrame("BACKDROP", "ButtonBorder", ref, "", 0)
+        ..setPoint(FRAMEPOINT_TOPLEFT, ref, FRAMEPOINT_TOPLEFT)
+        ..setPoint(FRAMEPOINT_BOTTOMRIGHT, ref, FRAMEPOINT_BOTTOMRIGHT)
+        ..setAlpha(125)
+
+
+    function setVisible(boolean flag)
+        self.setVisible(flag)
+
+    function setBorder(BorderColor color)
+        switch(color)
+            case BorderColor.RED
+                self.setAlpha(125)
+                self.setTexture("BtnBorderRed.blp", 0, true)
+                self.setVertexColor(65280)
+            case BorderColor.BLUE
+                self.setAlpha(125)
+                self.setTexture("BtnBorderRed.blp", 0, true)
+            case BorderColor.BLACK
+                self.setAlpha(200)
+                self.setTexture("BtnBorderBlack.blp", 0, true)
+                
+                //self.setVertexColor(65280)
+            case BorderColor.PRIMARY
+                self.setAlpha(125)
+                self.setTexture("BtnBorderPrimary.blp", 0, true)
+            default
+                self.setAlpha(0)
+
+public abstract class Button
+    protected framehandle self
+    protected framehandle icon
+    protected ButtonBorder border
+
+    private FrameHandleListener onMouseEnterListener
+    private FrameHandleListener onMouseLeaveListener
+    private FrameHandleListener onClickListener
+    private FrameHandleListener onMouseDown
+    private FrameHandleListener onMouseUp
+    
+    protected function setup()
+        self.onMouseEnter() () ->
+            let p = GetTriggerPlayerData()
+            p.mouseOverButton = this
+            MouseContext.enableMouseMovement(p, false)
+            if onMouseEnterListener != null
+                onMouseEnterListener.onEvent()
+        self.onMouseLeave() () ->
+            let p = GetTriggerPlayerData()
+            p.mouseOverButton = null
+            MouseContext.enableMouseMovement(p, true)
+            if onMouseLeaveListener != null
+                onMouseLeaveListener.onEvent()
+        self.onClick() () ->
+            self.setEnabled(false)
+            self.setEnabled(true)
+            if onClickListener != null
+                onClickListener.onEvent()
+
+        border = new ButtonBorder(icon)
+        border.setVisible(false)
+
+    function setPoint(framepointtype point, framehandle relative, framepointtype relativePoint)
+        self.setPoint(point, relative, relativePoint)
+
+    function setIcon(string str)
+        icon.setTexture(str, 0, true)
+
+    function triggerOnMouseDown()
+        if onMouseDown != null
+            onMouseDown.onEvent()
+
+    function triggerOnMouseUp()
+        if onMouseUp != null
+            onMouseUp.onEvent()
+
+    function onClick(FrameHandleListener listener)
+        onClickListener = listener
+
+    function onMouseDown(FrameHandleListener listener)
+        onMouseDown = listener
+
+    function onMouseUp(FrameHandleListener listener)
+        onMouseUp = listener
+
+    function onMouseEnter(FrameHandleListener listener)
+        onMouseEnterListener = listener
+
+    function onMouseLeave(FrameHandleListener listener)
+        onMouseLeaveListener = listener
+
+    function setVisible(boolean flag)
+        self.setVisible(flag)
+
+    function setIconVisible(boolean flag)
+        icon.setVisible(flag)
+
+    function setBorder(BorderColor color)
+        border.setBorder(color)
+
+    function setAlpha(int alpha)
+        self.setAlpha(alpha)
+
+    function showBorder()
+        border.setVisible(true)
+
+    ondestroy
+        Log.error("DONT DESTROY THA BUTTON WTF ?")
+        if onClickListener != null
+            destroy onClickListener
+        if onMouseEnterListener != null
+            destroy onMouseEnterListener
+        if onMouseLeaveListener != null
+            destroy onMouseLeaveListener
+    
+
+
+public class ActionButton extends Button
+    private framehandle glow
+    private framehandle block
+    private framehandle chargeBackdrop
+    private framehandle chargeText
+
+    override function setIcon(string str)
+        icon.setTexture(str, 0, true)
+
+    construct(framehandle parent, string str)
+        self = createFrame("Button", parent, 0, 0)
+        icon = getFrame("ButtonIcon")
+        setIcon(str)
+
+        glow = createFrame("SPRITE", "ButtonGlow", self, "", 0)
+        
+        glow.setModel(UI.heroLevel, 0)
+        glow.setPoint(FRAMEPOINT_TOPLEFT, icon, FRAMEPOINT_TOPLEFT)
+        glow.setPoint(FRAMEPOINT_BOTTOMRIGHT, icon, FRAMEPOINT_BOTTOMRIGHT)
+
+        block = createFrame("BACKDROP", "ButtoBlock", self, "", 0)
+            ..setPoint(FRAMEPOINT_TOPLEFT, icon, FRAMEPOINT_TOPLEFT)
+            ..setPoint(FRAMEPOINT_BOTTOMRIGHT, icon, FRAMEPOINT_BOTTOMRIGHT)
+
+        chargeBackdrop = createFrame("BACKDROP", "ButtonCharge", self, "", 0)
+            ..setPoint(FRAMEPOINT_TOPLEFT, icon, FRAMEPOINT_CENTER, vec2(0.005, -0.005))
+            ..setPoint(FRAMEPOINT_BOTTOMRIGHT, icon, FRAMEPOINT_BOTTOMRIGHT)
+            ..setTexture("UI\\Widgets\\Console\\Human\\human-transport-slot.blp", 0, true)
+            ..setVisible(false)
+
+        chargeText = createFrame("TEXT", "ButtonChargeText", chargeBackdrop, "", 0)
+        ..setPoint(FRAMEPOINT_TOPLEFT, chargeBackdrop, FRAMEPOINT_TOPLEFT)
+        ..setPoint(FRAMEPOINT_BOTTOMRIGHT, chargeBackdrop, FRAMEPOINT_BOTTOMRIGHT)
+        ..setTextAlignment(TEXT_JUSTIFY_MIDDLE, TEXT_JUSTIFY_CENTER)
+
+        
+        setup()
+
+    function setGlowVisible(boolean flag)
+        glow.setVisible(flag)
+
+    function disable(string blockingTexture)
+        self.setEnabled(false)
+        block.setTexture(blockingTexture, 0, true)
+        block.setVisible(true)
+
+    function setCharge(int value)
+        chargeBackdrop.setVisible(value > 0)
+        chargeText.setText(value.toString())
+
+    function enable()
+        self.setEnabled(true)
+        block.setVisible(false)
+
+public class StackButton extends Button
+    private integer index
+    private framehandle text
+    private framehandle highlight
+    private framehandle goldText
+
+    construct(framehandle pane, int index, boolean withBorder)
+        self = createFrame("StackButton", pane, 0, 0)
+        self.setPoint(FRAMEPOINT_TOPLEFT, pane, FRAMEPOINT_TOPLEFT, index * (self.getWidth() + 0.002), 0)
+        icon = getFrame("StackButtonIcon")
+        text = getFrame("StackButtonText")
+        this.index = index
+
+        
+        highlight = getFrame("StackButtonHighLight")
+        highlight.setAlpha(200)
+        highlight.setVisible(false)
+
+        setup()
+        if withBorder
+            showBorder()
+
+    function setText(string str)
+        text.setText(str)
+    
+    function setTextVisible(boolean flag)
+        text.setVisible(flag)
+
+    function setHighlight(boolean flag)
+        highlight.setVisible(flag)
+
+    function addGoldLine()
+        createFrame("GoldTextSmall", self, 0, 0)
+        ..setPoint(FRAMEPOINT_TOPLEFT, self, FRAMEPOINT_BOTTOMLEFT, 0.0, -0.010)
+        ..setPoint(FRAMEPOINT_BOTTOMRIGHT, self, FRAMEPOINT_BOTTOMRIGHT, -0.002, -0.02)
+        goldText = getFrame("GoldTextText")
+
+    function setGoldText(string str)
+        goldText.setText(str)

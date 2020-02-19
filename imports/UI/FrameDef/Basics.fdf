@@ -1,0 +1,26 @@
+Frame "TEXT" "CenteredText" {
+	UseActiveContext,
+	SetPoint TOPLEFT, "Ressource", TOPLEFT, 0, 0.0,
+	SetPoint BOTTOMRIGHT, "Ressource", BOTTOMRIGHT, 0.0, 0.0,
+	FrameFont "MasterFont", 0.008,"",
+	FontColor 1.0 1.0 1.0 1.0,
+    FontJustificationH JUSTIFYCENTER,
+    FontJustificationV JUSTIFYMIDDLE,
+    FontJustificationOffset 0.0 0.0,
+}
+
+Frame "BACKDROP" "RoundBoxBackground" {
+	BackdropTileBackground,
+	BackdropBackground  "UI\\Glues\\SinglePlayer\\HumanCampaign3D\\Black32.blp",
+	BackdropCornerFlags "UL|UR|BL|BR|T|L|B|R",
+	BackdropCornerSize  0.010,
+	BackdropBackgroundInsets 0.005 0.005 0.005 0.005,
+	BackdropEdgeFile "UI\Textures\editbox-border-background.dds",
+    Alpha 190,
+
+    Frame "TEXT" "RoundBoxText" INHERITS "CenteredText" {
+        SetPoint TOPLEFT, "RoundBoxBackground", TOPLEFT, 0, 0.0,
+        SetPoint BOTTOMRIGHT, "RoundBoxBackground", BOTTOMRIGHT, 0.0, 0.0,
+        Alpha 225,
+    }
+}

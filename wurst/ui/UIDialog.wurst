@@ -1,0 +1,48 @@
+package UIDialog
+
+import ClosureFrames
+import PlayerData
+import initlater UIStackSellDialog
+import initlater UIStackSplitDialog
+
+public class DialogInfo
+    UIDialog current = null
+
+    StackSellDialogInfo sellInfo = new StackSellDialogInfo()
+    StackSplitDialogInfo splitInfo = new StackSplitDialogInfo()
+
+public abstract class UIDialog
+    protected framehandle self
+    protected framehandle pane
+
+    protected framehandle cancelBtn
+
+    construct()
+        self = createFrame("BasicBorderWindow", GAME_UI, 0, 0)
+        ..setSize(0.25, 0.12)
+        ..setVisible(false)
+        ..setPoint(FRAMEPOINT_CENTER, GAME_UI, FRAMEPOINT_CENTER)
+        pane = getFrame("WindowPane")
+
+        
+        createFrame("DialogCancelButton", pane, 0, 0)
+        ..setPoint(FRAMEPOINT_BOTTOMRIGHT, pane, FRAMEPOINT_BOTTOMRIGHT, 0.0, 0.0)
+        ..setLevel(100)
+        ..onClick() ->
+            cancel(GetTriggerPlayerData())
+        getFrame("DialogButtonText").setText("Cancel")
+
+
+    function show(Player p)
+        p.dialogInfo.current = this
+        self.setVisible(p.blzPlayer, true)
+
+    protected function hide(Player p)
+        self.setVisible(p.blzPlayer, false)
+        p.dialogInfo.current = null
+
+    function cancel(Player p)
+        hide(p)
+        cancelInner(p)
+
+    protected abstract function cancelInner(Player p)

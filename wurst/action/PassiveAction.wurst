@@ -1,0 +1,33 @@
+package PassiveAction
+
+import initlater BoardStack
+import initlater Cell
+
+public abstract class PassiveActionListener
+    abstract function onFinish()
+
+public abstract class PassiveAction
+    protected BoardStack stack
+    protected string name
+
+    construct(BoardStack stack, string name)
+        this.stack = stack
+        this.name = name
+
+    @inline
+    function getName() returns string
+        return name
+
+    @inline
+    function toString() returns string
+        return "Passive '"+getName()+"'"
+    
+    @inline
+    function triggerAfterAttackCheck(BoardStack attacker) returns boolean
+        return triggerAfterAttackCheck(attacker, attacker.getCell())
+
+    function triggerAfterAttackCheck(BoardStack attacker, Cell fromCell) returns boolean
+        return false
+
+    function triggerAfterAttack(BoardStack attacker, PassiveActionListener listener)
+        destroy listener

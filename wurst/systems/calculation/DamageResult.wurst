@@ -1,0 +1,132 @@
+package DamageResult
+
+import initlater BoardStack
+import KUtil
+import UITooltip
+import initlater Cell
+import LinkedList
+import PassiveAction
+
+public class DamageResult
+    int damage
+    int amount
+    int remainingHP
+
+    function toString() returns string
+        return "DamageResult damage:"+damage.toString()+ ", amount:"+amount.toString()
+
+    static function calulateOneResult(BoardStack attacker, BoardStack defender) returns DamageResult
+        let preview = new DamageResultPreview(attacker)
+        preview.calculate(defender)
+        let result = preview.getOneResult()
+        destroy preview
+        return result
+
+public class DamageResultPreview
+    protected BoardStack attacker
+    protected BoardStack defender
+    protected range amount
+    protected range damage
+    protected real effectivness
+
+    construct(BoardStack attacker)
+        this.attacker = attacker
+
+    function getAmount() returns range
+        return amount
+
+    function getDamage() returns range
+        return damage
+
+    function addToTooltip(Tooltip tt)
+        tt.addLine(Tooltip.playerColored(defender.getPlayer(), defender.getName()))
+        tt.addLine(Tooltip.stat("Damage", damage))
+        tt.addLine(Tooltip.stat("Kills", Tooltip.COLOR_NEGATIVE, amount))
+
+    protected function getUnitLostCount(int dmg) returns int
+        var amount = 0
+        let remainingDmg = dmg - defender.stats.getHp()
+        if remainingDmg >= 0
+            amount ++
+            let maxHp = defender.stats.getMaxHp()
+            amount += (remainingDmg / maxHp).floor()
+        
+        if amount > defender.stats.getAmount()
+            amount = defender.stats.getAmount()
+
+        return amount
+
+    function getOneResult() returns DamageResult
+        var result = new DamageResult()
+        result.damage = this.damage.random()
+        result.amount = getUnitLostCount(result.damage)
+        result.remainingHP = defender.stats.getHp()
+        result.remainingHP += defender.stats.getMaxHp() * result.amount
+        result.remainingHP -= result.damage
+
+        return result
+
+    private function getStatEffectiveness() returns real
+        let difference = attacker.stats.getAttack() - defender.stats.getDefence()
+    
+        if difference >= 0
+            var posEffect = difference * 5.0
+            if posEffect > 300.0
+                posEffect = 300
+            return 100.0 + posEffect
+        else
+            var negativeEffect = difference * -2.5
+            if negativeEffect > 70.0
+                negativeEffect = 70.0
+            return 100.0 - negativeEffect
+
+    function calculate(BoardStack defender)
+        this.defender = defender
+        effectivness = getStatEffectiveness()
+        let amountAttacker = attacker.stats.getAmount()
+        damage.min = ((attacker.stats.getDamage().min * amountAttacker * effectivness) / 100.0).round()
+        damage.max = ((attacker.stats.getDamage().max * amountAttacker * effectivness) / 100.0).round()
+        amount.min = getUnitLostCount(damage.min)
+        amount.max = getUnitLostCount(damage.max)
+
+    function isEmpty() returns boolean
+        return this.defender == null
+
+    function reset()
+        this.defender = null
+
+public class AttackResultPreview extends DamageResultPreview
+    private LinkedList<PassiveAction> counters
+
+    construct(BoardStack attacker)
+        super(attacker)
+        counters = new LinkedList<PassiveAction>
+
+    override function addToTooltip(Tooltip tt)
+        super.addToTooltip(tt)
+        if counters.isEmpty()
+            return
+        var str = "Will Counter with "
+        let itr = counters.iterator()
+        while itr.hasNext()
+            let counter = itr.next()
+            str += counter.getName()
+            if itr.hasNext()
+                str += ", "
+        tt.addLine(str)
+
+    function calculate(BoardStack defender, Cell fromCell)
+        super.calculate(defender)
+        counters.clear()
+        let itr = defender.passiveActionIterator()
+        while itr.hasNext()
+            let passive = itr.next()
+            if passive.triggerAfterAttackCheck(attacker, fromCell)
+                counters.add(passive)
+
+        destroy itr
+
+    ondestroy
+        destroy counters
+
+        

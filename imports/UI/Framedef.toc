@@ -1,0 +1,12 @@
+UI\FrameDef\Glue\standardtemplates.fdf
+UI\FrameDef\UI\escmenutemplates.fdf
+UI\FrameDef\Glue\battlenettemplates.fdf
+UI\FrameDef\Basics.fdf
+UI\FrameDef\WorldConsoleSpecials.fdf
+UI\FrameDef\SimpleFrames.fdf
+UI\FrameDef\GoldText.fdf
+UI\FrameDef\Basics.fdf
+UI\FrameDef\Tooltip.fdf
+UI\FrameDef\DialogButtons.fdf
+UI\Window.fdf
+UI\Window.fdf

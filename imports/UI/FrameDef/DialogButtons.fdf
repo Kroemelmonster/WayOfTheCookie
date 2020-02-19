@@ -1,0 +1,121 @@
+Frame "GLUETEXTBUTTON" "DialogDefaultButton" {
+    Width 0.07,
+    Height 0.02,
+    ControlStyle "AUTOTRACK|HIGHLIGHTONMOUSEOVER",
+    ButtonPushedTextOffset 0.0 -0.003,
+
+    ControlBackdrop "DialogButtonIcon",
+    Frame "BACKDROP" "DialogButtonIcon" {
+        BackdropBackground "UI\Textures\btn-blue.dds",
+        BackdropBlendAll,
+    }
+
+    ControlPushedBackdrop "DialogButtonIconPushed",
+    Frame "BACKDROP" "DialogButtonIconPushed" {
+        BackdropBackground "UI\Textures\btn-blue-pushed.dds",
+        BackdropBlendAll,
+    }
+
+    ControlDisabledBackdrop "DialogButtonIconDisabled",
+    Frame "BACKDROP" "DialogButtonIconDisabled" {
+        BackdropBackground "UI\Textures\btn-disabled.dds",
+        BackdropBlendAll,
+    }
+
+    ControlMouseOverHighlight "DialogButtonHighlight",
+    Frame "HIGHLIGHT" "DialogButtonHighlight" {
+        HighlightType "FILETEXTURE",
+        HighlightAlphaFile "UI\Glues\ScoreScreen\scorescreen-tab-hilight.blp",
+        HighlightAlphaMode "ADD",
+    }
+
+    ButtonText "DialogButtonText",
+    Frame "TEXT" "DialogButtonText" {
+        SetPoint TOPLEFT, "DialogDefaultButton", TOPLEFT, 0, 0.0,
+        SetPoint BOTTOMRIGHT, "DialogDefaultButton", BOTTOMRIGHT, 0.0, 0.0,
+        FrameFont "MasterFont", 0.010,"",
+        FontColor 1.0 1.0 1.0 1.0,
+        FontJustificationH JUSTIFYCENTER,
+        FontJustificationV JUSTIFYMIDDLE,
+        FontJustificationOffset 0.0 0.0,
+        Text "",
+    }
+}
+
+Frame "GLUETEXTBUTTON" "DialogAcceptButton" INHERITS "DialogDefaultButton" {
+    ControlBackdrop "DialogButtonIcon",
+    Frame "BACKDROP" "DialogButtonIcon" {
+        BackdropBackground "UI\Textures\btn-green.dds",
+        BackdropBlendAll,
+    }
+
+    ControlPushedBackdrop "DialogButtonIconPushed",
+    Frame "BACKDROP" "DialogButtonIconPushed" {
+        BackdropBackground "UI\Textures\btn-green-pushed.dds",
+        BackdropBlendAll,
+    }
+
+    ControlDisabledBackdrop "DialogButtonIconDisabled",
+    Frame "BACKDROP" "DialogButtonIconDisabled" {
+        BackdropBackground "UI\Textures\btn-disabled.dds",
+        BackdropBlendAll,
+    }
+
+    ControlMouseOverHighlight "DialogButtonHighlight",
+    Frame "HIGHLIGHT" "DialogButtonHighlight" {
+        HighlightType "FILETEXTURE",
+        HighlightAlphaFile "UI\Glues\ScoreScreen\scorescreen-tab-hilight.blp",
+        HighlightAlphaMode "ADD",
+    }
+
+    ButtonText "DialogButtonText",
+    Frame "TEXT" "DialogButtonText" {
+        SetPoint TOPLEFT, "DialogAcceptButton", TOPLEFT, 0, 0.0,
+        SetPoint BOTTOMRIGHT, "DialogAcceptButton", BOTTOMRIGHT, 0.0, 0.0,
+        FrameFont "MasterFont", 0.010,"",
+        FontColor 1.0 1.0 1.0 1.0,
+        FontJustificationH JUSTIFYCENTER,
+        FontJustificationV JUSTIFYMIDDLE,
+        FontJustificationOffset 0.0 0.0,
+        Text "Ok",
+    }
+}
+
+Frame "GLUETEXTBUTTON" "DialogCancelButton" INHERITS "DialogDefaultButton" {
+    ControlBackdrop "DialogButtonIcon",
+    Frame "BACKDROP" "DialogButtonIcon" {
+        BackdropBackground "UI\Textures\btn-red.dds",
+        BackdropBlendAll,
+    }
+
+    ControlPushedBackdrop "DialogButtonIconPushed",
+    Frame "BACKDROP" "DialogButtonIconPushed" {
+        BackdropBackground "UI\Textures\btn-red-pushed.dds",
+        BackdropBlendAll,
+    }
+
+    ControlDisabledBackdrop "DialogButtonIconDisabled",
+    Frame "BACKDROP" "DialogButtonIconDisabled" {
+        BackdropBackground "UI\Textures\btn-disabled.dds",
+        BackdropBlendAll,
+    }
+
+    ControlMouseOverHighlight "DialogButtonHighlight",
+    Frame "HIGHLIGHT" "DialogButtonHighlight" {
+        HighlightType "FILETEXTURE",
+        HighlightAlphaFile "UI\Glues\ScoreScreen\scorescreen-tab-hilight.blp",
+        HighlightAlphaMode "ADD",
+    }
+
+    ButtonText "DialogButtonText",
+    Frame "TEXT" "DialogButtonText" {
+        SetPoint TOPLEFT, "DialogCancelButton", TOPLEFT, 0, 0.0,
+        SetPoint BOTTOMRIGHT, "DialogCancelButton", BOTTOMRIGHT, 0.0, 0.0,
+        FrameFont "MasterFont", 0.010,"",
+        FontColor 1.0 1.0 1.0 1.0,
+        FontJustificationH JUSTIFYCENTER,
+        FontJustificationV JUSTIFYMIDDLE,
+        FontJustificationOffset 0.0 0.0,
+        Text "Cancel",
+    }
+}

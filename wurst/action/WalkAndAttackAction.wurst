@@ -1,0 +1,234 @@
+package WalkAndAttackAction
+
+import LinkedList
+import Icons
+
+import MoveAnimation
+import Action
+
+import PathFinding
+import UIController
+
+
+import initlater Cell
+import initlater BoardStack
+import PlayerData
+import AttackAnimation
+import DamageResult
+import DefaultAction
+import UITooltip
+import BoardController
+import TargetList
+import KUtil
+import OrderSystem
+
+public class WalkAndAttackAction extends DefaultAction
+    private StackPathFinding walkableCells
+    private LinkedList<Cell> path
+    private boolean wasPathLimited
+    private AttackResultPreview preview
+
+    construct(BoardStack stack)
+        super(stack, "Attack")
+        walkableCells = new StackPathFinding(stack, 1.0)
+        path = new LinkedList<Cell>()
+        preview = new AttackResultPreview(stack)
+        targets = new TargetList(stack) (BoardStack possibleStack) -> 
+            return getCellToAttackFromWithCheck(possibleStack)
+
+    override function getPreviewResultForCell(Cell cell) returns CellResult
+        if canAttackTargetThisTurn(cell.getStack())
+            return CellResult.NEGATIVE
+        else if cell != stack.getCell() and getRemainingActionPointsFromCell(cell, stack.stats.getMoveSpeed()) >= 0
+            return CellResult.DEFAULT
+        return CellResult.NONE
+
+    override function getHighlightResultForCell(Player p, Cell cell) returns CellResult
+        if wasPathLimited == false and path.has(cell)
+            return CellResult.POSITIVE
+        return CellResult.NONE
+
+    override function recalculatePreview()
+        walkableCells.recalculate(KI_MOVEPOINTS)
+        targets.recalculate()
+
+    override function recalculateHighlight(Player p)
+        caclulatePath(p.currentMousePosition.cell, p.currentMousePosition.nearbyCell)
+        if preview.isEmpty()
+            hideTooltip()
+        else
+            let tt = Tooltip.create(name)
+            preview.addToTooltip(tt)
+            tt.display(stack.getPlayer(), true)
+
+    private function sendAttackOrder(BoardStack enemy, boolean didMove)
+        let board = stack.getBoard()
+        let anim = new AttackAnimation(stack, enemy) () ->
+            BoardController.dealDamage(stack, preview.getOneResult(), enemy)
+
+        anim.onFinish() () ->
+            if didMove
+                UIController.triggerOnAnyStackCellChange(board)
+            BoardController.onAttackEnd(stack, enemy)
+            
+
+    private function sendMoveOrder(BoardStack enemy)
+        let targetCell = path.peek()
+        let cost = walkableCells.get(targetCell).cost.floor()
+
+        let board = stack.getBoard()
+        let anim = new MoveAnimation(stack, path)
+        anim.onFinish() () ->
+            stack.replaceCell(targetCell)
+            
+            if enemy != null
+                sendAttackOrder(enemy, true)
+            else
+                BoardController.spendActionPoints(stack, cost, true)
+                UIController.triggerOnAnyStackCellChange(board)
+                OrderSystem.endOrder(board)
+
+    override function sendTargetOrder(Cell cell) returns boolean
+        if path.has(cell)
+            sendMoveOrder(null)
+            return true
+        else 
+            let enemy = cell.getStack()
+            if canAttackTargetThisTurn(enemy)
+                // do we need to walk there ?
+                if path.isEmpty()
+                    sendAttackOrder(enemy, false)
+                else
+                    sendMoveOrder(enemy)
+                return true
+        
+        return false
+
+    private function getRemainingActionPointsFromCell(Cell cell, real limitMovesPoint) returns int
+        if cell == null
+            return -1
+        // you are there ??
+        if cell == stack.getCell()
+            return 999
+        if walkableCells.has(cell)
+            return (limitMovesPoint - walkableCells.get(cell).cost).floor()
+        return -1
+
+    private function getCellToAttackFromWithCheck(BoardStack target) returns Cell
+        if stack.canAttack(target)
+            return getCellToAttackFrom(target, null)
+        return null
+
+    private function getCellToAttackFrom(BoardStack target, Cell preferedCell) returns Cell
+        // first check the preferedCell ( This is used when the curser is over the enemy but closest to an other Cell )
+        if getRemainingActionPointsFromCell(preferedCell, 100.0) > 0
+            return preferedCell
+        
+        // now go through every Cell that would be in range
+        var currentHighestRemainingPoints = 0
+        Cell currentBest = null
+        
+        let possibleCellsToAttackFrom = target.getCell().getAllCellsInRange(stack.stats.getAttackRange())
+        let itr = possibleCellsToAttackFrom.iterator()
+        while itr.hasNext()
+            let possibleCellToAttackFrom = itr.next()
+            let remainingPoints = getRemainingActionPointsFromCell(possibleCellToAttackFrom, 100.0)
+            if remainingPoints > currentHighestRemainingPoints
+                currentHighestRemainingPoints = remainingPoints
+                currentBest = possibleCellToAttackFrom
+        destroy itr
+        destroy possibleCellsToAttackFrom
+        return currentBest
+
+    override function getTargets(boolean shouldBeAbleToAttackThisTurn) returns LinkedList<BoardStack>
+        let list = new LinkedList<BoardStack>()
+        let itr = targets.iterator()
+        while itr.hasNext()
+            let target = itr.next()
+            if shouldBeAbleToAttackThisTurn == false or getRemainingActionPointsFromCell(target.getAttackFrom(), stack.stats.getMoveSpeed()) > 0
+                list.add(target.getTarget())
+
+
+        destroy itr
+        return list
+
+    
+    private function canAttackTargetThisTurn(BoardStack enemy) returns boolean
+        let target = targets.find(enemy)
+        return target != null and getRemainingActionPointsFromCell(target.getAttackFrom(), stack.stats.getMoveSpeed()) > 0
+
+    private function isInRange(Cell fromPosition, BoardStack otherStack) returns boolean
+        if otherStack == null
+            return false
+        let attackRange = stack.stats.getAttackRange()
+        let distance = otherStack.getCell().getDistanceTo(fromPosition)
+        return distance >= attackRange.min and distance <= attackRange.max
+
+    override function caclulatePath(Cell targetCell, Cell preferedCell) returns Cell
+        path.clear()
+        preview.reset()
+        wasPathLimited = false
+
+        
+        if targetCell == null
+            return null
+
+        PathCell destionationPath = null
+
+        let targetStack = targetCell.getStack()
+        let target = targets.find(targetStack)
+
+        // he found something to Attack
+        if target != null
+            destionationPath = walkableCells.get(target.getAttackFrom())
+        else 
+            destionationPath = walkableCells.get(targetCell)
+            
+        if destionationPath == null
+            // you didnt need to walk, maybe you are already in range ?
+            if target != null
+                preview.calculate(targetStack, stack.getCell())
+                return targetCell
+            // somehow we cant walk there and we also cant attack while standing still
+            return null
+
+        let movePoints = stack.stats.getMoveSpeed()
+        let iter = destionationPath.iterator()
+        var couldAttack = false
+
+        while iter.hasNext()
+            let pCell = iter.next()
+            let cost = pCell.cost.floor()
+            // he can walk AND attack there
+            if cost <= movePoints
+                
+                path.addtoStart(pCell.cell)
+
+                // he can also attack there
+                if cost < movePoints and isInRange(pCell.cell, targetStack)
+                    couldAttack = true
+
+            else
+                wasPathLimited = true
+
+        destroy iter
+
+        if couldAttack
+            preview.calculate(targetStack, path.peek())
+            return targetCell
+        else
+            let endResultTarget = path.peek()
+            if endResultTarget != targetCell
+                wasPathLimited = true
+
+            // ansotnen kansch nur laufen
+            return endResultTarget
+
+    ondestroy
+        if walkableCells != null
+            destroy walkableCells
+        if path != null
+            destroy path
+        if preview != null
+            destroy preview
+        

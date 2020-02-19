@@ -1,0 +1,35 @@
+package CounterAttackPAction
+
+import initlater BoardStack
+import initlater Cell
+import PassiveAction
+import AttackAnimation
+import BoardController
+import DamageResult
+import KUtil
+
+public class CounterAttackPAction extends PassiveAction
+
+    construct(BoardStack stack)
+        super(stack, "Attack")
+
+    override function triggerAfterAttackCheck(BoardStack attacker, Cell fromCell) returns boolean
+        if stack.stats.getCounterAttacks() <= 0
+            return false
+
+        let attackRange = stack.stats.getAttackRange()
+        let distance = fromCell.getDistanceTo(stack.getCell())
+        return distance >= attackRange.min and distance <= attackRange.max
+
+    override function triggerAfterAttack(BoardStack target, PassiveActionListener listener)
+        stack.stats.setCounterAttacks(stack.stats.getCounterAttacks() - 1)
+
+        let anim = new AttackAnimation(stack, target) () ->
+            let result = DamageResult.calulateOneResult(stack, target)
+            BoardController.dealDamage(stack, result, target)
+
+        anim.onFinish() () ->
+            listener.onFinish()
+            destroy listener
+            
+

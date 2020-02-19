@@ -1,0 +1,90 @@
+package UIInitiativeWindow
+
+import LinkedList
+
+import PlayerData
+
+import UIButton
+import initlater InitiativeList
+import initlater BoardStack
+import initlater MouseContext
+
+constant MAX_ENTRYS = 14
+
+class UIInitiativeWindow
+    private static framehandle frame
+    private static framehandle pane
+    private static StackButton array[MAX_ENTRYS] btns
+
+    static function setup()
+        frame = createFrame("BasicBorderWindow", GAME_UI, 0, 0)
+        ..setSize((MAX_ENTRYS * (0.035 + 0.002)) + 0.02, 0.065)
+        ..setVisible(false)
+        ..setPoint(FRAMEPOINT_BOTTOMLEFT,  GAME_UI, FRAMEPOINT_BOTTOMLEFT)
+        pane = getFrame("WindowPane")
+
+        for int i = 0 to MAX_ENTRYS
+            btns[i] = new StackButton(pane, i, true)
+            btns[i].onClick() () ->
+                onClick(GetTriggerPlayerData(), i)
+            btns[i].onMouseEnter() () ->
+                onMouseEnter(GetTriggerPlayerData(), i)
+            btns[i].onMouseLeave() () ->
+                onMouseLeave(GetTriggerPlayerData())
+
+    private static function getEntryAt(Player p, integer i) returns InitiativeEntry
+        return p.playingBoard.getInitiative().get(i)
+
+    private static function onClick(Player p, integer i)
+        let entry = getEntryAt(p, i)
+        if entry == null
+            return
+        
+        MouseContext.forcePlayerSelect(p, entry.getStack().getCell())
+    
+    private static function onMouseEnter(Player p, integer i)
+        let entry = getEntryAt(p, i)
+        if entry == null
+            return
+
+        MouseContext.forceMouseEnter(p, entry.getStack().getCell())
+
+    private static function onMouseLeave(Player p)
+        MouseContext.forceMouseLeave(p)
+        
+    static function refresh(InitiativeList initiative)
+        if initiative.getBoard().isLocalPlayer() == false
+            return
+        
+        let iterator = initiative.iterator()
+        for int i = 0 to MAX_ENTRYS
+            let hasStack = iterator.hasNext()
+            btns[i].setVisible(hasStack)
+            if hasStack
+                let stack = iterator.next().getStack()
+                btns[i].setIcon(stack.getIcon())
+                btns[i].setBorder(stack.getPlayer().borderColor)
+                btns[i].setText(stack.stats.getAmount().toString())
+
+        destroy iterator
+
+        frame.setVisible(true)
+
+    static function highlightStack(Player p, BoardStack highlightStack)
+        if p.isLocal() == false
+            return
+
+        let iterator = p.playingBoard.getInitiative().iterator()
+        for int i = 0 to MAX_ENTRYS
+            if iterator.hasNext()
+                let stack = iterator.next().getStack()
+                btns[i].setHighlight(highlightStack == stack)
+
+        destroy iterator
+
+    static function resetHighlight(Player p)
+        if p.isLocal() == false
+            return
+
+        for int i = 0 to MAX_ENTRYS
+            btns[i].setHighlight(false)

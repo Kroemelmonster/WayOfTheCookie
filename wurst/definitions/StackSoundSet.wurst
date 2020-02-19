@@ -1,0 +1,10 @@
+package StackSoundSet
+
+import SoundUtils
+import LinkedList
+
+public class StackSoundSet
+    private LinkedList<SoundDefinition> select = new LinkedList<SoundDefinition>()
+
+    function addSelect(string file)
+        select.add(new SoundDefinition(file, false))

@@ -1,0 +1,13 @@
+---
+projectName: MyWurstProject
+buildMapData:
+  name: The way of the Cookie
+  fileName: WayOfTheCookie
+  author: Kroemel
+  optionsFlags:
+    hideMinimapPreview: true
+    forcesFixed: true
+    maskedAreasPartiallyVisible: false
+    showWavesOnCliffShores: true
+    showWavesOnRollingShores: true
+    useItemClassificationSystem: false

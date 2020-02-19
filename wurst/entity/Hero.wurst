@@ -1,0 +1,138 @@
+package Hero
+import Stack
+import PlayerData
+import StackType
+import UnitDefinition
+import Abilities
+import ClosureEvents
+import MainController
+import World
+import HashMap
+import Orders
+import NPC
+import UIWorldConsole
+
+constant HashMap<unit, Hero> map = new HashMap<unit, Hero>
+
+public class Hero
+    protected unit u
+    protected Player p
+    protected int gold
+    protected int leadership
+
+    protected Army army
+
+    protected NPC currentInteract
+
+
+    protected EventListener damagedListener
+    protected EventListener orderUnitListener
+    protected EventListener orderPointListener
+    protected OnCastListener interactWithNPCListener
+
+    construct(Player p)
+        this.p = p
+        u = createUnit(playerData[0].blzPlayer, UnitTypesIds.HERO_FAR_SEER, playerData[0].blzPlayer.getStartLocation(), angle(0))
+        army = new Army()
+        p.hero = this
+        map.put(u, this)
+
+        damagedListener = EventListener.add(u, EVENT_PLAYER_UNIT_DAMAGED) ->
+            if u.isInvulnerable() == false
+                World.onHeroDamaged(this, GetEventDamageSource())
+
+
+        orderUnitListener = EventListener.add(u, EVENT_PLAYER_UNIT_ISSUED_UNIT_ORDER) ->
+            if GetIssuedOrderId() == SpecialOrders.smart
+                World.onHeroSmartOrder(this, GetOrderTargetUnit())
+
+        orderPointListener = EventListener.add(u, EVENT_PLAYER_UNIT_ISSUED_POINT_ORDER) ->
+            if GetIssuedOrderId() == SpecialOrders.smart
+                World.onHeroSmartOrder(this)
+
+        interactWithNPCListener = EventListener.onCast(u, AbilityTypesIds.TARGET_UNIT_SPELL) cb ->
+            World.onHeroInteractWithNPC(this, GetSpellTargetUnit())
+
+        gold = GetRandomInt(100, 200)
+        leadership = GetRandomInt(200, 400)
+
+        UIWorldConsole.setupHero(this)
+        p.blzPlayer.selectSingle(u)
+
+    static function getFromUnit(unit u) returns Hero
+        return map.get(u)
+
+    
+    function addStack(StackType stackType, int amount)
+        army.addStack(stackType, amount)
+
+    function addStackAtFree(StackType stackType, int amount)
+        army.addStackAtFree(stackType, amount)
+
+    function getArmy() returns Army
+        return army
+
+    function getPlayer() returns Player
+        return p
+
+    function getGold() returns int
+        return gold
+
+    function addGold(int amount)
+        gold += amount
+
+    function getLeadership() returns int
+        return leadership
+
+    function getMaxAmountOfStackTypeBasedOnGold(StackType stackType) returns int
+        return (gold / stackType.getCost()).floor()
+
+    function getMaxAmountOfStackTypeRemainingBasedOnLeadership(StackType stackType) returns int
+        var remainintLeadership = leadership
+        for int i = 0 to Army.MAX_SIZE - 1
+            let stack = army.getStack(i)
+            if stack != null and stack.getStackType() == stackType
+                remainintLeadership -= stackType.leadership * stack.getAmount()
+
+        return (remainintLeadership / stackType.leadership.toReal()).floor()
+
+    function setVulnearble(boolean flag)
+        if flag == false
+            u.abortOrder()
+            u.setInvulnerable(true)
+        else
+            u.setInvulnerable(false)
+
+    function enable(boolean flag)
+        setVulnearble(flag)
+        if flag == false
+            u.unpause()
+            u.addAbility(LOCUST_ID)
+            p.blzPlayer.selectSingle(u)
+        else
+            u.pause()
+            u.removeAbility(LOCUST_ID)
+
+    function issueNPC(NPC npc)
+        u.issueTargetOrder(AbilityTypesIds.TARGET_UNIT_SPELL_ORDER, npc.getUnit())
+
+    function startInteract(NPC npc)
+        currentInteract = npc
+        npc.startInteraction(this)
+    
+    function stopInteract()
+        if currentInteract != null
+            currentInteract.endInteraction(this)
+            currentInteract = null
+        
+
+    function toString() returns string
+        return "Hero [" + u.getName() +"]"
+
+    ondestroy
+        destroy damagedListener
+        destroy orderUnitListener
+        destroy orderPointListener
+        destroy interactWithNPCListener
+        destroy army
+        map.remove(u)

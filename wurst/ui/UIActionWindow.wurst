@@ -1,0 +1,172 @@
+package UIActionWindow
+
+import Icons
+import LinkedList
+
+import PlayerData
+import UIButton
+import initlater UIController
+
+import initlater Action
+import initlater BoardStack
+import FramehandleNames
+import initlater OrderSystem
+
+constant framepointtype array[6] points = [FRAMEPOINT_TOPLEFT, FRAMEPOINT_TOP, FRAMEPOINT_TOPRIGHT, FRAMEPOINT_BOTTOMLEFT, FRAMEPOINT_BOTTOM, FRAMEPOINT_BOTTOMRIGHT]
+
+class UIActionWindow
+    private static framehandle self
+    private static framehandle pane
+
+    private static LinkedList<ActionButton> buttons
+    private static framehandle array[10] actionPoints
+
+
+    static function setup()
+        self = createFrame(FramehandleTypeNames.backdrop, "ActionWindow", GAME_UI, "", 0)
+        ..setSize(0.1376, 0.1164)
+        ..setPoint(FRAMEPOINT_BOTTOMRIGHT, GAME_UI, FRAMEPOINT_BOTTOMRIGHT)
+        ..setTexture("ActionWindow.dds", 0, true)
+
+        pane = createFrame("FRAME", "ActionWindowFrame", self, "", 0)
+        ..setPoint(FRAMEPOINT_TOPLEFT, self, FRAMEPOINT_TOPLEFT, 0.006, -0.0274)
+        ..setPoint(FRAMEPOINT_BOTTOMRIGHT, self, FRAMEPOINT_BOTTOMRIGHT, -0.0046, 0.007)
+
+        /* old 
+        self = createFrame("ActionWindow", GAME_UI, 0, 0)
+        self.setPoint(FRAMEPOINT_BOTTOMRIGHT,  GAME_UI, FRAMEPOINT_BOTTOMRIGHT)
+        pane = getFrame("WindowPane") */
+
+        buttons = new LinkedList<ActionButton>()
+        for int i = 0 to points.length
+            let btn = new ActionButton(self, Icons.bTNWitchDoctorAdept)
+            btn.setPoint(points[i],  pane, points[i])
+            btn.onClick() () -> 
+                activate(i, GetTriggerPlayerData())
+            btn.onMouseEnter() -> 
+                onMouseEnter(i, GetTriggerPlayerData())
+            btn.onMouseLeave() -> 
+                onMouseLeave(i, GetTriggerPlayerData())
+            buttons.add(btn)
+
+        for int i = 0 to actionPoints.length
+            actionPoints[i] = createFrame(FramehandleTypeNames.backdrop, "wurst", self, "", 0)
+                ..setSize(0.017, 0.013)
+                ..setPoint(FRAMEPOINT_TOPLEFT, self, FRAMEPOINT_TOPLEFT, 0.01 + (0.01 * i), -0.008)
+                ..setTexture("StripeActionPoint.dds", 0, true)
+
+        hide()
+
+        Player.forEachActive() (Player activePlayer) ->
+            activePlayer.onAnyKeyPress() (Player p, oskeytype key) ->
+                onkeyPress(p, key)
+
+    private static function onkeyPress(Player p, oskeytype key)
+        if OrderSystem.canOrder(p) == false
+            return
+        if key == OSKEY_ESCAPE
+            OrderSystem.resetCurrentSelectedAction(p.currentSelectedStack)
+            return
+
+        let itr = p.currentSelectedStack.actionIterator()
+        boolean continue = true
+        var counter = 0
+        while itr.hasNext() and continue
+            let action = itr.next()
+
+            if action.canBeActivatedByKey(key)
+                activate(counter, p)
+                // only trigger on action
+                continue = false
+            counter ++
+        destroy itr
+    
+    static function self() returns framehandle
+        return self
+
+    private static function updateActionPointsLocal(BoardStack stack)
+        for int i = 0 to actionPoints.length
+            if i < stack.stats.getMaxActionPoints()
+                actionPoints[i].setVisible(true)
+                if i < stack.stats.getRemainingActionPoints()
+                    actionPoints[i].setAlpha(255)
+                else
+                    actionPoints[i].setAlpha(50)
+            else
+                actionPoints[i].setVisible(false)
+            
+    static function updateActionPoints(BoardStack stack)
+        // we just change it for the current active player
+        // even if that player might have selected some other unit, the whole frame would not be visible so it does not matter
+        // the other player who is currently not ordering also cant have this action frame --> does not matter
+        if stack.getPlayer().playingBoard.isLocalPlayer()
+            updateActionPointsLocal(stack)
+    
+    static function update(Player p)
+        if p.isLocal() == false or p.isConntrolledByKI
+            return
+
+        if OrderSystem.couldOrderIFInteractable(p) == false
+            hide()
+            return
+        var index = 0
+        let stack = p.currentSelectedStack
+        let max = stack.getUsableActionSize()
+
+        let currentAction = stack.getCurrentAction()
+
+        for ActionButton btn in buttons
+            if index < max
+                let action = stack.getAction(index)
+                btn.setVisible(true)
+                btn.setIcon(action.getButton())
+
+                if action == currentAction
+                    btn.enable()
+                    btn.setGlowVisible(true)
+                else
+                    btn.setGlowVisible(false)
+                    btn.setCharge(action.getCharge())
+                    if action.canActivate()
+                        btn.enable()
+                    else
+                        let cooldown = action.getCooldown()
+                        if cooldown > 0
+                            btn.disable("BtnBlockCooldown"+cooldown.toString()+".blp")
+                        else
+                            btn.disable("BtnBlockDisabled.blp")
+            else
+                btn.setVisible(false)
+
+            index ++
+        self.setVisible(true)
+        updateActionPointsLocal(stack)
+        
+    private static function activate(int index, Player p)
+        if OrderSystem.canOrder(p) == false
+            return
+        let newAction = p.currentSelectedStack.getAction(index)
+
+        if newAction.canActivate() == false
+            return
+        newAction.activate()
+        if newAction.isInstant()
+            return
+
+        p.currentSelectedStack.setCurrentActionIndex(index)
+        UIController.triggerOnActionChange(p.playingBoard)
+
+    private static function onMouseEnter(int index, Player p)
+        let action = p.currentSelectedStack.getAction(index)
+        action.showTooltip()
+
+    private static function onMouseLeave(int index, Player p)
+        let action = p.currentSelectedStack.getAction(index)
+        action.hideTooltip()
+
+    static function hide(Player p)
+        if p.isLocal()
+            hide()
+
+    static function hide()
+        self.setVisible(false)

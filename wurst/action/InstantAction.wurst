@@ -1,0 +1,29 @@
+package InstantAction
+
+import Action
+
+import initlater Cell
+import initlater BoardStack
+import PlayerData
+
+public abstract class InstantAction extends Action
+
+    construct(BoardStack stack, string btn, string name)
+        super(stack, btn, name)
+        this.isInstant = true
+
+    override function getPreviewResultForCell(Cell cell) returns CellResult
+        return CellResult.NONE
+
+    override function getHighlightResultForCell(Player p, Cell cell) returns CellResult
+        return CellResult.NONE
+
+    override function recalculatePreview()
+        return
+
+    override function recalculateHighlight(Player p)
+        return
+
+    override function sendTargetOrder(Cell cell) returns boolean
+        return false
+        

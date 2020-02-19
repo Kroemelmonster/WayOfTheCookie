@@ -1,0 +1,307 @@
+package BoardStack
+
+import LinkedList
+import AbilityIds
+import ClosureEvents
+
+import StackType
+import PlayerData
+import Abilities
+import AttachmentPoints
+
+import Action
+
+import StackStats
+
+import initlater Cell
+import initlater Board
+import UnitDefinition
+import DefaultAction
+import PassiveAction
+import Buff
+
+public class BoardStack
+    private StackType stackType
+    private Cell cell
+    private Player p
+
+    private unit u
+    private effect highlightEffect
+    private texttag tt
+
+    
+    private DefaultAction defaultAction = null
+    private LinkedList<Action> actions
+    private integer currentSelectedAction = 0
+    private LinkedList<PassiveAction> passiveActions
+
+    private LinkedList<Buff> buffs
+
+    private EventListener damageTakenListener
+    private EventListener castListener
+
+    private EventListener unitDamageTakenListener
+    private OnCastListener unitOnCastListener
+    private OnCastListener unitOnCastImmediateListener
+
+    StackStats stats
+
+    construct(Player p, StackType stackType, integer amount)
+        this.p = p
+        this.stats = new StackStats(this, stackType, amount)
+        this.stackType = stackType
+
+        this.actions = new LinkedList<Action>
+        this.passiveActions = new LinkedList<PassiveAction>
+
+        this.buffs = new LinkedList<Buff>
+
+        for abil in stackType.abilities
+            abil.onStackCreation(this)
+
+    @inline
+    function getCell() returns Cell
+        return cell
+
+    @inline
+    function getBoard() returns Board
+        return cell.getBoard()
+
+    @inline
+    function getPlayer() returns Player
+        return p
+
+    @inline
+    function getIcon() returns string
+        return stats.getIcon()
+
+    @inline
+    function getName() returns string
+        return stackType.name
+
+    @inline
+    function resetCurrentSelectedAction()
+        currentSelectedAction = -1
+    
+    @inline
+    function setCurrentActionIndex(int index)
+        currentSelectedAction = index
+
+    @inline
+    function getDefaultAction() returns DefaultAction
+        return defaultAction
+
+    @inline
+    function forEachAction(LLItrClosure<Action> itr)
+        actions.forEach(itr)
+
+    @inline
+    function actionIterator() returns LLIterator<Action>
+        return actions.iterator()
+
+    @inline
+    function buffIterator() returns LLIterator<Buff>
+        return buffs.iterator()
+
+    @inline
+    function addBuff(Buff b)
+        buffs.add(b)
+
+    @inline
+    function passiveActionIterator() returns LLIterator<PassiveAction>
+        return passiveActions.iterator()
+
+    function getAction(int index) returns Action
+        if index == -1
+            return defaultAction
+        return actions.get(index)
+
+    @inline
+    function getCurrentAction() returns Action
+        return getAction(currentSelectedAction)
+
+    @inline
+    function isCurrentActionDefault() returns boolean
+        return currentSelectedAction == -1
+
+    @inline
+    function getUsableActionSize() returns int
+        return actions.size()
+
+    function addAction(Action action)
+        if action.isDefault()
+            if defaultAction != null
+                Log.error("Tried to add an Default Action to "+getName()+" while it allready has one -> opverwriting it")
+            defaultAction = action castTo DefaultAction
+        else
+            actions.add(action)
+
+    function addPassive(PassiveAction passive)
+        passiveActions.add(passive)
+
+    @inline
+    function canStillAct() returns boolean
+        return stats.getRemainingActionPoints() > 0
+
+    @inline
+    function canAttack(BoardStack stack) returns boolean
+        return p != stack.getPlayer()
+
+    function place(Cell cell)
+        let playerIndex = cell.getBoard().getPlayerIndex(p)
+        if playerIndex == -1
+            return
+
+        this.cell = cell
+        u = createUnit(DUMMY_PLAYER, stackType.unitId, cell.getCoord(), angle(PI * playerIndex))
+        u.setColor(p.blzPlayer.getColor())
+        u.disableAbility(AbilityIds.attack, true, false)
+
+        unitDamageTakenListener = EventListener.add(u, EVENT_PLAYER_UNIT_DAMAGED) () ->
+            if damageTakenListener != null
+                damageTakenListener.onEvent()
+                destroy damageTakenListener
+                damageTakenListener = null
+            
+        unitOnCastListener = EventListener.onCast(u, AbilityTypesIds.TARGET_SPELL) (unit caster) ->
+            if castListener != null
+                castListener.onEvent()
+                destroy castListener
+                castListener = null
+        unitOnCastImmediateListener = EventListener.onCast(u, AbilityTypesIds.SELFCAST_SPELL) (unit caster) ->
+            if castListener != null
+                castListener.onEvent()
+                destroy castListener
+                castListener = null
+
+        if cell.getBoard().getInitiative().isFirstTurn() == false
+            SetUnitAnimation(u, "birth")
+
+        stats.resetActionPopints()
+
+        tt = createTTEx(getTextTagPos(), stats.getAmount().toString(), 10.0)
+
+    function replaceCell(Cell cell)
+        this.cell.removeStack()
+        this.cell = cell
+        this.cell.setStack(this)
+
+    function isAlive() returns boolean
+        return isOnBoard()
+    
+    function isOnBoard() returns boolean
+        return this.cell != null
+
+    function kill()
+        cell.getBoard().removeStack(this)
+        if highlightEffect != null
+            highlightEffect.destr()
+
+        if castListener != null
+            destroy castListener
+        if damageTakenListener != null
+            destroy damageTakenListener
+
+        destroy unitOnCastListener
+        destroy unitDamageTakenListener
+        if tt != null
+            tt.destr()
+        u.kill()
+    
+    function remove()
+        this.cell.removeStack()
+        this.cell = null
+
+    @inline
+    function issuePointOrder(string order, Cell cell)
+        u.issuePointOrder(order, cell.getCoord())
+
+    @inline
+    function issueImmediateOrder(string order)
+        u.issueImmediateOrder(order)
+
+    @inline
+    function issuePointOrder(string order, vec2 pos)
+        u.issuePointOrder(order, pos)
+    
+    @inline
+    function issueTargetOrder(string order, BoardStack target)
+        u.issueTargetOrder(order, target.u)
+
+    @inline
+    function isCurrent() returns boolean
+        return cell.getBoard().getInitiative().getCurrentStack() == this
+
+    @inline
+    function isSelectByOwnPlayer() returns boolean
+        return p.currentSelectedStack == this
+    
+    function doOnNextDamageTaken(EventListener listener)
+        damageTakenListener = listener
+
+    function doOnNextCast(EventListener listener)
+        castListener = listener
+
+    function enableAbility(int id, boolean flag)
+        u.disableAbility(id, flag == false, false)
+
+    function getCurrentOrder() returns int
+        return u.getCurrentOrder()
+
+    function isInRangeOf(vec2 coord, real range) returns boolean
+        return u.getPos().inRange(coord, range)
+
+    function setVisualHp(real percent)
+        u.setHP(percent * 1000)
+
+    function flashEffectOnPos(string sfx)
+        flashEffect(sfx, u.getPos())
+
+    function addAttachEffect(string sfx, string attachment) returns effect
+        return addEffect(sfx, u, attachment)
+
+    function setHighlight(boolean flag)
+        if flag == false or highlightEffect != null
+            highlightEffect.destr()
+            highlightEffect = null
+        if flag
+            highlightEffect = addEffect(Abilities.aneuTarget, u, AttachmentPoints.overhead)
+
+    function tick(real delta)
+        tt.setPos(getTextTagPos())
+        tt.setText(stats.getAmount().toString(), 10.0)
+
+    function toString() returns string
+        return getName() +" [" + stats.getAmount().toString() +"]"
+
+    private function getTextTagPos() returns vec3
+        var pos = u.getPos3Zero()
+        pos.y -= 50
+        pos.x += 33
+        return pos
+    
+    ondestroy
+        if highlightEffect != null
+            highlightEffect.destr()
+        if actions != null
+            for action in actions
+                destroy action
+            destroy actions
+        if buffs != null
+            for b in buffs
+                destroy b
+            destroy buffs
+        if defaultAction != null
+            destroy defaultAction
+        if castListener != null
+            destroy castListener
+        if damageTakenListener != null
+            destroy damageTakenListener
+
+        destroy stats
+        destroy unitOnCastListener
+        destroy unitOnCastImmediateListener
+        destroy unitDamageTakenListener
+        if tt != null
+            tt.destr()
+        u.kill()

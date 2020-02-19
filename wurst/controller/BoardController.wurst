@@ -1,0 +1,121 @@
+package BoardController
+import ClosureTimers
+
+import initlater BoardStack
+import initlater Cell
+import initlater UIController
+import initlater Board
+import initlater DamageResult
+import initlater StandardTextTags
+import initlater Action
+import initlater OrderSystem
+import initlater PassiveAction
+import KISystem
+import BuffController
+
+constant TEXTTAG_COLOR_DAMAGE = colorA(246, 255, 120, 199)
+constant TEXTTAG_COLOR_KILLS = colorA(255, 120, 120, 200)
+
+public class BoardController
+    /** Use this to summon / create a Stack mid Fight */
+    static function placeStackOnBoard(BoardStack stack, Cell cell)
+        let board = cell.getBoard()
+        nullTimer() ->  
+            board.placeStack(stack, cell, true)
+            UIController.triggerOnStackCreationOrDeathChange(board)
+
+    static function killStack(BoardStack stack)
+        let board = stack.getCell().getBoard()
+        nullTimer() ->  
+            BuffController.removeAllBuffs(stack)
+            stack.kill()
+            UIController.triggerOnStackCreationOrDeathChange(board)
+
+    static function spendActionPoints(BoardStack stack, integer actionPoints, boolean isAllowedToContinue)
+        stack.stats.setActionPoints(stack.stats.getRemainingActionPoints() - actionPoints)
+        if isAllowedToContinue and stack.canStillAct()
+            UIController.triggerOnActionPointChange(stack)
+        else
+            stack.stats.resetActionPopints()
+            stack.stats.resetCounterAttacks()
+            BuffController.proceedBuffs(stack)
+            stack.getPlayer().playingBoard.getInitiative().next()
+
+    static function finishAction(BoardStack stack)
+        if stack.isAlive()
+            spendActionPoints(stack, stack.stats.getRemainingActionPoints(), false)
+        else
+            stack.getPlayer().playingBoard.getInitiative().next()
+
+    static function dealDamage(BoardStack attacker, DamageResult data, BoardStack defender)
+        let coord = defender.getCell().getCoord()
+
+        standardTextTag(coord, data.damage.toString())
+            ..setColor(TEXTTAG_COLOR_DAMAGE)
+            ..setAge(1.0)
+        if data.amount > 0
+            standardTextTag(coord, data.amount.toString())
+                ..setColor(TEXTTAG_COLOR_KILLS)
+        
+        defender.stats.addAmount(-data.amount)
+        if defender.stats.getAmount() == 0
+            killStack(defender)
+        else
+            defender.stats.setHp(data.remainingHP)
+            if data.amount > 0
+                UIController.triggerOnStackAmountChange(defender)
+
+        destroy data
+
+    
+    // passives
+    private static function endTurn(BoardStack stack, Board board)
+        finishAction(stack)
+        OrderSystem.endOrder(board)
+        
+
+    private static function triggerAfterAttack(BoardStack attacker, BoardStack defender)
+        let itr = defender.passiveActionIterator()
+        let board = attacker.getBoard()
+        // this is just to prevent double activations
+        // RIGHT now this is not possible but it might be in the future
+        var continue = true
+        var canEndTurnRightAfter = true
+        while itr.hasNext() and continue
+            let passive = itr.next()
+            if passive.triggerAfterAttackCheck(attacker)
+                continue = false
+                canEndTurnRightAfter = false
+                passive.triggerAfterAttack(attacker) -> 
+                    endTurn(attacker, board)
+
+        destroy itr
+        if canEndTurnRightAfter
+            endTurn(attacker, board)
+
+    static function onAttackEnd(BoardStack attacker, BoardStack defender)
+        nullTimer() ->
+            if defender.isAlive()
+                triggerAfterAttack(attacker, defender)
+            else
+                endTurn(attacker, attacker.getBoard())
+
+    static function onTurnEnd(BoardStack stack, boolean stackWaits)
+        UIController.onTrunEnd(stack)
+        
+        if stackWaits == false
+            stack.forEachAction() (Action action) ->
+                action.tickCooldown()
+
+    static function onTurnStart(BoardStack stack, boolean stackWaited)
+        nullTimer() ->  
+            stack.setHighlight(true)
+            stack.resetCurrentSelectedAction()
+            UIController.onTurnStart(stack)
+
+            if stack.getPlayer().isConntrolledByKI
+                KISystem.executeTurn(stack)
+                
+    
+            
+            

@@ -1,0 +1,180 @@
+package UITooltip
+
+import PlayerData
+import UIActionWindow
+import LinkedList
+import FramehandleNames
+import KUtil
+
+constant LINE_HEIGHT = 0.0122
+constant HEIGHT_OFFSET = 0.03
+constant MIN_HEIGHT = 0.08
+
+public class Tooltip
+    static constant COLOR_PRIMARY = colorA(255, 204, 0, 255).toColorString()
+    static constant COLOR_NEGATIVE = color(200,50,50).toColorString()
+    static constant COLOR_SECONDARY = color(145, 145, 145).toColorString()
+
+    protected string header = ""
+    protected LinkedList<string> lines = new LinkedList<string>
+    protected int cost = -1
+    protected int cooldown = -1
+
+    static function create(string header, string key) returns Tooltip
+        let tooltip = new Tooltip()
+        tooltip.header = header
+        tooltip.header += " [" +coloredString(COLOR_PRIMARY, key)+ "]"
+        return tooltip
+
+    static function create(string header) returns Tooltip
+        let tooltip = new Tooltip()
+        tooltip.header = header
+        return tooltip
+
+    static function playerColored(Player p, string str) returns string
+        return p.c.toColorString() + str + "|r"
+
+    static function coloredRange(string color, range r) returns string
+        var str = color + r.min.toString()
+        if r.min < r.max
+            str +=  "|r - " + color + r.max.toString()
+        str += "|r"
+        return str
+
+    @inline
+    static function coloredInt(string color, int value) returns string
+        return color + value.toString() + "|r"
+
+    @inline
+    static function coloredString(string color, string value) returns string
+        return color + value + "|r"
+
+    @inline
+    private static function statInner(string prefix, string data) returns string
+        return prefix + " : " + data
+
+    @inline
+    static function stat(string prefix, string color, range value) returns string
+        return statInner(prefix, coloredRange(color, value))
+
+    @inline
+    static function stat(string prefix, range value) returns string
+        return statInner(prefix, coloredRange(Tooltip.COLOR_PRIMARY, value))
+
+    @inline
+    static function stat(string prefix, string color, int value) returns string
+        return statInner(prefix, coloredInt(color, value))
+
+    @inline
+    static function stat(string prefix, int value) returns string
+        return statInner(prefix, coloredInt(Tooltip.COLOR_PRIMARY, value))
+
+    @inline
+    static function stat(string prefix, string value) returns string
+        return statInner(prefix, coloredString(Tooltip.COLOR_PRIMARY, value))
+
+    @inline
+    function addLine(string str)
+        lines.add(str)
+
+    @inline
+    function setLine(int index, string str)
+        lines.set(index, str)
+
+    @inline
+    function setCost(int value)
+        cost = value
+
+    @inline
+    function setCooldown(int value)
+        cooldown = value
+
+    @inline
+    function setHeader(string str)
+        header = str
+
+    @inline
+    protected function getHeight() returns real
+        let height = lines.size() * LINE_HEIGHT + HEIGHT_OFFSET
+        if height < MIN_HEIGHT
+            return MIN_HEIGHT
+        return height
+
+    protected function convert() returns string
+        var str = ""
+        for string line in lines
+            if line != null
+                str += line + "|n"
+        return str
+
+    function display(Player p, boolean once)
+        UITooltip.setTooltip(p, this)
+        if once
+            destroy this
+
+    
+    ondestroy
+        destroy lines
+
+class UITooltip
+    private static framehandle self
+    private static framehandle text
+    private static framehandle headerText
+
+    private static framehandle array costPoints
+    private static framehandle cooldownIcon
+    private static framehandle cooldownText
+
+    static function setup()
+        self = createFrame("BoxedText", GAME_UI, 0, 0)
+        self.setWidth(0.25)
+        self.setVisible(false)
+        text = getFrame("BoxedTextValue")
+        let header = getFrame("BoxedTextHeader")
+        headerText = getFrame("BoxedTextHeaderValue")
+
+        self.setPoint(FRAMEPOINT_BOTTOMRIGHT, UIActionWindow.self(), FRAMEPOINT_TOPRIGHT)
+
+        for int i = 0 to 3
+            costPoints[i] = createFrame(FramehandleTypeNames.backdrop, "wurst", header, "", 0)
+                ..setSize(0.013, 0.013)
+                ..setPoint(FRAMEPOINT_TOPRIGHT, header, FRAMEPOINT_TOPRIGHT, -0.013 * i, 0)
+                ..setTexture("full.blp", 0, true)
+                ..setVisible(false)
+
+        cooldownText = createFrame(FramehandleTypeNames.text, "wurst", header, "", 0)
+            ..setSize(0.007, 0.013)
+            ..setPoint(FRAMEPOINT_TOPRIGHT, header, FRAMEPOINT_TOPRIGHT, 0.0, -0.017)
+            ..setText("2")
+            ..setVisible(false)
+    
+        cooldownIcon = createFrame(FramehandleTypeNames.backdrop, "wurst", header, "", 0)
+            ..setSize(0.013, 0.013)
+            ..setPoint(FRAMEPOINT_TOPRIGHT, header, FRAMEPOINT_TOPRIGHT, -0.008, -0.015)
+            ..setTexture("cooldown.blp", 0, true)
+            ..setVisible(false)
+
+    static protected function setTooltip(Player p, Tooltip tt)
+        if p.isLocal() == false
+            return
+        self.setHeight(tt.getHeight())
+        text.setText(tt.convert())
+        self.setVisible(true)
+
+        for int i = 0 to 3
+            costPoints[i].setVisible(i < tt.cost)
+
+
+        cooldownText.setVisible(tt.cooldown > 0)
+        cooldownText.setText(tt.cooldown.toString())
+        cooldownIcon.setVisible(tt.cooldown > 0)
+
+        headerText.setText(tt.header)
+
+
+    static function hide(Player p)
+        if p.isLocal()
+            hide()
+
+    static function hide()
+        self.setVisible(false)

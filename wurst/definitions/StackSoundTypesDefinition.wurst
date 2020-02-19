@@ -1,0 +1,35 @@
+package StackSoundTypesDefinition
+import StackSoundSet
+import Sounds
+
+public class StackSoundSets
+    static StackSoundSet ABOMINATION
+    static StackSoundSet FOOTMAN
+    static StackSoundSet SKELETON
+    static StackSoundSet NECROMANCER
+
+class StackTypesDefintion
+    static function setup()
+        StackSoundSets.ABOMINATION = new StackSoundSet()
+            ..addSelect(Sounds.abominationYes1)
+            ..addSelect(Sounds.abominationYes2)
+            ..addSelect(Sounds.abominationYes3)
+            ..addSelect(Sounds.abominationYes4)
+            ..addSelect(Sounds.abominationYes5)
+
+        StackSoundSets.FOOTMAN = new StackSoundSet()
+            ..addSelect(Sounds.footmanYes1)
+            ..addSelect(Sounds.footmanYes2)
+            ..addSelect(Sounds.footmanYes3)
+            ..addSelect(Sounds.footmanYes4)
+
+        StackSoundSets.SKELETON = new StackSoundSet()
+            ..addSelect(Sounds.skeletonYes1)
+            ..addSelect(Sounds.skeletonYes2)
+            ..addSelect(Sounds.skeletonYes3)
+
+        StackSoundSets.NECROMANCER = new StackSoundSet()
+            ..addSelect(Sounds.necromancerYes1)
+            ..addSelect(Sounds.necromancerYes2)
+            ..addSelect(Sounds.necromancerYes3)
+            ..addSelect(Sounds.necromancerYes4)

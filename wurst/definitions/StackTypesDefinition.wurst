@@ -1,0 +1,92 @@
+package StackTypesDefinition
+
+import Icons
+import StackType
+import StackSoundSet
+import UnitDefinition
+import StackSoundTypesDefinition
+import KAbilityDefinition
+import KUtil
+
+
+public class StackTypes
+    static StackType ABOMINATION
+    static StackType FOOTMAN
+    static StackType SKELETALORC
+    static StackType NECROMANCER
+    static StackType LESSER_SKELETON
+    static StackType SASQUATCH_ORACLE
+
+class StackTypesDefinition
+    private static function createDefault(integer unitId, integer armyId, string icon, StackSoundSet soundSet, int level, int leadership, int value) returns StackType
+        return new StackType(unitId, armyId, icon, soundSet, GetObjectName(unitId), level, leadership, value)
+        ..addAbility(KAbilitySet.CAN_WAIT)
+        ..addAbility(KAbilitySet.CAN_DEFEND)
+    
+    private static function createMelee(integer unitId, integer armyId, string icon, StackSoundSet soundSet, int level, int leadership, int value) returns StackType
+        return createDefault(unitId, armyId, icon, soundSet, level, leadership, value)
+        ..addAbility(KAbilitySet.MELEE)
+        ..addAbility(KAbilitySet.CAN_COUNTERATTACK)
+        ..setAttackRange(range(1, 1))
+
+    private static function createRange(integer unitId, integer armyId, string icon, StackSoundSet soundSet, int level, int leadership, int value) returns StackType
+        return createDefault(unitId, armyId, icon, soundSet, level, leadership, value)
+        ..addAbility(KAbilitySet.RANGED)
+
+    static function setup()
+        StackTypesDefintion.setup()
+        KAbilityDefinition.setup()
+
+        /*
+        StackTypes.ABOMINATION = createMelee(UnitTypesIds.ABOMINATION, UnitTypesIds.ARMY_ABOMINATION, Icons.bTNAbomination, StackSoundSets.ABOMINATION, )
+            ..setInitiative(3)
+            ..setActionPoints(3)
+            ..setMaxHp(375)
+            ..setDamage(range(35, 50))
+            ..setAttack(15)
+            ..setDefence(28)*/
+
+        StackTypes.FOOTMAN = createMelee(UnitTypesIds.FOOTMAN, UnitTypesIds.ARMY_FOOTMAN, Icons.bTNFootman, StackSoundSets.FOOTMAN, 2, 20, 28)
+            ..setInitiative(6)
+            ..setActionPoints(3)
+            ..setMaxHp(45)
+            ..setDamage(range(5, 6))
+            ..setAttack(10)
+            ..setDefence(14)
+
+        StackTypes.SKELETALORC = createMelee(UnitTypesIds.SKELTAL_ORC, UnitTypesIds.ARMY_SKELTAL_ORC,Icons.bTNSkeletalOrc, StackSoundSets.SKELETON, 2, 30, 42)
+            ..setInitiative(6)
+            ..setActionPoints(4)
+            ..setMaxHp(85)
+            ..setDamage(range(9, 27))
+            ..setAttack(16)
+            ..setDefence(15)
+
+        StackTypes.NECROMANCER = createRange(UnitTypesIds.NECROMANCER, UnitTypesIds.ARMY_NECROMANCER, Icons.bTNNecromancer, StackSoundSets.NECROMANCER, 2, 25, 30)
+            ..addAbility(KAbilitySet.SUMMON_LESSER_SKELETON)
+            ..setInitiative(7)
+            ..setActionPoints(2)
+            ..setMaxHp(40)
+            ..setDamage(range(4, 7))
+            ..setAttackRange(range(1, 4))
+            ..setAttack(9)
+            ..setDefence(3)
+
+        StackTypes.LESSER_SKELETON = createMelee(UnitTypesIds.SKELETON_LESSER, UnitTypesIds.ARMY_SKELETON_LESSER, 
+        "ReplaceableTextures\\CommandButtons\\BTNLesserDarkMinion.blp", StackSoundSets.SKELETON, 1, 10, 12)
+            ..setInitiative(3)
+            ..setActionPoints(3)
+            ..setMaxHp(33)
+            ..setDamage(range(3, 5))
+            ..setAttack(6)
+            ..setDefence(0)
+
+        StackTypes.SASQUATCH_ORACLE = createMelee(UnitTypesIds.SASQUATCH_ORACLE, UnitTypesIds.ARMY_SASQUATCH_ORACLE, 
+        "ReplaceableTextures\\CommandButtons\\BTNSasquatchOracle.blp", StackSoundSets.SKELETON, 4, 350, 630)
+            ..addAbility(KAbilitySet.WARCRY)
+            ..setInitiative(6)
+            ..setActionPoints(6)
+            ..setMaxHp(880)
+            ..setDamage(range(90, 160))
+            ..setAttack(35)
+            ..setDefence(30)

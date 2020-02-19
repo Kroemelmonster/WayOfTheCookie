@@ -1,0 +1,55 @@
+package OrderSystem
+
+import initlater Cell
+import initlater PlayerData
+import initlater BoardStack
+import initlater InitiativeList
+import initlater UIController
+import initlater Action
+import Board
+
+class OrderSystem
+    static function couldOrderIFInteractable(Player p) returns boolean
+        if p.playingBoard == null
+            return false
+
+        let currentStack = p.playingBoard.getInitiative().getCurrentStack()
+        // player must be owner of current Stack
+        if currentStack.getPlayer() != p
+            return false
+        
+        // player also has to have the current Unit selected
+        if p.currentSelectedStack != currentStack
+            return false
+
+        return true
+
+
+    static function canOrder(Player p) returns boolean
+        if couldOrderIFInteractable(p) == false
+            return false
+
+        return p.playingBoard.isInteractAble()
+
+    static function resetCurrentSelectedAction(BoardStack stack)
+        if stack.isCurrentActionDefault()
+            return
+        stack.resetCurrentSelectedAction()
+        UIController.triggerOnActionChange(stack.getBoard())
+
+    static function sendSimpleTargetOrder(Player p, Cell cell)
+        if canOrder(p) == false
+            return
+        let currentAction = p.currentSelectedStack.getCurrentAction()
+        if sendTargetOrder(currentAction, cell) == false
+            resetCurrentSelectedAction(p.currentSelectedStack)
+        else
+            p.playingBoard.enableInteraction(false)
+
+    static function endOrder(Board board)
+        board.enableInteraction(true)
+    
+    static private function sendTargetOrder(Action action, Cell cell) returns boolean
+        if cell == null
+            return false
+        return action.sendTargetOrder(cell)

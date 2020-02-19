@@ -1,0 +1,105 @@
+package SummonLesserSkeletonAction
+
+import LinkedList
+import Icons
+
+import Action
+
+import initlater Cell
+import initlater BoardStack
+import PlayerData
+import KUtil
+import initlater StackTypesDefinition
+import SummonLesserSkeletonAnimation
+import UITooltip
+import StackType
+import BoardController
+import OrderSystem
+
+public class SummonLesserSkeletonAction extends Action
+    private LinkedList<Cell> area = new LinkedList<Cell>()
+    private Tooltip tooltip
+    private range summonAmount  
+
+    private static constant int COST = 2
+    private static constant int COOLDOWN = 3
+    private static constant int MAXRANGE = 1
+    private static StackType SUMMONED_TYPE
+    private constant static oskeytype KEY = OSKEY_S
+
+    static function setup()
+        SUMMONED_TYPE = StackTypes.LESSER_SKELETON
+
+    construct(BoardStack stack)
+        super(stack, Icons.bTNRaiseDead, "Summon Skeleton")
+        tooltip = Tooltip.create(name, "S")
+        tooltip.setCooldown(COOLDOWN)
+        tooltip.setCost(COST)
+        
+        tooltip.addLine(Tooltip.stat("Target", "Empty Cell"))
+        tooltip.addLine(Tooltip.stat("Range", MAXRANGE))
+        tooltip.addLine("")
+        tooltip.addLine("INSERT DATA")
+
+    override function getHighlightResultForCell(Player p, Cell cell) returns CellResult
+        if area.has(cell)
+            return CellResult.NEUTRAL
+        return CellResult.NONE
+
+    override function recalculatePreview()
+        recalculate()
+
+    override function recalculateHighlight(Player p)
+        if area.has(p.currentMousePosition.cell)
+            showTooltip()
+        else
+            hideTooltip()
+
+    override function sendTargetOrder(Cell cell) returns boolean
+        if area.has(cell)
+            recalcSummonAmount()
+            let summon = new BoardStack(stack.getPlayer(), SUMMONED_TYPE, summonAmount.random())
+
+            let anim = new SummonLesserSkeletonAnimation(stack, cell) () ->
+                BoardController.placeStackOnBoard(summon, cell)
+
+            anim.onFinish() () ->
+                cooldown = COOLDOWN + 1
+                BoardController.finishAction(stack)
+                OrderSystem.endOrder(stack.getBoard())
+            
+            return true
+        
+        return false
+
+    private function recalcSummonAmount()
+        let amount = stack.stats.getAmount()
+        summonAmount = range((amount * 0.8).ceil(), (amount * 1.7).ceil())
+        
+        var str = "Summons a Stack of "+ Tooltip.coloredRange(Tooltip.COLOR_PRIMARY, summonAmount)
+        str += " " + Tooltip.coloredString(Tooltip.COLOR_SECONDARY, SUMMONED_TYPE.name)
+        tooltip.setLine(3, str)
+
+    private function recalculate()
+        area.clear()
+
+        stack.getCell().forEachCellsInRange(range(1, MAXRANGE)) (Cell cell) ->
+            if cell.getStack() == null
+                area.add(cell)
+
+    override function canActivate() returns boolean
+        return stack.stats.getRemainingActionPoints() >= COST and cooldown <= 0
+
+    override function showTooltip()
+        recalcSummonAmount()
+        tooltip.display(stack.getPlayer(), false)
+
+    override function canBeActivatedByKey(oskeytype key) returns boolean
+        return key == KEY
+
+    ondestroy
+        if area != null
+            destroy area
+        if tooltip != null
+            destroy tooltip
+        

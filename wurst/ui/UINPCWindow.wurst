@@ -1,0 +1,70 @@
+package UINPCWindow
+import PlayerData
+import initlater NPC
+import ClosureFrames
+import UIButton
+import UIStackSellDialog
+
+public class UINPCWindowInfo
+    protected NPC npc
+
+public class UINPCWindow
+    protected static framehandle frame
+    protected static framehandle pane
+    protected static UIStackSellDialog stackSellDialog
+
+    protected static StackButton array[8] shopStock
+
+    static function setup()
+        frame = createFrame("BasicBorderWindow", GAME_UI, 0, 0)
+        ..setSize(0.2, 0.2)
+        ..setVisible(false)
+        ..setPoint(FRAMEPOINT_TOPLEFT, GAME_UI, FRAMEPOINT_TOPLEFT, 0.0, 0.0)
+        pane = getFrame("WindowPane")
+
+        for int i = 0 to shopStock.length
+            shopStock[i] = new StackButton(pane, i, false)
+            ..addGoldLine()
+            ..setVisible(false)
+            shopStock[i].onClick() ->
+                let p = GetTriggerPlayerData()
+                let stack = p.npcWindowInfo.npc.getShopData().getStock().get(i)
+                stackSellDialog.show(p, stack, stack.getStackType().getCost())
+            shopStock[i].onMouseEnter() ->
+                let p = GetTriggerPlayerData()
+                p.stackWindowInfo.stack = p.npcWindowInfo.npc.getShopData().getStock().get(i).getStackType()
+
+        stackSellDialog = new UIStackSellDialog()
+
+
+    static function update(Player p)
+        if p.npcWindowInfo.npc == null
+            return
+            
+        if p.npcWindowInfo.npc.getType() == SHOP
+            let stockitr = p.npcWindowInfo.npc.getShopData().getStock().iterator()
+            for int i = 0 to shopStock.length
+                shopStock[i].setVisible(stockitr.hasNext())
+                if stockitr.hasNext()
+                    let stack = stockitr.next()
+                    shopStock[i].setIcon(stack.getStackType().icon)
+                    shopStock[i].setText(stack.getAmount().toString())
+                    shopStock[i].setGoldText(stack.getStackType().value.toString())
+
+
+            destroy stockitr
+
+    static function setupNPC(Player p, NPC npc)
+        p.npcWindowInfo.npc = npc
+
+        frame.setVisible(true)
+        update(p)
+
+    static function hide(Player p)
+        if p.isLocal()
+            frame.setVisible(false)
+
+        if p.dialogInfo.current == stackSellDialog
+            stackSellDialog.cancel(p)
+
+        p.npcWindowInfo.npc = null

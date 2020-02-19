@@ -1,0 +1,41 @@
+package WaitAction
+
+import Action
+import InstantAction
+import Icons
+
+import initlater BoardStack
+import OrderSystem
+import UITooltip
+
+public class WaitAction extends InstantAction
+    private Tooltip tt
+
+    private constant static oskeytype KEY = OSKEY_W
+
+    construct(BoardStack stack)
+        super(stack, Icons.bTNPatrol, "Wait")
+        tt = Tooltip.create(name, "W")
+        tt.addLine("Postpone this turn")
+        tt.addLine("")
+        tt.addLine("You already waited this turn")
+
+        
+    override function canActivate() returns boolean
+        let initiative = stack.getPlayer().playingBoard.getInitiative()
+        let isWaiting = initiative.getCurrent().isWaiting()
+        return isWaiting == false
+
+    override function activate()
+        let board = stack.getPlayer().playingBoard
+        board.getInitiative().wait()
+        OrderSystem.endOrder(board)
+
+    override function showTooltip()
+        if canActivate()
+            tt.setLine(1, null)
+            tt.setLine(2, null)
+        tt.display(stack.getPlayer(), false)
+
+    override function canBeActivatedByKey(oskeytype key) returns boolean
+        return key == KEY

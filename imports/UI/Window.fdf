@@ -1,0 +1,179 @@
+IncludeFile "UI\FrameDef\UI\EscMenuMainPanel.fdf",
+
+// -- LOCAL TEMPLATES -------------------------------------------------------
+Frame "BACKDROP" "WindowTemplate" INHERITS "EscMenuBackdrop" {
+    UseActiveContext,
+    BackdropCornerSize  0.02, //smaller border then "EscMenuBackdrop" has
+    BackdropBackgroundInsets 0.007 0.007 0.007 0.007,
+}
+
+Frame "BACKDROP" "MetalBorder" {
+    BackdropBackground  "MetalBorderBackground.dds",
+    BackdropBlendAll,
+ 
+    BackdropCornerFlags "UL|UR|BL|BR|T|L|B|R",
+    BackdropCornerSize  0.05,
+    BackdropBackgroundSize  0.04, //in tile mode, size of each tile
+    BackdropBackgroundInsets 0.005 0.005 0.0 0.005,
+    BackdropEdgeFile  "MetalBorder.dds",
+}
+
+// -- FRAMES -------------------------------------------------------
+
+Frame "BACKDROP" "UnitWindow" INHERITS "WindowTemplate" {
+    Width 0.2,
+    Height 0.2,
+    Alpha 200,
+
+    Frame "FRAME" "WindowPane" {
+        UseActiveContext,
+        LayerStyle "IGNORETRACKEVENTS",
+        SetPoint TOPLEFT, "UnitWindow", TOPLEFT, 0.01, -0.01,
+        SetPoint BOTTOMRIGHT, "UnitWindow", BOTTOMRIGHT, -0.01, 0.01,
+
+        Frame "BACKDROP" "UnitWindowIcon" {
+            SetPoint TOPLEFT, "WindowPane", TOPLEFT, 0.0, 0.0,
+            Width 0.04,
+            Height 0.04,
+        }
+
+        Frame "TEXT" "UnitWindowHeader" {
+			UseActiveContext,
+			DecorateFileNames,
+			SetPoint TOPLEFT, "WindowPane", TOPLEFT, 0.046, -0.005,
+			FontFlags "FIXEDSIZE",
+			FrameFont "MasterFont", 0.016, "",
+			FontColor 1.0 1.0 1.0 1.0,
+			FontShadowColor 0.0 0.0 0.0 0.9,
+			FontShadowOffset 0.002 -0.002,
+		}
+
+        Frame "TEXT" "UnitWindowSubHeader" {
+			UseActiveContext,
+			DecorateFileNames,
+			SetPoint TOPLEFT, "WindowPane", TOPLEFT, 0.046, -0.028,
+			FontFlags "FIXEDSIZE",
+			FrameFont "MasterFont", 0.013, "",
+			FontColor 1.0 1.0 1.0 1.0,
+			FontShadowColor 0.0 0.0 0.0 0.9,
+			FontShadowOffset 0.002 -0.002,
+		}
+
+        Frame "TEXT" "UntiWindowText" {
+			UseActiveContext,
+			DecorateFileNames,
+			SetPoint TOPLEFT, "WindowPane", TOPLEFT, 0.0, -0.046,
+			FontFlags "FIXEDSIZE",
+			FrameFont "MasterFont", 0.010, "",
+			FontColor 1.0 1.0 1.0 1.0,
+			FontShadowColor 0.0 0.0 0.0 0.9,
+			FontShadowOffset 0.001 -0.001,
+		}
+
+        Frame "FRAME" "UnitWindowBuffs" {
+            SetPoint TOPLEFT, "WindowPane", BOTTOMLEFT, 0.0, 0.017,
+            SetPoint BOTTOMRIGHT, "WindowPane", BOTTOMRIGHT, 0.0, 0.0,
+        }
+    }
+}
+
+Frame "MENU" "BasicBorderWindow" {
+    Frame "BACKDROP" "BackgroundImage" INHERITS "WindowTemplate" {
+        SetPoint TOPLEFT, "BasicBorderWindow", TOPLEFT, 0.00, 0.00,
+        SetPoint BOTTOMRIGHT, "BasicBorderWindow", BOTTOMRIGHT, 0.00, 0.00,
+    }
+
+    Frame "FRAME" "WindowPane" {
+        UseActiveContext,
+        LayerStyle "IGNORETRACKEVENTS",
+        SetPoint TOPLEFT, "BasicBorderWindow", TOPLEFT, 0.01, -0.01,
+        SetPoint BOTTOMRIGHT, "BasicBorderWindow", BOTTOMRIGHT, -0.01, 0.01,
+    }
+}
+
+Frame "MENU" "MetalBorderWindow" {
+    Frame "BACKDROP" "BackgroundImage" INHERITS "MetalBorder" {
+        SetPoint TOPLEFT, "MetalBorderWindow", TOPLEFT, 0.00, 0.00,
+        SetPoint BOTTOMRIGHT, "MetalBorderWindow", BOTTOMRIGHT, 0.00, 0.00,
+    }
+
+    Frame "FRAME" "WindowPane" {
+        UseActiveContext,
+        LayerStyle "IGNORETRACKEVENTS",
+        SetPoint TOPLEFT, "MetalBorderWindow", TOPLEFT, 0.01, -0.01,
+        SetPoint BOTTOMRIGHT, "MetalBorderWindow", BOTTOMRIGHT, -0.01, 0.01,
+    }
+}
+
+Frame "MENU" "MetalBorderBottomlessWindow" {
+    Frame "BACKDROP" "BackgroundImage" INHERITS "MetalBorder" {
+        SetPoint TOPLEFT, "MetalBorderBottomlessWindow", TOPLEFT, 0.00, 0.00,
+        SetPoint BOTTOMRIGHT, "MetalBorderBottomlessWindow", BOTTOMRIGHT, 0.00, 0.00,
+        BackdropEdgeFile "MetalBorderBottomless.dds"
+    }
+
+    Frame "FRAME" "WindowPane" {
+        UseActiveContext,
+        LayerStyle "IGNORETRACKEVENTS",
+        SetPoint TOPLEFT, "MetalBorderBottomlessWindow", TOPLEFT, 0.01, -0.01,
+        SetPoint BOTTOMRIGHT, "MetalBorderBottomlessWindow", BOTTOMRIGHT, -0.01, 0.01,
+    }
+}
+
+
+
+Frame "GLUEBUTTON" "StackButton" {
+    Width 0.035,
+    Height 0.035,
+
+    Frame "HIGHLIGHT" "StackButtonHighLight" {
+        Width 0.035,
+        Height 0.035,
+        SetPoint TOPLEFT, "StackButton", TOPLEFT, 0, 0.00,
+        HighlightType "FILETEXTURE",
+        HighlightAlphaFile "UI\Glues\ScoreScreen\scorescreen-tab-hilight.blp",
+        HighlightAlphaMode "ADD",
+    }
+
+    ControlBackdrop "StackButtonIcon",
+    Frame "BACKDROP" "StackButtonIcon" {
+    }
+
+    Frame "TEXT" "StackButtonText" INHERITS "EscMenuButtonTextTemplate" {
+        UseActiveContext,
+        SetPoint TOPLEFT, "StackButton", BOTTOMLEFT, 0, 0.00,
+        SetPoint BOTTOMRIGHT, "StackButton", BOTTOMRIGHT, -0.002, -0.006,
+        FrameFont "MasterFont", 0.010,"",
+        FontColor 1.0 1.0 1.0 1.0,
+        FontJustificationH JUSTIFYRIGHT,
+    }
+}
+
+Frame "GLUEBUTTON" "Button" {
+    Width 0.039,
+    Height 0.039,
+    ControlStyle "HIGHLIGHTONMOUSEOVER",
+
+    ControlBackdrop "ButtonIcon",
+    Frame "BACKDROP" "ButtonIcon" {
+    }
+
+    ControlMouseOverHighlight "ButtonHighLight",
+    Frame "HIGHLIGHT" "ButtonHighLight" {
+        HighlightType "FILETEXTURE",
+        HighlightAlphaFile "UI\Glues\ScoreScreen\scorescreen-tab-hilight.blp",
+        HighlightAlphaMode "ADD",
+    }
+}
+
+Frame "BACKDROP" "ActionWindow" INHERITS "WindowTemplate" {
+    Width 0.115,
+    Height 0.115,
+
+    Frame "FRAME" "WindowPane" {
+        UseActiveContext,
+        LayerStyle "IGNORETRACKEVENTS",
+        SetPoint TOPLEFT, "ActionWindow", TOPLEFT, 0.01, -0.01,
+        SetPoint BOTTOMRIGHT, "ActionWindow", BOTTOMRIGHT, -0.01, 0.01,
+    }
+}

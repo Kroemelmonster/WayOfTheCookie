@@ -1,0 +1,71 @@
+package World
+import LinkedList
+
+import initlater Board
+import initlater HostileArmy
+import initlater Hero
+import initlater StackTypesDefinition
+import initlater NPC
+
+import PlayerData
+import MainController
+
+public class World
+    protected static LinkedList<Board> boards = new LinkedList<Board>
+    protected static LinkedList<HostileArmy> armies = new LinkedList<HostileArmy>
+    protected static LinkedList<Hero> heroes = new LinkedList<Hero>
+    protected static LinkedList<NPC> npcs = new LinkedList<NPC>
+
+    static function generateBoards()
+        boards.add(new Board(gg_rct_BoardOne, gg_rct_BoardOneVisibleField))
+
+    static function generateNPCs()
+        npcs.add(new NPCShop(gg_unit_n000_0002)
+        ..addStock(StackTypes.NECROMANCER, 20))
+    
+    static function generateArmies()
+        armies.add(new HostileArmy(gg_unit_n001_0003)
+        ..addStackAtFree(StackTypes.NECROMANCER, GetRandomInt(1, 24))
+        ..replaceChicken())
+
+    static function getBoardToFightOn(HostileArmy enemy) returns Board
+        return boards.get(GetRandomInt(0, boards.size() - 1))
+        
+    static function generateHeroes()
+        heroes.add(new Hero(playerData[0])
+        ..addStackAtFree(StackTypes.SASQUATCH_ORACLE, 1)
+        ..addStackAtFree(StackTypes.LESSER_SKELETON, 30)
+        ..addStackAtFree(StackTypes.LESSER_SKELETON, 30))
+
+        /*
+        let goldmine = createUnit(Player(PLAYER_NEUTRAL_PASSIVE), UnitIds.goldmine, playerData[0].blzPlayer.getStartLocation(), angle(0))
+        EventListener.add(hero.u, EVENT_PLAYER_UNIT_ISSUED_UNIT_ORDER) ->
+            if GetIssuedOrderId() == SpecialOrders.smart
+                hero.u.issueTargetOrder(AbilityTypesIds.TARGET_UNIT_SPELL_ORDER, GetOrderTargetUnit())
+        EventListener.onCast(hero.u) cb ->
+            Log.trace("nase")*/
+ 
+    static function onHeroDamaged(Hero hero, unit u)
+        let enemy = HostileArmy.getFromUnit(u)
+        if enemy != null
+            Log.trace("start fight based from hero")
+            MainController.startFight(hero, enemy, getBoardToFightOn(enemy))
+
+    static function onHostileArmyDamaged(HostileArmy enemy, unit u)
+        let hero = Hero.getFromUnit(u)
+        if hero != null
+            Log.trace("start fight based from enemy")
+            MainController.startFight(hero, enemy, getBoardToFightOn(enemy))
+
+    static function onHeroSmartOrder(Hero hero, unit u)
+        let npc = NPC.getFromUnit(u)
+        if npc != null
+            hero.issueNPC(npc)
+
+    static function onHeroSmartOrder(Hero hero)
+        hero.stopInteract()
+
+    static function onHeroInteractWithNPC(Hero hero, unit u)
+        let npc = NPC.getFromUnit(u)
+        if npc != null
+            MainController.interact(hero, npc)

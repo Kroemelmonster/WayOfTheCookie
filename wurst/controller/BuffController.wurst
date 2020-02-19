@@ -1,0 +1,40 @@
+package BuffController
+
+import initlater BoardStack
+import BuffType
+
+public class BuffController 
+
+    static function hasBuff(BuffType bType, BoardStack stack) returns boolean
+        var result = false
+        let itr = stack.buffIterator()
+        while itr.hasNext() and result == false
+            let b = itr.next()
+            result = b.getBuffType() == bType
+        destroy itr
+        return result
+
+    static function addBuff(BuffType bType, BoardStack stack, int duration)
+        if hasBuff(bType, stack)
+            return
+        stack.addBuff(bType.createNew(stack))
+    
+    static function proceedBuffs(BoardStack stack)
+        let itr = stack.buffIterator()
+        while itr.hasNext()
+            let b = itr.next()
+
+            if b.tick()
+                itr.remove()
+
+        destroy itr
+
+    static function removeAllBuffs(BoardStack stack)
+        let itr = stack.buffIterator()
+        while itr.hasNext()
+            let b = itr.next()
+
+            b.kill()
+            itr.remove()
+
+        destroy itr

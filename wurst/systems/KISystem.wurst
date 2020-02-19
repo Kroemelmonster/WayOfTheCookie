@@ -1,0 +1,45 @@
+package KISystem
+import ClosureTimers
+import BoardStack
+import LinkedList
+import TargetList
+
+public class KISystem
+
+
+    protected static function getBestTarget(BoardStack attacker, LinkedList<BoardStack> targets) returns BoardStack
+        BoardStack target = null
+        if targets.isEmpty() == false
+            target = targets.get(GetRandomInt(0, targets.size() - 1))
+        return target
+
+    static function executeTurn(BoardStack stack)
+        // simulate thinking :D
+        doAfter(0.2) ->  
+            // Log.trace("START KI")
+            // determ your action --> we do default
+            // if default -->
+            // can he allready attack smth ?
+            
+            let defaultAction = stack.getDefaultAction()
+
+            BoardStack enemy = getBestTarget(stack, defaultAction.getTargets(true))
+            if enemy != null
+                //Log.trace("Target in Range is "+enemy.getName()+ " he is at "+enemy.getCell().toString())
+            else
+                enemy = getBestTarget(stack, defaultAction.getTargets(false))
+                if enemy != null
+                    //Log.trace("Target out of range "+enemy.getName()+ " he is at "+enemy.getCell().toString())
+               
+            if enemy == null
+                doAfter(0.5) -> 
+                    // TODO this prob is always going to be defend but what if not ? XD
+                    stack.getAction(1).activate()
+            else
+                let order = defaultAction.caclulatePath(enemy.getCell(), null)
+                    
+                defaultAction.sendTargetOrder(order)
+
+            
+                
+            //Log.trace("END KI")

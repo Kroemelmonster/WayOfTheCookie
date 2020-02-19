@@ -1,0 +1,37 @@
+package WarcryBuff
+import Buff
+
+
+import Abilities
+import initlater BoardStack
+import initlater BuffType
+import Icons
+import AttachmentPoints
+
+public class WarcryBuff extends Buff
+    private effect display
+    
+    private static constant DAMAGE_MULTI = 10
+
+    static function setup() returns BuffType
+        return new BuffType(Icons.bTNBattleRoar, "Warcry") (BoardStack stack) ->
+            return new WarcryBuff(stack)
+
+    private function update(int durationChange)
+        stack.stats.addDamageMulti(durationChange * DAMAGE_MULTI)
+
+    construct(BoardStack stack)
+        super(BuffTypeSet.WARCRY, stack, 3)
+        display = stack.addAttachEffect(Abilities.roarTarget, AttachmentPoints.overhead)
+        update(duration)
+
+    override function onTick()
+        update(-1)
+
+    override function onFinish()
+        update(duration * -1)
+        destroy this
+
+    ondestroy
+        if display != null
+            display.destr()

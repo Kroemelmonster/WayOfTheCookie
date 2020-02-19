@@ -1,0 +1,84 @@
+package HexagonalGridUtil
+
+constant SQUARE3 = SquareRoot(3)
+constant SQUARE3THRID = SQUARE3 / 3.0
+constant ONETHRID = 1 / 3.0
+
+constant MODEL_SIZE = 50
+constant SPACING_BETWEEN = 2
+public constant SCALING = 1.5
+
+public constant SIZE = MODEL_SIZE * SCALING + SPACING_BETWEEN
+public constant WIDTH = SIZE * SQUARE3 // this is also the horizontal spacing
+public constant HEIGHT = SIZE * 2
+public constant VERTICAL_SPACING = HEIGHT * 3 / 4
+public constant COORD_OFFSET_TO_CENTER = vec2(WIDTH / 2, HEIGHT / 2)
+
+public tuple hex(int col, int row)
+public tuple cube(int x, int y, int z)
+
+public constant cube array[6] CUBE_NEIGHBOURS = [
+    cube(1, -1, 0), cube(0, -1, 1), cube(-1, 0, 1),
+    cube(-1, 1, 0), cube(0, 1, -1), cube(1, 0, -1)
+]
+
+public function hex.toString() returns string
+    return "Hex [" + this.col.toString() + ", " + this.row.toString() + "]"
+
+public function cube.toString() returns string
+    return "Cube [" + this.x.toString() + ", " + this.y.toString() + ", "+ this.z.toString() + "]"
+    
+public function hex.toIndex() returns int
+    return this.col * 1000 + this.row
+
+public function cube.toHex() returns hex
+    return hex(
+        this.x + ((this.z - this.z.bitAnd(1)) / 2).round(),
+        this.z)
+
+public function cube.op_plus(cube c) returns cube
+    return cube(this.x + c.x, this.y + c.y, this.z + c.z)
+
+public function cube.distanceTo(cube c) returns int
+    return max((this.x - c.x).abs(), (this.y - c.y).abs(), (this.z - c.z).abs())
+
+public function hex.toCube() returns cube
+    let x = this.col - ((this.row - this.row.bitAnd(1)) / 2).round()
+    let z = this.row
+    return cube(x, -x -z, z)
+
+public function hex.getNeighbour(int index) returns hex
+    return (this.toCube() + CUBE_NEIGHBOURS[index]).toHex()
+
+public function hex.toCoord() returns vec2
+    return vec2(
+        WIDTH * (this.col + 0.5 * this.row.bitAnd(1)),
+        VERTICAL_SPACING * this.row)
+
+public function coordToHex(vec2 coord) returns hex
+    let q = (SQUARE3THRID * coord.x - ONETHRID * coord.y) / SIZE
+    let r = coord.y / VERTICAL_SPACING
+
+    let x = q
+    let z = r
+    let y = -x-z
+
+    let notRoundedCube = vec3(x, y, z)
+    return roundCube(notRoundedCube).toHex()
+
+public function roundCube(vec3 notRoundedCube) returns cube
+    int rx = notRoundedCube.x.round()
+    int ry = notRoundedCube.y.round()
+    int rz = notRoundedCube.z.round()
+    
+    let x_diff = (rx - notRoundedCube.x).abs()
+    let y_diff = (ry - notRoundedCube.y).abs()
+    let z_diff = (rz - notRoundedCube.z).abs()
+
+    if x_diff > y_diff and x_diff > z_diff
+        rx = -ry -rz
+    else if y_diff > z_diff
+        ry = -rx -rz
+    else
+        rz = -rx -ry
+    return cube(rx, ry, rz)

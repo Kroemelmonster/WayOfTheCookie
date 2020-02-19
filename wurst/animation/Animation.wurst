@@ -1,0 +1,29 @@
+package Animation
+
+import initlater BoardStack
+
+public abstract class AnimationListener
+    abstract function execute()
+
+public abstract class Animation
+    protected BoardStack stack
+    private AnimationListener onFinishListener
+
+    construct(BoardStack stack)
+        this.stack = stack
+        this.stack.getCell().getBoard().setAnimation(this)
+    
+    function onFinish(AnimationListener onFinishListener)
+        this.onFinishListener = onFinishListener
+
+    abstract function tick(real delta) returns boolean
+
+    static function finishAnimation(Animation anim)
+        if anim.onFinishListener != null
+            anim.onFinishListener.execute()
+        destroy anim
+        
+    ondestroy
+        if onFinishListener != null
+            destroy onFinishListener
+    

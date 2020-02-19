@@ -1,0 +1,28 @@
+package KAbility
+import initlater BoardStack
+
+interface GenerateListener
+    function onStackCreation(BoardStack stack)
+
+public class KAbility
+    private string name
+    private string tooltip
+    private boolean hidden
+    private GenerateListener listener
+
+    construct(string name, string tooltip)
+        this.name = name
+        this.tooltip = tooltip
+        this.hidden = false
+
+
+    construct()
+        this.hidden = true
+
+    function addGenerateListener(GenerateListener listener)
+        this.listener = listener
+        
+    function onStackCreation(BoardStack stack)
+        listener.onStackCreation(stack)
+
+    

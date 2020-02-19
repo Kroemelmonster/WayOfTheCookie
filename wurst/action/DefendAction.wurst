@@ -1,0 +1,35 @@
+package DefendAction
+
+import Action
+import InstantAction
+import Icons
+
+import initlater BoardStack
+import Abilities
+import OrderSystem
+import BoardController
+import UITooltip
+
+public class DefendAction extends InstantAction
+    private Tooltip tt
+    
+    private constant static oskeytype KEY = OSKEY_D
+
+    construct(BoardStack stack)
+        super(stack, Icons.bTNStop, "Defend")
+        tt = Tooltip.create(name, "D")
+        tt.addLine("Skips your turn ( thats it for now )")
+        
+    override function canActivate() returns boolean
+        return true
+
+    override function activate()
+        stack.flashEffectOnPos(Abilities.defendCaster)
+        BoardController.finishAction(stack)
+        OrderSystem.endOrder(stack.getBoard())
+
+    override function showTooltip()
+        tt.display(stack.getPlayer(), false)
+
+    override function canBeActivatedByKey(oskeytype key) returns boolean
+        return key == KEY

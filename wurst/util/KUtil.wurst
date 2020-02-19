@@ -1,0 +1,9 @@
+package KUtil
+
+public tuple range(int min, int max)
+
+public function range.op_mult(int m) returns range
+    return range(this.min * m, this.max * m)
+
+public function range.random() returns int
+    return GetRandomInt(this.min, this.max)

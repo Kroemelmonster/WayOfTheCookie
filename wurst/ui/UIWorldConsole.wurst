@@ -1,0 +1,97 @@
+package UIWorldConsole
+
+import PlayerData
+import UIArmyPanel
+import initlater Hero
+import Textures
+
+public class UIWorldConsoleInfo
+    protected boolean visible = false
+    ArmyPanelInfo armyPanel = new ArmyPanelInfo()
+
+public class UIWorldConsole
+    protected static framehandle frame
+    protected static framehandle pane
+    protected static framehandle portrait
+    protected static framehandle bar
+
+    protected static framehandle goldText
+    protected static framehandle leadershipText
+
+    protected static UIArmyPanel armyPanel
+
+    static function setup()
+        frame = createFrame("MetalBorderBottomlessWindow", GAME_UI, 0, 0)
+        ..setSize(0.5, 0.065)
+        ..setVisible(false)
+        ..setLevel(-1)
+        ..setPoint(FRAMEPOINT_BOTTOMLEFT, GAME_UI, FRAMEPOINT_BOTTOMLEFT, 0.0, 0.0)
+        pane = getFrame("WindowPane")
+
+        let armyPanelReference = createFrame("FRAME", "ArmyFrame", pane, "", 0)
+        ..setPoint(FRAMEPOINT_BOTTOMRIGHT, pane, FRAMEPOINT_BOTTOMRIGHT, 0.0, 0.0)
+        ..setPoint(FRAMEPOINT_TOPRIGHT, pane, FRAMEPOINT_TOPRIGHT, 0.0, 0.0)
+        
+        portrait = getOriginFrame(ORIGIN_FRAME_PORTRAIT, 0)
+        ..clearAllPoints()
+        ..setHeight(0.049)
+        ..setVisible(false)
+
+
+        bar = createSimpleFrame("MyBarEx", pane, 0)
+        ..setTexture("Replaceabletextures\\Teamcolor\\Teamcolor03.blp", 0, true)
+        ..setWidth(0.05)
+        ..setAbsPoint(FRAMEPOINT_BOTTOMLEFT, 0.14, 0.0)
+        ..setVisible(false)
+        getFrame("MyBarExText").setText("")
+
+        createFrame("WorldConsoleRessource", pane, 0, 0)
+        ..setPoint(FRAMEPOINT_TOPLEFT, pane, FRAMEPOINT_TOPLEFT)
+        getFrame("RessourceIcon").setTexture("GoldStack.dds", 0, true)
+        goldText = getFrame("RessourceText")
+
+        createFrame("WorldConsoleRessource", pane, 0, 0)
+        ..setPoint(FRAMEPOINT_TOPLEFT, pane, FRAMEPOINT_TOPLEFT, 0.04, 0)
+        getFrame("RessourceIcon").setTexture("Leadership.dds", 0, true)
+        leadershipText = getFrame("RessourceText")
+        
+        armyPanel = new UIArmyPanel(armyPanelReference)
+
+    static function setupHero(Hero h)
+        armyPanel.setupHero(h)
+        setVisible(h.getPlayer(), true)
+
+
+    static function update(Player p)
+        if p.worldConsoleInfo.visible == false
+            return
+
+        if p.isLocal()
+            let realWith  = BlzGetLocalClientWidth()
+            let fourToThreeWidth = BlzGetLocalClientHeight() * 4 / 3
+            let offsetX = ((realWith - fourToThreeWidth) / 2) / realWith * 0.8
+            let multiX = fourToThreeWidth / realWith
+
+            portrait.setAbsPoint(FRAMEPOINT_BOTTOMLEFT, offsetX + multiX  * 0.14, 0.01)
+            portrait.setWidth(0.05 * multiX)
+
+            goldText.setText(p.hero.getGold().toString())
+            leadershipText.setText(p.hero.getLeadership().toString())
+
+        armyPanel.update(p)
+
+    static function setVisible(Player p, boolean flag)
+        if flag == p.worldConsoleInfo.visible
+            return 
+
+        if p.isLocal()
+            frame.setVisible(flag)
+            portrait.setVisible(flag)
+            bar.setVisible(flag)
+        p.worldConsoleInfo.visible = flag
+
+        if flag == false
+            armyPanel.hide(p)
+
+        if flag
+            update(p)

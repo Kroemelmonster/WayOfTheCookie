@@ -1,0 +1,21 @@
+IncludeFile "UI\FrameDef\UI\EscMenuMainPanel.fdf",
+
+Frame "FRAME" "WorldConsoleRessource" {
+	Width 0.04,
+	Height 0.065,
+
+    Frame "BACKDROP" "RessourceIcon" {
+        Width 0.03,
+        Height 0.03,
+        SetPoint TOP, "WorldConsoleRessource", TOP, 0, 0.0,
+    }
+
+    Frame "TEXT" "RessourceText" INHERITS "EscMenuButtonTextTemplate" {
+        UseActiveContext,
+        SetPoint TOPLEFT, "WorldConsoleRessource", BOTTOMLEFT, 0, 0.025,
+        SetPoint BOTTOMRIGHT, "WorldConsoleRessource", BOTTOMRIGHT, 0.0, 0.0,
+        FrameFont "MasterFont", 0.010,"",
+        FontColor 1.0 1.0 1.0 1.0,
+        FontJustificationH JUSTITYCENTER,
+    }
+}

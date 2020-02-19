@@ -1,0 +1,282 @@
+package Board
+
+import Cell
+import BoardStack
+import HexagonalGridUtil
+import LinkedList
+import InitiativeList
+import Animation
+import Action
+import UIController
+import Fogmodifier
+
+import PlayerData
+import KUtil
+import Scheduler
+import HostileArmy
+import Stack
+import Hero
+
+public class Board
+    private static Cell array allCells
+    private static int offsetCells = 0
+
+    protected int cols
+    protected int rows
+
+    private vec2 coord
+    private rect area
+    private int boundMin
+    private int boundMax
+    
+    private Player p1
+    private Player p2
+    private InitiativeList initiative
+    private LinkedList<BoardStack> stacks
+
+    private Animation currentAnim
+    private boolean isInteractAble = true
+    private boolean shouldIDrawPlayer1
+    private boolean shouldIDrawPlayer2
+
+    
+    private rect visibleArea
+    private fogmodifier visibleModiPlayer1
+    private fogmodifier visibleModiPlayer2
+
+    construct(rect playArea, rect visibleArea)
+        this.rows = (playArea.height() / VERTICAL_SPACING).floor()
+        this.cols = (playArea.width() / WIDTH).floor()
+        this.coord = playArea.getLeftBot()
+        boundMin = offsetCells
+        boundMax = cols * rows
+        offsetCells += cols * rows
+        for col = 0 to cols - 1 
+            for row = 0 to rows - 1
+                let h = hex(col, row)
+                allCells[getIndex(h)] = new Cell(this, h)
+
+        playArea.resize(coord, hex(cols, rows).toCoord() + coord)
+        this.area = playArea
+        this.visibleArea = visibleArea
+        this.initiative = new InitiativeList(this)
+        stacks = new LinkedList<BoardStack>()
+    
+    @inline
+    private function getIndex(hex hex) returns int
+        return boundMin + hex.col * rows + hex.row
+
+    @inline
+    private function isInBounds(hex hex) returns boolean
+        return hex.col >= 0 and hex.col < cols and hex.row >= 0 and hex.row < rows
+
+    function getCell(hex hex) returns Cell
+        if isInBounds(hex)
+            return allCells[getIndex(hex)]
+        return null
+
+    function getCoord() returns vec2
+        return coord
+    
+    function getInitiative() returns InitiativeList
+        return initiative
+
+    function placeCombat(Hero hero, HostileArmy army)
+        p1 = hero.getPlayer()
+        p2 = army.getPlayer()
+        placeArmy(hero.getArmy(), p1, true)
+        placeArmy(army.getArmy(), p2, false)
+
+        // TODO clear old visibilityModi.. and such
+        visibleModiPlayer1 = createVision(p1.blzPlayer, visibleArea, false)
+            ..start()
+        visibleModiPlayer2 = createVision(p2.blzPlayer, visibleArea, false)
+            ..start()
+        p1.setCameraBoundsToRect(area)
+        p2.setCameraBoundsToRect(area)
+
+        
+        UIController.triggerOnAnyStackCellChange(this)
+
+    private function placeArmy(Army army, Player p, boolean left)
+        p.playingBoard = this
+
+        let col = left ? 0 : cols - 1
+        var row = (rows / 2).round()
+        var rowChange = 1
+        
+        for int i = 0 to Army.MAX_SIZE - 1
+            let armyStack = army.getStack(i)
+            if armyStack != null
+                placeStack(new BoardStack(p, armyStack.getStackType(), armyStack.getAmount()), hex(col, row))
+            
+                row += rowChange
+                if rowChange > 0
+                    rowChange += 1
+                else
+                    rowChange -= 1
+                rowChange *= -1
+
+    function getPlayerIndex(Player p) returns integer
+        if this.p1 == p
+            return 0
+        else if this.p2 == p
+            return 1
+        return -1
+    
+    function getPlayer(int index) returns Player
+        if index == 0
+            return p1
+        return p2
+
+    function placeStack(BoardStack stack, hex pos)
+        let cell = getCell(pos)
+        if cell != null
+            placeStack(stack, cell, false)
+
+    function getCols() returns int
+        return cols
+
+    function getRows() returns int
+        return rows
+
+    function placeStack(BoardStack stack, Cell cell, boolean comeInHalfTheTime)
+        cell.placeStack(stack)
+        stacks.add(stack)
+        initiative.addStack(stack, comeInHalfTheTime)
+
+    function removeStack(BoardStack stack)
+        stack.remove()
+        stacks.remove(stack)
+        initiative.removeStack(stack)
+
+    function forEachNeighbour(Cell startCell, LLItrClosure<Cell> itr)
+        let cube = startCell.getHex().toCube()
+        for int i = 0 to 5
+            let cell = getCell((cube + CUBE_NEIGHBOURS[i]).toHex())
+            if cell != null
+                itr.run(cell)
+
+        destroy itr
+
+    @inline
+    function forEachStack(LLItrClosure<BoardStack> itr)
+        stacks.forEach(itr)
+
+    @inline
+    function eachStackIterator() returns LLIterator<BoardStack>
+        return stacks.iterator()
+    
+    function getNeighbour(Cell cell, int index) returns Cell
+        let h = cell.getHex().getNeighbour(index)
+        return getCell(h)
+
+    function getDistanceTo(Cell cell, Cell otherCell) returns int
+        let c1 = cell.getHex().toCube()
+        let c2 = otherCell.getHex().toCube()
+        return c1.distanceTo(c2)
+
+    function forEachCellsInRange(Cell startCell, range r, LLItrClosure<Cell> itr)
+        var cube = startCell.getHex().toCube()
+        for int ring = 1 to r.max
+            cube += CUBE_NEIGHBOURS[4]
+            if ring >= r.min
+                for int i = 0 to 5
+                    for int i2 = 1 to ring
+                        let cell = getCell(cube.toHex())
+                        if cell != null
+                            itr.run(cell)
+                        cube += CUBE_NEIGHBOURS[i]
+        destroy itr
+
+    function getAllCellsInRange(Cell startCell, range r) returns LinkedList<Cell>
+        let list = new LinkedList<Cell>()
+        var cube = startCell.getHex().toCube()
+        for int ring = 1 to r.max
+            cube += CUBE_NEIGHBOURS[4]
+            if ring >= r.min
+                for int i = 0 to 5
+                    for int i2 = 1 to ring
+                        let cell = getCell(cube.toHex())
+                        if cell != null
+                            list.add(cell)
+                        cube += CUBE_NEIGHBOURS[i]
+        return list
+
+    function isLocalPlayer() returns boolean
+        return p1.isLocal() or p2.isLocal()
+            
+    function startCombat()
+        initiative.next()
+
+    function setAnimation(Animation anim)
+        this.currentAnim = anim
+
+    function enableInteraction(boolean enable)
+        this.isInteractAble = enable
+
+    function isInteractAble() returns boolean
+        return isInteractAble
+
+    function tick(real delta)
+        tickAnimation(delta)
+        if shouldIDrawPlayer1
+            shouldIDrawPlayer1 = false
+            realDraw(p1)
+        if shouldIDrawPlayer2
+            shouldIDrawPlayer2 = false
+            realDraw(p2)
+
+        forEachStack() (BoardStack t) ->
+            t.tick(delta)
+
+    
+    function tickAnimation(real delta)
+        if currentAnim != null
+            if currentAnim.tick(delta)
+                let savedAnim = currentAnim
+                currentAnim = null
+                Animation.finishAnimation(savedAnim)
+        
+    function drawAll()
+        draw(p1)
+        draw(p2)
+
+    function draw(Player p)
+        if p == p1
+            shouldIDrawPlayer1 = true
+        if p == p2
+            shouldIDrawPlayer2 = true
+        
+        
+    function realDraw(Player p)
+        if p.isLocal() == false or p.isConntrolledByKI
+            return
+
+        let currentStack = initiative.getCurrentStack()
+
+        Action action = null
+        Cell currentSelectedCell = null
+        if p.currentSelectedStack != null
+            currentSelectedCell = p.currentSelectedStack.getCell()
+
+            if currentStack == p.currentSelectedStack and p == currentStack.getPlayer()
+                action = p.currentSelectedStack.getCurrentAction()
+            else
+                action = p.currentSelectedStack.getDefaultAction()
+        else if p.currentMousePosition.cell != null
+            let stack = p.currentMousePosition.cell.getStack()
+            if stack != null
+                action = stack.getDefaultAction()
+
+        
+        let currentStackCell = currentStack.getCell()
+
+        let canGiveOrders = p == currentStack.getPlayer() and p.currentSelectedStack == currentStack
+
+        for int i = boundMin to boundMax - 1
+            allCells[i].draw(p, action, canGiveOrders, currentStackCell, currentSelectedCell)
+
+    
+    function getCellBasedOnCoords(vec2 mouseCoord) returns Cell
+        return getCell(coordToHex(mouseCoord - coord))

@@ -1,0 +1,3 @@
+package Printing_config
+
+@config Loglevel DEBUG_LEVEL = TRACE

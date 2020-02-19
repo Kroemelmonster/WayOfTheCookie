@@ -1,0 +1,156 @@
+package UIArmyPanel
+
+import LinkedList
+import UIButton
+
+import ClosureFrames
+
+import initlater PlayerData
+import initlater Hero
+import Stack
+import Textures
+import UIStackSplitDialog
+
+public class ArmyPanelInfo
+    protected int startDragMousePressedIndex = -1
+
+    protected Army army = null
+    protected int dragStart = -1
+    protected Stack stackDragStart
+    protected int dragEnd = -1
+    protected Stack stackDragEnd
+
+    protected function setupDragStart(int i) 
+        stackDragStart = army.getStack(i)
+        if stackDragStart == null
+            dragEnd = -1
+            stackDragEnd = null
+            dragStart = -1
+        else
+            dragStart = i
+
+
+    protected function setupDragEnd(int i)
+        stackDragEnd = army.getStack(i)
+        dragEnd = i
+
+
+public class UIArmyPanel
+    protected StackButton array[8] btns
+
+    protected UIStackSplitDialog stackSplitDialog
+
+    construct(framehandle reference)
+        reference.setWidth(Army.MAX_SIZE * (0.035 + 0.002))
+
+        for int i = 0 to Army.MAX_SIZE - 1
+            btns[i] = new StackButton(reference, i, false)
+            btns[i].onClick() ->
+                let p = GetTriggerPlayerData()
+                let info = p.worldConsoleInfo.armyPanel
+
+            btns[i].onMouseDown() -> 
+                let mouseBtn = BlzGetTriggerPlayerMouseButton()
+                if mouseBtn == MOUSE_BUTTON_TYPE_LEFT
+                    let p = GetTriggerPlayerData()
+                    let info = p.worldConsoleInfo.armyPanel
+                    info.setupDragStart(i)
+                    info.startDragMousePressedIndex = p.mousePressedIndex
+
+            btns[i].onMouseUp() -> 
+                let p = GetTriggerPlayerData()
+                let info = p.worldConsoleInfo.armyPanel
+                let mouseBtn = BlzGetTriggerPlayerMouseButton()
+                if mouseBtn == MOUSE_BUTTON_TYPE_LEFT
+                    dragEnd(p)
+                    info.startDragMousePressedIndex  = -1
+                else if mouseBtn == MOUSE_BUTTON_TYPE_RIGHT 
+                    let stack = info.army.getStack(i)
+                    if stack != null
+                        stackSplitDialog.show(p, stack)
+                
+            btns[i].onMouseEnter() -> 
+                let p = GetTriggerPlayerData()
+                let info = p.worldConsoleInfo.armyPanel
+
+                let stack = info.army.getStack(i)
+                if stack != null
+                    p.stackWindowInfo.stack = stack.getStackType()
+                if info.dragStart >= 0
+                    info.setupDragEnd(i)
+
+        stackSplitDialog = new UIStackSplitDialog()
+
+    function setupHero(Hero h)
+        let info = h.getPlayer().worldConsoleInfo.armyPanel
+        info.army = h.getArmy()
+
+    function hide(Player p)
+        if p.dialogInfo.current == stackSplitDialog
+            stackSplitDialog.cancel(p)
+        cancelDrag(p)
+
+
+    function cancelDrag(Player p)
+        let info = p.worldConsoleInfo.armyPanel
+        info.setupDragStart(-1)
+
+    function update(Player p)
+        let info = p.worldConsoleInfo.armyPanel
+        // are you currently Dragging ?
+        if info.dragStart >= 0
+            // mouse stopped or mouseDragINdex is different ?
+            if p.mousePressed == false or p.mousePressedIndex != info.startDragMousePressedIndex
+                // stop any drag
+                info.setupDragStart(-1)
+
+        if p.isLocal() == false
+            return
+
+        for int i = 0 to Army.MAX_SIZE - 1
+            drawButton(info, i)
+        
+    private function dragEnd(Player p)
+        let info = p.worldConsoleInfo.armyPanel
+        if info.stackDragStart == null
+            return
+
+        if info.stackDragEnd != null and info.stackDragEnd != info.stackDragStart and info.stackDragEnd.getStackType() == info.stackDragStart.getStackType()
+            info.stackDragEnd.setAmount(info.stackDragEnd.getAmount() + info.stackDragStart.getAmount())
+            info.army.setStack(info.dragStart, null)
+            destroy info.stackDragStart
+        else
+            info.army.setStack(info.dragStart, info.stackDragEnd)
+            info.army.setStack(info.dragEnd, info.stackDragStart)
+
+    private function drawButton(ArmyPanelInfo info, int position)
+        let stack = info.army.getStack(position)
+        let btn = btns[position]
+        btn.setTextVisible(true)
+        btn.setAlpha(255)
+        // wenn wir auf startDrag sind zeige potentiell endrag an
+        if info.dragStart == position
+            // zeige das an was auf dragEnd ist an
+            if info.stackDragEnd != null
+                btn.setIcon(info.stackDragEnd.getStackType().icon)
+                btn.setText(info.stackDragEnd.getAmount().toString())
+                // sind die nicht identisch wird es ein swap ansonten haben wir gerade einfach nur den normalen status angezeigt
+                if info.stackDragEnd != info.stackDragStart
+                    btn.setAlpha(80)
+            else
+                btn.setTextVisible(false)
+                btn.setIcon(Textures.dISorc_inventory_slotfiller)
+        else if info.dragEnd == position
+            // zeige das was auf dragStart ist an außer das sind wir selber
+            if info.stackDragStart != info.stackDragEnd
+                btn.setIcon(info.stackDragStart.getStackType().icon)
+                btn.setText(info.stackDragStart.getAmount().toString())
+                btn.setAlpha(80)
+        else if stack != null
+            // there is not drag but maybe there is astack to show
+            btn.setIcon(stack.getStackType().icon)
+            btn.setText(stack.getAmount().toString())
+        else
+            // there is nothing sooo ?
+            btn.setTextVisible(false)
+            btn.setIcon(Textures.dISorc_inventory_slotfiller)

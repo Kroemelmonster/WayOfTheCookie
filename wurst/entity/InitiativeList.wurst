@@ -1,0 +1,210 @@
+package InitiativeList
+
+import LinkedList
+import BoardStack
+import initlater Board
+import BoardController
+
+/**
+    Responsible to calculate the Current turn
+    Also is the palce where the board knows all his Stacks
+**/
+public class InitiativeList
+    // Show at minimum the very first 2 turn
+    private static constant int MAX_TIME = initiativeToTime(0) * 2
+
+    private LinkedList<InitiativeEntry> entrys = new LinkedList<InitiativeEntry>
+    private Board board
+
+    private int time = 0
+    private boolean isFirstTurn = true
+
+    
+    construct(Board board)
+        this.board = board
+
+    function addStack(BoardStack stack)
+        addStack(stack, false)
+
+    function addStack(BoardStack stack, boolean comeInHalfTheTime)
+        addEntry(stack, true, 0, false, comeInHalfTheTime)
+
+    function removeStack(BoardStack stack)
+        removeEntry(stack)
+
+    function isFirstTurn() returns boolean
+        return isFirstTurn
+
+    function getBoard() returns Board
+        return board
+    
+    /** Goes to the next Entry
+        
+        If this is the very first turn it will not change the entrys,
+        this is because at the very first turn the currentTime is not at the first entrys time
+
+        This Method will also refresh the UI and force the current Player to select the Stack
+    **/
+    function next()
+        nextInner(false)
+
+    /** same as next but with a waittime **/
+    function wait()
+        nextInner(true)
+
+
+    private function nextInner(boolean wait)
+        var current = entrys.getFirst()
+        let oldWaitingTime = current.waitTime
+        
+        BoardController.onTurnEnd(current.stack, oldWaitingTime > 0.0)
+        if isFirstTurn == false
+
+            let stack = current.stack
+            destroyEntry(current)
+            addEntry(stack, false, oldWaitingTime, wait, false)
+        
+        isFirstTurn = false
+
+        current = entrys.getFirst()
+        time = current.time
+
+        BoardController.onTurnStart(current.stack, current.isWaiting())
+
+    /** converts int intitive to real 
+        0 -> 100.0
+        10 -> 50.0
+        20 -> 33.3
+        30 -> 25.0
+    **/
+    @inline
+    private static function initiativeToTime(int initivative) returns int
+        return (100000.0 / ((initivative / 10.0) + 1.0)).round()
+
+    /** removes this entry and all duplicates **/
+    private function destroyEntry(InitiativeEntry entryP)
+        var entry = entryP
+        entrys.remove(entry)
+        while entry.nextDuplicate != null
+            entrys.remove(entry.nextDuplicate)
+            let next = entry.nextDuplicate
+            destroy entry
+            entry = next
+        
+        destroy entry
+    
+    /** adds a stack to the entrys
+        will add duplicates
+        @stack the Stack to add
+        @isEntrysFirstRound if true will adance the timer by 0.001 to garantee that this entry is always at the same index
+        @oldWaitingTime the Time of and eventual represntive Entry from this stack before
+        @wait true if you want the first entry to wait
+        
+    **/
+    private function addEntry(BoardStack stack, boolean isEntrysFirstRound, int oldWaitingTime, boolean wait, boolean comeInHalfTheTime)
+        // progress the time a little so same initative stacks will always be same ordered
+        if isEntrysFirstRound
+            time += 1
+        let initiativeTime = initiativeToTime(stack.stats.getInitiative())
+        var entry = addEntrySingle(stack, initiativeTime, -oldWaitingTime, wait, comeInHalfTheTime)
+        
+        // add duplicates as long as possible
+        var offsetTime = 0
+        if wait
+            offsetTime -= initiativeTime
+        if comeInHalfTheTime
+            offsetTime -= (initiativeTime / 2.0).round()
+        offsetTime -= oldWaitingTime
+        while entry != null
+            offsetTime += initiativeTime
+            entry.nextDuplicate = addEntrySingle(entry.stack, initiativeTime, offsetTime, false, false)
+            entry = entry.nextDuplicate
+        
+        
+        
+        
+    /** adds a single entry 
+        @stack the Stack to add
+        @inititave the init add what the stack should act again ( under normal cases that is the stacks init )
+        @offsetTime is used for duplicates; a value > 0.00 is considered to be a duplicate
+            a value below 0.00 is also possible and is used for reset the time lost at waiting
+        @wait if the stack is currently waiting and thus the next spot should be considered taking only a half turn
+
+        @return might return null if the time to insert this entry is above the max
+    **/
+    private function addEntrySingle(BoardStack stack, int initiativeTime, int offsetTime, boolean wait, boolean comeInHalfTheTime) returns InitiativeEntry
+        var waitTime = 0
+        var thisTime = offsetTime
+
+        if wait
+            waitTime = (initiativeTime / 2.0).round()
+
+        if wait or comeInHalfTheTime
+            thisTime += (initiativeTime / 2.0).round()
+        else
+            thisTime += initiativeTime
+        if thisTime > MAX_TIME
+            return null
+
+        thisTime += time
+        let entry = new InitiativeEntry(stack, thisTime, offsetTime > 0, waitTime)
+        // insert at sorted Place
+        var i = 0
+        while i < entrys.size() and entry.time > entrys.get(i).time
+            i++
+        entrys.addAt(entry, i)
+        return entry
+
+    private function removeEntry(BoardStack stack)
+        let entry = getFirstEntry(stack)
+        if stack != null
+            destroyEntry(entry)
+
+
+    private function getFirstEntry(BoardStack stack) returns InitiativeEntry
+        for entry in entrys
+            if entry.stack == stack
+                return entry
+        return null
+
+    function getCurrent() returns InitiativeEntry
+        return entrys.getFirst()
+
+    function getCurrentStack() returns BoardStack
+        return getCurrent().getStack()
+    
+    function iterator() returns LLIterator<InitiativeEntry>
+        return entrys.iterator()
+
+    function get(int index) returns InitiativeEntry
+        return entrys.get(index)
+
+public class InitiativeEntry
+    protected BoardStack stack
+    protected int time
+    protected boolean duplicate
+    protected InitiativeEntry nextDuplicate
+
+    protected int waitTime = 0
+
+    construct(BoardStack stack, int time, boolean duplicate, int waitTime)
+        this.stack = stack
+        this.time = time
+        this.duplicate = duplicate
+
+        this.waitTime = waitTime
+    
+    function getStack() returns BoardStack
+        return stack
+
+    function toString() returns string
+        return stack.getName() + " # "+duplicate.toString()+" # "+time.toString()
+
+    function getWaitTime() returns int
+        return waitTime
+
+    function isWaiting() returns boolean
+        return waitTime > 0.0
+
+    function getTime() returns int
+        return time
