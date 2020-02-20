@@ -3,18 +3,19 @@ package SummonLesserSkeletonAction
 import LinkedList
 import Icons
 
+import PlayerData
+import KUtil
+import UITooltip
+import BoardController
+import OrderSystem
+
 import Action
+import SummonLesserSkeletonAnimation
+import StackType
 
 import initlater Cell
 import initlater BoardStack
-import PlayerData
-import KUtil
 import initlater StackTypesDefinition
-import SummonLesserSkeletonAnimation
-import UITooltip
-import StackType
-import BoardController
-import OrderSystem
 
 public class SummonLesserSkeletonAction extends Action
     private LinkedList<Cell> area = new LinkedList<Cell>()

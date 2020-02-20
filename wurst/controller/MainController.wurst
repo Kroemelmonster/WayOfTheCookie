@@ -1,11 +1,12 @@
 package MainController
 
-import initlater Hero
-import initlater HostileArmy
-import initlater Board
 import UIController
 import NPC
 import Stack
+
+import initlater Hero
+import initlater HostileArmy
+import initlater Board
 
 public class MainController
     static function startFight(Hero hero, HostileArmy enemy, Board board)

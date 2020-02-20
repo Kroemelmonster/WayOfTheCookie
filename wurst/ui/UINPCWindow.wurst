@@ -1,9 +1,10 @@
 package UINPCWindow
+
 import PlayerData
-import initlater NPC
-import ClosureFrames
 import UIButton
 import UIStackSellDialog
+
+import initlater NPC
 
 public class UINPCWindowInfo
     protected NPC npc

@@ -4,9 +4,10 @@ import Action
 import InstantAction
 import Icons
 
-import initlater BoardStack
 import OrderSystem
 import UITooltip
+
+import initlater BoardStack
 
 public class WaitAction extends InstantAction
     private Tooltip tt

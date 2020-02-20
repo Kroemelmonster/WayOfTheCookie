@@ -3,8 +3,8 @@ package UIInitiativeWindow
 import LinkedList
 
 import PlayerData
-
 import UIButton
+
 import initlater InitiativeList
 import initlater BoardStack
 import initlater MouseContext

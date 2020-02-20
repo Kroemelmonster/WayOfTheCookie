@@ -8,7 +8,6 @@ import UIStackWindow
 import UIInitiativeWindow
 import UIWorldConsole
 import UINPCWindow
-import UIStackSellDialog
 
 public function framehandle.toString() returns string
 	var str = "FrameHandle "

@@ -2,12 +2,12 @@ package Scheduler
 
 import ClosureTimers
 
-import initlater Board
-import UIController
 import UIWorldConsole
 import PlayerData
 import UIStackWindow
 import UINPCWindow
+
+import initlater Board
 
 class Scheduler
     static function setup()

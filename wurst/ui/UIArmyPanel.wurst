@@ -1,15 +1,14 @@
 package UIArmyPanel
 
-import LinkedList
+import Textures
+
 import UIButton
 
-import ClosureFrames
+import Stack
+import UIStackSplitDialog
 
 import initlater PlayerData
 import initlater Hero
-import Stack
-import Textures
-import UIStackSplitDialog
 
 public class ArmyPanelInfo
     protected int startDragMousePressedIndex = -1
@@ -46,8 +45,8 @@ public class UIArmyPanel
         for int i = 0 to Army.MAX_SIZE - 1
             btns[i] = new StackButton(reference, i, false)
             btns[i].onClick() ->
-                let p = GetTriggerPlayerData()
-                let info = p.worldConsoleInfo.armyPanel
+                // let p = GetTriggerPlayerData()
+                // let _info = p.worldConsoleInfo.armyPanel
 
             btns[i].onMouseDown() -> 
                 let mouseBtn = BlzGetTriggerPlayerMouseButton()

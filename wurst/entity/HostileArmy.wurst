@@ -1,11 +1,13 @@
 package HostileArmy
+
+
+import HashMap
+
 import Stack
 import StackType
 import PlayerData
-import LinkedList
 import ClosureEvents
 import World
-import HashMap
 
 constant HashMap<unit, HostileArmy> map = new HashMap<unit, HostileArmy>
 

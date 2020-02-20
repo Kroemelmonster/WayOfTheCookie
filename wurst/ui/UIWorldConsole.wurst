@@ -2,8 +2,8 @@ package UIWorldConsole
 
 import PlayerData
 import UIArmyPanel
+
 import initlater Hero
-import Textures
 
 public class UIWorldConsoleInfo
     protected boolean visible = false

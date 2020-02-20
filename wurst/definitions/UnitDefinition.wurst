@@ -1,7 +1,6 @@
 package UnitDefinition
 
 import UnitIds
-
 import ChannelAbilityPreset
 
 public class UnitTypesIds

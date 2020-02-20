@@ -1,7 +1,8 @@
 package BuffController
 
-import initlater BoardStack
 import BuffType
+
+import initlater BoardStack
 
 public class BuffController 
 
@@ -14,7 +15,7 @@ public class BuffController
         destroy itr
         return result
 
-    static function addBuff(BuffType bType, BoardStack stack, int duration)
+    static function addBuff(BuffType bType, BoardStack stack, int _duration)
         if hasBuff(bType, stack)
             return
         stack.addBuff(bType.createNew(stack))

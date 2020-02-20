@@ -1,7 +1,6 @@
 package WalkAndAttackAction
 
 import LinkedList
-import Icons
 
 import MoveAnimation
 import Action
@@ -9,9 +8,6 @@ import Action
 import PathFinding
 import UIController
 
-
-import initlater Cell
-import initlater BoardStack
 import PlayerData
 import AttackAnimation
 import DamageResult
@@ -21,6 +17,9 @@ import BoardController
 import TargetList
 import KUtil
 import OrderSystem
+
+import initlater Cell
+import initlater BoardStack
 
 public class WalkAndAttackAction extends DefaultAction
     private StackPathFinding walkableCells

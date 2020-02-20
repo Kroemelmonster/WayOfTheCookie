@@ -1,10 +1,13 @@
 package DefaultAction
 
-import initlater BoardStack
-import Action
-import initlater Cell
-import TargetList
+
 import LinkedList
+
+import Action
+import TargetList
+
+import initlater Cell
+import initlater BoardStack
 
 public abstract class DefaultAction extends Action
     protected TargetList targets

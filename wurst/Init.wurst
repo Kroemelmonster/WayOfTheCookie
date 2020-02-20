@@ -1,7 +1,8 @@
 package Init
 
-import StackTypesDefinition
 import LinkedList
+
+import StackTypesDefinition
 import ClosureTimers
 import Mouse3DPositionSystem
 import UIMain
@@ -11,7 +12,6 @@ import Action
 import BuffType
 import World
 import Scheduler
-import UIWorldConsole
 
 public abstract class SetupListener
     abstract function onSetup()

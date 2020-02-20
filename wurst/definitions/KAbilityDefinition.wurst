@@ -1,4 +1,5 @@
 package KAbilityDefinition
+
 import KAbility
 import WalkAndAttackAction
 import WaitAction

@@ -1,12 +1,13 @@
 package OrderSystem
 
+import Board
+
 import initlater Cell
 import initlater PlayerData
 import initlater BoardStack
 import initlater InitiativeList
 import initlater UIController
 import initlater Action
-import Board
 
 class OrderSystem
     static function couldOrderIFInteractable(Player p) returns boolean

@@ -3,12 +3,12 @@ package MouseContext
 import BoardStack
 import Cell
 import PlayerData
-
 import UIController
+import OrderSystem
+
 import initlater UIInitiativeWindow
 import initlater Mouse3DPositionSystem
 import initlater UITooltip
-import OrderSystem
 
 class MouseContext
     /** Use this to force a player to select a cell **/

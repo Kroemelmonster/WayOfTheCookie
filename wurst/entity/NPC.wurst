@@ -1,11 +1,13 @@
 package NPC
-import ClosureEvents
+
 import HashMap
 import LinkedList
+
 import Stack
-import initlater Hero
 import StackType
 import UINPCWindow
+
+import initlater Hero
 
 constant HashMap<unit, NPC> map = new HashMap<unit, NPC>
 

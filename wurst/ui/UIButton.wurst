@@ -3,10 +3,9 @@ package UIButton
 import ClosureFrames
 
 import UI
-
 import PlayerData
+
 import initlater MouseContext
-import Textures
 
 public enum BorderColor
     RED

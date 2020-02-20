@@ -1,12 +1,11 @@
 package UIStackWindow
 
 import PlayerData
-
-import initlater BoardStack
-import initlater Stack
 import UIButton
 import UITooltip
 import StackType
+
+import initlater BoardStack
 
 public class UIStackWindowInfo
     BoardStack boardStack

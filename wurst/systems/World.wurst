@@ -1,14 +1,15 @@
 package World
+
 import LinkedList
+
+import PlayerData
+import MainController
 
 import initlater Board
 import initlater HostileArmy
 import initlater Hero
 import initlater StackTypesDefinition
 import initlater NPC
-
-import PlayerData
-import MainController
 
 public class World
     protected static LinkedList<Board> boards = new LinkedList<Board>
@@ -34,21 +35,16 @@ public class World
         ..addStackAtFree(StackTypes.GNOLL_POACHER, GetRandomInt(15, 20))
         ..replaceChicken())
 
-    static function getBoardToFightOn(HostileArmy enemy) returns Board
+    static function getBoardToFightOn(HostileArmy _enemy) returns Board
         return boards.get(GetRandomInt(0, boards.size() - 1))
         
     static function generateHeroes()
         heroes.add(new Hero(playerData[0])
         ..addStackAtFree(StackTypes.SASQUATCH_ORACLE, 1)
-        ..addStackAtFree(StackTypes.GNOLL_POACHER, 20))
-
-        /*
-        let goldmine = createUnit(Player(PLAYER_NEUTRAL_PASSIVE), UnitIds.goldmine, playerData[0].blzPlayer.getStartLocation(), angle(0))
-        EventListener.add(hero.u, EVENT_PLAYER_UNIT_ISSUED_UNIT_ORDER) ->
-            if GetIssuedOrderId() == SpecialOrders.smart
-                hero.u.issueTargetOrder(AbilityTypesIds.TARGET_UNIT_SPELL_ORDER, GetOrderTargetUnit())
-        EventListener.onCast(hero.u) cb ->
-            Log.trace("nase")*/
+        ..addStackAtFree(StackTypes.SASQUATCH_ORACLE, 1)
+        ..addStackAtFree(StackTypes.SASQUATCH_ORACLE, 1)
+        ..addStackAtFree(StackTypes.SASQUATCH_ORACLE, 1)
+        ..addStackAtFree(StackTypes.SASQUATCH_ORACLE, 1))
  
     static function onHeroDamaged(Hero hero, unit u)
         let enemy = HostileArmy.getFromUnit(u)

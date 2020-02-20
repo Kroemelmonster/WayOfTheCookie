@@ -1,10 +1,10 @@
 package StackStats
 
 import StackType
-
-import initlater BoardStack
 import KUtil
 import StackStatsModifier
+
+import initlater BoardStack
 
 public class StackStats
     private StackType sType

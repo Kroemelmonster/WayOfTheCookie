@@ -1,6 +1,6 @@
 package UISlider
+
 import ClosureFrames
-import PlayerData
 
 public class UISlider
     protected framehandle self

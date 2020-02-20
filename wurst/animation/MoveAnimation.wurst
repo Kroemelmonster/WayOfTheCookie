@@ -3,9 +3,9 @@ package MoveAnimation
 import LinkedList
 
 import Animation
+
 import initlater BoardStack
 import initlater Cell
-import Abilities
 
 public class MoveAnimation extends Animation
     private int index = 0

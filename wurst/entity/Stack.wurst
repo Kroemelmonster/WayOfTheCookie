@@ -1,4 +1,5 @@
 package Stack
+
 import StackType
 
 public class Stack

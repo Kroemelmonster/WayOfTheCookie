@@ -1,8 +1,8 @@
 package UIStackSplitDialog
+
 import ClosureFrames
 
 import PlayerData
-
 import UIDialog
 import UISlider
 

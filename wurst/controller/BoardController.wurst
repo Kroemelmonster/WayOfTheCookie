@@ -1,5 +1,9 @@
 package BoardController
+
 import ClosureTimers
+
+import KISystem
+import BuffController
 
 import initlater BoardStack
 import initlater Cell
@@ -10,8 +14,6 @@ import initlater StandardTextTags
 import initlater Action
 import initlater OrderSystem
 import initlater PassiveAction
-import KISystem
-import BuffController
 
 constant TEXTTAG_COLOR_DAMAGE = colorA(246, 255, 120, 199)
 constant TEXTTAG_COLOR_KILLS = colorA(255, 120, 120, 200)
@@ -47,7 +49,7 @@ public class BoardController
         else
             stack.getPlayer().playingBoard.getInitiative().next()
 
-    static function dealDamage(BoardStack attacker, DamageResult data, BoardStack defender)
+    static function dealDamage(BoardStack _attacker, DamageResult data, BoardStack defender)
         let coord = defender.getCell().getCoord()
 
         standardTextTag(coord, data.damage.toString())
@@ -107,7 +109,7 @@ public class BoardController
             stack.forEachAction() (Action action) ->
                 action.tickCooldown()
 
-    static function onTurnStart(BoardStack stack, boolean stackWaited)
+    static function onTurnStart(BoardStack stack, boolean _stackWaited)
         nullTimer() ->  
             stack.setHighlight(true)
             stack.resetCurrentSelectedAction()

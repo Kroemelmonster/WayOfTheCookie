@@ -1,10 +1,10 @@
 package InstantAction
 
+import PlayerData
 import Action
 
 import initlater Cell
 import initlater BoardStack
-import PlayerData
 
 public abstract class InstantAction extends Action
 

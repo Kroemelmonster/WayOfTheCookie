@@ -1,6 +1,7 @@
 package StackTypesDefinition
 
 import Icons
+
 import StackType
 import StackSoundSet
 import UnitDefinition

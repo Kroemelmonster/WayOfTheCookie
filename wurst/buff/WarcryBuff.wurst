@@ -1,12 +1,13 @@
 package WarcryBuff
+
+import AttachmentPoints
+import Icons
+import Abilities
+
 import Buff
 
-
-import Abilities
 import initlater BoardStack
 import initlater BuffType
-import Icons
-import AttachmentPoints
 
 public class WarcryBuff extends Buff
     private effect display

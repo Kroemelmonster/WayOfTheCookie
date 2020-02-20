@@ -1,12 +1,13 @@
 package CounterAttackPAction
 
-import initlater BoardStack
-import initlater Cell
 import PassiveAction
 import AttackAnimation
 import BoardController
 import DamageResult
 import KUtil
+
+import initlater BoardStack
+import initlater Cell
 
 public class CounterAttackPAction extends PassiveAction
 

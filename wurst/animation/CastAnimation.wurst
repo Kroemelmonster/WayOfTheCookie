@@ -1,9 +1,10 @@
 package CastAnimation
 
 import Animation
+import UnitDefinition
+
 import initlater BoardStack
 import initlater Cell
-import UnitDefinition
 
 public abstract class CastAnimation extends Animation
     protected Cell target

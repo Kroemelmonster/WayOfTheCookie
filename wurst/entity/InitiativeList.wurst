@@ -1,9 +1,11 @@
 package InitiativeList
 
 import LinkedList
+
 import BoardStack
-import initlater Board
 import BoardController
+
+import initlater Board
 
 /**
     Responsible to calculate the Current turn

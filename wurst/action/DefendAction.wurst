@@ -1,14 +1,17 @@
 package DefendAction
 
-import Action
-import InstantAction
+
 import Icons
 
-import initlater BoardStack
+import Action
+import InstantAction
 import Abilities
+
 import OrderSystem
 import BoardController
 import UITooltip
+
+import initlater BoardStack
 
 public class DefendAction extends InstantAction
     private Tooltip tt

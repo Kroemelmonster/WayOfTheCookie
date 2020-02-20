@@ -6,8 +6,9 @@ import HexagonalGridUtil
 import BoardStack
 import PlayerData
 import Action
-import initlater Board
 import KUtil
+
+import initlater Board
 
 public class Cell
     private static constant MODEL_FILE_INNER = "HexicModularInner.mdl"

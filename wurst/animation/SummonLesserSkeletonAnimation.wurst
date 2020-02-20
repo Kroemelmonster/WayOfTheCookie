@@ -1,11 +1,11 @@
 package SummonLesserSkeletonAnimation
 
-import initlater BoardStack
-import initlater Cell
 import CastAnimation
-
 import Abilities
 import Animation
+
+import initlater BoardStack
+import initlater Cell
 
 public class SummonLesserSkeletonAnimation extends CastAnimation
 

@@ -5,12 +5,11 @@ import LinkedList
 
 import PlayerData
 import UIButton
-import initlater UIController
 
+import initlater OrderSystem
 import initlater Action
 import initlater BoardStack
-import FramehandleNames
-import initlater OrderSystem
+import initlater UIController
 
 constant framepointtype array[6] points = [FRAMEPOINT_TOPLEFT, FRAMEPOINT_TOP, FRAMEPOINT_TOPRIGHT, FRAMEPOINT_BOTTOMLEFT, FRAMEPOINT_BOTTOM, FRAMEPOINT_BOTTOMRIGHT]
 
@@ -23,7 +22,7 @@ class UIActionWindow
 
 
     static function setup()
-        self = createFrame(FramehandleTypeNames.backdrop, "ActionWindow", GAME_UI, "", 0)
+        self = createFrame("BACKDROP", "ActionWindow", GAME_UI, "", 0)
         ..setSize(0.1376, 0.1164)
         ..setPoint(FRAMEPOINT_BOTTOMRIGHT, GAME_UI, FRAMEPOINT_BOTTOMRIGHT)
         ..setTexture("ActionWindow.dds", 0, true)
@@ -50,7 +49,7 @@ class UIActionWindow
             buttons.add(btn)
 
         for int i = 0 to actionPoints.length
-            actionPoints[i] = createFrame(FramehandleTypeNames.backdrop, "wurst", self, "", 0)
+            actionPoints[i] = createFrame("BACKDROP", "wurst", self, "", 0)
                 ..setSize(0.017, 0.013)
                 ..setPoint(FRAMEPOINT_TOPLEFT, self, FRAMEPOINT_TOPLEFT, 0.01 + (0.01 * i), -0.008)
                 ..setTexture("StripeActionPoint.dds", 0, true)

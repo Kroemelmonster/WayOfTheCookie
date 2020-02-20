@@ -1,5 +1,8 @@
 package UIController
 
+import UIStackWindow
+import UIWorldConsole
+
 import initlater Board
 import initlater PlayerData
 import initlater Cell
@@ -11,10 +14,6 @@ import initlater UIActionWindow
 import initlater OrderSystem
 import initlater InitiativeList
 import initlater MouseContext
-import UIStackWindow
-import ClosureTimers
-import UIMain
-import UIWorldConsole
 
 class UIController
 

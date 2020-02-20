@@ -1,11 +1,13 @@
 package DamageResult
 
-import initlater BoardStack
+import LinkedList
+
 import KUtil
 import UITooltip
-import initlater Cell
-import LinkedList
 import PassiveAction
+
+import initlater BoardStack
+import initlater Cell
 
 public class DamageResult
     int damage

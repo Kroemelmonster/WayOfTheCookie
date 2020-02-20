@@ -1,8 +1,8 @@
 package BuffType
+
+import Buff
 import WarcryBuff
 import BoardStack
-import Buff
-
 
 interface BuffCreateListener
     function create(BoardStack stack) returns Buff

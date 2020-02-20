@@ -1,7 +1,6 @@
 package PathFinding
 
 import HashMap
-import LinkedList
 
 import initlater Board
 import initlater Cell

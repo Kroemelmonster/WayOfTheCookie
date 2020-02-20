@@ -1,24 +1,22 @@
 package BoardStack
 
 import LinkedList
-import AbilityIds
+import Abilities
+import AttachmentPoints
 import ClosureEvents
+import AbilityIds
 
 import StackType
 import PlayerData
-import Abilities
-import AttachmentPoints
-
 import Action
-
 import StackStats
-
-import initlater Cell
-import initlater Board
 import UnitDefinition
 import DefaultAction
 import PassiveAction
 import Buff
+
+import initlater Cell
+import initlater Board
 
 public class BoardStack
     private StackType stackType
@@ -267,7 +265,7 @@ public class BoardStack
         if flag
             highlightEffect = addEffect(Abilities.aneuTarget, u, AttachmentPoints.overhead)
 
-    function tick(real delta)
+    function tick(real _delta)
         tt.setPos(getTextTagPos())
         tt.setText(stats.getAmount().toString(), 10.0)
 

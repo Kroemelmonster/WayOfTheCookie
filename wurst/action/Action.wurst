@@ -2,12 +2,13 @@ package Action
 
 import UITooltip
 
+import PlayerData
+
 import initlater Cell
 import initlater BoardStack
-import PlayerData
-import UIController
-import initlater SummonLesserSkeletonAction
 import initlater OrderSystem
+
+import initlater SummonLesserSkeletonAction
 import initlater WarcryAction
 
 public enum CellResult
@@ -36,7 +37,7 @@ public abstract class Action
         SummonLesserSkeletonAction.setup()
         WarcryAction.setup()
 
-    function getPreviewResultForCell(Cell cell) returns CellResult
+    function getPreviewResultForCell(Cell _cell) returns CellResult
         return CellResult.NONE
 
     abstract function getHighlightResultForCell(Player p, Cell cell) returns CellResult
