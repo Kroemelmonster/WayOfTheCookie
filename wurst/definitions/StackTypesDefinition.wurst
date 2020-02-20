@@ -16,6 +16,10 @@ public class StackTypes
     static StackType NECROMANCER
     static StackType LESSER_SKELETON
     static StackType SASQUATCH_ORACLE
+    
+    static StackType GNOLL
+    static StackType GNOLL_POACHER
+    static StackType GNOLL_WARDEN
 
 class StackTypesDefinition
     private static function createDefault(integer unitId, integer armyId, string icon, StackSoundSet soundSet, int level, int leadership, int value) returns StackType
@@ -49,7 +53,7 @@ class StackTypesDefinition
         StackTypes.FOOTMAN = createMelee(UnitTypesIds.FOOTMAN, UnitTypesIds.ARMY_FOOTMAN, Icons.bTNFootman, StackSoundSets.FOOTMAN, 2, 20, 28)
             ..setInitiative(6)
             ..setActionPoints(3)
-            ..setMaxHp(45)
+            ..setMaxHp(22)
             ..setDamage(range(5, 6))
             ..setAttack(10)
             ..setDefence(14)
@@ -57,16 +61,16 @@ class StackTypesDefinition
         StackTypes.SKELETALORC = createMelee(UnitTypesIds.SKELTAL_ORC, UnitTypesIds.ARMY_SKELTAL_ORC,Icons.bTNSkeletalOrc, StackSoundSets.SKELETON, 2, 30, 42)
             ..setInitiative(6)
             ..setActionPoints(4)
-            ..setMaxHp(85)
-            ..setDamage(range(9, 27))
+            ..setMaxHp(41)
+            ..setDamage(range(9, 21))
             ..setAttack(16)
-            ..setDefence(15)
+            ..setDefence(5)
 
         StackTypes.NECROMANCER = createRange(UnitTypesIds.NECROMANCER, UnitTypesIds.ARMY_NECROMANCER, Icons.bTNNecromancer, StackSoundSets.NECROMANCER, 2, 25, 30)
             ..addAbility(KAbilitySet.SUMMON_LESSER_SKELETON)
             ..setInitiative(7)
             ..setActionPoints(2)
-            ..setMaxHp(40)
+            ..setMaxHp(20)
             ..setDamage(range(4, 7))
             ..setAttackRange(range(1, 4))
             ..setAttack(9)
@@ -76,8 +80,8 @@ class StackTypesDefinition
         "ReplaceableTextures\\CommandButtons\\BTNLesserDarkMinion.blp", StackSoundSets.SKELETON, 1, 10, 12)
             ..setInitiative(3)
             ..setActionPoints(3)
-            ..setMaxHp(33)
-            ..setDamage(range(3, 5))
+            ..setMaxHp(5)
+            ..setDamage(range(3, 6))
             ..setAttack(6)
             ..setDefence(0)
 
@@ -86,7 +90,32 @@ class StackTypesDefinition
             ..addAbility(KAbilitySet.WARCRY)
             ..setInitiative(6)
             ..setActionPoints(6)
-            ..setMaxHp(880)
+            ..setMaxHp(480)
             ..setDamage(range(90, 160))
             ..setAttack(35)
             ..setDefence(30)
+
+        StackTypes.GNOLL = createMelee(UnitTypesIds.GNOLL, UnitTypesIds.ARMY_GNOLL, Icons.bTNGnoll, StackSoundSets.SKELETON, 1, 10, 12)
+            ..setInitiative(3)
+            ..setActionPoints(3)
+            ..setMaxHp(12)
+            ..setDamage(range(2, 3))
+            ..setAttack(4)
+            ..setDefence(7)
+
+        StackTypes.GNOLL_POACHER = createRange(UnitTypesIds.GNOLL_POACHER, UnitTypesIds.ARMY_GNOLL_POACHER, Icons.bTNGnollArcher, StackSoundSets.SKELETON, 1, 10, 12)
+            ..setInitiative(3)
+            ..setActionPoints(3)
+            ..setMaxHp(8)
+            ..setDamage(range(2, 4))
+            ..setAttackRange(range(1, 4))
+            ..setAttack(7)
+            ..setDefence(4)
+
+        StackTypes.GNOLL_WARDEN = createMelee(UnitTypesIds.GNOLL_WARDEN, UnitTypesIds.ARMY_GNOLL_WARDEN, Icons.bTNGnollWarden, StackSoundSets.SKELETON, 3, 170, 272)
+            ..setInitiative(5)
+            ..setActionPoints(5)
+            ..setMaxHp(220)
+            ..setDamage(range(25, 40))
+            ..setAttack(22)
+            ..setDefence(28)

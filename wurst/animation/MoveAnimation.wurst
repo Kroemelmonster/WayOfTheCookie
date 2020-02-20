@@ -23,7 +23,7 @@ public class MoveAnimation extends Animation
     override function tick(real delta) returns boolean
         if index >= path.size()
             return stack.getCurrentOrder() == 0
-        if stack.isInRangeOf(current, 20.0)
+        if stack.isInRangeOf(current, 25.0)
             index ++
 
             if index < path.size()

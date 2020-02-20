@@ -29,6 +29,11 @@ public class StackStats
     function getIcon() returns string
         return sType.icon
 
+        
+    @inline
+    function getStackType() returns StackType
+        return sType
+
     @inline
     function getInitiative() returns int
         return sType.initiative

@@ -71,7 +71,9 @@ class UIStackWindow
         subHeader.setText("")
 
         var str = ""
-        
+
+        str += Tooltip.stat("Level", stackType.level) + "|n"
+        str += Tooltip.stat("Leadership", stackType.leadership) + "|n"
         str += Tooltip.stat("Health", stackType.maxHp) + "|n"
         str += Tooltip.stat("Attack", stackType.attack) + "|n"
         str += Tooltip.stat("Defence", stackType.defence) + "|n"
@@ -94,6 +96,11 @@ class UIStackWindow
 
         var str = ""
         
+        let sType = stack.stats.getStackType()
+        
+        str += Tooltip.stat("Level", sType.level) + "|n"
+        str += Tooltip.stat("Leadership", sType.leadership) + "|n"
+
         str += "Health : " + Tooltip.coloredInt(Tooltip.COLOR_PRIMARY, stack.stats.getHp()) + " / "+ Tooltip.coloredInt(Tooltip.COLOR_PRIMARY, stack.stats.getMaxHp()) +"|n"
         str += Tooltip.stat("Attack", stack.stats.getAttack()) + "|n"
         str += Tooltip.stat("Defence", stack.stats.getDefence()) + "|n"

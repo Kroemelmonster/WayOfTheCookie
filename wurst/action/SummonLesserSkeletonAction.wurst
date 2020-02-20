@@ -74,7 +74,8 @@ public class SummonLesserSkeletonAction extends Action
 
     private function recalcSummonAmount()
         let amount = stack.stats.getAmount()
-        summonAmount = range((amount * 0.8).ceil(), (amount * 1.7).ceil())
+        let multi = stack.stats.getStackType().leadership * amount / SUMMONED_TYPE.leadership
+        summonAmount = range((multi * 0.3).ceil(), (multi * 0.6).ceil())
         
         var str = "Summons a Stack of "+ Tooltip.coloredRange(Tooltip.COLOR_PRIMARY, summonAmount)
         str += " " + Tooltip.coloredString(Tooltip.COLOR_SECONDARY, SUMMONED_TYPE.name)

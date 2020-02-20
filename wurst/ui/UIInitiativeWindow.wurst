@@ -18,7 +18,7 @@ class UIInitiativeWindow
 
     static function setup()
         frame = createFrame("BasicBorderWindow", GAME_UI, 0, 0)
-        ..setSize((MAX_ENTRYS * (0.035 + 0.002)) + 0.02, 0.065)
+        ..setSize(((MAX_ENTRYS + 1) * (0.035 + 0.002)) + 0.02, 0.065)
         ..setVisible(false)
         ..setPoint(FRAMEPOINT_BOTTOMLEFT,  GAME_UI, FRAMEPOINT_BOTTOMLEFT)
         pane = getFrame("WindowPane")

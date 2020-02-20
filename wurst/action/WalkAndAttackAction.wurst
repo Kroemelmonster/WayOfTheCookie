@@ -63,6 +63,7 @@ public class WalkAndAttackAction extends DefaultAction
 
     private function sendAttackOrder(BoardStack enemy, boolean didMove)
         let board = stack.getBoard()
+        preview.update(enemy)
         let anim = new AttackAnimation(stack, enemy) () ->
             BoardController.dealDamage(stack, preview.getOneResult(), enemy)
 

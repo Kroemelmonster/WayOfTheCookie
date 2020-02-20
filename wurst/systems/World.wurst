@@ -21,11 +21,17 @@ public class World
 
     static function generateNPCs()
         npcs.add(new NPCShop(gg_unit_n000_0002)
+        ..addStock(StackTypes.GNOLL, 120)
+        ..addStock(StackTypes.GNOLL_POACHER, 120)
         ..addStock(StackTypes.NECROMANCER, 20))
     
     static function generateArmies()
         armies.add(new HostileArmy(gg_unit_n001_0003)
-        ..addStackAtFree(StackTypes.NECROMANCER, GetRandomInt(1, 24))
+        ..addStack(StackTypes.GNOLL_WARDEN, 1)
+        ..addStackAtFree(StackTypes.GNOLL, GetRandomInt(15, 20))
+        ..addStackAtFree(StackTypes.GNOLL, GetRandomInt(15, 20))
+        ..addStackAtFree(StackTypes.GNOLL_POACHER, GetRandomInt(15, 20))
+        ..addStackAtFree(StackTypes.GNOLL_POACHER, GetRandomInt(15, 20))
         ..replaceChicken())
 
     static function getBoardToFightOn(HostileArmy enemy) returns Board
@@ -34,8 +40,7 @@ public class World
     static function generateHeroes()
         heroes.add(new Hero(playerData[0])
         ..addStackAtFree(StackTypes.SASQUATCH_ORACLE, 1)
-        ..addStackAtFree(StackTypes.LESSER_SKELETON, 30)
-        ..addStackAtFree(StackTypes.LESSER_SKELETON, 30))
+        ..addStackAtFree(StackTypes.GNOLL_POACHER, 20))
 
         /*
         let goldmine = createUnit(Player(PLAYER_NEUTRAL_PASSIVE), UnitIds.goldmine, playerData[0].blzPlayer.getStartLocation(), angle(0))
@@ -48,13 +53,11 @@ public class World
     static function onHeroDamaged(Hero hero, unit u)
         let enemy = HostileArmy.getFromUnit(u)
         if enemy != null
-            Log.trace("start fight based from hero")
             MainController.startFight(hero, enemy, getBoardToFightOn(enemy))
 
     static function onHostileArmyDamaged(HostileArmy enemy, unit u)
         let hero = Hero.getFromUnit(u)
         if hero != null
-            Log.trace("start fight based from enemy")
             MainController.startFight(hero, enemy, getBoardToFightOn(enemy))
 
     static function onHeroSmartOrder(Hero hero, unit u)

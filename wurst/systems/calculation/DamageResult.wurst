@@ -88,6 +88,10 @@ public class DamageResultPreview
         damage.max = ((attacker.stats.getDamage().max * amountAttacker * effectivness) / 100.0).round()
         amount.min = getUnitLostCount(damage.min)
         amount.max = getUnitLostCount(damage.max)
+    
+    function update(BoardStack defender)
+        if this.defender != defender
+            calculate(defender)
 
     function isEmpty() returns boolean
         return this.defender == null

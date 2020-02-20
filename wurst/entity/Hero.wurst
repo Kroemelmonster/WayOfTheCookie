@@ -53,8 +53,8 @@ public class Hero
         interactWithNPCListener = EventListener.onCast(u, AbilityTypesIds.TARGET_UNIT_SPELL) cb ->
             World.onHeroInteractWithNPC(this, GetSpellTargetUnit())
 
-        gold = GetRandomInt(100, 200)
-        leadership = GetRandomInt(200, 400)
+        gold = 450 //GetRandomInt(200, 400)
+        leadership = 400
 
         UIWorldConsole.setupHero(this)
         p.blzPlayer.selectSingle(u)

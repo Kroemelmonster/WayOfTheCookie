@@ -114,12 +114,14 @@ public class UIArmyPanel
         let info = p.worldConsoleInfo.armyPanel
         if info.stackDragStart == null
             return
+        if info.stackDragEnd == info.stackDragStart
+            return
 
-        if info.stackDragEnd != null and info.stackDragEnd != info.stackDragStart and info.stackDragEnd.getStackType() == info.stackDragStart.getStackType()
+        if info.stackDragEnd != null and info.stackDragEnd.getStackType() == info.stackDragStart.getStackType()
             info.stackDragEnd.setAmount(info.stackDragEnd.getAmount() + info.stackDragStart.getAmount())
             info.army.setStack(info.dragStart, null)
             destroy info.stackDragStart
-        else
+        else if info.dragEnd >= 0
             info.army.setStack(info.dragStart, info.stackDragEnd)
             info.army.setStack(info.dragEnd, info.stackDragStart)
 
