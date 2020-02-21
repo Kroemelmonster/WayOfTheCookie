@@ -40,7 +40,7 @@ public class World
         
     static function generateHeroes()
         heroes.add(new Hero(playerData[0])
-        ..addStackAtFree(StackTypes.SASQUATCH_ORACLE, 1)
+        ..addStackAtFree(StackTypes.NECROMANCER, 1)
         ..addStackAtFree(StackTypes.SASQUATCH_ORACLE, 1)
         ..addStackAtFree(StackTypes.SASQUATCH_ORACLE, 1)
         ..addStackAtFree(StackTypes.SASQUATCH_ORACLE, 1)

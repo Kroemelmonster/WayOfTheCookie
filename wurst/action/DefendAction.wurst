@@ -10,6 +10,7 @@ import Abilities
 import OrderSystem
 import BoardController
 import UITooltip
+import UIActionWindow
 
 import initlater BoardStack
 
@@ -31,8 +32,13 @@ public class DefendAction extends InstantAction
         BoardController.finishAction(stack)
         OrderSystem.endOrder(stack.getBoard())
 
-    override function showTooltip()
+    override function onUIMouseEnter()
         tt.display(stack.getPlayer(), false)
+        UIActionWindow.updateActionPoints(stack, 99)
+
+    override function onUIMouseLeave()
+        UITooltip.hide(stack.getPlayer())
+        UIActionWindow.updateActionPoints(stack, 0)
 
     override function canBeActivatedByKey(oskeytype key) returns boolean
         return key == KEY

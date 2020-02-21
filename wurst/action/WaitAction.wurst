@@ -17,9 +17,9 @@ public class WaitAction extends InstantAction
     construct(BoardStack stack)
         super(stack, Icons.bTNPatrol, "Wait")
         tt = Tooltip.create(name, "W")
-        tt.addLine("Postpone this turn")
-        tt.addLine("")
-        tt.addLine("You already waited this turn")
+        ..addLine("Postpone this turn")
+        ..addLine("")
+        ..addLine("")
 
         
     override function canActivate() returns boolean
@@ -32,10 +32,19 @@ public class WaitAction extends InstantAction
         board.getInitiative().wait()
         OrderSystem.endOrder(board)
 
-    override function showTooltip()
+    override function onUIMouseEnter()
+        showPreview()
+
+    override function onUIMouseLeave()
+        UITooltip.hide(stack.getPlayer())
+
+    private function showPreview()
         if canActivate()
             tt.setLine(1, null)
             tt.setLine(2, null)
+        else
+            tt.setLine(1, "")
+            tt.setLine(2, "You already waited this turn")
         tt.display(stack.getPlayer(), false)
 
     override function canBeActivatedByKey(oskeytype key) returns boolean

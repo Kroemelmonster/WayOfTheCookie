@@ -6,8 +6,8 @@ import StackType
 import StackSoundSet
 import UnitDefinition
 import StackSoundTypesDefinition
-import KAbilityDefinition
 import KUtil
+import Talent
 
 
 public class StackTypes
@@ -25,22 +25,19 @@ public class StackTypes
 class StackTypesDefinition
     private static function createDefault(integer unitId, integer armyId, string icon, StackSoundSet soundSet, int level, int leadership, int value) returns StackType
         return new StackType(unitId, armyId, icon, soundSet, GetObjectName(unitId), level, leadership, value)
-        ..addAbility(KAbilitySet.CAN_WAIT)
-        ..addAbility(KAbilitySet.CAN_DEFEND)
+        ..addTalent(TalentSet.DEFAULT)
     
     private static function createMelee(integer unitId, integer armyId, string icon, StackSoundSet soundSet, int level, int leadership, int value) returns StackType
         return createDefault(unitId, armyId, icon, soundSet, level, leadership, value)
-        ..addAbility(KAbilitySet.MELEE)
-        ..addAbility(KAbilitySet.CAN_COUNTERATTACK)
+        ..addTalent(TalentSet.COUNTER_ATTACK)
         ..setAttackRange(range(1, 1))
 
     private static function createRange(integer unitId, integer armyId, string icon, StackSoundSet soundSet, int level, int leadership, int value) returns StackType
         return createDefault(unitId, armyId, icon, soundSet, level, leadership, value)
-        ..addAbility(KAbilitySet.RANGED)
 
     static function setup()
         StackTypesDefintion.setup()
-        KAbilityDefinition.setup()
+        TalentSet.setup()
 
         /*
         StackTypes.ABOMINATION = createMelee(UnitTypesIds.ABOMINATION, UnitTypesIds.ARMY_ABOMINATION, Icons.bTNAbomination, StackSoundSets.ABOMINATION, )
@@ -68,7 +65,7 @@ class StackTypesDefinition
             ..setDefence(5)
 
         StackTypes.NECROMANCER = createRange(UnitTypesIds.NECROMANCER, UnitTypesIds.ARMY_NECROMANCER, Icons.bTNNecromancer, StackSoundSets.NECROMANCER, 2, 25, 30)
-            ..addAbility(KAbilitySet.SUMMON_LESSER_SKELETON)
+            ..addTalent(TalentSet.SUMMON_LESSER_SKELETON)
             ..setInitiative(7)
             ..setActionPoints(2)
             ..setMaxHp(20)
@@ -88,7 +85,7 @@ class StackTypesDefinition
 
         StackTypes.SASQUATCH_ORACLE = createMelee(UnitTypesIds.SASQUATCH_ORACLE, UnitTypesIds.ARMY_SASQUATCH_ORACLE, 
         "ReplaceableTextures\\CommandButtons\\BTNSasquatchOracle.blp", StackSoundSets.SKELETON, 4, 350, 630)
-            ..addAbility(KAbilitySet.WARCRY)
+            ..addTalent(TalentSet.WARCRY)
             ..setInitiative(6)
             ..setActionPoints(6)
             ..setMaxHp(480)

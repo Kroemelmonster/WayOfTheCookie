@@ -16,6 +16,7 @@ import StackType
 import initlater Cell
 import initlater BoardStack
 import initlater StackTypesDefinition
+import UIActionWindow
 
 public class SummonLesserSkeletonAction extends Action
     private LinkedList<Cell> area = new LinkedList<Cell>()
@@ -25,22 +26,38 @@ public class SummonLesserSkeletonAction extends Action
     private static constant int COST = 2
     private static constant int COOLDOWN = 3
     private static constant int MAXRANGE = 1
+    private static constant string NAME = "Summon Skeleton"
     private static StackType SUMMONED_TYPE
     private constant static oskeytype KEY = OSKEY_S
+    private static Tooltip BASE_TOOLTIP
+    static constant string ICON = Icons.bTNRaiseDead
 
     static function setup()
         SUMMONED_TYPE = StackTypes.LESSER_SKELETON
+        BASE_TOOLTIP = Tooltip.create(NAME)
+        ..setCooldown(COOLDOWN)
+        ..setCost(COST)
+        
+        ..addLine(Tooltip.stat("Target", "Empty Cell"))
+        ..addLine(Tooltip.stat("Range", MAXRANGE))
+        ..addLine("")
+        ..addLine("")
+
+    private static function getSummonLeadershipAmount(StackType sType) returns range
+        return range((sType.leadership * 0.3).ceil(), (sType.leadership * 0.6).ceil())
+
+    static function createTooltip(StackType sType) returns Tooltip
+        let leadership = getSummonLeadershipAmount(sType)
+        let str = "Summons a Stack of "+ Tooltip.coloredString(Tooltip.COLOR_SECONDARY, SUMMONED_TYPE.name) +" with a Leaderhip of "+Tooltip.coloredRange(Tooltip.COLOR_PRIMARY, leadership)
+        let tt = Tooltip.copy(BASE_TOOLTIP)
+        ..setLine(3, str)
+
+        return tt
 
     construct(BoardStack stack)
-        super(stack, Icons.bTNRaiseDead, "Summon Skeleton")
-        tooltip = Tooltip.create(name, "S")
-        tooltip.setCooldown(COOLDOWN)
-        tooltip.setCost(COST)
-        
-        tooltip.addLine(Tooltip.stat("Target", "Empty Cell"))
-        tooltip.addLine(Tooltip.stat("Range", MAXRANGE))
-        tooltip.addLine("")
-        tooltip.addLine("INSERT DATA")
+        super(stack, ICON, NAME)
+        tooltip = Tooltip.copy(BASE_TOOLTIP)
+        ..addKey("S")
 
     override function getHighlightResultForCell(Player p, Cell cell) returns CellResult
         if area.has(cell)
@@ -52,9 +69,9 @@ public class SummonLesserSkeletonAction extends Action
 
     override function recalculateHighlight(Player p)
         if area.has(p.currentMousePosition.cell)
-            showTooltip()
+            showPreview()
         else
-            hideTooltip()
+            hidePreview()
 
     override function sendTargetOrder(Cell cell) returns boolean
         if area.has(cell)
@@ -75,8 +92,8 @@ public class SummonLesserSkeletonAction extends Action
 
     private function recalcSummonAmount()
         let amount = stack.stats.getAmount()
-        let multi = stack.stats.getStackType().leadership * amount / SUMMONED_TYPE.leadership
-        summonAmount = range((multi * 0.3).ceil(), (multi * 0.6).ceil())
+        let leadershipAmount = getSummonLeadershipAmount(stack.stats.getStackType())
+        summonAmount = range((leadershipAmount.min * amount / SUMMONED_TYPE.leadership).ceil(), (leadershipAmount.max * amount / SUMMONED_TYPE.leadership).ceil())
         
         var str = "Summons a Stack of "+ Tooltip.coloredRange(Tooltip.COLOR_PRIMARY, summonAmount)
         str += " " + Tooltip.coloredString(Tooltip.COLOR_SECONDARY, SUMMONED_TYPE.name)
@@ -84,6 +101,7 @@ public class SummonLesserSkeletonAction extends Action
 
     private function recalculate()
         area.clear()
+        recalcSummonAmount()
 
         stack.getCell().forEachCellsInRange(range(1, MAXRANGE)) (Cell cell) ->
             if cell.getStack() == null
@@ -92,9 +110,22 @@ public class SummonLesserSkeletonAction extends Action
     override function canActivate() returns boolean
         return stack.stats.getRemainingActionPoints() >= COST and cooldown <= 0
 
-    override function showTooltip()
-        recalcSummonAmount()
+    @inline
+    private function showPreview()
         tooltip.display(stack.getPlayer(), false)
+        UIActionWindow.updateActionPoints(stack, 99)
+                
+    @inline
+    private function hidePreview()
+        UITooltip.hide(stack.getPlayer())
+        UIActionWindow.updateActionPoints(stack, 0)
+
+    override function onUIMouseEnter()
+        recalcSummonAmount()
+        showPreview()
+
+    override function onUIMouseLeave()
+        hidePreview()
 
     override function canBeActivatedByKey(oskeytype key) returns boolean
         return key == KEY

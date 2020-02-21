@@ -3,8 +3,8 @@ package StackType
 import LinkedList
 
 import StackSoundSet
-import KAbility
 import KUtil
+import Talent
 
 public class StackType
     integer unitId
@@ -26,7 +26,7 @@ public class StackType
     int attack
     int defence
 
-    LinkedList<KAbility> abilities = new LinkedList<KAbility>()
+    LinkedList<Talent> talents = new LinkedList<Talent>()
 
     construct(integer unitId, integer armyUnitId, string icon, StackSoundSet soundSet, string name, int level, int leadership, int value)
         this.unitId = unitId
@@ -38,8 +38,27 @@ public class StackType
         this.leadership = leadership
         this.value = value
 
-    function addAbility(KAbility abil)
-        abilities.add(abil)
+    function addTalent(Talent talent)
+        talents.add(talent)
+
+    @inline
+    function getNonHiddenTalent(int index) returns Talent
+        Talent found = null
+        var counter = 0
+        let itr = talents.iterator()
+        while itr.hasNext() and found == null
+            let talent = itr.next()
+            if talent.isHidden() == false
+                if index == counter
+                    found = talent
+                counter++
+
+        destroy itr
+        return found
+
+    @inline
+    function talentIterator() returns LLIterator<Talent>
+        return talents.iterator()
 
     @inline
     function setMaxHp(int value)

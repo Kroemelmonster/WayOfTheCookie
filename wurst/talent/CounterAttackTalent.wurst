@@ -1,0 +1,20 @@
+package CounterAttackTalent
+
+import Icons
+
+import initlater Talent
+import initlater CounterAttackPassive
+import initlater StackType
+import UITooltip
+
+public class CounterAttackTalent extends Talent
+    construct()
+        super("Counter Attack", Icons.bTNSteelMelee)
+
+    static function setup()
+        TalentSet.COUNTER_ATTACK = new CounterAttackTalent()
+        ..addGenerateListener() stack ->
+            stack.addPassive(new CounterAttackPassive(stack))
+
+    override function createTooltip(StackType sType) returns Tooltip
+        return CounterAttackPassive.createTooltip(sType)

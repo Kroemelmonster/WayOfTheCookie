@@ -12,8 +12,13 @@ import UITooltip
 import WarcryAnimation
 import BuffController
 import BuffType
+import UIActionWindow
+import KUtil
+import LinkedList
+import Stack
 
 import initlater BoardStack
+import StackType
 
 public class WarcryAction extends InstantAction
     private Tooltip tooltip
@@ -21,37 +26,65 @@ public class WarcryAction extends InstantAction
     private static constant int COST = 1
     private static constant int COOLDOWN = 0
     private static constant int MAXRANGE = 2
-    private constant static oskeytype KEY = OSKEY_Y
+    private static constant int BUFF_DURATION = 3
+    private static constant string NAME = "Warcry"
+    private static constant oskeytype KEY = OSKEY_Y
     private static BuffType BUFF
+    private static Tooltip BASE_TOOLTIP
+    static constant string ICON = Icons.bTNBattleRoar
+
 
     static function setup()
         BUFF = BuffTypeSet.WARCRY
+        BASE_TOOLTIP = Tooltip.create(NAME)
+        ..setCost(COST)
+        
+        ..addLine(Tooltip.stat("Target", "Self"))
+        ..addLine(Tooltip.stat("Range", MAXRANGE))
+        ..addLine("")
+        ..addLine("Gives every friendly unit in range the "+Tooltip.secondaryString(BUFF.getName())+ " Buff effect for "+Tooltip.primaryString(BUFF_DURATION.toString())+ " rounds")
+        ..addLine("-----")
+        ..addBuffType(BUFF)
 
     construct(BoardStack stack)
-        super(stack, Icons.bTNBattleRoar, "Warcry")
-        charge = 2
-        tooltip = Tooltip.create(name, "Y")
-        tooltip.setCost(COST)
-        
-        tooltip.addLine(Tooltip.stat("Target", "Self"))
-        tooltip.addLine(Tooltip.stat("Range", MAXRANGE))
-        tooltip.addLine("")
-        tooltip.addLine("Gebrüll und so")
+        super(stack, ICON, NAME)
+        charge = 1
+        tooltip = Tooltip.copy(BASE_TOOLTIP)
+        ..addKey("Y")
+
+    static function createTooltip(StackType _sType) returns Tooltip
+        return Tooltip.copy(BASE_TOOLTIP)
         
     override function canActivate() returns boolean
-        return charge > 0
+        return charge > 0 and cooldown <= 0
 
     override function activate()
+        let area = stack.getCell().getAllCellsInRange(range(0, MAXRANGE))
+        let targets = new LinkedList<BoardStack>()
+        for cell in area
+            let possibleTarget = cell.getStack()
+            if possibleTarget != null and possibleTarget.getPlayer() == stack.getPlayer()
+                targets.add(possibleTarget)
+        destroy area
+
         let anim = new WarcryAnimation(stack) () ->
-            BuffController.addBuff(BUFF, stack, 3)
+            for target in targets
+                BuffController.addBuff(BUFF, target, BUFF_DURATION)
+            destroy targets
+            
         anim.onFinish() () ->
             charge --
             cooldown = COOLDOWN + 1
             BoardController.spendActionPoints(stack, COST, true)
             OrderSystem.endOrder(stack.getBoard())
 
-    override function showTooltip()
+    override function onUIMouseEnter()
         tooltip.display(stack.getPlayer(), false)
+        UIActionWindow.updateActionPoints(stack, 1)
+            
+    override function onUIMouseLeave()
+        UITooltip.hide(stack.getPlayer())
+        UIActionWindow.updateActionPoints(stack, 0)
 
     override function canBeActivatedByKey(oskeytype key) returns boolean
         return key == KEY

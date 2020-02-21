@@ -1,0 +1,51 @@
+package Talent
+
+import initlater BoardStack
+import initlater StackType
+import DefaultTalent
+import SummonLesserSkeletonTalent
+import WarcryTalent
+import CounterAttackTalent
+import UITooltip
+
+interface GenerateListener
+    function onStackCreation(BoardStack stack)
+
+public class TalentSet
+    static Talent DEFAULT
+    static Talent SUMMON_LESSER_SKELETON
+    static Talent WARCRY
+    static Talent COUNTER_ATTACK
+
+    static function setup()
+        DefaultTalent.setup()
+        SummonLesserSkeletonTalent.setup()
+        WarcryTalent.setup()
+        CounterAttackTalent.setup()
+
+
+public abstract class Talent
+    protected string name
+    protected string icon = null
+    private GenerateListener listener
+
+    construct(string name, string icon)
+        this.name = name
+        this.icon = icon
+
+    construct()
+
+    function addGenerateListener(GenerateListener listener)
+        this.listener = listener
+        
+    function onStackCreation(BoardStack stack)
+        listener.onStackCreation(stack)
+
+    function isHidden() returns boolean
+        return icon == null
+
+    function getIcon() returns string
+        return icon
+    
+    function createTooltip(StackType _sType) returns Tooltip
+        return null

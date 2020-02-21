@@ -164,10 +164,13 @@ public class InitiativeList
 
 
     private function getFirstEntry(BoardStack stack) returns InitiativeEntry
-        for entry in entrys
+        InitiativeEntry found = null
+        let itr = entrys.iterator()
+        while itr.hasNext() and found == null
+            let entry = itr.next()
             if entry.stack == stack
-                return entry
-        return null
+                found = entry
+        return found
 
     function getCurrent() returns InitiativeEntry
         return entrys.getFirst()

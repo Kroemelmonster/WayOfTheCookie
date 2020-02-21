@@ -1,6 +1,7 @@
 package UIMain
 
 import FramehandleNames
+import ClosureEvents
 
 import UIActionWindow
 import UITooltip
@@ -15,25 +16,30 @@ public function framehandle.toString() returns string
 	str += " enabled " + this.isEnabled().toString()
 	return str
 
+boolean fpsDebug = false
+
 class UIMain
 	static function removeBlizzardUI()
 		getFrame("ConsoleUIBackdrop").setVisible(false)
 		setOriginFramesVisible(false)
 		getOriginFrame(ORIGIN_FRAME_WORLD_FRAME, 0).setAllPoints(GAME_UI)
 
-		// DONT SHOW FPS AND STUFF
-		getFrame(FramehandleDefaultNames.consoleUI).setVisible(false)
+
 
 		//getOriginFrame(ORIGIN_FRAME_MINIMAP).setVisible(true)
 
-		//SHOW FPS AND STUFF 
 
-		/*
 		getFrame(FramehandleDefaultNames.consoleUI)
 		..setAbsPoint(FRAMEPOINT_BOTTOM, 0.4, -1.0)
 		..setAbsPoint(FRAMEPOINT_TOP, 0.4, 1.0)
-		getFrame("ResourceBarFrame")..setVisible(true)
-		*/
+		..setVisible(false)
+
+
+		EventListener.add(EVENT_PLAYER_CHAT_FILTER) ->
+			if GetEventPlayerChatString().startsWith("debug")
+				fpsDebug = fpsDebug == false
+				getFrame(FramehandleDefaultNames.consoleUI).setVisible(fpsDebug)
+				getFrame("ResourceBarFrame").setVisible(fpsDebug)
 
 
 	

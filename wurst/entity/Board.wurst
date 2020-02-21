@@ -191,6 +191,8 @@ public class Board
     function getAllCellsInRange(Cell startCell, range r) returns LinkedList<Cell>
         let list = new LinkedList<Cell>()
         var cube = startCell.getHex().toCube()
+        if r.min == 0
+            list.add(startCell)
         for int ring = 1 to r.max
             cube += CUBE_NEIGHBOURS[4]
             if ring >= r.min

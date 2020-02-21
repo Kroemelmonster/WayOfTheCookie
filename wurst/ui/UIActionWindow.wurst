@@ -25,16 +25,11 @@ class UIActionWindow
         self = createFrame("BACKDROP", "ActionWindow", GAME_UI, "", 0)
         ..setSize(0.1376, 0.1164)
         ..setPoint(FRAMEPOINT_BOTTOMRIGHT, GAME_UI, FRAMEPOINT_BOTTOMRIGHT)
-        ..setTexture("ActionWindow.dds", 0, true)
+        ..setTexture("UI/Textures/action-window-background.dds", 0, true)
 
         pane = createFrame("FRAME", "ActionWindowFrame", self, "", 0)
         ..setPoint(FRAMEPOINT_TOPLEFT, self, FRAMEPOINT_TOPLEFT, 0.006, -0.0274)
         ..setPoint(FRAMEPOINT_BOTTOMRIGHT, self, FRAMEPOINT_BOTTOMRIGHT, -0.0046, 0.007)
-
-        /* old 
-        self = createFrame("ActionWindow", GAME_UI, 0, 0)
-        self.setPoint(FRAMEPOINT_BOTTOMRIGHT,  GAME_UI, FRAMEPOINT_BOTTOMRIGHT)
-        pane = getFrame("WindowPane") */
 
         buttons = new LinkedList<ActionButton>()
         for int i = 0 to points.length
@@ -52,7 +47,6 @@ class UIActionWindow
             actionPoints[i] = createFrame("BACKDROP", "wurst", self, "", 0)
                 ..setSize(0.017, 0.013)
                 ..setPoint(FRAMEPOINT_TOPLEFT, self, FRAMEPOINT_TOPLEFT, 0.01 + (0.01 * i), -0.008)
-                ..setTexture("StripeActionPoint.dds", 0, true)
 
         hide()
 
@@ -83,23 +77,32 @@ class UIActionWindow
     static function self() returns framehandle
         return self
 
-    private static function updateActionPointsLocal(BoardStack stack)
+    private static function updateActionPointsLocal(BoardStack stack, int previewLoosingPoints)
+        let maxActionPoints = stack.stats.getMaxActionPoints()
+        let maxRemainingPoints = stack.stats.getRemainingActionPoints()
+        let startPreview = maxRemainingPoints - previewLoosingPoints
         for int i = 0 to actionPoints.length
-            if i < stack.stats.getMaxActionPoints()
-                actionPoints[i].setVisible(true)
-                if i < stack.stats.getRemainingActionPoints()
+            actionPoints[i].setVisible(i < maxActionPoints)
+            if i < maxActionPoints
+                if i < maxRemainingPoints
                     actionPoints[i].setAlpha(255)
                 else
                     actionPoints[i].setAlpha(50)
-            else
-                actionPoints[i].setVisible(false)
+
+                if i < startPreview or i >= maxRemainingPoints
+                    actionPoints[i].setTexture("UI/Textures/action-point.dds", 0, true)
+                else
+                    actionPoints[i].setTexture("UI/Textures/action-point-preview.dds", 0, true)
+                    actionPoints[i].setAlpha(120)
+
+                
             
-    static function updateActionPoints(BoardStack stack)
+    static function updateActionPoints(BoardStack stack, int previewLoosingPoints)
         // we just change it for the current active player
         // even if that player might have selected some other unit, the whole frame would not be visible so it does not matter
         // the other player who is currently not ordering also cant have this action frame --> does not matter
         if stack.getPlayer().playingBoard.isLocalPlayer()
-            updateActionPointsLocal(stack)
+            updateActionPointsLocal(stack, previewLoosingPoints)
     
     static function update(Player p)
         if p.isLocal() == false or p.isConntrolledByKI
@@ -130,7 +133,7 @@ class UIActionWindow
                         btn.enable()
                     else
                         let cooldown = action.getCooldown()
-                        if cooldown > 0
+                        if cooldown > 0 and action.hasEnoughCharges()
                             btn.disable("BtnBlockCooldown"+cooldown.toString()+".blp")
                         else
                             btn.disable("BtnBlockDisabled.blp")
@@ -139,7 +142,7 @@ class UIActionWindow
 
             index ++
         self.setVisible(true)
-        updateActionPointsLocal(stack)
+        updateActionPointsLocal(stack, 0)
         
     private static function activate(int index, Player p)
         if OrderSystem.canOrder(p) == false
@@ -157,11 +160,11 @@ class UIActionWindow
 
     private static function onMouseEnter(int index, Player p)
         let action = p.currentSelectedStack.getAction(index)
-        action.showTooltip()
+        action.onUIMouseEnter()
 
     private static function onMouseLeave(int index, Player p)
         let action = p.currentSelectedStack.getAction(index)
-        action.hideTooltip()
+        action.onUIMouseLeave()
 
     static function hide(Player p)
         if p.isLocal()

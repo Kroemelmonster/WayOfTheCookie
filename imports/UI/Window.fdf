@@ -22,7 +22,7 @@ Frame "BACKDROP" "MetalBorder" {
 
 Frame "BACKDROP" "UnitWindow" INHERITS "WindowTemplate" {
     Width 0.2,
-    Height 0.2,
+    Height 0.25,
     Alpha 200,
 
     Frame "FRAME" "WindowPane" {
@@ -69,6 +69,11 @@ Frame "BACKDROP" "UnitWindow" INHERITS "WindowTemplate" {
 			FontShadowColor 0.0 0.0 0.0 0.9,
 			FontShadowOffset 0.001 -0.001,
 		}
+
+        Frame "FRAME" "UnitWindowTalents" {
+            SetPoint TOPLEFT, "WindowPane", BOTTOMLEFT, 0.0, 0.049,
+            SetPoint BOTTOMRIGHT, "WindowPane", BOTTOMRIGHT, 0.0, 0.019,
+        }
 
         Frame "FRAME" "UnitWindowBuffs" {
             SetPoint TOPLEFT, "WindowPane", BOTTOMLEFT, 0.0, 0.017,

@@ -32,7 +32,7 @@ constant LinkedList<Player> activePlayers = new LinkedList<Player>
 public class Player
     boolean mousePressed = false
     int mousePressedIndex = 0
-    Button mouseOverButton = null
+    UIButton mouseOverButton = null
 
     DialogInfo dialogInfo = new DialogInfo()
 

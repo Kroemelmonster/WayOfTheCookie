@@ -25,7 +25,9 @@ public abstract class DefaultAction extends Action
 
     abstract function caclulatePath(Cell target, Cell preferedCell) returns Cell
 
-    override function showTooltip() // you can never show a tooltip here
+    override function onUIMouseEnter()
+
+    override function onUIMouseLeave()
 
     override function canBeActivatedByKey(oskeytype key) returns boolean
         return false

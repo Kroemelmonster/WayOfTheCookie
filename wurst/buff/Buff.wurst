@@ -2,16 +2,16 @@ package Buff
 
 import initlater BoardStack
 import initlater BuffType
+import UITooltip
 
 public abstract class Buff
     protected BuffType bType
     protected BoardStack stack
-    protected int duration
+    protected int duration = 0
 
-    construct(BuffType bType, BoardStack stack, int duration)
+    construct(BuffType bType, BoardStack stack)
         this.bType = bType
         this.stack = stack
-        this.duration = duration
 
     function tick() returns boolean
         duration --
@@ -27,6 +27,11 @@ public abstract class Buff
 
     function getIcon() returns string
         return bType.getIcon()
+
+    abstract function setDuration(int duration)
+
+    /** Always use this tooltip instantly with intend to destroy it **/
+    abstract function createCurrentTooltip() returns Tooltip
 
     protected abstract function onTick()
 

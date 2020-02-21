@@ -1,0 +1,60 @@
+package UIInteractableIcon
+
+import ClosureFrames
+
+import UI
+import PlayerData
+
+import initlater MouseContext
+
+public class UIInteractableIcon
+    protected framehandle self
+    protected framehandle icon
+
+    private FrameHandleListener onMouseEnterListener
+    private FrameHandleListener onMouseLeaveListener
+    
+    construct(framehandle parent, real width, real height)
+        self = createFrame("MENU", "", parent, "", 0)
+        ..setSize(width, height)
+        icon = createFrame("BACKDROP", "", self, "", 0)
+        ..setSize(width, height)
+        ..setPoint(FRAMEPOINT_TOPLEFT, self, FRAMEPOINT_TOPLEFT)
+
+        self.onMouseEnter() () ->
+            let p = GetTriggerPlayerData()
+            MouseContext.enableMouseMovement(p, false)
+            if onMouseEnterListener != null
+                onMouseEnterListener.onEvent()
+        self.onMouseLeave() () ->
+            let p = GetTriggerPlayerData()
+            MouseContext.enableMouseMovement(p, true)
+            if onMouseLeaveListener != null
+                onMouseLeaveListener.onEvent()
+
+    function setPoint(framepointtype point, framehandle relative, framepointtype relativePoint, real x, real y)
+        self.setPoint(point, relative, relativePoint, x, y)
+
+    function setIcon(string str)
+        icon.setTexture(str, 0, true)
+
+    function onMouseEnter(FrameHandleListener listener)
+        onMouseEnterListener = listener
+
+    function onMouseLeave(FrameHandleListener listener)
+        onMouseLeaveListener = listener
+
+    function setVisible(boolean flag)
+        self.setVisible(flag)
+
+    function setAlpha(int alpha)
+        self.setAlpha(alpha)
+
+    ondestroy
+        Log.error("DONT DESTROY SUCH A THING WTF ?")
+        if onMouseEnterListener != null
+            destroy onMouseEnterListener
+        if onMouseLeaveListener != null
+            destroy onMouseLeaveListener
+    
+

@@ -10,14 +10,12 @@ Frame "BACKDROP" "BoxedTextBackgroundTemplate" {
 }
 
 Frame "BACKDROP" "BoxedText" INHERITS "BoxedTextBackgroundTemplate" {
-	UseActiveContext,
 
 	Frame "FRAME" "BoxedTextHeader" {
 		SetPoint TOPLEFT, "BoxedText", TOPLEFT, 0.005, -0.005,
 		SetPoint BOTTOMRIGHT, "BoxedText", TOPRIGHT, -0.005, -0.021,
 
 		Frame "TEXT" "BoxedTextHeaderValue" {
-			UseActiveContext,
 			DecorateFileNames,
 			SetPoint TOPLEFT, "BoxedTextHeader", TOPLEFT, 0.0, 0.0,
 			SetPoint BOTTOMRIGHT,  "BoxedTextHeader", BOTTOMRIGHT, 0.0, 0.0,
@@ -29,20 +27,27 @@ Frame "BACKDROP" "BoxedText" INHERITS "BoxedTextBackgroundTemplate" {
 		}
 	}
 
-	Frame "FRAME" "BoxedTextInner" {
+	Frame "TEXT" "BoxedTextValue" {
+		UseActiveContext,
+		DecorateFileNames,
 		SetPoint TOPLEFT, "BoxedText", TOPLEFT, 0.005, -0.025,
 		SetPoint BOTTOMRIGHT,  "BoxedText", BOTTOMRIGHT, -0.005, 0.005,
+		FrameFont "MasterFont", 0.012, "",
+		FontFlags "FIXEDSIZE",
+		FontColor 1.0 1.0 1.0 1.0,
+		FontShadowColor 0.0 0.0 0.0 0.9,
+		FontShadowOffset 0.001 -0.001,
+	}
 
-		Frame "TEXT" "BoxedTextValue" {
-			UseActiveContext,
-			DecorateFileNames,
-			SetPoint TOPLEFT, "BoxedTextInner", TOPLEFT, 0.0, 0.0,
-			SetPoint BOTTOMRIGHT,  "BoxedTextInner", BOTTOMRIGHT, 0.0, 0.0,
-			FontFlags "FIXEDSIZE",
-			FrameFont "MasterFont", 0.012, "",
-			FontColor 1.0 1.0 1.0 1.0,
-			FontShadowColor 0.0 0.0 0.0 0.9,
-			FontShadowOffset 0.001 -0.001,
-		}
+	Frame "TEXT" "BoxedTextTestLines" {
+		UseActiveContext,
+		DecorateFileNames,
+		SetPoint TOPLEFT, "BoxedText", TOPLEFT, 0.005, -0.025,
+		SetPoint BOTTOMLEFT,  "BoxedText", BOTTOMLEFT, -0.005, 0.005,
+		FrameFont "MasterFont", 0.012, "",
+		FontFlags "FIXEDSIZE",
+		FontColor 1.0 1.0 1.0 1.0,
+		FontShadowColor 0.0 0.0 0.0 0.9,
+		FontShadowOffset 0.001 -0.001,
 	}
 }

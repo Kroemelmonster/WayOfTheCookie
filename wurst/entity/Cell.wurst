@@ -36,14 +36,16 @@ public class Cell
         this.hex = hex
         this.center = hex.toCoord() + board.getCoord()
 
-        this.innerModel = addEffect(MODEL_FILE_INNER, vec3(center.x, center.y, 10))
-        this.innerModel.setColor(INNER_DEFAULT_COLOR)
-        this.innerModel.setScale(SCALING)
+        let z = center.getTerrainZ()
+        
+        this.innerModel = addEffect(MODEL_FILE_INNER, vec3(center.x, center.y, z + 7))
+        ..setColor(INNER_DEFAULT_COLOR)
+        ..setScale(SCALING)
 
-        this.outerModel = addEffect(MODEL_FILE_OUTER, vec3(center.x, center.y, 11))
-        this.outerModel.setColor(OUTER_DEFAULT_COLOR)
-        this.outerModel.setAlpha(OUTER_ALPHA)
-        this.outerModel.setScale(SCALING)
+        this.outerModel = addEffect(MODEL_FILE_OUTER, vec3(center.x, center.y, z + 8))
+        ..setColor(OUTER_DEFAULT_COLOR)
+        ..setAlpha(OUTER_ALPHA)
+        ..setScale(SCALING)
 
     /** GETTER / SETTER **/
     function getHex() returns hex

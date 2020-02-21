@@ -54,8 +54,8 @@ public class BoardStack
 
         this.buffs = new LinkedList<Buff>
 
-        for abil in stackType.abilities
-            abil.onStackCreation(this)
+        for talent in stackType.talents
+            talent.onStackCreation(this)
 
     @inline
     function getCell() returns Cell
@@ -76,6 +76,10 @@ public class BoardStack
     @inline
     function getName() returns string
         return stackType.name
+
+    @inline
+    function getStackType() returns StackType
+        return stackType
 
     @inline
     function resetCurrentSelectedAction()
@@ -101,6 +105,10 @@ public class BoardStack
     function buffIterator() returns LLIterator<Buff>
         return buffs.iterator()
 
+    @inline
+    function getBuff(int index) returns Buff
+        return buffs.get(index)
+        
     @inline
     function addBuff(Buff b)
         buffs.add(b)

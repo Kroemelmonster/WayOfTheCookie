@@ -1,0 +1,18 @@
+package WarcryTalent
+
+import initlater Talent
+import initlater WarcryAction
+import initlater StackType
+import UITooltip
+
+public class WarcryTalent extends Talent
+    construct()
+        super("Warcry", WarcryAction.ICON)
+
+    static function setup()
+        TalentSet.WARCRY = new WarcryTalent()
+        ..addGenerateListener() stack ->
+            stack.addAction(new WarcryAction(stack))
+
+    override function createTooltip(StackType sType) returns Tooltip
+        return WarcryAction.createTooltip(sType)

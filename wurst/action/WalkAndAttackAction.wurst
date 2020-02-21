@@ -20,6 +20,7 @@ import OrderSystem
 
 import initlater Cell
 import initlater BoardStack
+import UIActionWindow
 
 public class WalkAndAttackAction extends DefaultAction
     private StackPathFinding walkableCells
@@ -52,13 +53,26 @@ public class WalkAndAttackAction extends DefaultAction
         targets.recalculate()
 
     override function recalculateHighlight(Player p)
-        caclulatePath(p.currentMousePosition.cell, p.currentMousePosition.nearbyCell)
+        let cell = p.currentMousePosition.cell
+        caclulatePath(cell, p.currentMousePosition.nearbyCell)
         if preview.isEmpty()
-            hideTooltip()
+            UITooltip.hide(stack.getPlayer())
         else
             let tt = Tooltip.create(name)
             preview.addToTooltip(tt)
             tt.display(stack.getPlayer(), true)
+        
+        var showCost = 0
+        if cell != null
+            if canAttackTargetThisTurn(cell.getStack())
+                showCost = 99
+                UIActionWindow.updateActionPoints(stack, 99)
+            else if cell != stack.getCell()
+                let remaining = getRemainingActionPointsFromCell(cell, stack.stats.getMoveSpeed())
+                if remaining >= 0
+                    showCost = stack.stats.getMoveSpeed().floor() - remaining
+            
+        UIActionWindow.updateActionPoints(stack, showCost)
 
     private function sendAttackOrder(BoardStack enemy, boolean didMove)
         let board = stack.getBoard()

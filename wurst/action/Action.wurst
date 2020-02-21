@@ -1,7 +1,5 @@
 package Action
 
-import UITooltip
-
 import PlayerData
 
 import initlater Cell
@@ -49,6 +47,10 @@ public abstract class Action
 
     protected abstract function recalculatePreview()
 
+    abstract function onUIMouseEnter()
+
+    abstract function onUIMouseLeave()
+
     abstract function recalculateHighlight(Player p)
 
     abstract function sendTargetOrder(Cell cell) returns boolean
@@ -73,12 +75,13 @@ public abstract class Action
     function getButton() returns string
         return btn
 
+    function hasEnoughCharges() returns boolean
+        return charge > 0 or maxCharge < 0
+        
     function getCharge() returns int
         return charge
 
     abstract function canBeActivatedByKey(oskeytype key) returns boolean
-
-    abstract function showTooltip()
 
     @inline
     function getName() returns string
@@ -87,6 +90,3 @@ public abstract class Action
     @inline
     function toString() returns string
         return "Action '"+getName()+"'"
-
-    function hideTooltip()
-        UITooltip.hide(stack.getPlayer())

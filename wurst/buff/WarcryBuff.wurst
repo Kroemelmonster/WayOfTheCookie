@@ -5,6 +5,7 @@ import Icons
 import Abilities
 
 import Buff
+import UITooltip
 
 import initlater BoardStack
 import initlater BuffType
@@ -13,18 +14,37 @@ public class WarcryBuff extends Buff
     private effect display
     
     private static constant DAMAGE_MULTI = 10
+    private static constant string NAME = "Warcry"
 
-    static function setup() returns BuffType
-        return new BuffType(Icons.bTNBattleRoar, "Warcry") (BoardStack stack) ->
-            return new WarcryBuff(stack)
+    static function setup()
+        BuffTypeSet.WARCRY = new BuffType(Icons.bTNBattleRoar, NAME, createTooltip(null)) (BoardStack stack) ->
+            return new WarcryBuff(BuffTypeSet.WARCRY, stack)
+
+    construct(BuffType bType, BoardStack stack)
+        super(bType, stack)
+        display = stack.addAttachEffect(Abilities.roarTarget, AttachmentPoints.overhead)
+
+    private static function createTooltip(WarcryBuff b) returns Tooltip
+        let tooltip = Tooltip.create(NAME)
+        if b == null
+            tooltip.addLine("Increases the damage dealt by "+Tooltip.coloredPercent(DAMAGE_MULTI / 100.0) +" per reamining duration")
+        else
+            tooltip.addLine(Tooltip.stat("Duration", b.duration))
+            tooltip.addLine("Increases the damage dealt by "+Tooltip.coloredPercent((DAMAGE_MULTI * b.duration) / 100.0))
+        
+        return tooltip
+
+    override function setDuration(int duration)
+        if this.duration < duration
+            let difference = duration - this.duration
+            this.duration = duration
+            update(difference)
+
+    override function createCurrentTooltip() returns Tooltip
+        return createTooltip(this)
 
     private function update(int durationChange)
         stack.stats.addDamageMulti(durationChange * DAMAGE_MULTI)
-
-    construct(BoardStack stack)
-        super(BuffTypeSet.WARCRY, stack, 3)
-        display = stack.addAttachEffect(Abilities.roarTarget, AttachmentPoints.overhead)
-        update(duration)
 
     override function onTick()
         update(-1)

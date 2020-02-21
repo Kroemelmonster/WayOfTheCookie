@@ -3,6 +3,7 @@ package BuffType
 import Buff
 import WarcryBuff
 import BoardStack
+import UITooltip
 
 interface BuffCreateListener
     function create(BoardStack stack) returns Buff
@@ -11,17 +12,19 @@ public class BuffTypeSet
     static BuffType WARCRY 
 
     static function setup()
-        WARCRY = WarcryBuff.setup()
+        WarcryBuff.setup()
 
 
 public class BuffType
     protected string icon
     protected string name
+    protected Tooltip tooltip
     protected BuffCreateListener listener
 
-    construct(string icon, string name, BuffCreateListener listener)
+    construct(string icon, string name, Tooltip tooltip, BuffCreateListener listener)
         this.icon = icon
         this.name = name
+        this.tooltip = tooltip
         this.listener = listener
 
     @inline
@@ -31,6 +34,14 @@ public class BuffType
     @inline
     function getIcon() returns string
         return icon
+    
+    @inline
+    function getName() returns string
+        return name
+
+    @inline
+    function getTooltip() returns Tooltip
+        return tooltip
 
     @inline
     function toString() returns string

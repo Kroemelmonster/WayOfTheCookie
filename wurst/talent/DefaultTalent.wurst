@@ -1,0 +1,17 @@
+package DefaultTalent
+
+import initlater Talent
+import initlater WalkAndAttackAction
+import initlater WaitAction
+import initlater DefendAction
+
+public class DefaultTalent extends Talent
+    construct()
+        super()
+
+    static function setup()
+        TalentSet.DEFAULT = new DefaultTalent()
+        ..addGenerateListener() stack ->
+            stack.addAction(new WalkAndAttackAction(stack))
+            stack.addAction(new WaitAction(stack))       
+            stack.addAction(new DefendAction(stack)) 

@@ -1,4 +1,4 @@
-package CounterAttackPAction
+package CounterAttackPassive
 
 import PassiveAction
 import AttackAnimation
@@ -8,9 +8,10 @@ import KUtil
 
 import initlater BoardStack
 import initlater Cell
+import UITooltip
+import StackType
 
-public class CounterAttackPAction extends PassiveAction
-
+public class CounterAttackPassive extends PassiveAction
     construct(BoardStack stack)
         super(stack, "Attack")
 
@@ -33,4 +34,8 @@ public class CounterAttackPAction extends PassiveAction
             listener.onFinish()
             destroy listener
             
+    static function createTooltip(StackType _sType) returns Tooltip
+        let tooltip = Tooltip.create("Counter Attack")
+        ..addLine("This unit will counter an attack of opposing unit once per round")
+        return tooltip
 

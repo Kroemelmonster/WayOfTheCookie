@@ -47,7 +47,7 @@ public class ButtonBorder
             default
                 self.setAlpha(0)
 
-public abstract class Button
+public abstract class UIButton
     protected framehandle self
     protected framehandle icon
     protected ButtonBorder border
@@ -135,7 +135,7 @@ public abstract class Button
     
 
 
-public class ActionButton extends Button
+public class ActionButton extends UIButton
     private framehandle glow
     private framehandle block
     private framehandle chargeBackdrop
@@ -189,7 +189,7 @@ public class ActionButton extends Button
         self.setEnabled(true)
         block.setVisible(false)
 
-public class StackButton extends Button
+public class StackButton extends UIButton
     private integer index
     private framehandle text
     private framehandle highlight

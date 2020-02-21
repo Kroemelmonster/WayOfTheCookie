@@ -1,9 +1,12 @@
 package UIStackWindow
 
+import ClosureFrames
+
 import PlayerData
 import UIButton
 import UITooltip
 import StackType
+import UIInteractableIcon
 
 import initlater BoardStack
 
@@ -21,14 +24,13 @@ class UIStackWindow
     private static framehandle subHeader
     private static framehandle text
 
-    private static framehandle array buffs
-
-    private static constant MAX_BUFFS = 10
+    private static UIInteractableIcon array[10] buffs
+    private static UIInteractableIcon array[10] talents
 
     static function setup()
         frame = createFrame("UnitWindow", GAME_UI, 0, 0)
-        frame.setPoint(FRAMEPOINT_TOPRIGHT,  GAME_UI, FRAMEPOINT_TOPRIGHT)
-        frame.setVisible(false)
+        ..setPoint(FRAMEPOINT_TOPRIGHT,  GAME_UI, FRAMEPOINT_TOPRIGHT)
+        ..setVisible(false)
         pane = getFrame("WindowPane")
 
         icon = getFrame("UnitWindowIcon")
@@ -40,30 +42,70 @@ class UIStackWindow
 
         let buffBar = getFrame("UnitWindowBuffs")
 
-        for int i = 0 to MAX_BUFFS
-            buffs[i] = createFrame("BACKDROP", "Buff", buffBar, "", 0)
-            ..setPoint(FRAMEPOINT_TOPLEFT, buffBar, FRAMEPOINT_TOPLEFT)
-            ..setWidth(0.017)
-            ..setHeight(0.017)
+        for int i = 0 to buffs.length
+            buffs[i] = new UIInteractableIcon(buffBar, 0.018, 0.018)
+            ..setPoint(FRAMEPOINT_TOPLEFT, buffBar, FRAMEPOINT_TOPLEFT, i * 0.02, 0)
             ..setVisible(false)
+            buffs[i].onMouseEnter() ->
+                let p = GetTriggerPlayerData()
+                let b = p.stackWindowInfo.boardStack.getBuff(i)
+                b.createCurrentTooltip().display(p, true)
+            buffs[i].onMouseLeave() ->
+                let p = GetTriggerPlayerData()
+                UITooltip.hide(p)
     
-    static function update(Player p)
-        if p.isLocal()
-            if p.stackWindowInfo.boardStack != null
-                if p.stackWindowInfo.boardStack .isAlive()
-                    updateForBoardStack(p.stackWindowInfo.boardStack)
-                    frame.setVisible(true)
+        let talentBar = getFrame("UnitWindowTalents")
+        for int i = 0 to talents.length
+            talents[i] = new UIInteractableIcon(talentBar, 0.030, 0.030)
+            ..setPoint(FRAMEPOINT_TOPLEFT, talentBar, FRAMEPOINT_TOPLEFT, i * 0.032, 0)
+            ..setVisible(false)
+            talents[i].onMouseEnter() ->
+                let p = GetTriggerPlayerData()
+                StackType _stackType = null
+                if p.stackWindowInfo.boardStack != null
+                    _stackType = p.stackWindowInfo.boardStack.getStackType()
                 else
-                    p.stackWindowInfo.boardStack = null
-                    frame.setVisible(false)
-                
-            else if p.stackWindowInfo.stack != null
-                updateForStack(p.stackWindowInfo.stack)
-                frame.setVisible(true)
-            else
-                frame.setVisible(false)
+                    _stackType = p.stackWindowInfo.stack
+                let talent = _stackType.getNonHiddenTalent(i)
+                talent.createTooltip(_stackType).display(p, true)
+            talents[i].onMouseLeave() ->
+                let p = GetTriggerPlayerData()
+                UITooltip.hide(p)
 
-    private static function updateForStack(StackType stackType)
+    static function update(Player p)
+        if p.stackWindowInfo.boardStack != null
+            if p.stackWindowInfo.boardStack.isAlive()
+                updateForBoardStack(p)
+                frame.setVisible(p.blzPlayer, true)
+            else
+                p.stackWindowInfo.boardStack = null
+                frame.setVisible(p.blzPlayer, false)
+            
+        else if p.stackWindowInfo.stack != null
+            updateForStack(p)
+            frame.setVisible(p.blzPlayer, true)
+        else
+            frame.setVisible(p.blzPlayer, false)
+
+    private static function updateTalent(StackType stackType)
+        let itr = stackType.talentIterator()
+        var counter = 0
+        while itr.hasNext()
+            let talent = itr.next()
+            if talent.isHidden() == false
+                talents[counter].setVisible(true)
+                talents[counter].setIcon(talent.getIcon())
+                counter++
+            
+        for int i = counter to talents.length
+            talents[i].setVisible(false)
+        
+        destroy itr
+
+    private static function updateForStack(Player p)
+        let stackType = p.stackWindowInfo.stack
+        if p.isLocal() == false
+            return
         icon.setTexture(stackType.icon, 0, true)
         iconBorder.setBorder(BorderColor.NONE)
         header.setText(stackType.name)
@@ -82,12 +124,15 @@ class UIStackWindow
         str += Tooltip.stat("ActionPoints", stackType.actionPoints) + "|n"
         text.setText(str)
 
-        var counter = 0
-        while counter < MAX_BUFFS
-            buffs[counter].setVisible(false)
-            counter++
+        for int i = 0 to buffs.length
+            buffs[i].setVisible(false)
 
-    private static function updateForBoardStack(BoardStack stack)
+        updateTalent(stackType)
+
+    private static function updateForBoardStack(Player p)
+        let stack = p.stackWindowInfo.boardStack
+        if p.isLocal() == false
+            return
         icon.setTexture(stack.getIcon(), 0, true)
         iconBorder.setBorder(stack.getPlayer().borderColor)
         header.setText(stack.getName())
@@ -110,14 +155,12 @@ class UIStackWindow
         text.setText(str)
 
         let itr = stack.buffIterator()
-        var counter = 0
-        while counter < MAX_BUFFS
-            buffs[counter].setVisible(itr.hasNext())
+        for int i = 0 to buffs.length
+            buffs[i].setVisible(itr.hasNext())
             if itr.hasNext()
                 let b = itr.next()
-                buffs[counter].setTexture(b.getIcon(), 0, true)
-            
-
-            counter++
+                buffs[i].setIcon(b.getIcon())
         
         destroy itr
+
+        updateTalent(sType)
