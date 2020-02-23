@@ -20,68 +20,6 @@ Frame "BACKDROP" "MetalBorder" {
 
 // -- FRAMES -------------------------------------------------------
 
-Frame "BACKDROP" "UnitWindow" INHERITS "WindowTemplate" {
-    Width 0.2,
-    Height 0.25,
-    Alpha 200,
-
-    Frame "FRAME" "WindowPane" {
-        UseActiveContext,
-        LayerStyle "IGNORETRACKEVENTS",
-        SetPoint TOPLEFT, "UnitWindow", TOPLEFT, 0.01, -0.01,
-        SetPoint BOTTOMRIGHT, "UnitWindow", BOTTOMRIGHT, -0.01, 0.01,
-
-        Frame "BACKDROP" "UnitWindowIcon" {
-            SetPoint TOPLEFT, "WindowPane", TOPLEFT, 0.0, 0.0,
-            Width 0.04,
-            Height 0.04,
-        }
-
-        Frame "TEXT" "UnitWindowHeader" {
-			UseActiveContext,
-			DecorateFileNames,
-			SetPoint TOPLEFT, "WindowPane", TOPLEFT, 0.046, -0.005,
-			FontFlags "FIXEDSIZE",
-			FrameFont "MasterFont", 0.016, "",
-			FontColor 1.0 1.0 1.0 1.0,
-			FontShadowColor 0.0 0.0 0.0 0.9,
-			FontShadowOffset 0.002 -0.002,
-		}
-
-        Frame "TEXT" "UnitWindowSubHeader" {
-			UseActiveContext,
-			DecorateFileNames,
-			SetPoint TOPLEFT, "WindowPane", TOPLEFT, 0.046, -0.028,
-			FontFlags "FIXEDSIZE",
-			FrameFont "MasterFont", 0.013, "",
-			FontColor 1.0 1.0 1.0 1.0,
-			FontShadowColor 0.0 0.0 0.0 0.9,
-			FontShadowOffset 0.002 -0.002,
-		}
-
-        Frame "TEXT" "UntiWindowText" {
-			UseActiveContext,
-			DecorateFileNames,
-			SetPoint TOPLEFT, "WindowPane", TOPLEFT, 0.0, -0.046,
-			FontFlags "FIXEDSIZE",
-			FrameFont "MasterFont", 0.010, "",
-			FontColor 1.0 1.0 1.0 1.0,
-			FontShadowColor 0.0 0.0 0.0 0.9,
-			FontShadowOffset 0.001 -0.001,
-		}
-
-        Frame "FRAME" "UnitWindowTalents" {
-            SetPoint TOPLEFT, "WindowPane", BOTTOMLEFT, 0.0, 0.049,
-            SetPoint BOTTOMRIGHT, "WindowPane", BOTTOMRIGHT, 0.0, 0.019,
-        }
-
-        Frame "FRAME" "UnitWindowBuffs" {
-            SetPoint TOPLEFT, "WindowPane", BOTTOMLEFT, 0.0, 0.017,
-            SetPoint BOTTOMRIGHT, "WindowPane", BOTTOMRIGHT, 0.0, 0.0,
-        }
-    }
-}
-
 Frame "MENU" "BasicBorderWindow" {
     Frame "BACKDROP" "BackgroundImage" INHERITS "WindowTemplate" {
         SetPoint TOPLEFT, "BasicBorderWindow", TOPLEFT, 0.00, 0.00,

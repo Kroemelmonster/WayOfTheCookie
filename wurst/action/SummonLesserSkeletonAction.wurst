@@ -21,7 +21,7 @@ import UIActionWindow
 public class SummonLesserSkeletonAction extends Action
     private LinkedList<Cell> area = new LinkedList<Cell>()
     private Tooltip tooltip
-    private range summonAmount  
+    private intRange summonAmount  
 
     private static constant int COST = 2
     private static constant int COOLDOWN = 3
@@ -43,8 +43,8 @@ public class SummonLesserSkeletonAction extends Action
         ..addLine("")
         ..addLine("")
 
-    private static function getSummonLeadershipAmount(StackType sType) returns range
-        return range((sType.leadership * 0.3).ceil(), (sType.leadership * 0.6).ceil())
+    private static function getSummonLeadershipAmount(StackType sType) returns intRange
+        return intRange((sType.leadership * 0.3).ceil(), (sType.leadership * 0.6).ceil())
 
     static function createTooltip(StackType sType) returns Tooltip
         let leadership = getSummonLeadershipAmount(sType)
@@ -76,7 +76,7 @@ public class SummonLesserSkeletonAction extends Action
     override function sendTargetOrder(Cell cell) returns boolean
         if area.has(cell)
             recalcSummonAmount()
-            let summon = new BoardStack(stack.getPlayer(), SUMMONED_TYPE, summonAmount.random())
+            let summon = cell.getBoard().createSummon(stack.getPlayer(), SUMMONED_TYPE, summonAmount.random())
 
             let anim = new SummonLesserSkeletonAnimation(stack, cell) () ->
                 BoardController.placeStackOnBoard(summon, cell)
@@ -92,8 +92,8 @@ public class SummonLesserSkeletonAction extends Action
 
     private function recalcSummonAmount()
         let amount = stack.stats.getAmount()
-        let leadershipAmount = getSummonLeadershipAmount(stack.stats.getStackType())
-        summonAmount = range((leadershipAmount.min * amount / SUMMONED_TYPE.leadership).ceil(), (leadershipAmount.max * amount / SUMMONED_TYPE.leadership).ceil())
+        let leadershipAmount = getSummonLeadershipAmount(stack.getStackType())
+        summonAmount = intRange((leadershipAmount.min * amount / SUMMONED_TYPE.leadership).ceil(), (leadershipAmount.max * amount / SUMMONED_TYPE.leadership).ceil())
         
         var str = "Summons a Stack of "+ Tooltip.coloredRange(Tooltip.COLOR_PRIMARY, summonAmount)
         str += " " + Tooltip.coloredString(Tooltip.COLOR_SECONDARY, SUMMONED_TYPE.name)
@@ -103,7 +103,7 @@ public class SummonLesserSkeletonAction extends Action
         area.clear()
         recalcSummonAmount()
 
-        stack.getCell().forEachCellsInRange(range(1, MAXRANGE)) (Cell cell) ->
+        stack.getCell().forEachCellsInRange(intRange(1, MAXRANGE)) (Cell cell) ->
             if cell.getStack() == null
                 area.add(cell)
 

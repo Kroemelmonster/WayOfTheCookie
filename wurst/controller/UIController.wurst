@@ -19,7 +19,7 @@ class UIController
 
     static function selectStack(Player p, BoardStack stack)
         UIActionWindow.update(p)
-        p.stackWindowInfo.boardStack = stack
+        p.stackWindowInfo.setBoardStack(stack)
             
     static function triggerOnActionChange(Board board)
         let currentStack = board.getInitiative().getCurrentStack()
@@ -68,7 +68,7 @@ class UIController
     private static function switchToCombat(Player p)
         if p.dialogInfo.current != null
             p.dialogInfo.current.cancel(p)
-        p.stackWindowInfo.stack = null
+        p.stackWindowInfo.clear()
         UIWorldConsole.setVisible(p, false)
 
     static function switchToCombat(Board b)

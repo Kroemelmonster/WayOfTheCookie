@@ -21,8 +21,8 @@ public class StackType
     integer actionPoints
 
     integer maxHp
-    range damage
-    range attackRange
+    intRange damage
+    intRange attackRange
     int attack
     int defence
 
@@ -65,7 +65,7 @@ public class StackType
         maxHp = value
     
     @inline
-    function setDamage(range value)
+    function setDamage(intRange value)
         damage = value
 
     @inline
@@ -73,7 +73,7 @@ public class StackType
         return value
 
     @inline
-    function setAttackRange(range value)
+    function setAttackRange(intRange value)
         attackRange = value
 
     @inline

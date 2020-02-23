@@ -2,7 +2,6 @@ package UIInteractableIcon
 
 import ClosureFrames
 
-import UI
 import PlayerData
 
 import initlater MouseContext

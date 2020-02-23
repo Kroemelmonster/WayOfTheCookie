@@ -29,6 +29,9 @@ public class HostileArmy
     static function getFromUnit(unit u) returns HostileArmy
         return map.get(u)
 
+    function createSummon(StackType stackType, int amount) returns ArmyStack
+        return new ArmyStack(stackType, amount, true)
+
     function getArmy() returns Army
         return army
 

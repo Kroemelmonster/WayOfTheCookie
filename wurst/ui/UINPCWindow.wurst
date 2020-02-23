@@ -33,8 +33,8 @@ public class UINPCWindow
                 stackSellDialog.show(p, stack, stack.getStackType().getCost())
             shopStock[i].onMouseEnter() ->
                 let p = GetTriggerPlayerData()
-                p.stackWindowInfo.stack = p.npcWindowInfo.npc.getShopData().getStock().get(i).getStackType()
-
+                p.stackWindowInfo.setStackType(p.npcWindowInfo.npc.getShopData().getStock().get(i).getStackType())
+                
         stackSellDialog = new UIStackSellDialog()
 
 

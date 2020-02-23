@@ -9,7 +9,6 @@ import AbilityIds
 import StackType
 import PlayerData
 import Action
-import StackStats
 import UnitDefinition
 import DefaultAction
 import PassiveAction
@@ -17,9 +16,13 @@ import Buff
 
 import initlater Cell
 import initlater Board
+import BoardStackStats
+import StackStats
+import Stack
 
 public class BoardStack
     private StackType stackType
+    private ArmyStack armyStack
     private Cell cell
     private Player p
 
@@ -42,12 +45,13 @@ public class BoardStack
     private OnCastListener unitOnCastListener
     private OnCastListener unitOnCastImmediateListener
 
-    StackStats stats
+    BoardStackStats stats
 
-    construct(Player p, StackType stackType, integer amount)
+    construct(Player p, ArmyStack stack)
         this.p = p
-        this.stats = new StackStats(this, stackType, amount)
-        this.stackType = stackType
+        this.stats = new BoardStackStats(this, stack.stats, stack.getAmount())
+        this.armyStack = stack
+        this.stackType = stack.getStackType()
 
         this.actions = new LinkedList<Action>
         this.passiveActions = new LinkedList<PassiveAction>
@@ -71,7 +75,7 @@ public class BoardStack
 
     @inline
     function getIcon() returns string
-        return stats.getIcon()
+        return stackType.icon
 
     @inline
     function getName() returns string
@@ -80,6 +84,10 @@ public class BoardStack
     @inline
     function getStackType() returns StackType
         return stackType
+
+    @inline
+    function getArmyStack() returns ArmyStack
+        return armyStack
 
     @inline
     function resetCurrentSelectedAction()
@@ -304,6 +312,8 @@ public class BoardStack
         if damageTakenListener != null
             destroy damageTakenListener
 
+        if armyStack.isSummoned()
+            destroy armyStack
         destroy stats
         destroy unitOnCastListener
         destroy unitOnCastImmediateListener

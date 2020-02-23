@@ -38,11 +38,11 @@ public class UIWorldConsole
         ..setVisible(false)
 
 
-        bar = createSimpleFrame("MyBarEx", pane, 0)
+        bar = createSimpleFrame("MyBarEx", frame, 0)
         ..setTexture("Replaceabletextures\\Teamcolor\\Teamcolor03.blp", 0, true)
         ..setWidth(0.05)
-        ..setAbsPoint(FRAMEPOINT_BOTTOMLEFT, 0.14, 0.0)
         ..setVisible(false)
+        ..setPoint(FRAMEPOINT_BOTTOMLEFT, frame, FRAMEPOINT_BOTTOMLEFT, 0.14, 0.0)
         getFrame("MyBarExText").setText("")
 
         createFrame("WorldConsoleRessource", pane, 0, 0)

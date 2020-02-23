@@ -15,6 +15,7 @@ import KUtil
 import HostileArmy
 import Stack
 import Hero
+import StackType
 
 public class Board
     private static Cell array allCells
@@ -30,6 +31,9 @@ public class Board
     
     private Player p1
     private Player p2
+    private Hero h1
+    private Hero h2
+    private HostileArmy hostileArmy
     private InitiativeList initiative
     private LinkedList<BoardStack> stacks
 
@@ -83,6 +87,8 @@ public class Board
     function placeCombat(Hero hero, HostileArmy army)
         p1 = hero.getPlayer()
         p2 = army.getPlayer()
+        h1 = hero
+        hostileArmy = army
         placeArmy(hero.getArmy(), p1, true)
         placeArmy(army.getArmy(), p2, false)
 
@@ -107,7 +113,7 @@ public class Board
         for int i = 0 to Army.MAX_SIZE - 1
             let armyStack = army.getStack(i)
             if armyStack != null
-                placeStack(new BoardStack(p, armyStack.getStackType(), armyStack.getAmount()), hex(col, row))
+                placeStack(new BoardStack(p, armyStack), hex(col, row))
             
                 row += rowChange
                 if rowChange > 0
@@ -138,6 +144,20 @@ public class Board
 
     function getRows() returns int
         return rows
+
+    function createSummon(Player p, StackType stackType, int amount) returns BoardStack
+        ArmyStack armyStack = null
+        if p == p1
+            armyStack = h1.createSummon(stackType, amount)
+        else if p == p2
+            if h2 != null
+                armyStack = h2.createSummon(stackType, amount)
+            else
+                armyStack = hostileArmy.createSummon(stackType, amount)
+
+        if armyStack != null
+            return new BoardStack(p, armyStack)
+        return null
 
     function placeStack(BoardStack stack, Cell cell, boolean comeInHalfTheTime)
         cell.placeStack(stack)
@@ -175,7 +195,7 @@ public class Board
         let c2 = otherCell.getHex().toCube()
         return c1.distanceTo(c2)
 
-    function forEachCellsInRange(Cell startCell, range r, LLItrClosure<Cell> itr)
+    function forEachCellsInRange(Cell startCell, intRange r, LLItrClosure<Cell> itr)
         var cube = startCell.getHex().toCube()
         for int ring = 1 to r.max
             cube += CUBE_NEIGHBOURS[4]
@@ -188,7 +208,7 @@ public class Board
                         cube += CUBE_NEIGHBOURS[i]
         destroy itr
 
-    function getAllCellsInRange(Cell startCell, range r) returns LinkedList<Cell>
+    function getAllCellsInRange(Cell startCell, intRange r) returns LinkedList<Cell>
         let list = new LinkedList<Cell>()
         var cube = startCell.getHex().toCube()
         if r.min == 0

@@ -1,6 +1,7 @@
 package Stack
 
 import StackType
+import StackStats
 
 public class Stack
     protected StackType stackType
@@ -25,24 +26,39 @@ public class Stack
     function toString() returns string
         return "Stack [" + stackType.name + ", " + amount.toString() + "]"
 
+public class ArmyStack extends Stack
+    StackStats stats
+    protected boolean isSummoned
+
+    construct(StackType stackType, int amount, boolean isSummoned)
+        super(stackType, amount)
+        stats = new StackStats(this, stackType)
+        this.isSummoned = isSummoned
+
+    function isSummoned() returns boolean
+        return isSummoned
+
+    override function toString() returns string
+        return "ArmyStack [" + stackType.name + ", " + amount.toString() + "]"
+
 public class Army
     static constant MAX_SIZE = 8
-    protected Stack array[MAX_SIZE] stacks
+    protected ArmyStack array[MAX_SIZE] stacks
 
     @inline
-    function setStack(int i, Stack stack)
+    function setStack(int i, ArmyStack stack)
         stacks[i] = stack
 
     function addStackAt(int i, StackType stackType, int amount)
         if stacks[i] == null
-            stacks[i] = new Stack(stackType, amount)
+            stacks[i] = new ArmyStack(stackType, amount, false)
         
     function remove(int i)
         if stacks[i] == null
             destroy stacks[i]
             stacks[i] = null
 
-    function getStack(int i) returns Stack
+    function getStack(int i) returns ArmyStack
         if i >= 0 and i < MAX_SIZE
             return stacks[i]
         return null
@@ -67,7 +83,7 @@ public class Army
             return true
         return addStackAtFree(stackType, amount)
     
-    function getFirstStack() returns Stack
+    function getFirstStack() returns ArmyStack
         for int i = 0 to MAX_SIZE - 1
             if stacks[i] != null
                 return stacks[i]
@@ -87,7 +103,7 @@ public class Army
                 return i
         return -1
 
-    private function getNextStackWithStackType(StackType stackType) returns Stack
+    private function getNextStackWithStackType(StackType stackType) returns ArmyStack
         for int i = 0 to MAX_SIZE - 1
             if stacks[i] != null and stacks[i].stackType == stackType
                 return stacks[i]

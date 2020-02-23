@@ -9,6 +9,11 @@ import PassiveAction
 import initlater BoardStack
 import initlater Cell
 
+public constant DAMAGECALC_ATTACK_VS_DEFENCE_POSITIVE = 5.0
+public constant DAMAGECALC_ATTACK_VS_DEFENCE_POSITIVE_MAX = 300.0
+public constant DAMAGECALC_ATTACK_VS_DEFENCE_NEGATIVE = -2.5
+public constant DAMAGECALC_ATTACK_VS_DEFENCE_NEGATIVE_MAX = -70.0
+
 public class DamageResult
     int damage
     int amount
@@ -27,17 +32,17 @@ public class DamageResult
 public class DamageResultPreview
     protected BoardStack attacker
     protected BoardStack defender
-    protected range amount
-    protected range damage
+    protected intRange amount
+    protected intRange damage
     protected real effectivness
 
     construct(BoardStack attacker)
         this.attacker = attacker
 
-    function getAmount() returns range
+    function getAmount() returns intRange
         return amount
 
-    function getDamage() returns range
+    function getDamage() returns intRange
         return damage
 
     function addToTooltip(Tooltip tt)
@@ -70,24 +75,24 @@ public class DamageResultPreview
 
     private function getStatEffectiveness() returns real
         let difference = attacker.stats.getAttack() - defender.stats.getDefence()
-    
+
         if difference >= 0
-            var posEffect = difference * 5.0
-            if posEffect > 300.0
-                posEffect = 300
+            var posEffect = difference * DAMAGECALC_ATTACK_VS_DEFENCE_POSITIVE
+            if posEffect > DAMAGECALC_ATTACK_VS_DEFENCE_POSITIVE_MAX
+                posEffect = DAMAGECALC_ATTACK_VS_DEFENCE_POSITIVE_MAX
             return 100.0 + posEffect
         else
-            var negativeEffect = difference * -2.5
-            if negativeEffect > 70.0
-                negativeEffect = 70.0
-            return 100.0 - negativeEffect
+            var negativeEffect = difference * -1 * DAMAGECALC_ATTACK_VS_DEFENCE_NEGATIVE
+            if negativeEffect < DAMAGECALC_ATTACK_VS_DEFENCE_NEGATIVE_MAX
+                negativeEffect = DAMAGECALC_ATTACK_VS_DEFENCE_NEGATIVE_MAX
+            return 100.0 + negativeEffect
 
     function calculate(BoardStack defender)
         this.defender = defender
         effectivness = getStatEffectiveness()
-        let amountAttacker = attacker.stats.getAmount()
-        damage.min = ((attacker.stats.getDamage().min * amountAttacker * effectivness) / 100.0).round()
-        damage.max = ((attacker.stats.getDamage().max * amountAttacker * effectivness) / 100.0).round()
+        let realDamage = attacker.stats.getDamage() * (effectivness / 100.0)
+        damage.min = realDamage.min.round()
+        damage.max = realDamage.max.round()
         amount.min = getUnitLostCount(damage.min)
         amount.max = getUnitLostCount(damage.max)
     

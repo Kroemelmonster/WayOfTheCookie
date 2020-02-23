@@ -30,8 +30,8 @@ class UIMain
 
 
 		getFrame(FramehandleDefaultNames.consoleUI)
-		..setAbsPoint(FRAMEPOINT_BOTTOM, 0.4, -1.0)
-		..setAbsPoint(FRAMEPOINT_TOP, 0.4, 1.0)
+		//..setAbsPoint(FRAMEPOINT_BOTTOM, 0.4, -1.0)
+		//..setAbsPoint(FRAMEPOINT_TOP, 0.4, 1.0)
 		..setVisible(false)
 
 
@@ -42,13 +42,18 @@ class UIMain
 				getFrame("ResourceBarFrame").setVisible(fpsDebug)
 
 
+		loadTOCFile("UI\\Framedef.toc")
 	
-	static function loadOwnUI()
-		// Log.info("Build nice UI")
-		loadTOCFile("UI\\Framedef.toc")	
-		UIStackWindow.setup()
-		UIActionWindow.setup()
-		UIWorldConsole.setup()
-		UIInitiativeWindow.setup()
-		UINPCWindow.setup()
-		UITooltip.setup()
+	static constant MAX_PARTS = 3
+
+	static function load(integer part)
+		if part == 0
+			UIActionWindow.setup()
+			UITooltip.setup()
+		else if part == 1
+			UIInitiativeWindow.setup()
+		else if part == 2
+			UIWorldConsole.setup()
+			UINPCWindow.setup()
+		else if part == 3
+			UIStackWindow.setup()

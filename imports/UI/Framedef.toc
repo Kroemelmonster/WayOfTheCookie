@@ -8,5 +8,6 @@ UI\FrameDef\GoldText.fdf
 UI\FrameDef\Basics.fdf
 UI\FrameDef\Tooltip.fdf
 UI\FrameDef\DialogButtons.fdf
+UI\FrameDef\StackWindow.fdf
 UI\Window.fdf
 UI\Window.fdf

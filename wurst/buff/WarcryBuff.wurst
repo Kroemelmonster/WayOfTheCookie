@@ -44,7 +44,7 @@ public class WarcryBuff extends Buff
         return createTooltip(this)
 
     private function update(int durationChange)
-        stack.stats.addDamageMulti(durationChange * DAMAGE_MULTI)
+        stack.stats.damageModi.multi += (durationChange * DAMAGE_MULTI)
 
     override function onTick()
         update(-1)

@@ -1,0 +1,112 @@
+package BoardStackStats
+
+import KUtil
+import StackStatsModifier
+
+import initlater BoardStack
+import StackStats
+
+public class BoardStackStats
+    private StackStats basis
+    private BoardStack stack
+    int startAmount
+    int amount
+    int remainingActionPoints
+    int hp
+
+    int counterAttacks = 1
+
+    StackStatsModifier attackModi = new StackStatsModifier()
+    StackStatsModifier defenceModi = new StackStatsModifier()
+    StackStatsModifier damageModi = new StackStatsModifier()
+
+    construct(BoardStack stack, StackStats basis, int amount)
+        this.basis = basis
+        this.startAmount = amount
+        this.amount = amount
+        this.hp = basis.getMaxHp()
+        this.stack = stack
+
+    @inline
+    function getInitiative() returns int
+        return basis.getInitiative()
+
+    @inline
+    function getMaxActionPoints() returns int
+        return basis.getMaxActionPoints()
+    
+    @inline
+    function getRemainingActionPoints() returns integer
+        return remainingActionPoints
+
+    @inline
+    function resetActionPopints()
+        remainingActionPoints = getMaxActionPoints()
+    
+    @inline
+    function getMoveSpeed() returns real
+        return (remainingActionPoints).toReal() 
+
+    @inline
+    function getAmount() returns int
+        return amount
+    
+    @inline
+    function getHp() returns int
+        return hp
+
+    @inline
+    function getStartAmount() returns int
+        return startAmount
+    
+    @inline
+    function getMaxHp() returns int
+        return basis.getMaxHp()
+
+    @inline
+    function getDamage() returns realRange
+        return damageModi.getRealRange(basis.getDamage(), amount)
+
+    @inline
+    function getAttackRange() returns intRange
+        return basis.getAttackRange()
+
+    @inline
+    function getAttack() returns int
+        return attackModi.get(basis.getAttack()).round()
+
+    @inline
+    function getDefence() returns int
+        return defenceModi.get(basis.getDefence()).round()
+
+    @inline
+    function getCounterAttacks() returns int
+        return counterAttacks
+
+    /** setters  **/
+
+    @inline
+    function setCounterAttacks(int value)
+        counterAttacks = value
+
+    @inline
+    function setHp(int i)
+        hp = i
+        stack.setVisualHp(hp / getMaxHp())
+
+    @inline
+    function setActionPoints(integer amount)
+        remainingActionPoints = amount
+
+    @inline
+    function resetCounterAttacks()
+        counterAttacks = 1
+
+    @inline
+    function addAmount(int i)
+        amount += i
+
+    ondestroy
+        destroy attackModi
+        destroy defenceModi
+        destroy damageModi

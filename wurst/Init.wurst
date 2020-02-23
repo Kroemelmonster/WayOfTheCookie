@@ -21,8 +21,10 @@ init
 	UIMain.removeBlizzardUI()
 	setups.add() ->
 		setupSystems()
-	setups.add() ->
-		UIMain.loadOwnUI()
+
+	for int i = 0 to UIMain.MAX_PARTS
+		setups.add() ->
+			UIMain.load(i)
 	setups.add() ->
 		defineObjects()
 	setups.add() ->
@@ -53,12 +55,12 @@ function setupSystems()
 	// Log.info("Setup Systems")
 	Player.setup()
 	Mouse3DPositionSystem.setup()
-	Scheduler.setup()
 	BlzEnableSelections(true, false)
 
 function start()
 	// Log.info("Start")
 	World.generateHeroes()
+	Scheduler.setup()
 
 function defineObjects()
 	// Log.info("Flesh out some Units")

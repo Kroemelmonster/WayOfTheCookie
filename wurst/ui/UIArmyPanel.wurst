@@ -15,9 +15,9 @@ public class ArmyPanelInfo
 
     protected Army army = null
     protected int dragStart = -1
-    protected Stack stackDragStart
+    protected ArmyStack stackDragStart
     protected int dragEnd = -1
-    protected Stack stackDragEnd
+    protected ArmyStack stackDragEnd
 
     protected function setupDragStart(int i) 
         stackDragStart = army.getStack(i)
@@ -74,7 +74,7 @@ public class UIArmyPanel
 
                 let stack = info.army.getStack(i)
                 if stack != null
-                    p.stackWindowInfo.stack = stack.getStackType()
+                    p.stackWindowInfo.setArmyStack(stack)
                 if info.dragStart >= 0
                     info.setupDragEnd(i)
 

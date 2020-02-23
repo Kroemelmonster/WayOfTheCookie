@@ -4,115 +4,53 @@ import StackType
 import KUtil
 import StackStatsModifier
 
-import initlater BoardStack
+import initlater Stack
 
 public class StackStats
-    private StackType sType
-    private BoardStack stack
-    private StackStatsModifer modi
-    private int startAmount
-    private int amount
-    private int remainingActionPoints
-    private int hp
+    private Stack stack
+    StackType stackType
 
-    private int counterAttacks = 1
+    StackStatsModifier attackModi = new StackStatsModifier()
+    StackStatsModifier defenceModi = new StackStatsModifier()
+    StackStatsModifier damageModi = new StackStatsModifier()
 
-    construct(BoardStack stack, StackType sType, int amount)
-        this.sType = sType
-        this.startAmount = amount
-        this.amount = amount
-        this.hp = sType.maxHp
+    construct(Stack stack, StackType stackType)
+        this.stackType = stackType
         this.stack = stack
-        this.modi = new StackStatsModifer()
-
-    @inline
-    function getIcon() returns string
-        return sType.icon
-
-        
-    @inline
-    function getStackType() returns StackType
-        return sType
 
     @inline
     function getInitiative() returns int
-        return sType.initiative
+        return stackType.initiative
 
     @inline
     function getMaxActionPoints() returns int
-        return sType.actionPoints
-    
-    @inline
-    function getRemainingActionPoints() returns integer
-        return remainingActionPoints
-    @inline
-    function setActionPoints(integer amount)
-        remainingActionPoints = amount
-
-    @inline
-    function resetActionPopints()
-        remainingActionPoints = getMaxActionPoints()
-    
-    @inline
-    function getMoveSpeed() returns real
-        return (remainingActionPoints).toReal() 
+        return stackType.actionPoints
 
     @inline
     function getAmount() returns int
-        return amount
-    
-    @inline
-    function getHp() returns int
-        return hp
-    
-    @inline
-    function addAmount(int i)
-        amount += i
+        return stack.getAmount()
 
-    @inline
-    function getStartAmount() returns int
-        return startAmount
-    
     @inline
     function getMaxHp() returns int
-        return sType.maxHp
-    
-    @inline
-    function addDamageMulti(int value)
-        modi.damageMulti += value
+        return stackType.maxHp
 
     @inline
-    function getDamage() returns range
-        return StackStatsModifer.calculate(sType.damage, modi.damageMulti)
+    function getDamage() returns realRange
+        return damageModi.getRealRange(stackType.damage, getAmount())
 
     @inline
-    function getAttackRange() returns range
-        return sType.attackRange
+    function getAttackRange() returns intRange
+        return stackType.attackRange
 
     @inline
     function getAttack() returns int
-        return sType.attack
+        return attackModi.get(stackType.attack).round()
 
     @inline
     function getDefence() returns int
-        return sType.defence
-
-    @inline
-    function getCounterAttacks() returns int
-        return counterAttacks
-    
-    @inline
-    function setCounterAttacks(int value)
-        counterAttacks = value
-
-    @inline
-    function resetCounterAttacks()
-        counterAttacks = 1
-
-    // setters
-    function setHp(int i)
-        hp = i
-        stack.setVisualHp(hp / sType.maxHp)
+        return defenceModi.get(stackType.defence).round()
 
     ondestroy
-        destroy modi
+        destroy attackModi
+        destroy defenceModi
+        destroy damageModi

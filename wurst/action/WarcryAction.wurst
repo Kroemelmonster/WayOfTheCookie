@@ -59,7 +59,7 @@ public class WarcryAction extends InstantAction
         return charge > 0 and cooldown <= 0
 
     override function activate()
-        let area = stack.getCell().getAllCellsInRange(range(0, MAXRANGE))
+        let area = stack.getCell().getAllCellsInRange(intRange(0, MAXRANGE))
         let targets = new LinkedList<BoardStack>()
         for cell in area
             let possibleTarget = cell.getStack()

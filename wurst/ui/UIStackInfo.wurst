@@ -1,0 +1,57 @@
+package UIStackInfo
+
+import ClosureFrames
+
+import PlayerData
+
+import initlater MouseContext
+import UITooltip
+
+public class UIStackInfo
+    framehandle self
+    protected framehandle icon
+    protected framehandle text
+
+    private Tooltip tooltip
+    
+    construct(framehandle parent)
+        self = createFrame("StackInfo", parent, 0, 0)
+        icon = getFrame("StackInfoIcon")
+        text = getFrame("StackInfoText")
+
+        self.onMouseEnter() () ->
+            let p = GetTriggerPlayerData()
+            MouseContext.enableMouseMovement(p, false)
+            if tooltip != null
+                tooltip.display(p, false)
+        self.onMouseLeave() () ->
+            let p = GetTriggerPlayerData()
+            MouseContext.enableMouseMovement(p, true)
+            UITooltip.hide(p)
+
+    function setPoint(framepointtype point, framehandle relative, framepointtype relativePoint, real x, real y)
+        self.setPoint(point, relative, relativePoint, x, y)
+
+    function setIcon(string str)
+        icon.setTexture(str, 0, true)
+
+    function setText(string txt)
+        text.setText(txt)
+
+    function setVisible(boolean flag)
+        self.setVisible(flag)
+
+    function setAlpha(int alpha)
+        self.setAlpha(alpha)
+
+    function setTooltip(Tooltip t)
+        if this.tooltip != null
+            destroy this.tooltip
+        this.tooltip = t
+
+    function setTooltipLine(int index, string str)
+        this.tooltip.setLine(index, str)
+
+    ondestroy
+        Log.error("DONT DESTROY SUCH A THING WTF ?")
+

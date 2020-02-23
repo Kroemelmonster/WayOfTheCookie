@@ -6,6 +6,7 @@ import LinkedList
 import FramehandleNames
 import KUtil
 import initlater BuffType
+import StackStatsModifier
 
 constant LINE_HEIGHT = 0.0122
 constant HEIGHT_OFFSET = 0.03
@@ -73,7 +74,7 @@ public class Tooltip
     static function playerColored(Player p, string str) returns string
         return p.c.toColorString() + str + "|r"
 
-    static function coloredRange(string color, range r) returns string
+    static function coloredRange(string color, intRange r) returns string
         var str = color + r.min.toString()
         if r.min < r.max
             str +=  "|r - " + color + r.max.toString()
@@ -101,11 +102,11 @@ public class Tooltip
         return prefix + " : " + data
 
     @inline
-    static function stat(string prefix, string color, range value) returns string
+    static function stat(string prefix, string color, intRange value) returns string
         return statInner(prefix, coloredRange(color, value))
 
     @inline
-    static function stat(string prefix, range value) returns string
+    static function stat(string prefix, intRange value) returns string
         return statInner(prefix, coloredRange(Tooltip.COLOR_PRIMARY, value))
 
     @inline
@@ -121,8 +122,16 @@ public class Tooltip
         return statInner(prefix, coloredString(Tooltip.COLOR_PRIMARY, value))
 
     @inline
+    static function coloredModiInt(int value) returns string
+        if value > 0
+            return coloredString(COLOR_POSITIVE, " +" + value.toString())
+        else if value < 0
+            return coloredString(COLOR_NEGATIVE, " " + value.toString())
+        return ""
+
+    @inline
     static function percent(real perc) returns string
-        return (perc * 100).round().toString() + "%"
+        return (perc * 100).toString(1) + "%"
 
     @inline
     static function coloredPercent(real perc) returns string
@@ -131,6 +140,13 @@ public class Tooltip
         else if perc < 0
             return coloredString(COLOR_NEGATIVE, percent(perc))
         return coloredString(COLOR_SECONDARY, percent(perc))
+
+    @inline
+    static function modi(StackStatsModifier modi) returns string
+        var str = coloredModiInt(modi.addBonus)
+        if modi.multi != 100
+            str += " " + coloredPercent((modi.multi - 100) / 100.0)
+        return str
 
     @inline
     function addLine(string str)
@@ -236,7 +252,6 @@ class UITooltip
         text.setText(tt.convert())
         let lineNumbers = tt.getLineCount()
         let height = lineNumbers * LINE_HEIGHT
-        
         if height > MIN_HEIGHT
             self.setHeight(height + HEIGHT_OFFSET)
         else

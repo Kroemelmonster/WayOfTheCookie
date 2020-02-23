@@ -74,11 +74,11 @@ public class Cell
         stack.place(this)
 
     @inline
-    function forEachCellsInRange(range r, LLItrClosure<Cell> itr)
+    function forEachCellsInRange(intRange r, LLItrClosure<Cell> itr)
         board.forEachCellsInRange(this, r, itr)
 
     @inline
-    function getAllCellsInRange(range r) returns LinkedList<Cell>
+    function getAllCellsInRange(intRange r) returns LinkedList<Cell>
         return board.getAllCellsInRange(this, r)
 
     @inline

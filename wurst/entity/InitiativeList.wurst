@@ -80,7 +80,7 @@ public class InitiativeList
         30 -> 25.0
     **/
     @inline
-    private static function initiativeToTime(int initivative) returns int
+    static function initiativeToTime(int initivative) returns int
         return (100000.0 / ((initivative / 10.0) + 1.0)).round()
 
     /** removes this entry and all duplicates **/

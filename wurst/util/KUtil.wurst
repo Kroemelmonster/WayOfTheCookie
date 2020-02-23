@@ -1,9 +1,17 @@
 package KUtil
 
-public tuple range(int min, int max)
+public tuple intRange(int min, int max)
 
-public function range.op_mult(int m) returns range
-    return range(this.min * m, this.max * m)
+public function intRange.op_mult(int m) returns intRange
+    return intRange(this.min * m, this.max * m)
 
-public function range.random() returns int
+public function intRange.random() returns int
     return GetRandomInt(this.min, this.max)
+
+public tuple realRange(real min, real max)
+
+public function realRange.op_mult(real m) returns realRange
+    return realRange(this.min * m, this.max * m)
+
+public function realRange.round() returns intRange
+    return intRange(this.min.round(), this.max.round())
