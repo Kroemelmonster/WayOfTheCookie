@@ -13,6 +13,14 @@ public class StackStats
     StackStatsModifier attackModi = new StackStatsModifier()
     StackStatsModifier defenceModi = new StackStatsModifier()
     StackStatsModifier damageModi = new StackStatsModifier()
+    StackStatsModifier initModi = new StackStatsModifier()
+    StackStatsModifier hpModi = new StackStatsModifier()
+    StackStatsModifier actionPointModi = new StackStatsModifier()
+
+    int phyisicalResistance = 0
+    int magicResistance = 0
+    int fireResistance = 0
+    int poisonResistance = 0
 
     construct(Stack stack, StackType stackType)
         this.stackType = stackType
@@ -20,23 +28,23 @@ public class StackStats
 
     @inline
     function getInitiative() returns int
-        return stackType.initiative
+        return initModi.get(stackType.initiative).round()
 
     @inline
     function getMaxActionPoints() returns int
-        return stackType.actionPoints
-
-    @inline
-    function getAmount() returns int
-        return stack.getAmount()
+        return actionPointModi.get(stackType.actionPoints).round()
 
     @inline
     function getMaxHp() returns int
-        return stackType.maxHp
+        return hpModi.get(stackType.maxHp).round()
 
     @inline
     function getDamage() returns realRange
         return damageModi.getRealRange(stackType.damage, getAmount())
+
+    @inline
+    function getDamageOne() returns realRange
+        return damageModi.getRealRange(stackType.damage, 1)
 
     @inline
     function getAttackRange() returns intRange
@@ -50,7 +58,27 @@ public class StackStats
     function getDefence() returns int
         return defenceModi.get(stackType.defence).round()
 
+    @inline
+    function getResistance(DamageType dType) returns int
+        let basic = stackType.getResistance(dType)
+        switch dType
+            case MAGIC
+                return magicResistance + basic
+            case FIRE
+                return fireResistance + basic
+            case POISON
+                return poisonResistance + basic
+            default
+                return phyisicalResistance + basic
+
+    @inline
+    function getAmount() returns int
+        return stack.getAmount()
+
     ondestroy
         destroy attackModi
         destroy defenceModi
         destroy damageModi
+        destroy initModi
+        destroy actionPointModi
+        destroy hpModi

@@ -6,6 +6,7 @@ import PlayerData
 
 import initlater MouseContext
 import UITooltip
+import initlater StackType
 
 public class UIStackInfo
     framehandle self
@@ -34,6 +35,17 @@ public class UIStackInfo
 
     function setIcon(string str)
         icon.setTexture(str, 0, true)
+
+    function setIcon(DamageType damageType)
+        switch damageType
+            case MAGIC
+                icon.setTexture("UI/Textures/StackInfo/dmg-magic.dds", 0, true)
+            case FIRE
+                icon.setTexture("UI/Textures/StackInfo/dmg-fire.dds", 0, true)
+            case POISON
+                icon.setTexture("UI/Textures/StackInfo/dmg-poison.dds", 0, true)
+            default
+                icon.setTexture("UI/Textures/StackInfo/dmg-physical.dds", 0, true)
 
     function setText(string txt)
         text.setText(txt)

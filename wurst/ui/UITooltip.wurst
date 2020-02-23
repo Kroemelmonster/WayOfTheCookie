@@ -130,6 +130,14 @@ public class Tooltip
         return ""
 
     @inline
+    static function coloredModiReal(real value, int precision) returns string
+        if value > 0.0
+            return coloredString(COLOR_POSITIVE, " +" + value.toString(precision))
+        else if value < 0.0
+            return coloredString(COLOR_NEGATIVE, " " + value.toString(precision))
+        return ""
+
+    @inline
     static function percent(real perc) returns string
         return (perc * 100).toString(1) + "%"
 
@@ -145,7 +153,7 @@ public class Tooltip
     static function modi(StackStatsModifier modi) returns string
         var str = coloredModiInt(modi.addBonus)
         if modi.multi != 100
-            str += " " + coloredPercent((modi.multi - 100) / 100.0)
+            str += " (" + coloredPercent((modi.multi - 100) / 100.0) + ")"
         return str
 
     @inline

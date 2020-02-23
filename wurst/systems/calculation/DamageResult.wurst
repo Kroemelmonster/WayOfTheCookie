@@ -8,6 +8,7 @@ import PassiveAction
 
 import initlater BoardStack
 import initlater Cell
+import initlater StackType
 
 public constant DAMAGECALC_ATTACK_VS_DEFENCE_POSITIVE = 5.0
 public constant DAMAGECALC_ATTACK_VS_DEFENCE_POSITIVE_MAX = 300.0
@@ -22,14 +23,23 @@ public class DamageResult
     function toString() returns string
         return "DamageResult damage:"+damage.toString()+ ", amount:"+amount.toString()
 
-    static function calulateOneResult(BoardStack attacker, BoardStack defender) returns DamageResult
-        let preview = new DamageResultPreview(attacker)
+    static function calulateOneAttackResult(BoardStack attacker, BoardStack defender) returns DamageResult
+        let preview = new AttackResultPreview(attacker, false)
         preview.calculate(defender)
         let result = preview.getOneResult()
         destroy preview
         return result
 
-public class DamageResultPreview
+public class Damage
+    protected realRange value
+    protected DamageType damageType
+
+    construct(realRange value, DamageType damageType)
+        this.value = value
+        this.damageType = damageType
+
+
+public abstract class DamageResultPreview
     protected BoardStack attacker
     protected BoardStack defender
     protected intRange amount
@@ -73,28 +83,21 @@ public class DamageResultPreview
 
         return result
 
-    private function getStatEffectiveness() returns real
-        let difference = attacker.stats.getAttack() - defender.stats.getDefence()
+    protected abstract function getBaseDamage() returns Damage
 
-        if difference >= 0
-            var posEffect = difference * DAMAGECALC_ATTACK_VS_DEFENCE_POSITIVE
-            if posEffect > DAMAGECALC_ATTACK_VS_DEFENCE_POSITIVE_MAX
-                posEffect = DAMAGECALC_ATTACK_VS_DEFENCE_POSITIVE_MAX
-            return 100.0 + posEffect
-        else
-            var negativeEffect = difference * -1 * DAMAGECALC_ATTACK_VS_DEFENCE_NEGATIVE
-            if negativeEffect < DAMAGECALC_ATTACK_VS_DEFENCE_NEGATIVE_MAX
-                negativeEffect = DAMAGECALC_ATTACK_VS_DEFENCE_NEGATIVE_MAX
-            return 100.0 + negativeEffect
+    /** should always return 100 if you dont want to change the damage at all **/
+    protected abstract function getBaseEffectivness() returns real
 
     function calculate(BoardStack defender)
         this.defender = defender
-        effectivness = getStatEffectiveness()
-        let realDamage = attacker.stats.getDamage() * (effectivness / 100.0)
+        let baseDamage = getBaseDamage()
+        effectivness = getBaseEffectivness() * (1 - (defender.stats.getResistance(baseDamage.damageType) / 100.0))
+        let realDamage = baseDamage.value * (effectivness / 100.0)
         damage.min = realDamage.min.round()
         damage.max = realDamage.max.round()
         amount.min = getUnitLostCount(damage.min)
         amount.max = getUnitLostCount(damage.max)
+        destroy baseDamage
     
     function update(BoardStack defender)
         if this.defender != defender
@@ -109,13 +112,31 @@ public class DamageResultPreview
 public class AttackResultPreview extends DamageResultPreview
     private LinkedList<PassiveAction> counters
 
-    construct(BoardStack attacker)
+    construct(BoardStack attacker, boolean includeCounters)
         super(attacker)
-        counters = new LinkedList<PassiveAction>
+        if includeCounters
+            counters = new LinkedList<PassiveAction>
+
+    protected override function getBaseDamage() returns Damage
+        return new Damage(attacker.stats.getDamage(), attacker.stats.getDamageType())
+
+    protected override function getBaseEffectivness() returns real
+        let difference = attacker.stats.getAttack() - defender.stats.getDefence()
+
+        if difference >= 0
+            var posEffect = difference * DAMAGECALC_ATTACK_VS_DEFENCE_POSITIVE
+            if posEffect > DAMAGECALC_ATTACK_VS_DEFENCE_POSITIVE_MAX
+                posEffect = DAMAGECALC_ATTACK_VS_DEFENCE_POSITIVE_MAX
+            return 100.0 + posEffect
+        else
+            var negativeEffect = difference * -1 * DAMAGECALC_ATTACK_VS_DEFENCE_NEGATIVE
+            if negativeEffect < DAMAGECALC_ATTACK_VS_DEFENCE_NEGATIVE_MAX
+                negativeEffect = DAMAGECALC_ATTACK_VS_DEFENCE_NEGATIVE_MAX
+            return 100.0 + negativeEffect
 
     override function addToTooltip(Tooltip tt)
         super.addToTooltip(tt)
-        if counters.isEmpty()
+        if counters == null or counters.isEmpty()
             return
         var str = "Will Counter with "
         let itr = counters.iterator()
@@ -126,8 +147,23 @@ public class AttackResultPreview extends DamageResultPreview
                 str += ", "
         tt.addLine(str)
 
+    override function calculate(BoardStack defender)
+        super.calculate(defender)
+        if counters == null
+            return
+        counters.clear()
+        let itr = defender.passiveActionIterator()
+        while itr.hasNext()
+            let passive = itr.next()
+            if passive.triggerAfterAttackCheck(attacker, attacker.getCell())
+                counters.add(passive)
+
+        destroy itr
+
     function calculate(BoardStack defender, Cell fromCell)
         super.calculate(defender)
+        if counters == null
+            return
         counters.clear()
         let itr = defender.passiveActionIterator()
         while itr.hasNext()
@@ -138,6 +174,7 @@ public class AttackResultPreview extends DamageResultPreview
         destroy itr
 
     ondestroy
-        destroy counters
+        if counters != null
+            destroy counters
 
         

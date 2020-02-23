@@ -14,6 +14,7 @@ import initlater StandardTextTags
 import initlater Action
 import initlater OrderSystem
 import initlater PassiveAction
+import LinkedList
 
 constant TEXTTAG_COLOR_DAMAGE = colorA(246, 255, 120, 199)
 constant TEXTTAG_COLOR_KILLS = colorA(255, 120, 120, 200)
@@ -75,25 +76,21 @@ public class BoardController
         finishAction(stack)
         OrderSystem.endOrder(board)
         
+    private static function trigerAfterAttackNext(LLIterator<PassiveAction> itr, Board board, BoardStack attacker, BoardStack defender)
+        if itr.hasNext() == false
+            destroy itr
+            endTurn(attacker, board)
+            return
+        let passive = itr.next()
+        // what if defender or attacker dies ?? TODO
+        if passive.triggerAfterAttackCheck(attacker)
+            passive.triggerAfterAttack(attacker) -> 
+                trigerAfterAttackNext(itr, board, attacker, defender)
 
     private static function triggerAfterAttack(BoardStack attacker, BoardStack defender)
         let itr = defender.passiveActionIterator()
         let board = attacker.getBoard()
-        // this is just to prevent double activations
-        // RIGHT now this is not possible but it might be in the future
-        var continue = true
-        var canEndTurnRightAfter = true
-        while itr.hasNext() and continue
-            let passive = itr.next()
-            if passive.triggerAfterAttackCheck(attacker)
-                continue = false
-                canEndTurnRightAfter = false
-                passive.triggerAfterAttack(attacker) -> 
-                    endTurn(attacker, board)
-
-        destroy itr
-        if canEndTurnRightAfter
-            endTurn(attacker, board)
+        trigerAfterAttackNext(itr, board, attacker, defender)
 
     static function onAttackEnd(BoardStack attacker, BoardStack defender)
         nullTimer() ->

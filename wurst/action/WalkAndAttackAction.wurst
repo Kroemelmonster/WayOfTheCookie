@@ -32,7 +32,7 @@ public class WalkAndAttackAction extends DefaultAction
         super(stack, "Attack")
         walkableCells = new StackPathFinding(stack, 1.0)
         path = new LinkedList<Cell>()
-        preview = new AttackResultPreview(stack)
+        preview = new AttackResultPreview(stack, true)
         targets = new TargetList(stack) (BoardStack possibleStack) -> 
             return getCellToAttackFromWithCheck(possibleStack)
 

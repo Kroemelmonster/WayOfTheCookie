@@ -6,6 +6,12 @@ import StackSoundSet
 import KUtil
 import Talent
 
+public enum DamageType
+    PHYISICAL
+    MAGIC
+    FIRE
+    POISON
+
 public class StackType
     integer unitId
     integer armyUnitId
@@ -26,6 +32,13 @@ public class StackType
     int attack
     int defence
 
+    DamageType damageType = PHYISICAL
+
+    int phyisicalResistance = 0
+    int magicResistance = 0
+    int fireResistance = 0
+    int poisonResistance = 0
+
     LinkedList<Talent> talents = new LinkedList<Talent>()
 
     construct(integer unitId, integer armyUnitId, string icon, StackSoundSet soundSet, string name, int level, int leadership, int value)
@@ -40,6 +53,7 @@ public class StackType
 
     function addTalent(Talent talent)
         talents.add(talent)
+        talent.onStackTypeCreation(this)
 
     @inline
     function getNonHiddenTalent(int index) returns Talent
@@ -59,6 +73,18 @@ public class StackType
     @inline
     function talentIterator() returns LLIterator<Talent>
         return talents.iterator()
+
+    @inline
+    function getResistance(DamageType dType) returns int
+        switch dType
+            case MAGIC
+                return magicResistance
+            case FIRE
+                return fireResistance
+            case POISON
+                return poisonResistance
+            default
+                return phyisicalResistance
 
     @inline
     function setMaxHp(int value)
@@ -91,3 +117,7 @@ public class StackType
     @inline
     function setDefence(int value)
         defence = value
+    
+    @inline
+    function setDamageType(DamageType value)
+        this.damageType = value

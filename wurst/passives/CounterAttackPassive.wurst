@@ -27,7 +27,7 @@ public class CounterAttackPassive extends PassiveAction
         stack.stats.setCounterAttacks(stack.stats.getCounterAttacks() - 1)
 
         let anim = new AttackAnimation(stack, target) () ->
-            let result = DamageResult.calulateOneResult(stack, target)
+            let result = DamageResult.calulateOneAttackResult(stack, target)
             BoardController.dealDamage(stack, result, target)
 
         anim.onFinish() () ->

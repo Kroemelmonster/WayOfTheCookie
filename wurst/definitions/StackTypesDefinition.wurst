@@ -73,6 +73,7 @@ class StackTypesDefinition
             ..setAttackRange(intRange(1, 4))
             ..setAttack(9)
             ..setDefence(3)
+            ..setDamageType(DamageType.MAGIC)
 
         StackTypes.LESSER_SKELETON = createMelee(UnitTypesIds.SKELETON_LESSER, UnitTypesIds.ARMY_SKELETON_LESSER, 
         "ReplaceableTextures\\CommandButtons\\BTNLesserDarkMinion.blp", StackSoundSets.SKELETON, 1, 10, 12)

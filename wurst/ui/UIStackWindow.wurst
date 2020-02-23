@@ -14,6 +14,7 @@ import initlater DamageResult
 import initlater InitiativeList
 import initlater Stack
 import KUtil
+import StackStatsModifier
 
 public class UIStackWindowInfo
     protected BoardStack boardStack
@@ -64,6 +65,8 @@ class UIStackWindow
     private static UIStackInfo stackInfoHp
     private static UIStackInfo stackInfoLeadership
 
+    private static framehandle hpBar
+    private static framehandle hpBarText
 
     static function setup()
         frame = createFrame("StackWindow", GAME_UI, 0, 0)
@@ -99,6 +102,11 @@ class UIStackWindow
          + " will decreases their damage dealt by "
          + Tooltip.coloredPercent(DAMAGECALC_ATTACK_VS_DEFENCE_NEGATIVE / 100.0) + " up to "
          + Tooltip.coloredPercent(DAMAGECALC_ATTACK_VS_DEFENCE_NEGATIVE_MAX / 100.0))
+         ..addLine("----")
+         ..addLine("")
+         ..addLine("")
+         ..addLine("")
+         ..addLine("")
         stackInfoDefence = new UIStackInfo(infoBar)
         ..setPoint(FRAMEPOINT_TOPLEFT, infoBar, FRAMEPOINT_TOP, 0, 0)
         ..setPoint(FRAMEPOINT_TOPRIGHT, infoBar, FRAMEPOINT_TOPRIGHT, 0, 0)
@@ -110,7 +118,6 @@ class UIStackWindow
         stackInfoDamage = new UIStackInfo(infoBar)
         ..setPoint(FRAMEPOINT_TOPLEFT, stackInfoAttack.self, FRAMEPOINT_BOTTOMLEFT, 0, -0.005)
         ..setPoint(FRAMEPOINT_TOPRIGHT, stackInfoAttack.self, FRAMEPOINT_BOTTOMRIGHT, 0, -0.005)
-        ..setIcon("UI/Textures/StackInfo/dmg-physical.dds")
         ..setTooltip(t)
 
         t = Tooltip.create("Range")
@@ -167,6 +174,14 @@ class UIStackWindow
         ..setIcon("UI/Textures/StackInfo/leadership.dds")
         ..setTooltip(t)
 
+        hpBar = createSimpleFrame("MyBarEx", infoBar, 0)
+        ..setPoint(FRAMEPOINT_TOPLEFT, stackInfoInitiative.self, FRAMEPOINT_BOTTOMLEFT, 0.027, -0.008)
+        ..setPoint(FRAMEPOINT_TOPRIGHT, stackInfoActionPoints.self, FRAMEPOINT_BOTTOMRIGHT, 0, -0.008)
+        ..setHeight(0.02)
+        ..setVisible(false)
+
+        hpBarText = getFrame("MyBarExText")
+
 
         let buffBar = getFrame("StackWindowBuffs")
 
@@ -203,6 +218,7 @@ class UIStackWindow
     static function update(Player p)
         if p.stackWindowInfo.isEmpty()
             frame.setVisible(p.blzPlayer, false)
+            hpBar.setVisible(p.blzPlayer, false)
             return
         frame.setVisible(p.blzPlayer, true)
 
@@ -224,25 +240,23 @@ class UIStackWindow
         iconBorder.setBorder(BorderColor.NONE)
         subHeader.setText("")
 
-        stackInfoAttack.setText(stackType.attack.toString())
-        stackInfoDefence.setText(stackType.defence.toString())
-        let damage = stackType.damage
-        stackInfoDamage.setText(damage.min.toString() + " - " + damage.max.toString())
+        upateStackInfo(stackInfoAttack, stackType.attack, stackType.attack, null)
+        upateStackInfo(stackInfoDefence, stackType.defence, stackType.defence, null)
+        stackInfoDefence.setTooltipLine(4, "Physical Resistance : " + Tooltip.coloredPercent(stackType.phyisicalResistance / 100))
+        stackInfoDefence.setTooltipLine(5, "Magic Resistance : " + Tooltip.coloredPercent(stackType.magicResistance / 100))
+        stackInfoDefence.setTooltipLine(6, "Fire Resistance : " + Tooltip.coloredPercent(stackType.fireResistance / 100))
+        stackInfoDefence.setTooltipLine(7, "Poison Resistance : " + Tooltip.coloredPercent(stackType.poisonResistance / 100))
+
+        upateStackInfoRange(stackInfoDamage, stackType.damage, 0.0, null)
+        stackInfoDamage.setIcon(stackType.damageType)
         stackInfoRange.setText(rangeToText(stackType.attackRange))
-        stackInfoInitiative.setText(stackType.initiative.toString())
-        stackInfoInitiative.setTooltipLine(2, "Every time this units ends its turn it has to wait "
-         + Tooltip.primaryString((InitiativeList.initiativeToTime(stackType.initiative) / 100).round().toString())
-         + " " + Tooltip.secondaryString("timeunits") + " until it can act again")
-        stackInfoActionPoints.setText(stackType.actionPoints.toString())
-        stackInfoHp.setText(stackType.maxHp.toString())
-        stackInfoLeadership.setText(stackType.leadership.toString())
-        stackInfoLeadership.setTooltipLine(2, "You currently need "
-         + Tooltip.primaryString(p.hero.getCurrentLeadershipRequirementOfStackType(stackType).toString())
-         + " " + Tooltip.secondaryString("Leadership") + " to controll all your Stacks of "
-         + Tooltip.secondaryString(stackType.name) + ".")
-        stackInfoLeadership.setTooltipLine(3, "You can still controll "
-         + Tooltip.primaryString(p.hero.getMaxAmountOfStackTypeRemainingBasedOnLeadership(stackType).toString())
-         + " more Stacks of " + Tooltip.secondaryString(stackType.name) + ".")
+
+        upateStackInfo(stackInfoInitiative, stackType.initiative, stackType.initiative, null)
+        updateInitiativeTooltip(stackType.initiative)
+        upateStackInfo(stackInfoActionPoints, stackType.actionPoints, stackType.actionPoints, null)
+
+        upateStackInfo(stackInfoHp, stackType.maxHp, stackType.maxHp, null)
+        updateLeadership(p, stackType)
 
         for int i = 0 to buffs.length
             buffs[i].setVisible(false)
@@ -255,25 +269,24 @@ class UIStackWindow
         iconBorder.setBorder(BorderColor.NONE)
         subHeader.setText("")
 
-        stackInfoAttack.setText(stackType.attack.toString() + Tooltip.modi(armyStats.attackModi))
-        stackInfoDefence.setText(stackType.defence.toString() + Tooltip.modi(armyStats.defenceModi))
-        let damage = stackType.damage
-        stackInfoDamage.setText(damage.min.toString() + " - " + damage.max.toString() + Tooltip.modi(armyStats.damageModi))
+        upateStackInfo(stackInfoAttack, stackType.attack, armyStats.getAttack(), armyStats.attackModi)
+        upateStackInfo(stackInfoDefence, stackType.defence, armyStats.getDefence(), armyStats.defenceModi)
+        stackInfoDefence.setTooltipLine(4, "Physical Resistance : " + Tooltip.coloredPercent(armyStats.getResistance(DamageType.PHYISICAL) / 100))
+        stackInfoDefence.setTooltipLine(5, "Magic Resistance : " + Tooltip.coloredPercent(armyStats.getResistance(DamageType.MAGIC) / 100))
+        stackInfoDefence.setTooltipLine(6, "Fire Resistance : " + Tooltip.coloredPercent(armyStats.getResistance(DamageType.FIRE) / 100))
+        stackInfoDefence.setTooltipLine(7, "Poison Resistance : " + Tooltip.coloredPercent(armyStats.getResistance(DamageType.POISON) / 100))
+
+        let dmgDifference = armyStats.getDamageOne().avg() - stackType.damage.avg()
+        upateStackInfoRange(stackInfoDamage, stackType.damage, dmgDifference, armyStats.damageModi)
+        stackInfoDamage.setIcon(stackType.damageType)
         stackInfoRange.setText(rangeToText(stackType.attackRange))
-        stackInfoInitiative.setText(stackType.initiative.toString())
-        stackInfoInitiative.setTooltipLine(2, "Every time this units ends its turn it has to wait "
-         + Tooltip.primaryString((InitiativeList.initiativeToTime(stackType.initiative) / 100).round().toString())
-         + " " + Tooltip.secondaryString("timeunits") + " until it can act again")
-        stackInfoActionPoints.setText(stackType.actionPoints.toString())
-        stackInfoHp.setText(stackType.maxHp.toString())
-        stackInfoLeadership.setText(stackType.leadership.toString())
-        stackInfoLeadership.setTooltipLine(2, "You currently need "
-         + Tooltip.primaryString(p.hero.getCurrentLeadershipRequirementOfStackType(stackType).toString())
-         + " " + Tooltip.secondaryString("Leadership") + " to controll all your Stacks of "
-         + Tooltip.secondaryString(stackType.name) + ".")
-        stackInfoLeadership.setTooltipLine(3, "You can still controll "
-         + Tooltip.primaryString(p.hero.getMaxAmountOfStackTypeRemainingBasedOnLeadership(stackType).toString())
-         + " more Stacks of " + Tooltip.secondaryString(stackType.name) + ".")
+
+        upateStackInfo(stackInfoInitiative, stackType.initiative, armyStats.getInitiative(), armyStats.initModi)
+        updateInitiativeTooltip(stackType.initiative)
+        upateStackInfo(stackInfoActionPoints, stackType.actionPoints, armyStats.getMaxActionPoints(), armyStats.actionPointModi)
+
+        upateStackInfo(stackInfoHp, stackType.maxHp, armyStats.getMaxHp(), armyStats.hpModi)
+        updateLeadership(p, stackType)
 
         for int i = 0 to buffs.length
             buffs[i].setVisible(false)
@@ -288,25 +301,30 @@ class UIStackWindow
         iconBorder.setBorder(boardStack.getPlayer().borderColor)
         subHeader.setText(boardStats.getAmount().toString() + " / " + boardStats.getStartAmount().toString())
 
-        stackInfoAttack.setText(armyStats.getAttack().toString() + Tooltip.modi(boardStats.attackModi))
-        stackInfoDefence.setText(armyStats.getDefence().toString() + Tooltip.modi(boardStats.defenceModi))
-        let damage = armyStats.getDamage().round()
-        stackInfoDamage.setText(damage.min.toString() +" - "+damage.max.toString() + Tooltip.modi(armyStats.damageModi))
-        
-        /*
-        
-        str += Tooltip.stat("Level", sType.level) + "|n"
-        str += Tooltip.stat("Leadership", sType.leadership) + "|n"
+        upateStackInfo(stackInfoAttack, armyStats.getAttack(), boardStats.getAttack(), boardStats.attackModi)
+        upateStackInfo(stackInfoDefence, armyStats.getDefence(), boardStats.getDefence(), boardStats.defenceModi)
+        stackInfoDefence.setTooltipLine(4, "Physical Resistance : " + Tooltip.coloredPercent(boardStats.getResistance(DamageType.PHYISICAL) / 100))
+        stackInfoDefence.setTooltipLine(5, "Magic Resistance : " + Tooltip.coloredPercent(boardStats.getResistance(DamageType.MAGIC) / 100))
+        stackInfoDefence.setTooltipLine(6, "Fire Resistance : " + Tooltip.coloredPercent(boardStats.getResistance(DamageType.FIRE) / 100))
+        stackInfoDefence.setTooltipLine(7, "Poison Resistance : " + Tooltip.coloredPercent(boardStats.getResistance(DamageType.POISON) / 100))
 
-        str += "Health : " + Tooltip.coloredInt(Tooltip.COLOR_PRIMARY, stack.stats.getHp()) + " / "+ Tooltip.coloredInt(Tooltip.COLOR_PRIMARY, stack.stats.getMaxHp()) +"|n"
-        str += Tooltip.stat("Attack", stack.stats.getAttack()) + "|n"
-        str += Tooltip.stat("Defence", stack.stats.getDefence()) + "|n"
-        str += Tooltip.stat("Damage", stack.stats.getDamage()) + "|n"
-        str += Tooltip.stat("Attackrange", stack.stats.getAttackRange()) + "|n"
-        str += Tooltip.stat("Initiative", stack.stats.getInitiative()) + "|n"
-        str += Tooltip.stat("ActionPoints", stack.stats.getMaxActionPoints()) + "|n"
-        */
-        //text.setText(str)
+        let dmgDifference = boardStats.getDamageOne().avg() - armyStats.getDamageOne().avg()
+        upateStackInfoRange(stackInfoDamage, armyStats.getDamageOne().round(), dmgDifference, boardStats.damageModi)
+        stackInfoDamage.setIcon(stackType.damageType)
+        stackInfoRange.setText(rangeToText(stackType.attackRange))
+
+        upateStackInfo(stackInfoInitiative, armyStats.getInitiative(), boardStats.getInitiative(), boardStats.initModi)
+        updateInitiativeTooltip(stackType.initiative)
+        upateStackInfo(stackInfoActionPoints, armyStats.getMaxActionPoints(), boardStats.getMaxActionPoints(), boardStats.actionPointModi)
+
+        // HP
+        stackInfoHp.setText("")
+        stackInfoHp.setPoint(FRAMEPOINT_TOPRIGHT, stackInfoActionPoints.self, FRAMEPOINT_BOTTOMRIGHT, 0, -0.005)
+        hpBar.setVisible(true)
+        hpBar.setMinMax(0, boardStats.getMaxHp().toReal())
+        hpBar.setValue(boardStats.getHp().toReal())
+        hpBarText.setText(boardStats.getHp().toString() + " / " + boardStats.getMaxHp().toString())
+        stackInfoLeadership.setVisible(false)
 
         let itr = boardStack.buffIterator()
         for int i = 0 to buffs.length
@@ -316,6 +334,32 @@ class UIStackWindow
                 buffs[i].setIcon(b.getIcon())
         
         destroy itr
+
+    @inline
+    private static function upateStackInfo(UIStackInfo info, int basic, int modified, StackStatsModifier _modi)
+        info.setText(basic.toString() + Tooltip.coloredModiInt(modified - basic))
+
+    @inline
+    private static function upateStackInfoRange(UIStackInfo info, intRange basic, real difference, StackStatsModifier _modi)
+        info.setText(basic.min.toString() + " - " + basic.max.toString() + Tooltip.coloredModiReal(difference, 1))
+
+    private static function updateInitiativeTooltip(int inititative)
+        stackInfoInitiative.setTooltipLine(2, "Every time this units ends its turn it has to wait "
+        + Tooltip.primaryString((InitiativeList.initiativeToTime(inititative) / 100).round().toString())
+        + " " + Tooltip.secondaryString("timeunits") + " until it can act again")
+
+    private static function updateLeadership(Player p, StackType stackType)
+        stackInfoHp.setPoint(FRAMEPOINT_TOPRIGHT, stackInfoInitiative.self, FRAMEPOINT_BOTTOMRIGHT, 0, -0.005)
+        stackInfoLeadership.setVisible(true)
+        hpBar.setVisible(false)
+        stackInfoLeadership.setText(stackType.leadership.toString())
+        stackInfoLeadership.setTooltipLine(2, "You currently need "
+         + Tooltip.primaryString(p.hero.getCurrentLeadershipRequirementOfStackType(stackType).toString())
+         + " " + Tooltip.secondaryString("Leadership") + " to controll all your Stacks of "
+         + Tooltip.secondaryString(stackType.name) + ".")
+        stackInfoLeadership.setTooltipLine(3, "You can still controll "
+         + Tooltip.primaryString(p.hero.getMaxAmountOfStackTypeRemainingBasedOnLeadership(stackType).toString())
+         + " more Stacks of " + Tooltip.secondaryString(stackType.name) + ".")
 
     private static function updateSpecifcForStackType(StackType stackType)
         icon.setTexture(stackType.icon, 0, true)

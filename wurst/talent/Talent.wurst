@@ -11,6 +11,9 @@ import UITooltip
 interface GenerateListener
     function onStackCreation(BoardStack stack)
 
+interface StackTypeCreationListener
+    function onCreation(StackType stackType)
+
 public class TalentSet
     static Talent DEFAULT
     static Talent SUMMON_LESSER_SKELETON
@@ -28,6 +31,7 @@ public abstract class Talent
     protected string name
     protected string icon = null
     private GenerateListener listener
+    private StackTypeCreationListener stackTypeCreationListener
 
     construct(string name, string icon)
         this.name = name
@@ -37,6 +41,13 @@ public abstract class Talent
 
     function addGenerateListener(GenerateListener listener)
         this.listener = listener
+
+    function addStackTypCreationListener(StackTypeCreationListener listener)
+        this.stackTypeCreationListener = listener
+
+    function onStackTypeCreation(StackType stackType)
+        if stackTypeCreationListener != null
+            stackTypeCreationListener.onCreation(stackType)
         
     function onStackCreation(BoardStack stack)
         listener.onStackCreation(stack)
