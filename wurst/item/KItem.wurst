@@ -1,0 +1,12 @@
+package KItem
+import Stack
+
+public abstract class KItem
+    protected string icon
+    protected string name
+
+    construct(string name, string icon)
+        this.icon = icon
+        this.name = name
+
+    abstract function onStackUpdate(ArmyStack armyStack, boolean add)

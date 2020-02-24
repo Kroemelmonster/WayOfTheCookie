@@ -1,12 +1,17 @@
 IncludeFile "UI\FrameDef\UI\EscMenuMainPanel.fdf",
 
-Frame "BACKDROP" "StackWindow" INHERITS "EscMenuBackdrop" {
+Frame "BACKDROP" "StackWindow" {
     Width 0.2,
     Height 0.25,
-    Alpha 200,
     UseActiveContext,
-    BackdropCornerSize  0.02,
-    BackdropBackgroundInsets 0.007 0.007 0.007 0.007,
+    BackdropBackground "UI/Textures/texture-wood.dds",
+    BackdropBlendAll,
+ 
+    BackdropCornerFlags "UL|UR|BL|BR|T|L|B|R",
+    BackdropCornerSize  0.05,
+    BackdropBackgroundSize  0.04, //in tile mode, size of each tile
+    BackdropBackgroundInsets 0.004 0.004 0.004 0.004,
+    BackdropEdgeFile  "MetalBorder.dds",
 
     Frame "FRAME" "WindowPane" {
         UseActiveContext,

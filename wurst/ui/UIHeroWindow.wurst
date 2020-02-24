@@ -1,0 +1,58 @@
+package UIHeroWindow
+
+import ClosureFrames
+
+import UIWorldConsole
+import PlayerData
+import MainController
+
+public class UIHeroWindowInfo
+    protected boolean visible = false
+
+public class UIHeroWindow
+    private static framehandle self
+    private static framehandle pane
+
+    private static framehandle attackText
+    private static framehandle defenceText
+
+    static function setup()
+        self = createFrame("BasicBorderWindow", GAME_UI, 0, 0)
+        ..setPoint(FRAMEPOINT_TOPRIGHT, GAME_UI, FRAMEPOINT_TOPRIGHT)
+        ..setPoint(FRAMEPOINT_BOTTOMLEFT, UIWorldConsole.self, FRAMEPOINT_TOPLEFT)
+        ..setVisible(false)
+        
+        pane = getFrame("WindowPane")
+
+        createFrame("HeroWindowStat", pane, 0, 0)
+        ..setPoint(FRAMEPOINT_TOP, pane, FRAMEPOINT_TOP, -0.03, 0)
+        getFrame("Icon").setTexture("UI/Textures/attack-borderless.dds", 0, true)
+        attackText = getFrame("Text")
+
+        createFrame("HeroWindowStat", pane, 0, 0)
+        ..setPoint(FRAMEPOINT_TOP, pane, FRAMEPOINT_TOP, 0.03, 0)
+        getFrame("Icon").setTexture("UI/Textures/defence-borderless.dds", 0, true)
+        defenceText = getFrame("Text")
+
+        createFrame("DialogAcceptButton", pane, 0, 0)
+        ..setPoint(FRAMEPOINT_BOTTOMRIGHT, pane, FRAMEPOINT_BOTTOMRIGHT, 0.0, 0.0)
+        ..onClick() ->
+            let p = GetTriggerPlayerData()
+            MainController.openHeroWindow(p, false)
+        getFrame("DialogButtonText").setText("")
+
+    static function setVisible(Player p, boolean flag)
+        p.heroWindoInfo.visible = flag
+        self.setVisible(flag)
+        if flag
+            update(p)
+
+    static function update(Player p)
+        if p.heroWindoInfo.visible == false
+            return
+
+        if p.isLocal() == false
+            return
+
+        attackText.setText(p.hero.getAttack().toString())
+        defenceText.setText(p.hero.getDefence().toString())

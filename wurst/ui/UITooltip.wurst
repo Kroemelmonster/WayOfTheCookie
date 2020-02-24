@@ -222,8 +222,9 @@ class UITooltip
 
     static function setup()
         self = createFrame("BoxedText", GAME_UI, 0, 0)
-        self.setWidth(0.25)
-        self.setVisible(false)
+        ..setWidth(0.25)
+        ..setLevel(1000)
+        ..setVisible(false)
         text = getFrame("BoxedTextValue")
         let header = getFrame("BoxedTextHeader")
         headerText = getFrame("BoxedTextHeaderValue")

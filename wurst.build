@@ -11,3 +11,14 @@ buildMapData:
     showWavesOnCliffShores: true
     showWavesOnRollingShores: true
     useItemClassificationSystem: false
+  players:
+  - id: 0
+    name: Player 1
+    race: ORC
+    controller: USER
+    fixedStartLoc: true
+  - id: 0
+    name: Player 2
+    race: ORC
+    controller: USER
+    fixedStartLoc: true

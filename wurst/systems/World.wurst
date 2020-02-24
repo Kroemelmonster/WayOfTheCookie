@@ -10,6 +10,7 @@ import initlater HostileArmy
 import initlater Hero
 import initlater StackTypesDefinition
 import initlater NPC
+import ItemSteelHammer
 
 public class World
     protected static LinkedList<Board> boards = new LinkedList<Board>
@@ -28,7 +29,7 @@ public class World
     
     static function generateArmies()
         armies.add(new HostileArmy(gg_unit_n001_0003)
-        ..addStack(StackTypes.GNOLL_WARDEN, 1)
+        ..addStack(StackTypes.GNOLL_WARDEN, 2)
         ..addStackAtFree(StackTypes.GNOLL, GetRandomInt(15, 20))
         ..addStackAtFree(StackTypes.GNOLL, GetRandomInt(15, 20))
         ..addStackAtFree(StackTypes.GNOLL_POACHER, GetRandomInt(15, 20))
@@ -39,9 +40,14 @@ public class World
         return boards.get(GetRandomInt(0, boards.size() - 1))
         
     static function generateHeroes()
+        let theHammer = new ItemSteelHammer()
+
         heroes.add(new Hero(playerData[0])
         ..addStackAtFree(StackTypes.GNOLL, 100)
-        ..addStackAtFree(StackTypes.SASQUATCH_ORACLE, 1))
+        ..addStackAtFree(StackTypes.SASQUATCH_ORACLE, 1)
+        ..setAttack(7)
+        ..setDefence(3)
+        ..pickUpItem(0, theHammer))
  
     static function onHeroDamaged(Hero hero, unit u)
         let enemy = HostileArmy.getFromUnit(u)

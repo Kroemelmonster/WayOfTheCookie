@@ -23,6 +23,7 @@ public abstract class UIDialog
         self = createFrame("BasicBorderWindow", GAME_UI, 0, 0)
         ..setSize(0.25, 0.12)
         ..setVisible(false)
+        ..setLevel(10)
         ..setPoint(FRAMEPOINT_CENTER, GAME_UI, FRAMEPOINT_CENTER)
         pane = getFrame("WindowPane")
 

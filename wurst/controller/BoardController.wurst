@@ -86,6 +86,9 @@ public class BoardController
         if passive.triggerAfterAttackCheck(attacker)
             passive.triggerAfterAttack(attacker) -> 
                 trigerAfterAttackNext(itr, board, attacker, defender)
+        else
+            destroy itr
+            endTurn(attacker, board)
 
     private static function triggerAfterAttack(BoardStack attacker, BoardStack defender)
         let itr = defender.passiveActionIterator()

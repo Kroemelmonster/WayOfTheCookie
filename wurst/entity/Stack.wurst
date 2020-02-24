@@ -49,9 +49,10 @@ public class Army
     function setStack(int i, ArmyStack stack)
         stacks[i] = stack
 
-    function addStackAt(int i, StackType stackType, int amount)
+    function addStackAt(int i, StackType stackType, int amount) returns ArmyStack
         if stacks[i] == null
             stacks[i] = new ArmyStack(stackType, amount, false)
+        return stacks[i]
         
     function remove(int i)
         if stacks[i] == null
@@ -69,18 +70,17 @@ public class Army
                 return true
         return false
 
-    function addStackAtFree(StackType stackType, int amount) returns boolean
+    function addStackAtFree(StackType stackType, int amount) returns ArmyStack
         let index = getNextFreeIndex()
         if index == -1
-            return false
-        addStackAt(index, stackType, amount)
-        return true
+            return null
+        return addStackAt(index, stackType, amount)
     
-    function addStack(StackType stackType, int amount) returns boolean
+    function addStack(StackType stackType, int amount) returns ArmyStack
         let targetStack = getNextStackWithStackType(stackType)
         if targetStack != null
             targetStack.setAmount(targetStack.getAmount() + amount)
-            return true
+            return null
         return addStackAtFree(stackType, amount)
     
     function getFirstStack() returns ArmyStack

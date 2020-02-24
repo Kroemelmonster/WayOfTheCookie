@@ -15,7 +15,7 @@ public class BoardStackStats
     int remainingActionPoints
     int hp
 
-    int counterAttacks = 1
+    int counterAttacks = 0
 
     StackStatsModifier attackModi = new StackStatsModifier()
     StackStatsModifier defenceModi = new StackStatsModifier()
@@ -35,6 +35,7 @@ public class BoardStackStats
         this.amount = amount
         this.hp = basis.getMaxHp()
         this.stack = stack
+        resetCounterAttacks()
 
     @inline
     function getInitiative() returns int

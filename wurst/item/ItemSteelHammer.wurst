@@ -1,0 +1,23 @@
+package ItemSteelHammer
+
+import Icons
+import initlater Stack
+import KItem
+
+public class ItemSteelHammer extends KItem
+
+    private static constant string NAME = "Warcry"
+    private static constant string ICON = Icons.bTNHammer
+
+    private static constant int TEST = 20
+
+    construct()
+        super(NAME, ICON)
+
+    override function onStackUpdate(ArmyStack armyStack, boolean add)
+        if armyStack.getStackType().name.contains("Gnoll")
+            if add
+                armyStack.stats.attackModi.addBonus += TEST
+            else
+                armyStack.stats.attackModi.addBonus -= TEST
+    

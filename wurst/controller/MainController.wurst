@@ -7,6 +7,9 @@ import Stack
 import initlater Hero
 import initlater HostileArmy
 import initlater Board
+import PlayerData
+import initlater UIHeroWindow
+import initlater UINPCWindow
 
 public class MainController
     static function startFight(Hero hero, HostileArmy enemy, Board board)
@@ -37,5 +40,11 @@ public class MainController
             stack.setAmount(stack.getAmount() - intoAmount)
             hero.addStackAtFree(stack.getStackType(), intoAmount)
 
-
+    static function openHeroWindow(Player p, boolean flag)
+        if flag
+            UINPCWindow.hide(p)
+        p.hero.enable(flag == false)
+        UIHeroWindow.setVisible(p, flag)
+        
+        
         

@@ -24,3 +24,34 @@ Frame "BACKDROP" "RoundBoxBackground" {
         Alpha 225,
     }
 }
+
+Frame "GLUEBUTTON" "CancelButton" {
+    Width 0.07,
+    Height 0.02,
+    ControlStyle "AUTOTRACK|HIGHLIGHTONMOUSEOVER",
+
+    ControlBackdrop "CancelButtonIcon",
+    Frame "BACKDROP" "CancelButtonIcon" {
+        BackdropBackground "UI\Textures\btn-cancel.dds",
+        BackdropBlendAll,
+    }
+
+    ControlPushedBackdrop "CancelButtonIconPushed",
+    Frame "BACKDROP" "CancelButtonIconPushed" {
+        BackdropBackground "UI\Textures\btn-cancel-pushed.dds",
+        BackdropBlendAll,
+    }
+
+    ControlDisabledBackdrop "CancelButtonIconDisabled",
+    Frame "BACKDROP" "CancelButtonIconDisabled" {
+        BackdropBackground "UI\Textures\btn-cancel-disabled.dds",
+        BackdropBlendAll,
+    }
+
+    ControlMouseOverHighlight "CancelButtonHighlight",
+    Frame "HIGHLIGHT" "CancelButtonHighlight" {
+        HighlightType "FILETEXTURE",
+        HighlightAlphaFile "UI\Glues\ScoreScreen\scorescreen-tab-hilight.blp",
+        HighlightAlphaMode "ADD",
+    }
+}

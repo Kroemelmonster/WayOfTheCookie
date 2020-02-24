@@ -1,16 +1,19 @@
 package UIWorldConsole
 
+import ClosureFrames
+
 import PlayerData
 import UIArmyPanel
 
 import initlater Hero
+import initlater MainController
 
 public class UIWorldConsoleInfo
     protected boolean visible = false
     ArmyPanelInfo armyPanel = new ArmyPanelInfo()
 
 public class UIWorldConsole
-    protected static framehandle frame
+    static framehandle self
     protected static framehandle pane
     protected static framehandle portrait
     protected static framehandle bar
@@ -21,7 +24,7 @@ public class UIWorldConsole
     protected static UIArmyPanel armyPanel
 
     static function setup()
-        frame = createFrame("MetalBorderBottomlessWindow", GAME_UI, 0, 0)
+        self = createFrame("MetalBorderBottomlessWindow", GAME_UI, 0, 0)
         ..setSize(0.5, 0.065)
         ..setVisible(false)
         ..setLevel(-1)
@@ -37,13 +40,19 @@ public class UIWorldConsole
         ..setHeight(0.049)
         ..setVisible(false)
 
+        createFrame("BUTTON", "", portrait, "", 0)
+        ..setPoint(FRAMEPOINT_TOPLEFT, pane, FRAMEPOINT_TOPLEFT, 0.13, 0.0)
+        ..setPoint(FRAMEPOINT_BOTTOMRIGHT, pane, FRAMEPOINT_BOTTOMLEFT, 0.18, 0.0)
+        ..onClick() ->
+            MainController.openHeroWindow(GetTriggerPlayerData(), true)
 
-        bar = createSimpleFrame("MyBarEx", frame, 0)
+
+        bar = createSimpleFrame("MyBarEx", self, 0)
         ..setTexture("Replaceabletextures\\Teamcolor\\Teamcolor03.blp", 0, true)
         ..setWidth(0.05)
         ..setVisible(false)
-        ..setPoint(FRAMEPOINT_BOTTOMLEFT, frame, FRAMEPOINT_BOTTOMLEFT, 0.14, 0.0)
-        getFrame("MyBarExText").setText("")
+        ..setPoint(FRAMEPOINT_BOTTOMLEFT, pane, FRAMEPOINT_BOTTOMLEFT, 0.13, -0.01)
+        getFrame("MyBarExText").setText("Level 1")
 
         createFrame("WorldConsoleRessource", pane, 0, 0)
         ..setPoint(FRAMEPOINT_TOPLEFT, pane, FRAMEPOINT_TOPLEFT)
@@ -60,7 +69,6 @@ public class UIWorldConsole
     static function setupHero(Hero h)
         armyPanel.setupHero(h)
         setVisible(h.getPlayer(), true)
-
 
     static function update(Player p)
         if p.worldConsoleInfo.visible == false
@@ -85,7 +93,7 @@ public class UIWorldConsole
             return 
 
         if p.isLocal()
-            frame.setVisible(flag)
+            self.setVisible(flag)
             portrait.setVisible(flag)
             bar.setVisible(flag)
         p.worldConsoleInfo.visible = flag

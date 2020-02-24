@@ -6,6 +6,7 @@ import UIWorldConsole
 import PlayerData
 import UIStackWindow
 import UINPCWindow
+import UIHeroWindow
 
 import initlater Board
 
@@ -21,6 +22,7 @@ class Scheduler
                 UIStackWindow.update(p)
             doPeriodically(0.2) cb ->
                 UINPCWindow.update(p)
+                UIHeroWindow.update(p)
 
                 
                 

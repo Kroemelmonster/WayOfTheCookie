@@ -9,6 +9,7 @@ import UIStackWindow
 import UIInitiativeWindow
 import UIWorldConsole
 import UINPCWindow
+import UIHeroWindow
 
 public function framehandle.toString() returns string
 	var str = "FrameHandle "
@@ -44,7 +45,7 @@ class UIMain
 
 		loadTOCFile("UI\\Framedef.toc")
 	
-	static constant MAX_PARTS = 3
+	static constant MAX_PARTS = 4
 
 	static function load(integer part)
 		if part == 0
@@ -57,3 +58,5 @@ class UIMain
 			UINPCWindow.setup()
 		else if part == 3
 			UIStackWindow.setup()
+		else if part == 4
+			UIHeroWindow.setup()

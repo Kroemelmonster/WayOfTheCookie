@@ -72,6 +72,8 @@ class UIStackWindow
         frame = createFrame("StackWindow", GAME_UI, 0, 0)
         ..setPoint(FRAMEPOINT_TOPRIGHT,  GAME_UI, FRAMEPOINT_TOPRIGHT)
         ..setVisible(false)
+        ..setLevel(10)
+        ..setAlpha(200)
         pane = getFrame("WindowPane")
 
         icon = getFrame("StackWindowIcon")
@@ -181,6 +183,14 @@ class UIStackWindow
         ..setVisible(false)
 
         hpBarText = getFrame("MyBarExText")
+
+        createFrame("CancelButton", frame, 0, 0)
+        ..setSize(0.015, 0.015)
+        ..setPoint(FRAMEPOINT_TOPRIGHT, frame, FRAMEPOINT_TOPRIGHT, -0.002, -0.002)
+        ..onClick() ->
+            let p = GetTriggerPlayerData()
+            p.stackWindowInfo.clear()
+            update(p)
 
 
         let buffBar = getFrame("StackWindowBuffs")

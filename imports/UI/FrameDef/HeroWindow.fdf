@@ -1,0 +1,21 @@
+IncludeFile "UI\FrameDef\UI\EscMenuMainPanel.fdf",
+
+Frame "FRAME" "HeroWindowStat" {
+	Width 0.04,
+	Height 0.055,
+
+    Frame "BACKDROP" "Icon" {
+        Width 0.04,
+        Height 0.04,
+        SetPoint TOP, "HeroWindowStat", TOP, 0, 0.0,
+    }
+
+    Frame "TEXT" "Text" INHERITS "EscMenuButtonTextTemplate" {
+        UseActiveContext,
+        SetPoint TOPLEFT, "HeroWindowStat", BOTTOMLEFT, 0, 0.015,
+        SetPoint BOTTOMRIGHT, "HeroWindowStat", BOTTOMRIGHT, 0.0, 0.0,
+        FrameFont "MasterFont", 0.014,"",
+        FontColor 1.0 1.0 1.0 1.0,
+        FontJustificationH JUSTITYCENTER,
+    }
+}

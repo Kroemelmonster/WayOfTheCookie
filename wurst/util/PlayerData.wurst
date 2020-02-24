@@ -11,6 +11,7 @@ import initlater UIStackWindow
 import initlater UIWorldConsole
 import initlater UINPCWindow
 import initlater UIDialog
+import initlater UIHeroWindow
 
 constant KEY_TRIGGER = CreateTrigger()..addAction(function onKeyPress)
 
@@ -39,7 +40,7 @@ public class Player
     UIWorldConsoleInfo worldConsoleInfo = new UIWorldConsoleInfo()
     UINPCWindowInfo npcWindowInfo = new UINPCWindowInfo()
     UIStackWindowInfo stackWindowInfo = new UIStackWindowInfo()
-
+    UIHeroWindowInfo heroWindoInfo = new UIHeroWindowInfo()
 
     mousePosition currentMousePosition
 

@@ -11,6 +11,7 @@ import World
 import Orders
 import NPC
 import UIWorldConsole
+import KItem
 
 constant HashMap<unit, Hero> map = new HashMap<unit, Hero>
 
@@ -19,6 +20,11 @@ public class Hero
     protected Player p
     protected int gold
     protected int leadership
+
+    protected int attack = 0
+    protected int defence = 0
+
+    protected KItem array[8] items
 
     protected Army army
 
@@ -63,13 +69,17 @@ public class Hero
         return map.get(u)
 
     function createSummon(StackType stackType, int amount) returns ArmyStack
-        return new ArmyStack(stackType, amount, true)
+        let summon = new ArmyStack(stackType, amount, true)
+        updateArmyStackStats(summon)
+        return summon
     
     function addStack(StackType stackType, int amount)
-        army.addStack(stackType, amount)
+        let armyStack = army.addStack(stackType, amount)
+        updateArmyStackStats(armyStack)
 
     function addStackAtFree(StackType stackType, int amount)
-        army.addStackAtFree(stackType, amount)
+        let armyStack = army.addStackAtFree(stackType, amount)
+        updateArmyStackStats(armyStack)
 
     function getArmy() returns Army
         return army
@@ -110,16 +120,24 @@ public class Hero
 
     function enable(boolean flag)
         setVulnearble(flag)
-        if flag == false
+        if flag
             u.unpause()
-            u.addAbility(LOCUST_ID)
             p.blzPlayer.selectSingle(u)
         else
             u.pause()
-            u.removeAbility(LOCUST_ID)
 
     function issueNPC(NPC npc)
         u.issueTargetOrder(AbilityTypesIds.TARGET_UNIT_SPELL_ORDER, npc.getUnit())
+
+    private function updateArmyStackStats(ArmyStack armyStack)
+        if armyStack == null
+            return
+        armyStack.stats.attackModi.addBonus += attack
+        armyStack.stats.defenceModi.addBonus += defence
+
+        for int i = 0 to items.length - 1
+            if items[i] != null
+                items[i].onStackUpdate(armyStack, true)
 
     function startInteract(NPC npc)
         currentInteract = npc
@@ -129,7 +147,33 @@ public class Hero
         if currentInteract != null
             currentInteract.endInteraction(this)
             currentInteract = null
-        
+
+    function getAttack() returns int
+        return attack
+
+    function getDefence() returns int
+        return defence
+
+    function pickUpItem(int index, KItem kItem)
+        items[index] = kItem
+        for int i = 0 to Army.MAX_SIZE - 1
+            let armyStack = army.getStack(i)
+            if armyStack != null
+                kItem.onStackUpdate(armyStack, true)
+
+    function setAttack(int value)
+        for int i = 0 to Army.MAX_SIZE - 1
+            let armyStack = army.getStack(i)
+            if armyStack != null
+                armyStack.stats.attackModi.addBonus += value - attack
+        this.attack = value
+
+    function setDefence(int value)
+        for int i = 0 to Army.MAX_SIZE - 1
+            let armyStack = army.getStack(i)
+            if armyStack != null
+                armyStack.stats.defenceModi.addBonus += value - defence
+        this.defence = value
 
     function toString() returns string
         return "Hero [" + u.getName() +"]"
