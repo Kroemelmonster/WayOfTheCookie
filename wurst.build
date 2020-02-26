@@ -7,7 +7,7 @@ buildMapData:
   optionsFlags:
     hideMinimapPreview: true
     forcesFixed: true
-    maskedAreasPartiallyVisible: false
+    maskedAreasPartiallyVisible: true
     showWavesOnCliffShores: true
     showWavesOnRollingShores: true
     useItemClassificationSystem: false

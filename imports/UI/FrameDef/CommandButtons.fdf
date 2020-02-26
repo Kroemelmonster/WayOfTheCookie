@@ -1,0 +1,65 @@
+Frame "GLUEBUTTON" "StackButton" {
+    Width 0.035,
+    Height 0.035,
+
+    Frame "HIGHLIGHT" "Highlight" {
+        SetAllPoints,
+        HighlightType "FILETEXTURE",
+        HighlightAlphaFile "UI\Glues\ScoreScreen\scorescreen-tab-hilight.blp",
+        HighlightAlphaMode "ADD",
+    }
+
+    ControlBackdrop "Icon",
+    Frame "BACKDROP" "Icon" {
+    }
+
+    Frame "TEXT" "Text" {
+        UseActiveContext,
+        SetPoint TOPLEFT, "StackButton", BOTTOMLEFT, 0, 0.00,
+        SetPoint BOTTOMRIGHT, "StackButton", BOTTOMRIGHT, -0.002, -0.006,
+        FrameFont "MasterFont", 0.010,"",
+        FontColor 1.0 1.0 1.0 1.0,
+        FontJustificationH JUSTIFYRIGHT,
+        FontJustificationV JUSTIFYMIDDLE,
+        FontJustificationOffset 0.0 0.0,
+    }
+}
+
+Frame "HIGHLIGHT" "CommandButtonHighlight" {
+    HighlightType "FILETEXTURE",
+    HighlightAlphaFile "UI\Glues\ScoreScreen\scorescreen-tab-hilight.blp",
+    HighlightAlphaMode "ADD",
+}
+
+Frame "TEXT" "CommandButtonText" {
+    UseActiveContext,
+    FrameFont "MasterFont", 0.010,"",
+    FontColor 1.0 1.0 1.0 1.0,
+    FontJustificationH JUSTIFYRIGHT,
+    FontJustificationV JUSTIFYBOTTOM,
+    FontJustificationOffset 0.0 0.0,
+}
+
+Frame "BUTTON" "CommandButton" {
+    Width 0.035,
+    Height 0.035,
+
+    ControlBackdrop "Icon",
+    Frame "BACKDROP" "Icon" {
+
+    }
+}
+
+Frame "GLUEBUTTON" "CommandButtonWithHighlight" {
+    Width 0.035,
+    Height 0.035,
+    ControlStyle "HIGHLIGHTONMOUSEOVER",
+
+    ControlBackdrop "Icon",
+    Frame "BACKDROP" "Icon" {
+    }
+
+    ControlMouseOverHighlight "Highlight",
+    Frame "HIGHLIGHT" "Highlight" INHERITS "CommandButtonHighlight" {
+    }
+}

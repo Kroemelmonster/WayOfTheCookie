@@ -1,0 +1,157 @@
+package UIHeroInventory
+
+import Textures
+
+import UIButton
+
+import Stack
+import UIStackSplitDialog
+
+import initlater PlayerData
+import initlater Hero
+import initlater KItem
+
+class UIHeroInventoryDragInfo
+    int pos
+    boolean flagActive
+    KItem object
+
+    function reset()
+        pos = -1
+        flagActive = false
+        object = null
+
+public class UIHeroInventoryInfo
+    protected int startDragMousePressedIndex = -1
+
+    protected Hero hero = null
+    protected UIHeroInventoryDragInfo startDrag = new UIHeroInventoryDragInfo()
+    protected UIHeroInventoryDragInfo endDrag = new UIHeroInventoryDragInfo()
+
+    protected function setupDragStart(int i, boolean flagActive)
+        if flagActive
+            startDrag.object = hero.getActiveItem(i)
+
+        if startDrag.object == null
+            endDrag.reset()
+            startDrag.reset()
+        else
+            startDrag.pos = i
+            startDrag.flagActive = flagActive
+
+    protected function reset()
+        startDrag.reset()
+        endDrag.reset()
+
+    protected function setupDragEnd(int i, boolean flagActive)
+        if flagActive
+            endDrag.object = hero.getActiveItem(i)
+        
+        endDrag.pos = i
+        endDrag.flagActive = flagActive
+
+
+public class UIHeroInventory
+    protected CommandButton array[8] btns
+
+    construct(framehandle reference)
+        for int i = 0 to Army.MAX_SIZE - 1
+            btns[i] = new CommandButton(reference, false)
+            if i == 0
+                btns[i].setPoint(FRAMEPOINT_TOPLEFT, reference, FRAMEPOINT_TOPLEFT, 0, 0)
+            else
+                btns[i].setPoint(FRAMEPOINT_TOPLEFT, btns[i - 1].self, FRAMEPOINT_TOPRIGHT, 0.002, 0)
+            btns[i].onClick() ->
+                let p = GetTriggerPlayerData()
+                let kItem = p.heroWindoInfo.inventory.hero.getActiveItem(i)
+                if kItem != null
+                    Log.trace("item klick "+kItem.toString())
+
+            btns[i].onMouseDown() -> 
+                let mouseBtn = BlzGetTriggerPlayerMouseButton()
+                if mouseBtn == MOUSE_BUTTON_TYPE_LEFT
+                    let p = GetTriggerPlayerData()
+                    let info = p.heroWindoInfo.inventory
+                    info.setupDragStart(i, true)
+                    info.startDragMousePressedIndex = p.mousePressedIndex
+
+            btns[i].onMouseUp() -> 
+                let p = GetTriggerPlayerData()
+                let info = p.heroWindoInfo.inventory
+                let mouseBtn = BlzGetTriggerPlayerMouseButton()
+                if mouseBtn == MOUSE_BUTTON_TYPE_LEFT
+                    dragEnd(p)
+                    info.startDragMousePressedIndex  = -1
+                
+            btns[i].onMouseEnter() -> 
+                let p = GetTriggerPlayerData()
+                let info = p.heroWindoInfo.inventory
+
+                if info.startDrag.pos >= 0
+                    info.setupDragEnd(i, true)
+                    update(p)
+                    
+    function firstOpen(Player p)
+        p.heroWindoInfo.inventory.hero = p.hero
+
+    function update(Player p)
+        let info = p.heroWindoInfo.inventory
+        // are you currently Dragging ?
+        if info.startDrag.pos >= 0
+            // mouse stopped or mouseDragINdex is different ?
+            if p.mousePressed == false or p.mousePressedIndex != info.startDragMousePressedIndex
+                // stop any drag
+                info.reset()
+
+        if p.isLocal() == false
+            return
+
+        for int i = 0 to Army.MAX_SIZE - 1
+            drawButtonActive(info, i)
+        
+    private function dragEnd(Player p)
+        let info = p.heroWindoInfo.inventory
+        if info.startDrag.object == null
+            return
+        if info.endDrag.object == info.startDrag.object
+            return
+
+        if info.endDrag.pos >= 0
+            if info.startDrag.flagActive
+                info.hero.removeActiveItem(info.startDrag.pos)
+            if info.endDrag.flagActive and info.endDrag.object != null
+                info.hero.removeActiveItem(info.endDrag.pos)
+
+            if info.startDrag.flagActive
+                info.hero.setActiveItem(info.endDrag.pos, info.startDrag.object)
+            if info.endDrag.flagActive and info.endDrag.object != null
+                info.hero.setActiveItem(info.startDrag.pos, info.endDrag.object)
+
+    private function drawButtonActive(UIHeroInventoryInfo info, int position)
+        let kItem = info.hero.getActiveItem(position)
+        let btn = btns[position]
+        btn.setAlpha(255)
+        btn.setEnabled(true)
+        // wenn wir auf startDrag sind zeige potentiell endrag an
+        if info.startDrag.pos == position
+            // zeige das an was auf dragEnd ist an
+            if info.endDrag.object != null
+                btn.setIcon(info.endDrag.object.getIcon())
+                // sind die nicht identisch wird es ein swap ansonten haben wir gerade einfach nur den normalen status angezeigt
+                if info.endDrag.object != info.startDrag.object
+                    btn.setAlpha(80)
+            else if info.endDrag.pos > 0
+                btn.setIcon(Textures.dISorc_inventory_slotfiller)
+                btn.setEnabled(false)
+        else if info.endDrag.pos == position
+            // zeige das was auf dragStart ist an außer das sind wir selber
+            if info.startDrag.object != info.endDrag.object
+                btn.setIcon(info.startDrag.object.getIcon())
+                btn.setAlpha(80)
+        else if kItem != null
+            // there is not drag but maybe there is astack to show
+            btn.setIcon(kItem.getIcon())
+        else
+            // there is nothing sooo ?
+            btn.setIcon(Textures.dISorc_inventory_slotfiller)
+            btn.setEnabled(false)

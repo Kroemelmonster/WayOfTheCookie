@@ -14,7 +14,7 @@ public class UINPCWindow
     protected static framehandle pane
     protected static UIStackSellDialog stackSellDialog
 
-    protected static StackButton array[8] shopStock
+    protected static CommandButton array[8] shopStock
 
     static function setup()
         frame = createFrame("BasicBorderWindow", GAME_UI, 0, 0)
@@ -24,9 +24,13 @@ public class UINPCWindow
         pane = getFrame("WindowPane")
 
         for int i = 0 to shopStock.length
-            shopStock[i] = new StackButton(pane, i, false)
-            ..addGoldLine()
+            shopStock[i] = new CommandButton(pane, false)
+            ..addText(true)
             ..setVisible(false)
+            if i == 0
+                shopStock[i].setPoint(FRAMEPOINT_TOPLEFT, pane, FRAMEPOINT_TOPLEFT, 0, 0)
+            else
+                shopStock[i].setPoint(FRAMEPOINT_TOPLEFT, shopStock[i - 1].self, FRAMEPOINT_TOPRIGHT, 0.002, 0)
             shopStock[i].onClick() ->
                 let p = GetTriggerPlayerData()
                 let stack = p.npcWindowInfo.npc.getShopData().getStock().get(i)

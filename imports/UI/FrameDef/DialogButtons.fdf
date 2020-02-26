@@ -6,19 +6,19 @@ Frame "GLUETEXTBUTTON" "DialogDefaultButton" {
 
     ControlBackdrop "DialogButtonIcon",
     Frame "BACKDROP" "DialogButtonIcon" {
-        BackdropBackground "UI\Textures\btn-blue.dds",
+        BackdropBackground "UI\Textures\Button\btn-blue.dds",
         BackdropBlendAll,
     }
 
     ControlPushedBackdrop "DialogButtonIconPushed",
     Frame "BACKDROP" "DialogButtonIconPushed" {
-        BackdropBackground "UI\Textures\btn-blue-pushed.dds",
+        BackdropBackground "UI\Textures\Button\btn-blue-pushed.dds",
         BackdropBlendAll,
     }
 
     ControlDisabledBackdrop "DialogButtonIconDisabled",
     Frame "BACKDROP" "DialogButtonIconDisabled" {
-        BackdropBackground "UI\Textures\btn-disabled.dds",
+        BackdropBackground "UI\Textures\Button\btn-disabled.dds",
         BackdropBlendAll,
     }
 
@@ -45,19 +45,19 @@ Frame "GLUETEXTBUTTON" "DialogDefaultButton" {
 Frame "GLUETEXTBUTTON" "DialogAcceptButton" INHERITS "DialogDefaultButton" {
     ControlBackdrop "DialogButtonIcon",
     Frame "BACKDROP" "DialogButtonIcon" {
-        BackdropBackground "UI\Textures\btn-green.dds",
+        BackdropBackground "UI\Textures\Button\btn-green.dds",
         BackdropBlendAll,
     }
 
     ControlPushedBackdrop "DialogButtonIconPushed",
     Frame "BACKDROP" "DialogButtonIconPushed" {
-        BackdropBackground "UI\Textures\btn-green-pushed.dds",
+        BackdropBackground "UI\Textures\Button\btn-green-pushed.dds",
         BackdropBlendAll,
     }
 
     ControlDisabledBackdrop "DialogButtonIconDisabled",
     Frame "BACKDROP" "DialogButtonIconDisabled" {
-        BackdropBackground "UI\Textures\btn-disabled.dds",
+        BackdropBackground "UI\Textures\Button\btn-disabled.dds",
         BackdropBlendAll,
     }
 
@@ -84,19 +84,19 @@ Frame "GLUETEXTBUTTON" "DialogAcceptButton" INHERITS "DialogDefaultButton" {
 Frame "GLUETEXTBUTTON" "DialogCancelButton" INHERITS "DialogDefaultButton" {
     ControlBackdrop "DialogButtonIcon",
     Frame "BACKDROP" "DialogButtonIcon" {
-        BackdropBackground "UI\Textures\btn-red.dds",
+        BackdropBackground "UI\Textures\Button\btn-red.dds",
         BackdropBlendAll,
     }
 
     ControlPushedBackdrop "DialogButtonIconPushed",
     Frame "BACKDROP" "DialogButtonIconPushed" {
-        BackdropBackground "UI\Textures\btn-red-pushed.dds",
+        BackdropBackground "UI\Textures\Button\btn-red-pushed.dds",
         BackdropBlendAll,
     }
 
     ControlDisabledBackdrop "DialogButtonIconDisabled",
     Frame "BACKDROP" "DialogButtonIconDisabled" {
-        BackdropBackground "UI\Textures\btn-disabled.dds",
+        BackdropBackground "UI\Textures\Button\btn-disabled.dds",
         BackdropBlendAll,
     }
 

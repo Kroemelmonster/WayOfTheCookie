@@ -10,3 +10,9 @@ public abstract class KItem
         this.name = name
 
     abstract function onStackUpdate(ArmyStack armyStack, boolean add)
+
+    function getIcon() returns string
+        return icon
+
+    function toString() returns string
+        return "Item [" + name + "]"

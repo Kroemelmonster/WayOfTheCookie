@@ -5,9 +5,11 @@ import ClosureFrames
 import UIWorldConsole
 import PlayerData
 import MainController
+import UIHeroInventory
 
 public class UIHeroWindowInfo
     protected boolean visible = false
+    UIHeroInventoryInfo inventory = new UIHeroInventoryInfo()
 
 public class UIHeroWindow
     private static framehandle self
@@ -15,6 +17,8 @@ public class UIHeroWindow
 
     private static framehandle attackText
     private static framehandle defenceText
+
+    private static UIHeroInventory inventory
 
     static function setup()
         self = createFrame("BasicBorderWindow", GAME_UI, 0, 0)
@@ -41,10 +45,13 @@ public class UIHeroWindow
             MainController.openHeroWindow(p, false)
         getFrame("DialogButtonText").setText("")
 
+        inventory = new UIHeroInventory(self)
+
     static function setVisible(Player p, boolean flag)
         p.heroWindoInfo.visible = flag
         self.setVisible(flag)
         if flag
+            inventory.firstOpen(p)
             update(p)
 
     static function update(Player p)
@@ -56,3 +63,4 @@ public class UIHeroWindow
 
         attackText.setText(p.hero.getAttack().toString())
         defenceText.setText(p.hero.getDefence().toString())
+        inventory.update(p)

@@ -34,7 +34,7 @@ class UIActionWindow
         buttons = new LinkedList<ActionButton>()
         for int i = 0 to points.length
             let btn = new ActionButton(self, Icons.bTNWitchDoctorAdept)
-            btn.setPoint(points[i],  pane, points[i])
+            btn.setPoint(points[i], pane, points[i], 0, 0)
             btn.onClick() () -> 
                 activate(i, GetTriggerPlayerData())
             btn.onMouseEnter() -> 

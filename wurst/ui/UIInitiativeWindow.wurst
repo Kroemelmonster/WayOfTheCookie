@@ -14,7 +14,7 @@ constant MAX_ENTRYS = 14
 class UIInitiativeWindow
     private static framehandle frame
     private static framehandle pane
-    private static StackButton array[MAX_ENTRYS] btns
+    private static CommandButton array[MAX_ENTRYS] btns
 
     static function setup()
         frame = createFrame("BasicBorderWindow", GAME_UI, 0, 0)
@@ -24,7 +24,13 @@ class UIInitiativeWindow
         pane = getFrame("WindowPane")
 
         for int i = 0 to MAX_ENTRYS
-            btns[i] = new StackButton(pane, i, true)
+            btns[i] = new CommandButton(pane, true)
+            ..addText(false)
+            ..addBorder()
+            if i == 0
+                btns[i].setPoint(FRAMEPOINT_TOPLEFT, pane, FRAMEPOINT_TOPLEFT, 0, 0)
+            else
+                btns[i].setPoint(FRAMEPOINT_TOPLEFT, btns[i - 1].self, FRAMEPOINT_TOPRIGHT, 0.002, 0)
             btns[i].onClick() () ->
                 onClick(GetTriggerPlayerData(), i)
             btns[i].onMouseEnter() () ->

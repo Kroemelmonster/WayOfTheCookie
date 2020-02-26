@@ -32,19 +32,19 @@ Frame "GLUEBUTTON" "CancelButton" {
 
     ControlBackdrop "CancelButtonIcon",
     Frame "BACKDROP" "CancelButtonIcon" {
-        BackdropBackground "UI\Textures\btn-cancel.dds",
+        BackdropBackground "UI\Textures\Button\btn-cancel.dds",
         BackdropBlendAll,
     }
 
     ControlPushedBackdrop "CancelButtonIconPushed",
     Frame "BACKDROP" "CancelButtonIconPushed" {
-        BackdropBackground "UI\Textures\btn-cancel-pushed.dds",
+        BackdropBackground "UI\Textures\Button\btn-cancel-pushed.dds",
         BackdropBlendAll,
     }
 
     ControlDisabledBackdrop "CancelButtonIconDisabled",
     Frame "BACKDROP" "CancelButtonIconDisabled" {
-        BackdropBackground "UI\Textures\btn-cancel-disabled.dds",
+        BackdropBackground "UI\Textures\Button\btn-cancel-disabled.dds",
         BackdropBlendAll,
     }
 

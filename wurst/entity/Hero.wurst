@@ -30,7 +30,6 @@ public class Hero
 
     protected NPC currentInteract
 
-
     protected EventListener damagedListener
     protected EventListener orderUnitListener
     protected EventListener orderPointListener
@@ -154,12 +153,28 @@ public class Hero
     function getDefence() returns int
         return defence
 
-    function pickUpItem(int index, KItem kItem)
+    function getActiveItemsLength() returns int
+        return items.length
+
+    function getActiveItem(int index) returns KItem
+        if index < 0 or index >= items.length
+            return null
+        return items[index]
+
+    function setActiveItem(int index, KItem kItem)
         items[index] = kItem
         for int i = 0 to Army.MAX_SIZE - 1
             let armyStack = army.getStack(i)
             if armyStack != null
                 kItem.onStackUpdate(armyStack, true)
+        
+    function removeActiveItem(int index)
+        let kItem = items[index]
+        for int i = 0 to Army.MAX_SIZE - 1
+            let armyStack = army.getStack(i)
+            if armyStack != null
+                kItem.onStackUpdate(armyStack, true)
+        items[index] = null
 
     function setAttack(int value)
         for int i = 0 to Army.MAX_SIZE - 1

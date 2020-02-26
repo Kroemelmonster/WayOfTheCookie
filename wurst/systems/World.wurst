@@ -19,7 +19,7 @@ public class World
     protected static LinkedList<NPC> npcs = new LinkedList<NPC>
 
     static function generateBoards()
-        boards.add(new Board(gg_rct_BoardOne, gg_rct_BoardOneVisibleField))
+        boards.add(new Board(gg_rct_BoardPlainsTwo, gg_rct_BoardPlainsTwoV))
 
     static function generateNPCs()
         npcs.add(new NPCShop(gg_unit_n000_0002)
@@ -47,7 +47,7 @@ public class World
         ..addStackAtFree(StackTypes.SASQUATCH_ORACLE, 1)
         ..setAttack(7)
         ..setDefence(3)
-        ..pickUpItem(0, theHammer))
+        ..setActiveItem(0, theHammer))
  
     static function onHeroDamaged(Hero hero, unit u)
         let enemy = HostileArmy.getFromUnit(u)

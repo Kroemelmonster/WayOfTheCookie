@@ -23,7 +23,6 @@ public class ButtonBorder
         ..setPoint(FRAMEPOINT_BOTTOMRIGHT, ref, FRAMEPOINT_BOTTOMRIGHT)
         ..setAlpha(125)
 
-
     function setVisible(boolean flag)
         self.setVisible(flag)
 
@@ -31,26 +30,22 @@ public class ButtonBorder
         switch(color)
             case BorderColor.RED
                 self.setAlpha(125)
-                self.setTexture("BtnBorderRed.blp", 0, true)
-                self.setVertexColor(65280)
+                self.setTexture("UI/Textures/Button/border-red.blp", 0, true)
             case BorderColor.BLUE
                 self.setAlpha(125)
-                self.setTexture("BtnBorderRed.blp", 0, true)
+                self.setTexture("UI/Textures/Button/border-blue.blp", 0, true)
             case BorderColor.BLACK
                 self.setAlpha(200)
-                self.setTexture("BtnBorderBlack.blp", 0, true)
-                
-                //self.setVertexColor(65280)
+                self.setTexture("UI/Textures/Button/border-black.blp", 0, true)
             case BorderColor.PRIMARY
                 self.setAlpha(125)
-                self.setTexture("BtnBorderPrimary.blp", 0, true)
+                self.setTexture("UI/Textures/Button/border-primary.blp", 0, true)
             default
                 self.setAlpha(0)
 
 public abstract class UIButton
-    protected framehandle self
+    framehandle self
     protected framehandle icon
-    protected ButtonBorder border
 
     private FrameHandleListener onMouseEnterListener
     private FrameHandleListener onMouseLeaveListener
@@ -77,11 +72,8 @@ public abstract class UIButton
             if onClickListener != null
                 onClickListener.onEvent()
 
-        border = new ButtonBorder(icon)
-        border.setVisible(false)
-
-    function setPoint(framepointtype point, framehandle relative, framepointtype relativePoint)
-        self.setPoint(point, relative, relativePoint)
+    function setPoint(framepointtype point, framehandle relative, framepointtype relativePoint, real x, real y)
+        self.setPoint(point, relative, relativePoint, x, y)
 
     function setIcon(string str)
         icon.setTexture(str, 0, true)
@@ -115,23 +107,21 @@ public abstract class UIButton
     function setIconVisible(boolean flag)
         icon.setVisible(flag)
 
-    function setBorder(BorderColor color)
-        border.setBorder(color)
-
     function setAlpha(int alpha)
         self.setAlpha(alpha)
 
-    function showBorder()
-        border.setVisible(true)
 
     ondestroy
-        Log.error("DONT DESTROY THA BUTTON WTF ?")
+        Log.error("Tried to destroy a button... That is currently not implemented...")
+        // TODO 
+        /*
         if onClickListener != null
             destroy onClickListener
         if onMouseEnterListener != null
             destroy onMouseEnterListener
         if onMouseLeaveListener != null
             destroy onMouseLeaveListener
+            */
     
 
 
@@ -150,27 +140,22 @@ public class ActionButton extends UIButton
         setIcon(str)
 
         glow = createFrame("SPRITE", "ButtonGlow", self, "", 0)
-        
-        glow.setModel(UI.heroLevel, 0)
-        glow.setPoint(FRAMEPOINT_TOPLEFT, icon, FRAMEPOINT_TOPLEFT)
-        glow.setPoint(FRAMEPOINT_BOTTOMRIGHT, icon, FRAMEPOINT_BOTTOMRIGHT)
+        ..setAllPoints(icon)
+        ..setModel(UI.heroLevel, 0)
 
         block = createFrame("BACKDROP", "ButtoBlock", self, "", 0)
-            ..setPoint(FRAMEPOINT_TOPLEFT, icon, FRAMEPOINT_TOPLEFT)
-            ..setPoint(FRAMEPOINT_BOTTOMRIGHT, icon, FRAMEPOINT_BOTTOMRIGHT)
+        ..setAllPoints(icon)
 
         chargeBackdrop = createFrame("BACKDROP", "ButtonCharge", self, "", 0)
-            ..setPoint(FRAMEPOINT_TOPLEFT, icon, FRAMEPOINT_CENTER, vec2(0.005, -0.005))
-            ..setPoint(FRAMEPOINT_BOTTOMRIGHT, icon, FRAMEPOINT_BOTTOMRIGHT)
-            ..setTexture("UI\\Widgets\\Console\\Human\\human-transport-slot.blp", 0, true)
-            ..setVisible(false)
+        ..setPoint(FRAMEPOINT_TOPLEFT, icon, FRAMEPOINT_CENTER, vec2(0.005, -0.005))
+        ..setPoint(FRAMEPOINT_BOTTOMRIGHT, icon, FRAMEPOINT_BOTTOMRIGHT)
+        ..setTexture("UI\\Widgets\\Console\\Human\\human-transport-slot.blp", 0, true)
+        ..setVisible(false)
 
         chargeText = createFrame("TEXT", "ButtonChargeText", chargeBackdrop, "", 0)
-        ..setPoint(FRAMEPOINT_TOPLEFT, chargeBackdrop, FRAMEPOINT_TOPLEFT)
-        ..setPoint(FRAMEPOINT_BOTTOMRIGHT, chargeBackdrop, FRAMEPOINT_BOTTOMRIGHT)
+        ..setAllPoints(chargeBackdrop)
         ..setTextAlignment(TEXT_JUSTIFY_MIDDLE, TEXT_JUSTIFY_CENTER)
 
-        
         setup()
 
     function setGlowVisible(boolean flag)
@@ -189,27 +174,28 @@ public class ActionButton extends UIButton
         self.setEnabled(true)
         block.setVisible(false)
 
-public class StackButton extends UIButton
-    private integer index
-    private framehandle text
+public class CommandButton extends UIButton
     private framehandle highlight
+    private framehandle text
     private framehandle goldText
+    private ButtonBorder border
 
-    construct(framehandle pane, int index, boolean withBorder)
-        self = createFrame("StackButton", pane, 0, 0)
-        self.setPoint(FRAMEPOINT_TOPLEFT, pane, FRAMEPOINT_TOPLEFT, index * (self.getWidth() + 0.002), 0)
-        icon = getFrame("StackButtonIcon")
-        text = getFrame("StackButtonText")
-        this.index = index
-
-        
-        highlight = getFrame("StackButtonHighLight")
-        highlight.setAlpha(200)
-        highlight.setVisible(false)
+    construct(framehandle pane, boolean userControlledHighlight)
+        if userControlledHighlight
+            self = createFrame("CommandButton", pane, 0, 0)
+            icon = getFrame("Icon")
+            highlight = createFrame("CommandButtonHighlight", self, 0, 0)
+            ..setAllPoints(icon)
+            ..setAlpha(200)
+            ..setVisible(false)
+        else
+            self = createFrame("CommandButtonWithHighlight", pane, 0, 0)
+            icon = getFrame("Icon")
 
         setup()
-        if withBorder
-            showBorder()
+
+    function setBorder(BorderColor color)
+        border.setBorder(color)
 
     function setText(string str)
         text.setText(str)
@@ -217,14 +203,26 @@ public class StackButton extends UIButton
     function setTextVisible(boolean flag)
         text.setVisible(flag)
 
+    function setEnabled(boolean flag)
+        self.setEnabled(flag)
+
     function setHighlight(boolean flag)
         highlight.setVisible(flag)
 
-    function addGoldLine()
-        createFrame("GoldTextSmall", self, 0, 0)
-        ..setPoint(FRAMEPOINT_TOPLEFT, self, FRAMEPOINT_BOTTOMLEFT, 0.0, -0.010)
-        ..setPoint(FRAMEPOINT_BOTTOMRIGHT, self, FRAMEPOINT_BOTTOMRIGHT, -0.002, -0.02)
-        goldText = getFrame("GoldTextText")
-
     function setGoldText(string str)
         goldText.setText(str)
+
+    function addBorder()
+        border = new ButtonBorder(self)
+
+    function addText(boolean withGold)
+        text = createFrame("CommandButtonText", self, 0, 0)
+        ..setPoint(FRAMEPOINT_TOPLEFT, self, FRAMEPOINT_BOTTOMLEFT)
+        ..setPoint(FRAMEPOINT_TOPRIGHT, self, FRAMEPOINT_BOTTOMRIGHT, -0.002, 0)
+        ..setHeight(0.009)
+        if withGold
+            createFrame("GoldTextSmall", self, 0, 0)
+            ..setPoint(FRAMEPOINT_TOPLEFT, text, FRAMEPOINT_BOTTOMLEFT, 0.0, -0.002)
+            ..setPoint(FRAMEPOINT_TOPRIGHT, text, FRAMEPOINT_BOTTOMRIGHT, 0.0, -0.002)
+            ..setHeight(0.01)
+            goldText = getFrame("GoldTextText")

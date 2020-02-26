@@ -35,7 +35,7 @@ public class ArmyPanelInfo
 
 
 public class UIArmyPanel
-    protected StackButton array[8] btns
+    protected CommandButton array[8] btns
 
     protected UIStackSplitDialog stackSplitDialog
 
@@ -43,8 +43,17 @@ public class UIArmyPanel
         reference.setWidth(Army.MAX_SIZE * (0.035 + 0.002))
 
         for int i = 0 to Army.MAX_SIZE - 1
-            btns[i] = new StackButton(reference, i, false)
+            btns[i] = new CommandButton(reference, false)
+            ..addText(false)
+            if i == 0
+                btns[i].setPoint(FRAMEPOINT_TOPLEFT, reference, FRAMEPOINT_TOPLEFT, 0, 0)
+            else
+                btns[i].setPoint(FRAMEPOINT_TOPLEFT, btns[i - 1].self, FRAMEPOINT_TOPRIGHT, 0.002, 0)
             btns[i].onClick() ->
+                let p = GetTriggerPlayerData()
+                let stack = p.worldConsoleInfo.armyPanel.army.getStack(i)
+                if stack != null
+                    p.stackWindowInfo.setArmyStack(stack)
                 // let p = GetTriggerPlayerData()
                 // let _info = p.worldConsoleInfo.armyPanel
 
@@ -72,11 +81,9 @@ public class UIArmyPanel
                 let p = GetTriggerPlayerData()
                 let info = p.worldConsoleInfo.armyPanel
 
-                let stack = info.army.getStack(i)
-                if stack != null
-                    p.stackWindowInfo.setArmyStack(stack)
                 if info.dragStart >= 0
                     info.setupDragEnd(i)
+                    update(p)
 
         stackSplitDialog = new UIStackSplitDialog()
 
@@ -88,7 +95,6 @@ public class UIArmyPanel
         if p.dialogInfo.current == stackSplitDialog
             stackSplitDialog.cancel(p)
         cancelDrag(p)
-
 
     function cancelDrag(Player p)
         let info = p.worldConsoleInfo.armyPanel
@@ -129,6 +135,7 @@ public class UIArmyPanel
         let btn = btns[position]
         btn.setTextVisible(true)
         btn.setAlpha(255)
+        btn.setEnabled(true)
         // wenn wir auf startDrag sind zeige potentiell endrag an
         if info.dragStart == position
             // zeige das an was auf dragEnd ist an
@@ -138,8 +145,10 @@ public class UIArmyPanel
                 // sind die nicht identisch wird es ein swap ansonten haben wir gerade einfach nur den normalen status angezeigt
                 if info.stackDragEnd != info.stackDragStart
                     btn.setAlpha(80)
-            else
+            
+            else if info.dragEnd > 0
                 btn.setTextVisible(false)
+                btn.setEnabled(false)
                 btn.setIcon(Textures.dISorc_inventory_slotfiller)
         else if info.dragEnd == position
             // zeige das was auf dragStart ist an außer das sind wir selber
@@ -154,4 +163,5 @@ public class UIArmyPanel
         else
             // there is nothing sooo ?
             btn.setTextVisible(false)
+            btn.setEnabled(false)
             btn.setIcon(Textures.dISorc_inventory_slotfiller)
