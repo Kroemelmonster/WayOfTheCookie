@@ -14,7 +14,9 @@ public class CounterAttackTalent extends Talent
     static function setup()
         TalentSet.COUNTER_ATTACK = new CounterAttackTalent()
         ..addGenerateListener() stack ->
-            stack.addPassive(new CounterAttackPassive(stack))
+            let passive = new CounterAttackPassive(stack)
+            stack.addPassive(passive)
+            passive.triggerOnStackCreation(stack)
 
     override function createTooltip(StackType sType) returns Tooltip
         return CounterAttackPassive.createTooltip(sType)

@@ -12,6 +12,7 @@ import initlater BuffType
 
 public class WarcryBuff extends Buff
     private effect display
+    private int duration
     
     private static constant DAMAGE_MULTI = 10
     private static constant string NAME = "Warcry"
@@ -34,25 +35,22 @@ public class WarcryBuff extends Buff
         
         return tooltip
 
-    override function setDuration(int duration)
+    override function update(int duration)
         if this.duration < duration
             let difference = duration - this.duration
             this.duration = duration
-            update(difference)
+            updateInner(difference)
 
     override function createCurrentTooltip() returns Tooltip
         return createTooltip(this)
 
-    private function update(int durationChange)
+    private function updateInner(int durationChange)
         stack.stats.damageModi.multi += (durationChange * DAMAGE_MULTI)
 
-    override function onTick()
-        update(-1)
-
-    override function onFinish()
-        update(duration * -1)
-        destroy this
+    private function onTick()
+        updateInner(-1)
 
     ondestroy
+        updateInner(duration * -1)
         if display != null
             display.destr()

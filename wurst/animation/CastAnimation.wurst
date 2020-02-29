@@ -7,33 +7,24 @@ import initlater BoardStack
 import initlater Cell
 
 public abstract class CastAnimation extends Animation
+    protected boolean finished = false
+    protected BoardStack stack
     protected Cell target
-    protected real cd
 
     construct(BoardStack stack, Cell target, AnimationListener listener)
-        super(stack)
+        super(stack.getBoard(), listener)
+        this.stack = stack
         this.target = target
         if target == null
             stack.issueImmediateOrder(AbilityTypesIds.SELFCAST_SPELL_ORDER)
         else
             stack.issuePointOrder(AbilityTypesIds.TARGET_SPELL_ORDER, target)
-        cd = -1 // do not count down
-        stack.doOnNextCast() -> 
-            // TODO this is the default backswing
-            cd = 0.5
+        stack.doOnNextCast() ->
             onCastExecute()
-            listener.execute()
-            destroy listener
-
-    override function tick(real delta) returns boolean
-        if cd < 0
-            return false
-        cd -= delta
-
-        if cd >= 0.00
-            return false
-        
-        return true
+            finished = true
 
     abstract function onCastExecute()
+
+    override function tick(real delta) returns boolean
+        return finished
         

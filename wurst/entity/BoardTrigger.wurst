@@ -1,0 +1,118 @@
+package BoardTrigger
+
+import LinkedList
+
+import initlater BoardStack
+import initlater Cell
+
+public abstract class SequenzListener
+    function continue()
+        continueInner()
+        destroy this
+
+    abstract function continueInner()
+
+public abstract class BoardTriggerOnAnyCellEnter
+    abstract function onEvent(BoardStack stack, Cell fromCell, Cell toCell, SequenzListener next)
+
+public abstract class BoardTriggerOnAnyCellLeave
+    abstract function onEvent(BoardStack stack, Cell fromCell, Cell toCell, SequenzListener next)
+
+public abstract class BoardTrigger
+    abstract function onEvent(SequenzListener next)
+
+public class StackTrigger
+    private LinkedList<BoardTriggerOnAnyCellEnter> onAnyCellEnter = new LinkedList<BoardTriggerOnAnyCellEnter>()
+    private LinkedList<BoardTriggerOnAnyCellLeave> onAnyCellLeave = new LinkedList<BoardTriggerOnAnyCellLeave>()
+    private LinkedList<BoardTrigger> onTurnStart = new LinkedList<BoardTrigger>()
+    private LinkedList<BoardTrigger> onTurnEnd = new LinkedList<BoardTrigger>()
+
+    construct()
+
+    function addOnAnyCellEnter(BoardTriggerOnAnyCellEnter listener) returns BoardTriggerOnAnyCellEnter
+        onAnyCellEnter.add(listener)
+        return listener
+
+    function removeOnAnyCellEnter(BoardTriggerOnAnyCellEnter listener)
+        onAnyCellEnter.remove(listener)
+        destroy listener
+
+    function addOnAnyCellLeave(BoardTriggerOnAnyCellLeave listener) returns BoardTriggerOnAnyCellLeave
+        onAnyCellLeave.add(listener)
+        return listener
+
+    function removeOnAnyCellLeave(BoardTriggerOnAnyCellLeave listener)
+        onAnyCellLeave.remove(listener)
+
+    function addTurnStart(BoardTrigger listener) returns BoardTrigger
+        onTurnStart.add(listener)
+        return listener
+
+    function removeOnTurnStart(BoardTrigger listener)
+        onTurnStart.remove(listener)
+
+    function addTurnEnd(BoardTrigger listener) returns BoardTrigger
+        onTurnEnd.add(listener)
+        return listener
+
+    function removeOnTurnEnd(BoardTrigger listener)
+        onTurnEnd.remove(listener)
+
+    private function triggerOnTurnEndInner(LLIterator<BoardTrigger> iter, SequenzListener next)
+        if iter.hasNext()
+            let listener = iter.next()
+            listener.onEvent() ->
+                triggerOnTurnEndInner(iter, next)
+        else
+            destroy iter
+            next.continue()
+
+    function triggerOnTurnEnd(SequenzListener next)
+        triggerOnTurnEndInner(onTurnEnd.iterator(), next)
+
+    private function triggerOnTurnStartInner(LLIterator<BoardTrigger> iter, SequenzListener next)
+        if iter.hasNext()
+            let listener = iter.next()
+            listener.onEvent() ->
+                triggerOnTurnStartInner(iter, next)
+        else
+            destroy iter
+            next.continue()
+
+    function triggerOnTurnStart(SequenzListener next)
+        triggerOnTurnStartInner(onTurnStart.iterator(), next)
+
+    private function triggerOnAnyCellLeaveInner(LLIterator<BoardTriggerOnAnyCellLeave> iter, BoardStack stack, Cell fromCell, Cell toCell, SequenzListener next)
+        if iter.hasNext()
+            let listener = iter.next()
+            listener.onEvent(stack, fromCell, toCell) ->
+                triggerOnAnyCellLeaveInner(iter, stack, fromCell, toCell, next)
+        else
+            destroy iter
+            next.continue()
+
+    function triggerOnAnyCellLeave(BoardStack stack, Cell fromCell, Cell toCell, SequenzListener next)
+        triggerOnAnyCellLeaveInner(onAnyCellLeave.iterator(), stack, fromCell, toCell, next)
+
+    private function triggerOnAnyCellEnterInner(LLIterator<BoardTriggerOnAnyCellEnter> iter, BoardStack stack, Cell fromCell, Cell toCell, SequenzListener next)
+        if iter.hasNext()
+            let listener = iter.next()
+            listener.onEvent(stack, fromCell, toCell) ->
+                triggerOnAnyCellEnterInner(iter, stack, fromCell, toCell, next)
+        else
+            destroy iter
+            next.continue()
+
+    function triggerOnAnyCellEnter(BoardStack stack, Cell fromCell, Cell toCell, SequenzListener next)
+        triggerOnAnyCellEnterInner(onAnyCellEnter.iterator(), stack, fromCell, toCell, next)
+
+    ondestroy
+        for listener in onAnyCellEnter
+            destroy listener
+        destroy onAnyCellEnter
+        for listener in onAnyCellLeave
+            destroy listener
+        destroy onAnyCellLeave
+        for listener in onTurnStart
+            destroy listener
+        destroy onTurnStart

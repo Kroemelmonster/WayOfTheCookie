@@ -59,19 +59,22 @@ public class InitiativeList
         var current = entrys.getFirst()
         let oldWaitingTime = current.waitTime
         
-        BoardController.onTurnEnd(current.stack, oldWaitingTime > 0.0)
-        if isFirstTurn == false
+        BoardController.onTurnEnd(current.stack, oldWaitingTime > 0.0) ->
+            if isFirstTurn == false
 
-            let stack = current.stack
-            destroyEntry(current)
-            addEntry(stack, false, oldWaitingTime, wait, false)
-        
-        isFirstTurn = false
+                let stack = current.stack
+                destroyEntry(current)
+                if stack.isAlive()
+                    addEntry(stack, false, oldWaitingTime, wait, false)
+                else
+                    Log.trace("that was a dead mans turn he gone")
+            
+            isFirstTurn = false
 
-        current = entrys.getFirst()
-        time = current.time
+            current = entrys.getFirst()
+            time = current.time
 
-        BoardController.onTurnStart(current.stack, current.isWaiting())
+            BoardController.onTurnStart(current.stack, current.isWaiting())
 
     /** converts int intitive to real 
         0 -> 100.0
@@ -159,7 +162,7 @@ public class InitiativeList
 
     private function removeEntry(BoardStack stack)
         let entry = getFirstEntry(stack)
-        if stack != null
+        if stack != null and entry != entrys.getFirst()
             destroyEntry(entry)
 
 

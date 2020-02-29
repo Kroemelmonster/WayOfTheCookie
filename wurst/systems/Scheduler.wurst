@@ -1,6 +1,7 @@
 package Scheduler
 
 import ClosureTimers
+import TimerUtils
 
 import UIWorldConsole
 import PlayerData
@@ -11,7 +12,22 @@ import UIHeroWindow
 import initlater Board
 
 class Scheduler
+    private static timer realTime
+    private static int gameTime
+
+    static private function tick()
+        gameTime += 1
+        realTime.start(.1, () -> tick())
+
+    static function getCurrentTime() returns int
+        return gameTime
+
+    static function getTimeIn(real seconds) returns int
+        return gameTime + (seconds * 10).floor()
+
     static function setup()
+        realTime = getTimer()
+        realTime.start(.1, () -> tick())
         Player.forEachActive() p ->
             doPeriodically(ANIMATION_PERIOD) cb ->
                 if p.playingBoard != null

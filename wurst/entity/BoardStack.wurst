@@ -19,6 +19,7 @@ import initlater Board
 import BoardStackStats
 import StackStats
 import Stack
+import BoardTrigger
 
 public class BoardStack
     private StackType stackType
@@ -45,6 +46,8 @@ public class BoardStack
     private OnCastListener unitOnCastListener
     private OnCastListener unitOnCastImmediateListener
 
+    private StackTrigger triggers
+
     BoardStackStats stats
 
     construct(Player p, ArmyStack stack)
@@ -57,6 +60,7 @@ public class BoardStack
         this.passiveActions = new LinkedList<PassiveAction>
 
         this.buffs = new LinkedList<Buff>
+        this.triggers = new StackTrigger()
 
         for talent in stackType.talents
             talent.onStackCreation(this)
@@ -122,6 +126,14 @@ public class BoardStack
         buffs.add(b)
 
     @inline
+    function removeBuff(Buff b)
+        buffs.remove(b)
+
+    @inline
+    function getTriggers() returns StackTrigger
+        return triggers
+
+    @inline
     function passiveActionIterator() returns LLIterator<PassiveAction>
         return passiveActions.iterator()
 
@@ -157,9 +169,13 @@ public class BoardStack
     function canStillAct() returns boolean
         return stats.getRemainingActionPoints() > 0
 
+    @inline 
+    function isEnemy(BoardStack other) returns boolean
+        return p != other.getPlayer()
+
     @inline
-    function canAttack(BoardStack stack) returns boolean
-        return p != stack.getPlayer()
+    function canAttack(BoardStack other) returns boolean
+        return isEnemy(other)
 
     function place(Cell cell)
         let playerIndex = cell.getBoard().getPlayerIndex(p)
@@ -207,6 +223,7 @@ public class BoardStack
         return this.cell != null
 
     function kill()
+        Log.trace("hello you dead")
         cell.getBoard().removeStack(this)
         if highlightEffect != null
             highlightEffect.destr()
@@ -318,6 +335,7 @@ public class BoardStack
         destroy unitOnCastListener
         destroy unitOnCastImmediateListener
         destroy unitDamageTakenListener
+        destroy triggers
         if tt != null
             tt.destr()
         u.kill()

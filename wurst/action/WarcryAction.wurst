@@ -19,14 +19,16 @@ import Stack
 
 import initlater BoardStack
 import StackType
+import Scheduler
+import DelayAnimation
 
 public class WarcryAction extends InstantAction
     private Tooltip tooltip
     
-    private static constant int COST = 1
+    private static constant int COST = 0
     private static constant int COOLDOWN = 0
-    private static constant int MAXRANGE = 2
-    private static constant int BUFF_DURATION = 3
+    private static constant int MAXRANGE = 8
+    private static constant int BUFF_DURATION = 1
     private static constant string NAME = "Warcry"
     private static constant oskeytype KEY = OSKEY_Y
     private static BuffType BUFF
@@ -35,14 +37,14 @@ public class WarcryAction extends InstantAction
 
 
     static function setup()
-        BUFF = BuffTypeSet.WARCRY
+        BUFF = BuffTypeSet.BLEEDING
         BASE_TOOLTIP = Tooltip.create(NAME)
         ..setCost(COST)
         
         ..addLine(Tooltip.stat("Target", "Self"))
         ..addLine(Tooltip.stat("Range", MAXRANGE))
         ..addLine("")
-        ..addLine("Gives every friendly unit in range the "+Tooltip.secondaryString(BUFF.getName())+ " Buff effect for "+Tooltip.primaryString(BUFF_DURATION.toString())+ " rounds")
+        ..addLine("Gives every enemy unit in range the "+Tooltip.secondaryString(BUFF.getName())+ " Buff effect for "+Tooltip.primaryString(BUFF_DURATION.toString())+ " rounds")
         ..addLine("-----")
         ..addBuffType(BUFF)
 
@@ -61,26 +63,29 @@ public class WarcryAction extends InstantAction
     override function activate()
         let area = stack.getCell().getAllCellsInRange(intRange(0, MAXRANGE))
         let targets = new LinkedList<BoardStack>()
+        let board = stack.getBoard()
         for cell in area
             let possibleTarget = cell.getStack()
-            if possibleTarget != null and possibleTarget.getPlayer() == stack.getPlayer()
+            if possibleTarget != null
                 targets.add(possibleTarget)
         destroy area
 
-        let anim = new WarcryAnimation(stack) () ->
+        new WarcryAnimation(stack) () ->
             for target in targets
                 BuffController.addBuff(BUFF, target, BUFF_DURATION)
             destroy targets
+
+            let delayTime = Scheduler.getTimeIn(0.5) // this is the backswing for casting
+            new DelayAnimation(board, delayTime) ->
+                charge --
+                cooldown = COOLDOWN + 1
+                BoardController.spendActionPoints(stack, COST, true)
+                OrderSystem.endOrder(stack.getBoard())
             
-        anim.onFinish() () ->
-            charge --
-            cooldown = COOLDOWN + 1
-            BoardController.spendActionPoints(stack, COST, true)
-            OrderSystem.endOrder(stack.getBoard())
 
     override function onUIMouseEnter()
         tooltip.display(stack.getPlayer(), false)
-        UIActionWindow.updateActionPoints(stack, 1)
+        UIActionWindow.updateActionPoints(stack, COST)
             
     override function onUIMouseLeave()
         UITooltip.hide(stack.getPlayer())

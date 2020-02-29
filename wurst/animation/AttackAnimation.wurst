@@ -6,30 +6,19 @@ import Animation
 import initlater BoardStack
 
 public class AttackAnimation extends Animation
-    private BoardStack enemy
-    private real cd
+    private BoardStack stack
+    protected boolean finished = false
 
     construct(BoardStack stack, BoardStack enemy, AnimationListener listener)
-        super(stack)
-        this.enemy = enemy
+        super(stack.getBoard(), listener)
+        this.stack = stack
         stack.enableAbility(AbilityIds.attack, true)
         stack.issueTargetOrder("attack", enemy)
-        cd = -1 // do not count down
         enemy.doOnNextDamageTaken() -> 
-            // TODO this is the default backswing
-            cd = 0.5
-            listener.execute()
-            destroy listener
+            finished = true
 
     override function tick(real delta) returns boolean
-        if cd < 0
-            return false
-        cd -= delta
-
-        if cd >= 0.00
-            return false
-        
-        return true
+        return finished
     
     ondestroy
         stack.enableAbility(AbilityIds.attack, false)

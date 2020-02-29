@@ -24,28 +24,16 @@ public class BuffController
         var b = getBuff(bType, stack)
         if b == null
             b = bType.createNew(stack)
-            b.setDuration(duration)
             stack.addBuff(b)
-
-        b.setDuration(duration)
-
-    
-    static function proceedBuffs(BoardStack stack)
-        let itr = stack.buffIterator()
-        while itr.hasNext()
-            let b = itr.next()
-
-            if b.tick()
-                itr.remove()
-
-        destroy itr
+        b.update(duration)
 
     static function removeAllBuffs(BoardStack stack)
         let itr = stack.buffIterator()
+        Log.trace("remove all buffs from "+stack.toString())
         while itr.hasNext()
             let b = itr.next()
 
-            b.kill()
+            destroy b
             itr.remove()
 
         destroy itr

@@ -15,6 +15,7 @@ import initlater Action
 import initlater OrderSystem
 import initlater PassiveAction
 import LinkedList
+import BoardTrigger
 
 constant TEXTTAG_COLOR_DAMAGE = colorA(246, 255, 120, 199)
 constant TEXTTAG_COLOR_KILLS = colorA(255, 120, 120, 200)
@@ -27,12 +28,13 @@ public class BoardController
             board.placeStack(stack, cell, true)
             UIController.triggerOnStackCreationOrDeathChange(board)
 
-    static function killStack(BoardStack stack)
+    static function killStack(BoardStack stack, SequenzListener next)
         let board = stack.getCell().getBoard()
         nullTimer() ->  
             BuffController.removeAllBuffs(stack)
             stack.kill()
             UIController.triggerOnStackCreationOrDeathChange(board)
+            next.continue()
 
     static function spendActionPoints(BoardStack stack, integer actionPoints, boolean isAllowedToContinue)
         stack.stats.setActionPoints(stack.stats.getRemainingActionPoints() - actionPoints)
@@ -41,7 +43,6 @@ public class BoardController
         else
             stack.stats.resetActionPopints()
             stack.stats.resetCounterAttacks()
-            BuffController.proceedBuffs(stack)
             stack.getPlayer().playingBoard.getInitiative().next()
 
     static function finishAction(BoardStack stack)
@@ -50,7 +51,7 @@ public class BoardController
         else
             stack.getPlayer().playingBoard.getInitiative().next()
 
-    static function dealDamage(BoardStack _attacker, DamageResult data, BoardStack defender)
+    static function dealDamage(BoardStack _attacker, DamageResult data, BoardStack defender, SequenzListener next)
         let coord = defender.getCell().getCoord()
 
         standardTextTag(coord, data.damage.toString())
@@ -62,11 +63,12 @@ public class BoardController
         
         defender.stats.addAmount(-data.amount)
         if defender.stats.getAmount() == 0
-            killStack(defender)
+            killStack(defender, next)
         else
             defender.stats.setHp(data.remainingHP)
             if data.amount > 0
                 UIController.triggerOnStackAmountChange(defender)
+            next.continue()
 
         destroy data
 
@@ -102,22 +104,68 @@ public class BoardController
             else
                 endTurn(attacker, attacker.getBoard())
 
-    static function onTurnEnd(BoardStack stack, boolean stackWaits)
-        UIController.onTrunEnd(stack)
+    static function onTurnEnd(BoardStack stack, boolean wasWaiting, SequenzListener next)
+        UIController.onTurnEnd(stack)
         
-        if stackWaits == false
+        if wasWaiting == false and stack.isAlive()
             stack.forEachAction() (Action action) ->
                 action.tickCooldown()
+            stack.getTriggers().triggerOnTurnEnd() ->
+                next.continue()
+        else
+            next.continue()
 
-    static function onTurnStart(BoardStack stack, boolean _stackWaited)
-        nullTimer() ->  
-            stack.setHighlight(true)
-            stack.resetCurrentSelectedAction()
-            UIController.onTurnStart(stack)
 
-            if stack.getPlayer().isConntrolledByKI
-                KISystem.executeTurn(stack)
+
+    private static function turnStartContinue(BoardStack stack)
+        stack.setHighlight(true)
+        stack.resetCurrentSelectedAction()
+        UIController.onTurnStart(stack)
+
+        if stack.getPlayer().isConntrolledByKI
+            KISystem.executeTurn(stack)
+            
+
+    static function onTurnStart(BoardStack stack, boolean wasWaiting)
+        nullTimer() ->
+            if wasWaiting
+                turnStartContinue(stack)
+            else
+                let board = stack.getBoard()
+                stack.getTriggers().triggerOnTurnStart() ->
+                    if stack.isAlive() and stack.canStillAct()
+                        turnStartContinue(stack)
+                    else
+                        Log.trace("lOL YOU CANT DO SHIAT")
+                        board.getInitiative().next()
+                    
+
+    static function onCellLeaveForAllStacks(LLIterator<BoardStack> stackItr, BoardStack stack, Cell fromCell, Cell toCell, SequenzListener next)
+        if stackItr.hasNext()
+            let current = stackItr.next()
+            current.getTriggers().triggerOnAnyCellLeave(stack, fromCell, toCell) -> 
+                onCellLeaveForAllStacks(stackItr, stack, fromCell, toCell, next)
+        else
+            destroy stackItr
+            next.continue()
                 
-    
+
+    static function onCellLeave(BoardStack stack, Cell fromCell, Cell toCell, SequenzListener next)
+        let board = stack.getBoard()
+        let stackItr = board.eachStackIterator()
+        onCellLeaveForAllStacks(stackItr, stack, fromCell, toCell, next)
             
-            
+    static function onCellEnterForAllStacks(LLIterator<BoardStack> stackItr, BoardStack stack, Cell fromCell, Cell toCell, SequenzListener next)
+        if stackItr.hasNext()
+            let current = stackItr.next()
+            current.getTriggers().triggerOnAnyCellEnter(stack, fromCell, toCell) -> 
+                onCellEnterForAllStacks(stackItr, stack, fromCell, toCell, next)
+        else
+            destroy stackItr
+            next.continue()
+                
+
+    static function onCellEnter(BoardStack stack, Cell fromCell, Cell toCell, SequenzListener next)
+        let board = stack.getBoard()
+        let stackItr = board.eachStackIterator()
+        onCellEnterForAllStacks(stackItr, stack, fromCell, toCell, next)

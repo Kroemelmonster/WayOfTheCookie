@@ -1,19 +1,15 @@
 package Animation
 
-import initlater BoardStack
+import initlater Board
 
 public abstract class AnimationListener
     abstract function execute()
 
 public abstract class Animation
-    protected BoardStack stack
     private AnimationListener onFinishListener
 
-    construct(BoardStack stack)
-        this.stack = stack
-        this.stack.getCell().getBoard().setAnimation(this)
-    
-    function onFinish(AnimationListener onFinishListener)
+    construct(Board board, AnimationListener onFinishListener)
+        board.setAnimation(this)
         this.onFinishListener = onFinishListener
 
     abstract function tick(real delta) returns boolean

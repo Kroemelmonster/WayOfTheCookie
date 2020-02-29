@@ -1,0 +1,25 @@
+package DelayAnimation
+
+import AbilityIds
+
+import Animation
+import initlater BoardStack
+import Scheduler
+import Board
+
+public class DelayAnimation extends Animation
+    private real cd
+
+    construct(Board board, int delayUntil, AnimationListener listener)
+        super(board, listener)
+        cd = (delayUntil - Scheduler.getCurrentTime()) / 10.0
+        if cd <= 0
+            listener.execute()
+
+    override function tick(real delta) returns boolean
+        cd -= delta
+
+        return cd >= 0.0
+    
+    ondestroy
+        

@@ -40,6 +40,7 @@ init
 		destroy nextSetup
 		if setups.size() == 0
 			destroy cb
+			destroy setups
 
 function createWorld()
 	// Log.info("Build World")

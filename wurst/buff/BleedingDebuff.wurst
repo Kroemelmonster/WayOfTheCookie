@@ -1,0 +1,84 @@
+package BleedingDebuff
+
+import AttachmentPoints
+import Icons
+import Abilities
+
+import Buff
+import UITooltip
+
+import initlater BoardStack
+import initlater BuffType
+import initlater BoardController
+import DamageResult
+import KUtil
+import StackType
+import Cell
+import BoardTrigger
+import WarcryAnimation
+
+public class BleedingDebuff extends Buff
+    private effect display
+    private int duration
+    private BoardTrigger turnStartListener
+    private BoardTrigger turnEndListener
+    private BoardTriggerOnAnyCellLeave moveListener
+    
+    private static constant string NAME = "Bleeding"
+
+    static function setup()
+        BuffTypeSet.BLEEDING = new BuffType("Icons\\PASBloodSprinkle.blp", NAME, createTooltip(null)) (BoardStack stack) ->
+            return new BleedingDebuff(BuffTypeSet.BLEEDING, stack)
+
+    construct(BuffType bType, BoardStack stack)
+        super(bType, stack)
+        display = stack.addAttachEffect("Objects\\Spawnmodels\\Human\\HumanBlood\\HumanBloodPeasant.mdl", AttachmentPoints.foot)
+
+        moveListener = stack.getTriggers().addOnAnyCellLeave() (BoardStack target, Cell fromCell, Cell toCell, SequenzListener next) ->
+            if stack == target
+                new WarcryAnimation(stack) () ->
+                    dealDamage() ->
+                        next.continue()
+            else
+                next.continue()
+
+        turnStartListener = stack.getTriggers().addTurnStart() (SequenzListener next) ->
+            new WarcryAnimation(stack) () ->
+                dealDamage() ->
+                    next.continue()
+
+        turnEndListener = stack.getTriggers().addTurnEnd() (SequenzListener next) ->
+            this.duration --
+            if this.duration <= 0
+                Log.trace("kill this beleeding because of turn end")
+                kill()
+            next.continue()
+
+    private static function createTooltip(BleedingDebuff b) returns Tooltip
+        let tooltip = Tooltip.create(NAME)
+        if b == null
+            tooltip.addLine("This is bad you are bleeding ??")
+        else
+            tooltip.addLine("OH no you are bleeding quite badly")
+        
+        return tooltip
+
+    override function update(int duration)
+        if duration > this.duration
+            this.duration = duration
+
+    override function createCurrentTooltip() returns Tooltip
+        return createTooltip(this)
+
+
+    private function dealDamage(SequenzListener next)
+        let result = DamageResult.calculateOneResult(stack, new Damage(realRange(50.0, 100.0), DamageType.PHYISICAL))
+        BoardController.dealDamage(stack, result, stack, next)
+        //stack.stats.setActionPoints(stack.stats.getRemainingActionPoints() - 1)
+
+    ondestroy
+        stack.getTriggers().removeOnAnyCellLeave(moveListener)
+        stack.getTriggers().removeOnTurnEnd(turnEndListener)
+        stack.getTriggers().removeOnTurnStart(turnStartListener)
+        if display != null
+            display.destr()

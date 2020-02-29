@@ -1,0 +1,22 @@
+package MovePositionAnimation
+
+import LinkedList
+
+import Animation
+
+import initlater BoardStack
+import initlater Cell
+
+public class MovePositionAnimation extends Animation
+    private vec2 target
+    private BoardStack stack
+
+    construct(BoardStack stack, vec2 target, AnimationListener listener)
+        super(stack.getBoard(), listener)
+        this.target = target
+        this.stack = stack
+        stack.issuePointOrder("move", target)
+
+    override function tick(real delta) returns boolean
+        return stack.isInRangeOf(target, 25.0)
+        

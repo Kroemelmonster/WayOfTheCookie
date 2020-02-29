@@ -1,0 +1,41 @@
+package TestAura
+
+import PassiveAction
+import AttackAnimation
+import BoardController
+import DamageResult
+import KUtil
+
+import initlater BoardStack
+import initlater Cell
+import UITooltip
+import StackType
+import BoardTrigger
+import WarcryAnimation
+
+public class TestAura extends PassiveAction
+    construct(BoardStack stack)
+        super(stack, "Test Aura")
+
+    override function triggerOnStackCreation(BoardStack stack)
+        stack.getTriggers().addOnAnyCellEnter() (BoardStack target, Cell fromCell, Cell toCell, SequenzListener next) ->
+            if stack.isEnemy(target)
+                Log.trace("OH NO YOU DONT")
+                new WarcryAnimation(stack) () ->
+                    Log.trace("ME MAD")
+                    next.continue()
+            else if stack != target
+                Log.trace("some ally moved")
+                new WarcryAnimation(stack) () ->
+                    Log.trace("ME STILL MAD")
+                    next.continue()
+            else
+                Log.trace("ME MOVED ? ")
+                Log.trace("ME NOT MAD")
+                next.continue()
+            
+    static function createTooltip(StackType _sType) returns Tooltip
+        let tooltip = Tooltip.create("Test Aura")
+        ..addLine("This is tha very first aura")
+        return tooltip
+

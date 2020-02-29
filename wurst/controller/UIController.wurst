@@ -51,7 +51,7 @@ class UIController
     static function triggerOnStackAmountChange(BoardStack stack)
         UIInitiativeWindow.refresh(stack.getPlayer().playingBoard.getInitiative())
     
-    static function onTrunEnd(BoardStack stack)
+    static function onTurnEnd(BoardStack stack)
         stack.setHighlight(false)
         UIActionWindow.hide(stack.getPlayer())
 

@@ -7,35 +7,23 @@ import UITooltip
 public abstract class Buff
     protected BuffType bType
     protected BoardStack stack
-    protected int duration = 0
 
     construct(BuffType bType, BoardStack stack)
         this.bType = bType
         this.stack = stack
-
-    function tick() returns boolean
-        duration --
-        onTick()
-        if duration <= 0
-            onFinish()
-            return true
-
-        return false
 
     function getBuffType() returns BuffType
         return bType
 
     function getIcon() returns string
         return bType.getIcon()
-
-    abstract function setDuration(int duration)
+    
+    abstract function update(int duration)
 
     /** Always use this tooltip instantly with intend to destroy it **/
     abstract function createCurrentTooltip() returns Tooltip
 
-    protected abstract function onTick()
+    protected function kill()
+        stack.removeBuff(this)
+        destroy this
 
-    protected abstract function onFinish()
-
-    function kill()
-        onFinish()

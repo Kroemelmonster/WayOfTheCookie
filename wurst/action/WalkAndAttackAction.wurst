@@ -2,7 +2,6 @@ package WalkAndAttackAction
 
 import LinkedList
 
-import MoveAnimation
 import Action
 
 import PathFinding
@@ -21,12 +20,16 @@ import OrderSystem
 import initlater Cell
 import initlater BoardStack
 import UIActionWindow
+import MovePositionAnimation
+import Scheduler
+import DelayAnimation
 
 public class WalkAndAttackAction extends DefaultAction
     private StackPathFinding walkableCells
     private LinkedList<Cell> path
     private boolean wasPathLimited
     private AttackResultPreview preview
+    private BoardStack orderedEnemy
 
     construct(BoardStack stack)
         super(stack, "Attack")
@@ -74,46 +77,76 @@ public class WalkAndAttackAction extends DefaultAction
             
         UIActionWindow.updateActionPoints(stack, showCost)
 
-    private function sendAttackOrder(BoardStack enemy, boolean didMove)
+    private function sendAttackOrder()
         let board = stack.getBoard()
-        preview.update(enemy)
-        let anim = new AttackAnimation(stack, enemy) () ->
-            BoardController.dealDamage(stack, preview.getOneResult(), enemy)
-
-        anim.onFinish() () ->
-            if didMove
-                UIController.triggerOnAnyStackCellChange(board)
-            BoardController.onAttackEnd(stack, enemy)
+        preview.update(orderedEnemy)
+        new AttackAnimation(stack, orderedEnemy) () ->
+            let delayTime = Scheduler.getTimeIn(0.5) // this is the backswing
+            BoardController.dealDamage(stack, preview.getOneResult(), orderedEnemy) ->
+                new DelayAnimation(board, delayTime) ->
+                    BoardController.onAttackEnd(stack, orderedEnemy)
             
 
-    private function sendMoveOrder(BoardStack enemy)
-        let targetCell = path.peek()
-        let cost = walkableCells.get(targetCell).cost.floor()
-
-        let board = stack.getBoard()
-        let anim = new MoveAnimation(stack, path)
-        anim.onFinish() () ->
-            stack.replaceCell(targetCell)
-            
-            if enemy != null
-                sendAttackOrder(enemy, true)
-            else
-                BoardController.spendActionPoints(stack, cost, true)
+    private function moveNextCell(int index)
+        let nextCell = path.get(index)
+        let currentCell = stack.getCell()
+        var prevCost = 0
+        if walkableCells.has(currentCell)
+            prevCost = walkableCells.get(currentCell).cost.floor()
+        let cost = walkableCells.get(nextCell).cost.floor()
+        let board = currentCell.getBoard()
+        Log.trace("start to next cell "+cost.toString())
+        BoardController.onCellLeave(stack, currentCell, nextCell) ->
+            Log.trace("after Leave "+Scheduler.getCurrentTime().toString())
+            if stack.isAlive() == false
+                Log.trace("he died so next ?")
+                OrderSystem.endOrder(board)
+                board.getInitiative().next()
+            else if cost > stack.stats.getRemainingActionPoints()
+                Log.trace("he does not have enought action points to continue "+stack.stats.getRemainingActionPoints().toString()+ " so remove the prev cost "+prevCost.toString())
+                BoardController.spendActionPoints(stack, prevCost, true)
                 UIController.triggerOnAnyStackCellChange(board)
                 OrderSystem.endOrder(board)
+            else
+                new MovePositionAnimation(stack, nextCell.getCoord()) () ->
+                    stack.replaceCell(nextCell)
+                    BoardController.onCellEnter(stack, currentCell, nextCell) ->
+                        Log.trace("after Enter "+Scheduler.getCurrentTime().toString())
+                        if stack.isAlive() == false
+                            Log.trace("he died after so next ?")
+                            OrderSystem.endOrder(board)
+                            board.getInitiative().next()
+                        else if cost >= stack.stats.getRemainingActionPoints()
+                            Log.trace("he does not have enought action points to continue "+stack.stats.getRemainingActionPoints().toString()+ " so remove the next cost "+cost.toString())
+                            BoardController.spendActionPoints(stack, cost, true)
+                            UIController.triggerOnAnyStackCellChange(board)
+                            OrderSystem.endOrder(board)
+                        else if (index + 1) < path.size()
+                            Log.trace("alles roger next cell")
+                            moveNextCell(index + 1)
+                        else if orderedEnemy != null and cost < stack.stats.getRemainingActionPoints()
+                            Log.trace("can actually still attack")
+                            UIController.triggerOnAnyStackCellChange(board)
+                            sendAttackOrder()
+                        else
+                            Log.trace("we are at our destination but can still move on")
+                            BoardController.spendActionPoints(stack, cost, true)
+                            UIController.triggerOnAnyStackCellChange(board)
+                            OrderSystem.endOrder(board)
 
     override function sendTargetOrder(Cell cell) returns boolean
         if path.has(cell)
-            sendMoveOrder(null)
+            orderedEnemy = null
+            moveNextCell(0)
             return true
         else 
-            let enemy = cell.getStack()
-            if canAttackTargetThisTurn(enemy)
+            orderedEnemy = cell.getStack()
+            if canAttackTargetThisTurn(orderedEnemy)
                 // do we need to walk there ?
                 if path.isEmpty()
-                    sendAttackOrder(enemy, false)
+                    sendAttackOrder()
                 else
-                    sendMoveOrder(enemy)
+                    moveNextCell(0)
                 return true
         
         return false
@@ -165,7 +198,6 @@ public class WalkAndAttackAction extends DefaultAction
 
         destroy itr
         return list
-
     
     private function canAttackTargetThisTurn(BoardStack enemy) returns boolean
         let target = targets.find(enemy)
@@ -187,18 +219,18 @@ public class WalkAndAttackAction extends DefaultAction
         if targetCell == null
             return null
 
-        PathCell destionationPath = null
+        PathCell _destionationPath = null
 
         let targetStack = targetCell.getStack()
         let target = targets.find(targetStack)
 
         // he found something to Attack
         if target != null
-            destionationPath = walkableCells.get(target.getAttackFrom())
+            _destionationPath = walkableCells.get(target.getAttackFrom())
         else 
-            destionationPath = walkableCells.get(targetCell)
+            _destionationPath = walkableCells.get(targetCell)
             
-        if destionationPath == null
+        if _destionationPath == null
             // you didnt need to walk, maybe you are already in range ?
             if target != null
                 preview.calculate(targetStack, stack.getCell())
@@ -207,7 +239,7 @@ public class WalkAndAttackAction extends DefaultAction
             return null
 
         let movePoints = stack.stats.getMoveSpeed()
-        let iter = destionationPath.iterator()
+        let iter = _destionationPath.iterator()
         var couldAttack = false
 
         while iter.hasNext()

@@ -30,6 +30,14 @@ public class DamageResult
         destroy preview
         return result
 
+    static function calculateOneResult(BoardStack target, Damage dmg) returns DamageResult
+        let preview = new BasicResultPreview(target, dmg)
+        preview.calculate(target)
+        let result = preview.getOneResult()
+        destroy preview
+        return result
+        
+
 public class Damage
     protected realRange value
     protected DamageType damageType
@@ -108,6 +116,27 @@ public abstract class DamageResultPreview
 
     function reset()
         this.defender = null
+
+public class BasicResultPreview extends DamageResultPreview
+    private Damage d
+
+    construct(BoardStack attacker, Damage d)
+        super(attacker)
+        this.d = d
+
+
+    protected override function getBaseDamage() returns Damage
+        return d
+
+    protected override function getBaseEffectivness() returns real
+        return 100.0
+
+    override function addToTooltip(Tooltip tt)
+        super.addToTooltip(tt)
+
+    override function calculate(BoardStack defender)
+        super.calculate(defender)
+
 
 public class AttackResultPreview extends DamageResultPreview
     private LinkedList<PassiveAction> counters

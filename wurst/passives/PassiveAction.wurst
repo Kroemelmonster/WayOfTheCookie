@@ -23,6 +23,9 @@ public abstract class PassiveAction
         return "Passive '"+getName()+"'"
     
     @inline
+    abstract function triggerOnStackCreation(BoardStack stack)
+
+    @inline
     function triggerAfterAttackCheck(BoardStack attacker) returns boolean
         return triggerAfterAttackCheck(attacker, attacker.getCell())
 

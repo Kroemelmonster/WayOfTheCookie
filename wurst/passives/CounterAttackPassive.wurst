@@ -10,10 +10,16 @@ import initlater BoardStack
 import initlater Cell
 import UITooltip
 import StackType
+import BoardTrigger
+import Scheduler
+import DelayAnimation
 
 public class CounterAttackPassive extends PassiveAction
     construct(BoardStack stack)
         super(stack, "Attack")
+
+    override function triggerOnStackCreation(BoardStack stack)
+
 
     override function triggerAfterAttackCheck(BoardStack attacker, Cell fromCell) returns boolean
         if stack.stats.getCounterAttacks() <= 0
@@ -25,14 +31,18 @@ public class CounterAttackPassive extends PassiveAction
 
     override function triggerAfterAttack(BoardStack target, PassiveActionListener listener)
         stack.stats.setCounterAttacks(stack.stats.getCounterAttacks() - 1)
+        let board = target.getBoard()
 
-        let anim = new AttackAnimation(stack, target) () ->
+        new AttackAnimation(stack, target) () ->
             let result = DamageResult.calulateOneAttackResult(stack, target)
-            BoardController.dealDamage(stack, result, target)
+            BoardController.dealDamage(stack, result, target) ->
 
-        anim.onFinish() () ->
-            listener.onFinish()
-            destroy listener
+            let delayTime = Scheduler.getTimeIn(0.5)
+            BoardController.dealDamage(stack, result, target) ->
+                new DelayAnimation(board, delayTime) ->
+                    listener.onFinish()
+                    destroy listener
+                // TODO ??
             
     static function createTooltip(StackType _sType) returns Tooltip
         let tooltip = Tooltip.create("Counter Attack")

@@ -17,6 +17,8 @@ import initlater Cell
 import initlater BoardStack
 import initlater StackTypesDefinition
 import UIActionWindow
+import Scheduler
+import DelayAnimation
 
 public class SummonLesserSkeletonAction extends Action
     private LinkedList<Cell> area = new LinkedList<Cell>()
@@ -78,13 +80,13 @@ public class SummonLesserSkeletonAction extends Action
             recalcSummonAmount()
             let summon = cell.getBoard().createSummon(stack.getPlayer(), SUMMONED_TYPE, summonAmount.random())
 
-            let anim = new SummonLesserSkeletonAnimation(stack, cell) () ->
+            new SummonLesserSkeletonAnimation(stack, cell) () ->
                 BoardController.placeStackOnBoard(summon, cell)
-
-            anim.onFinish() () ->
-                cooldown = COOLDOWN + 1
-                BoardController.finishAction(stack)
-                OrderSystem.endOrder(stack.getBoard())
+                let delayTime = Scheduler.getTimeIn(0.5) // this is the backswing for casting
+                new DelayAnimation(cell.getBoard(), delayTime) ->
+                    cooldown = COOLDOWN + 1
+                    BoardController.finishAction(stack)
+                    OrderSystem.endOrder(stack.getBoard())
             
             return true
         

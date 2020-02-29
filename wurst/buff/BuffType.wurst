@@ -4,15 +4,18 @@ import Buff
 import WarcryBuff
 import BoardStack
 import UITooltip
+import BleedingDebuff
 
 interface BuffCreateListener
     function create(BoardStack stack) returns Buff
 
 public class BuffTypeSet
-    static BuffType WARCRY 
+    static BuffType WARCRY
+    static BuffType BLEEDING
 
     static function setup()
         WarcryBuff.setup()
+        BleedingDebuff.setup()
 
 
 public class BuffType
