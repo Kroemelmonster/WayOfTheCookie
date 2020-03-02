@@ -169,6 +169,14 @@ public class Board
         stacks.remove(stack)
         initiative.removeStack(stack)
 
+    function updateStackAfterTurnEnd()
+        let itr = stacks.iterator()
+        while itr.hasNext()
+            let stack = itr.next()
+            if stack.isOnBoard() == false
+                itr.remove()
+        destroy itr
+
     function forEachNeighbour(Cell startCell, LLItrClosure<Cell> itr)
         let cube = startCell.getHex().toCube()
         for int i = 0 to 5
@@ -182,9 +190,15 @@ public class Board
     function forEachStack(LLItrClosure<BoardStack> itr)
         stacks.forEach(itr)
 
+    /**
+        Gives you a copy of all the stacks on the Board
+        You are free to remove and kill anything on the board it will still link to the old stacks as if they were on the Board
+
+        Just remeber to delete the List afterwards
+    **/
     @inline
-    function eachStackIterator() returns LLIterator<BoardStack>
-        return stacks.iterator()
+    function getAllStacks() returns LinkedList<BoardStack>
+        return stacks.copy()
     
     function getNeighbour(Cell cell, int index) returns Cell
         let h = cell.getHex().getNeighbour(index)
@@ -194,6 +208,9 @@ public class Board
         let c1 = cell.getHex().toCube()
         let c2 = otherCell.getHex().toCube()
         return c1.distanceTo(c2)
+
+    function eachCellInRangeIterator(Cell startCell, intRange r) returns CellRangeIterator
+        return new CellRangeIterator(startCell, r)
 
     function forEachCellsInRange(Cell startCell, intRange r, LLItrClosure<Cell> itr)
         var cube = startCell.getHex().toCube()
@@ -210,6 +227,7 @@ public class Board
 
     function getAllCellsInRange(Cell startCell, intRange r) returns LinkedList<Cell>
         let list = new LinkedList<Cell>()
+        list.iterator()
         var cube = startCell.getHex().toCube()
         if r.min == 0
             list.add(startCell)
@@ -255,9 +273,8 @@ public class Board
     function tickAnimation(real delta)
         if currentAnim != null
             if currentAnim.tick(delta)
-                let savedAnim = currentAnim
-                currentAnim = null
-                Animation.finishAnimation(savedAnim)
+                if currentAnim != null
+                    Animation.finishAnimation(currentAnim)
         
     function drawAll()
         draw(p1)
@@ -301,3 +318,52 @@ public class Board
     
     function getCellBasedOnCoords(vec2 mouseCoord) returns Cell
         return getCell(coordToHex(mouseCoord - coord))
+
+public class CellRangeIterator
+    private Board board
+    private cube cube
+    private int ring
+    private int i = 0
+    private int i2 = 0
+    private int maxRing
+    private Cell nextCell
+
+    construct(Cell startCell, intRange range)
+        board = startCell.getBoard()
+        ring = range.min
+        maxRing = range.max
+        cube = startCell.getHex().toCube()
+
+        if range.min > 0
+            // move out
+            for int ringI = 1 to range.min
+                cube += CUBE_NEIGHBOURS[4]
+            next()
+
+        else
+            nextCell = startCell
+
+    function hasNext() returns boolean
+        return nextCell != null
+
+    private function getNext() returns Cell
+        i2++
+        if i2 > ring
+            i2 = 1
+            i++
+            if i > 5
+                i = 0
+                ring ++
+                cube += CUBE_NEIGHBOURS[4]
+
+        cube += CUBE_NEIGHBOURS[i]
+        return board.getCell(cube.toHex())
+
+    function next() returns Cell
+        let savedNextCell = nextCell
+        nextCell = null
+        while ring <= maxRing and nextCell == null
+            nextCell = getNext()
+        if ring > maxRing
+            nextCell = null
+        return savedNextCell

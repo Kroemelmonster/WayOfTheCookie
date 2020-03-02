@@ -19,17 +19,76 @@ import OrderSystem
 
 import initlater Cell
 import initlater BoardStack
+import initlater Board
 import UIActionWindow
 import MovePositionAnimation
 import Scheduler
 import DelayAnimation
+import BoardTrigger
+
+function subActionMoveEnd(Board board, SequenzListenerStatus next, int status)
+    UIController.triggerOnAnyStackCellChange(board)
+    next.continue(status)
+
+function subActionMoveInner(StackPathFinding walkableCells, LinkedList<Cell> path, int index, BoardStack stack, SequenzListenerStatus next)
+    let nextCell = path.get(index)
+    let currentCell = stack.getCell()
+    var prevCost = 0
+    if walkableCells.has(currentCell)
+        prevCost = walkableCells.get(currentCell).cost.floor()
+    let cost = walkableCells.get(nextCell).cost.floor()
+    let board = currentCell.getBoard()
+    BoardController.onCellLeave(stack, currentCell, nextCell) ->
+        if stack.isAlive() == false
+            subActionMoveEnd(board, next, 1)
+        else if cost > stack.stats.getRemainingActionPoints()
+            stack.stats.addActionPoints(-prevCost)
+            subActionMoveEnd(board, next, 0)
+        else
+            new MovePositionAnimation(stack, nextCell.getCoord()) () ->
+                stack.replaceCell(nextCell)
+                BoardController.onCellEnter(stack, currentCell, nextCell) ->
+                    if stack.isAlive() == false
+                        subActionMoveEnd(board, next, 1)
+                    else if cost >= stack.stats.getRemainingActionPoints()
+                        stack.stats.addActionPoints(-cost)
+                        subActionMoveEnd(board, next, 0)
+                    else if (index + 1) < path.size()
+                        subActionMoveInner(walkableCells, path, index + 1,stack, next)
+                    else
+                        stack.stats.addActionPoints(-cost)
+                        subActionMoveEnd(board, next, 0)
+
+public function subActionMove(StackPathFinding walkableCells, LinkedList<Cell> path, BoardStack stack, SequenzListenerStatus next)
+    subActionMoveInner(walkableCells, path, 0, stack, next)
+
+
+function subActionAttackEnd(int cost, BoardStack attacker, SequenzListenerStatus next, int status)
+    if cost > 0
+        attacker.stats.addActionPoints(-cost)
+    next.continue(status)
+
+public function subActionAttack(int cost, BoardStack attacker, BoardStack defender, AttackResultPreview preview, boolean triggerOnAttack, SequenzListenerStatus next)
+    let board = attacker.getBoard()
+    if cost > 0 and attacker.stats.getRemainingActionPoints() < cost
+        next.continue(2) // insufienct Cost
+        return
+
+    preview.update(defender)
+    AttackAnimation.create(attacker, defender) () ->
+        BoardController.dealDamage(attacker, preview.getOneResult(), defender) ->
+            DelayAnimation.create(board, Scheduler.getTimeIn(0.5)) -> // this is the backswing
+                if triggerOnAttack
+                    BoardController.onAttackEnd(attacker, defender) ->
+                        subActionAttackEnd(cost, attacker, next, 0)
+                else
+                    subActionAttackEnd(cost, attacker, next, 0)
 
 public class WalkAndAttackAction extends DefaultAction
     private StackPathFinding walkableCells
     private LinkedList<Cell> path
     private boolean wasPathLimited
     private AttackResultPreview preview
-    private BoardStack orderedEnemy
 
     construct(BoardStack stack)
         super(stack, "Attack")
@@ -77,79 +136,30 @@ public class WalkAndAttackAction extends DefaultAction
             
         UIActionWindow.updateActionPoints(stack, showCost)
 
-    private function sendAttackOrder()
-        let board = stack.getBoard()
-        preview.update(orderedEnemy)
-        new AttackAnimation(stack, orderedEnemy) () ->
-            let delayTime = Scheduler.getTimeIn(0.5) // this is the backswing
-            BoardController.dealDamage(stack, preview.getOneResult(), orderedEnemy) ->
-                new DelayAnimation(board, delayTime) ->
-                    BoardController.onAttackEnd(stack, orderedEnemy)
-            
-
-    private function moveNextCell(int index)
-        let nextCell = path.get(index)
-        let currentCell = stack.getCell()
-        var prevCost = 0
-        if walkableCells.has(currentCell)
-            prevCost = walkableCells.get(currentCell).cost.floor()
-        let cost = walkableCells.get(nextCell).cost.floor()
-        let board = currentCell.getBoard()
-        Log.trace("start to next cell "+cost.toString())
-        BoardController.onCellLeave(stack, currentCell, nextCell) ->
-            Log.trace("after Leave "+Scheduler.getCurrentTime().toString())
-            if stack.isAlive() == false
-                Log.trace("he died so next ?")
-                OrderSystem.endOrder(board)
-                board.getInitiative().next()
-            else if cost > stack.stats.getRemainingActionPoints()
-                Log.trace("he does not have enought action points to continue "+stack.stats.getRemainingActionPoints().toString()+ " so remove the prev cost "+prevCost.toString())
-                BoardController.spendActionPoints(stack, prevCost, true)
-                UIController.triggerOnAnyStackCellChange(board)
-                OrderSystem.endOrder(board)
-            else
-                new MovePositionAnimation(stack, nextCell.getCoord()) () ->
-                    stack.replaceCell(nextCell)
-                    BoardController.onCellEnter(stack, currentCell, nextCell) ->
-                        Log.trace("after Enter "+Scheduler.getCurrentTime().toString())
-                        if stack.isAlive() == false
-                            Log.trace("he died after so next ?")
-                            OrderSystem.endOrder(board)
-                            board.getInitiative().next()
-                        else if cost >= stack.stats.getRemainingActionPoints()
-                            Log.trace("he does not have enought action points to continue "+stack.stats.getRemainingActionPoints().toString()+ " so remove the next cost "+cost.toString())
-                            BoardController.spendActionPoints(stack, cost, true)
-                            UIController.triggerOnAnyStackCellChange(board)
-                            OrderSystem.endOrder(board)
-                        else if (index + 1) < path.size()
-                            Log.trace("alles roger next cell")
-                            moveNextCell(index + 1)
-                        else if orderedEnemy != null and cost < stack.stats.getRemainingActionPoints()
-                            Log.trace("can actually still attack")
-                            UIController.triggerOnAnyStackCellChange(board)
-                            sendAttackOrder()
-                        else
-                            Log.trace("we are at our destination but can still move on")
-                            BoardController.spendActionPoints(stack, cost, true)
-                            UIController.triggerOnAnyStackCellChange(board)
-                            OrderSystem.endOrder(board)
-
     override function sendTargetOrder(Cell cell) returns boolean
+        var orderIsBeeingExecuted = false
         if path.has(cell)
-            orderedEnemy = null
-            moveNextCell(0)
-            return true
-        else 
-            orderedEnemy = cell.getStack()
-            if canAttackTargetThisTurn(orderedEnemy)
+            orderIsBeeingExecuted = true
+            subActionMove(walkableCells, path, stack) (status) ->
+                BoardController.finishOrder(stack, true)
+        else
+            let enemy = cell.getStack()
+            if canAttackTargetThisTurn(enemy)
+                orderIsBeeingExecuted = true
                 // do we need to walk there ?
                 if path.isEmpty()
-                    sendAttackOrder()
+                    subActionAttack(1, stack, enemy, preview, true) (attackStatus) ->
+                        BoardController.finishOrder(stack, false)
                 else
-                    moveNextCell(0)
-                return true
-        
-        return false
+                    subActionMove(walkableCells, path, stack) (status) ->
+                        if status == 0
+                            subActionAttack(1, stack, enemy, preview, true) (attackStatus) ->
+                                BoardController.finishOrder(stack, false)
+                        else
+                            // welp here you COULD theoretically act again but that is only a bug in subActionMove --> so we dont care
+                            // if you ordered to attack someone and somthing does not work your turn is donso
+                            BoardController.finishOrder(stack, false)
+        return orderIsBeeingExecuted
 
     private function getRemainingActionPointsFromCell(Cell cell, real limitMovesPoint) returns int
         if cell == null
@@ -175,16 +185,14 @@ public class WalkAndAttackAction extends DefaultAction
         var currentHighestRemainingPoints = 0
         Cell currentBest = null
         
-        let possibleCellsToAttackFrom = target.getCell().getAllCellsInRange(stack.stats.getAttackRange())
-        let itr = possibleCellsToAttackFrom.iterator()
-        while itr.hasNext()
-            let possibleCellToAttackFrom = itr.next()
+        let possibleCellsItr = target.getCell().eachCellInRangeIterator(stack.stats.getAttackRange())
+        while possibleCellsItr.hasNext()
+            let possibleCellToAttackFrom = possibleCellsItr.next()
             let remainingPoints = getRemainingActionPointsFromCell(possibleCellToAttackFrom, 100.0)
             if remainingPoints > currentHighestRemainingPoints
                 currentHighestRemainingPoints = remainingPoints
                 currentBest = possibleCellToAttackFrom
-        destroy itr
-        destroy possibleCellsToAttackFrom
+        destroy possibleCellsItr
         return currentBest
 
     override function getTargets(boolean shouldBeAbleToAttackThisTurn) returns LinkedList<BoardStack>

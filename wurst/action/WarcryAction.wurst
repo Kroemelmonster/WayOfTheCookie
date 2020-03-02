@@ -2,6 +2,7 @@ package WarcryAction
 
 
 import Icons
+import Abilities
 
 import Action
 import InstantAction
@@ -9,7 +10,6 @@ import InstantAction
 import OrderSystem
 import BoardController
 import UITooltip
-import WarcryAnimation
 import BuffController
 import BuffType
 import UIActionWindow
@@ -21,6 +21,8 @@ import initlater BoardStack
 import StackType
 import Scheduler
 import DelayAnimation
+import Buff
+import CastAnimation
 
 public class WarcryAction extends InstantAction
     private Tooltip tooltip
@@ -31,10 +33,10 @@ public class WarcryAction extends InstantAction
     private static constant int BUFF_DURATION = 1
     private static constant string NAME = "Warcry"
     private static constant oskeytype KEY = OSKEY_Y
+    private static constant string EFFECT = Abilities.roarCaster
     private static BuffType BUFF
     private static Tooltip BASE_TOOLTIP
     static constant string ICON = Icons.bTNBattleRoar
-
 
     static function setup()
         BUFF = BuffTypeSet.BLEEDING
@@ -70,17 +72,25 @@ public class WarcryAction extends InstantAction
                 targets.add(possibleTarget)
         destroy area
 
-        new WarcryAnimation(stack) () ->
+        CastAnimation.create(stack) () ->
+            flashEffect(EFFECT, stack.getCell().getCoord())
             for target in targets
-                BuffController.addBuff(BUFF, target, BUFF_DURATION)
+                BuffController.addBuff(BUFF, target, new BuffData(2)
+                ..setRealValue(30))
+                BuffController.addBuff(BuffTypeSet.POISON, target, new BuffData(3)
+                ..setRealValue(10))
+                BuffController.addBuff(BuffTypeSet.POISON, target, new BuffData(1)
+                ..setRealValue(10))
+                BuffController.addBuff(BuffTypeSet.POISON, target, new BuffData(1)
+                ..setRealValue(10))
             destroy targets
 
-            let delayTime = Scheduler.getTimeIn(0.5) // this is the backswing for casting
-            new DelayAnimation(board, delayTime) ->
+            DelayAnimation.create(board, 0.5) -> // this is the backswing for casting
                 charge --
                 cooldown = COOLDOWN + 1
-                BoardController.spendActionPoints(stack, COST, true)
-                OrderSystem.endOrder(stack.getBoard())
+
+                stack.stats.addActionPoints(-COST)
+                BoardController.finishOrder(stack, true)
             
 
     override function onUIMouseEnter()

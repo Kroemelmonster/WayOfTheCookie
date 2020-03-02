@@ -9,8 +9,8 @@ public class DefaultTalent extends Talent
     construct()
         super()
 
-    static function setup()
-        TalentSet.DEFAULT = new DefaultTalent()
+    static function setup() returns Talent
+        return new DefaultTalent()
         ..addGenerateListener() stack ->
             stack.addAction(new WalkAndAttackAction(stack))
             stack.addAction(new WaitAction(stack))       

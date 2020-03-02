@@ -11,8 +11,8 @@ public class CounterAttackTalent extends Talent
     construct()
         super("Counter Attack", Icons.bTNHoldPosition)
 
-    static function setup()
-        TalentSet.COUNTER_ATTACK = new CounterAttackTalent()
+    static function setup() returns Talent
+        return new CounterAttackTalent()
         ..addGenerateListener() stack ->
             let passive = new CounterAttackPassive(stack)
             stack.addPassive(passive)

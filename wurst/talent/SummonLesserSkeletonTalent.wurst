@@ -9,8 +9,8 @@ public class SummonLesserSkeletonTalent extends Talent
     construct()
         super("Summon Lesser Skeleton", SummonLesserSkeletonAction.ICON)
 
-    static function setup()
-        TalentSet.SUMMON_LESSER_SKELETON = new SummonLesserSkeletonTalent()
+    static function setup() returns Talent
+        return new SummonLesserSkeletonTalent()
         ..addGenerateListener() stack ->
             stack.addAction(new SummonLesserSkeletonAction(stack))
 

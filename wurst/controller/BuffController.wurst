@@ -20,20 +20,16 @@ public class BuffController
         destroy itr
         return result
 
-    static function addBuff(BuffType bType, BoardStack stack, int duration)
+    static function addBuff(BuffType bType, BoardStack stack, BuffData data)
         var b = getBuff(bType, stack)
         if b == null
             b = bType.createNew(stack)
             stack.addBuff(b)
-        b.update(duration)
+        b.update(data)
 
-    static function removeAllBuffs(BoardStack stack)
+    static function hideAllBuffs(BoardStack stack)
         let itr = stack.buffIterator()
-        Log.trace("remove all buffs from "+stack.toString())
         while itr.hasNext()
-            let b = itr.next()
-
-            destroy b
-            itr.remove()
+            itr.next().hide()
 
         destroy itr

@@ -87,6 +87,7 @@ class StackTypesDefinition
         StackTypes.SASQUATCH_ORACLE = createMelee(UnitTypesIds.SASQUATCH_ORACLE, UnitTypesIds.ARMY_SASQUATCH_ORACLE, 
         "ReplaceableTextures\\CommandButtons\\BTNSasquatchOracle.blp", StackSoundSets.SKELETON, 4, 350, 630)
             ..addTalent(TalentSet.WARCRY)
+            ..addTalent(TalentSet.CHAIN_LIGHTNING)
             ..setInitiative(6)
             ..setActionPoints(6)
             ..setMaxHp(480)

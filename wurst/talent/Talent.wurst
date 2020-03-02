@@ -7,7 +7,7 @@ import SummonLesserSkeletonTalent
 import WarcryTalent
 import CounterAttackTalent
 import UITooltip
-import TestAuraTalent
+import ChainLightningTalent
 
 interface GenerateListener
     function onStackCreation(BoardStack stack)
@@ -20,14 +20,14 @@ public class TalentSet
     static Talent SUMMON_LESSER_SKELETON
     static Talent WARCRY
     static Talent COUNTER_ATTACK
-    static Talent TEST_AURA
+    static Talent CHAIN_LIGHTNING
 
     static function setup()
-        DefaultTalent.setup()
-        SummonLesserSkeletonTalent.setup()
-        WarcryTalent.setup()
-        CounterAttackTalent.setup()
-        TEST_AURA = TestAuraTalent.setup()
+        DEFAULT = DefaultTalent.setup()
+        SUMMON_LESSER_SKELETON = SummonLesserSkeletonTalent.setup()
+        WARCRY = WarcryTalent.setup()
+        COUNTER_ATTACK = CounterAttackTalent.setup()
+        CHAIN_LIGHTNING = ChainLightningTalent.setup()
 
 
 public abstract class Talent

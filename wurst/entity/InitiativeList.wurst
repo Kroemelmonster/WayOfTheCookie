@@ -66,8 +66,6 @@ public class InitiativeList
                 destroyEntry(current)
                 if stack.isAlive()
                     addEntry(stack, false, oldWaitingTime, wait, false)
-                else
-                    Log.trace("that was a dead mans turn he gone")
             
             isFirstTurn = false
 

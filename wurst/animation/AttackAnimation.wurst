@@ -9,7 +9,10 @@ public class AttackAnimation extends Animation
     private BoardStack stack
     protected boolean finished = false
 
-    construct(BoardStack stack, BoardStack enemy, AnimationListener listener)
+    static function create(BoardStack stack, BoardStack enemy, AnimationListener listener)
+        new AttackAnimation(stack, enemy, listener)
+
+    private construct(BoardStack stack, BoardStack enemy, AnimationListener listener)
         super(stack.getBoard(), listener)
         this.stack = stack
         stack.enableAbility(AbilityIds.attack, true)

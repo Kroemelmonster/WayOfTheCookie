@@ -4,6 +4,7 @@ import LinkedList
 
 import initlater BoardStack
 import initlater Cell
+import initlater DamageResult
 
 public abstract class SequenzListener
     function continue()
@@ -12,11 +13,24 @@ public abstract class SequenzListener
 
     abstract function continueInner()
 
+public abstract class SequenzListenerStatus
+    function continue(int status)
+        continueInner(status)
+        destroy this
+
+    abstract function continueInner(int status)
+
 public abstract class BoardTriggerOnAnyCellEnter
     abstract function onEvent(BoardStack stack, Cell fromCell, Cell toCell, SequenzListener next)
 
 public abstract class BoardTriggerOnAnyCellLeave
     abstract function onEvent(BoardStack stack, Cell fromCell, Cell toCell, SequenzListener next)
+
+public abstract class BoardTriggerOnStackInteraction
+    abstract function onEvent(BoardStack initator, BoardStack receiver, SequenzListener next)
+
+public abstract class BoardTriggerOnDamageTaken
+    abstract function onEvent(BoardStack source, BoardStack target, DamageResult result, SequenzListener next)
 
 public abstract class BoardTrigger
     abstract function onEvent(SequenzListener next)
@@ -26,8 +40,8 @@ public class StackTrigger
     private LinkedList<BoardTriggerOnAnyCellLeave> onAnyCellLeave = new LinkedList<BoardTriggerOnAnyCellLeave>()
     private LinkedList<BoardTrigger> onTurnStart = new LinkedList<BoardTrigger>()
     private LinkedList<BoardTrigger> onTurnEnd = new LinkedList<BoardTrigger>()
-
-    construct()
+    private LinkedList<BoardTriggerOnStackInteraction> onAttacked = new LinkedList<BoardTriggerOnStackInteraction>()
+    private LinkedList<BoardTriggerOnDamageTaken> onDamageTaken = new LinkedList<BoardTriggerOnDamageTaken>()
 
     function addOnAnyCellEnter(BoardTriggerOnAnyCellEnter listener) returns BoardTriggerOnAnyCellEnter
         onAnyCellEnter.add(listener)
@@ -58,17 +72,67 @@ public class StackTrigger
     function removeOnTurnEnd(BoardTrigger listener)
         onTurnEnd.remove(listener)
 
+    function addOnAttacked(BoardTriggerOnStackInteraction listener) returns BoardTriggerOnStackInteraction
+        onAttacked.add(listener)
+        return listener
+
+    function removeOnAttacked(BoardTriggerOnStackInteraction listener)
+        onAttacked.remove(listener)
+
+    function addOnDamageTaken(BoardTriggerOnDamageTaken listener) returns BoardTriggerOnDamageTaken
+        onDamageTaken.add(listener)
+        return listener
+
+    function removeOnDamageTaken(BoardTriggerOnDamageTaken listener)
+        onDamageTaken.remove(listener)
+
+    private function triggerOnDamageTakenInner(LLIterator<BoardTriggerOnDamageTaken> iter, BoardStack source, BoardStack target, DamageResult result, SequenzListener next)
+        if iter.hasNext()
+            let listener = iter.next()
+            listener.onEvent(source, target, result) ->
+                triggerOnDamageTakenInner(iter, source, target, result, next)
+        else
+            next.continue()
+
+    function triggerOnDamageTaken(BoardStack source, BoardStack target, DamageResult result, SequenzListener next)
+        let copy = onDamageTaken.copy()
+        let itr = copy.iterator()
+        triggerOnDamageTakenInner(itr, source, target, result) () ->
+            destroy itr
+            destroy copy
+            next.continue()
+
+    private function triggerOnAttackedInner(LLIterator<BoardTriggerOnStackInteraction> iter, BoardStack attacker, BoardStack defender, SequenzListener next)
+        if iter.hasNext()
+            let listener = iter.next()
+            listener.onEvent(attacker, defender) ->
+                triggerOnAttackedInner(iter, attacker, defender, next)
+        else
+            next.continue()
+
+    function triggerOnAttacked(BoardStack attacker, BoardStack defender, SequenzListener next)
+        let copy = onAttacked.copy()
+        let itr = copy.iterator()
+        triggerOnAttackedInner(itr, attacker, defender) () ->
+            destroy itr
+            destroy copy
+            next.continue()
+
     private function triggerOnTurnEndInner(LLIterator<BoardTrigger> iter, SequenzListener next)
         if iter.hasNext()
             let listener = iter.next()
             listener.onEvent() ->
                 triggerOnTurnEndInner(iter, next)
         else
-            destroy iter
             next.continue()
 
     function triggerOnTurnEnd(SequenzListener next)
-        triggerOnTurnEndInner(onTurnEnd.iterator(), next)
+        let copy = onTurnEnd.copy()
+        let itr = copy.iterator()
+        triggerOnTurnEndInner(itr) () ->
+            destroy itr
+            destroy copy
+            next.continue()
 
     private function triggerOnTurnStartInner(LLIterator<BoardTrigger> iter, SequenzListener next)
         if iter.hasNext()
@@ -76,11 +140,15 @@ public class StackTrigger
             listener.onEvent() ->
                 triggerOnTurnStartInner(iter, next)
         else
-            destroy iter
             next.continue()
 
     function triggerOnTurnStart(SequenzListener next)
-        triggerOnTurnStartInner(onTurnStart.iterator(), next)
+        let copy = onTurnStart.copy()
+        let itr = copy.iterator()
+        triggerOnTurnStartInner(itr) () ->
+            destroy itr
+            destroy copy
+            next.continue()
 
     private function triggerOnAnyCellLeaveInner(LLIterator<BoardTriggerOnAnyCellLeave> iter, BoardStack stack, Cell fromCell, Cell toCell, SequenzListener next)
         if iter.hasNext()
@@ -88,11 +156,15 @@ public class StackTrigger
             listener.onEvent(stack, fromCell, toCell) ->
                 triggerOnAnyCellLeaveInner(iter, stack, fromCell, toCell, next)
         else
-            destroy iter
             next.continue()
 
     function triggerOnAnyCellLeave(BoardStack stack, Cell fromCell, Cell toCell, SequenzListener next)
-        triggerOnAnyCellLeaveInner(onAnyCellLeave.iterator(), stack, fromCell, toCell, next)
+        let copy = onAnyCellLeave.copy()
+        let itr = copy.iterator()
+        triggerOnAnyCellLeaveInner(itr, stack, fromCell, toCell) () ->
+            destroy itr
+            destroy copy
+            next.continue()
 
     private function triggerOnAnyCellEnterInner(LLIterator<BoardTriggerOnAnyCellEnter> iter, BoardStack stack, Cell fromCell, Cell toCell, SequenzListener next)
         if iter.hasNext()
@@ -100,11 +172,15 @@ public class StackTrigger
             listener.onEvent(stack, fromCell, toCell) ->
                 triggerOnAnyCellEnterInner(iter, stack, fromCell, toCell, next)
         else
-            destroy iter
             next.continue()
 
     function triggerOnAnyCellEnter(BoardStack stack, Cell fromCell, Cell toCell, SequenzListener next)
-        triggerOnAnyCellEnterInner(onAnyCellEnter.iterator(), stack, fromCell, toCell, next)
+        let copy = onAnyCellEnter.copy()
+        let itr = copy.iterator()
+        triggerOnAnyCellEnterInner(itr, stack, fromCell, toCell) () ->
+            destroy itr
+            destroy copy
+            next.continue()
 
     ondestroy
         for listener in onAnyCellEnter
@@ -116,3 +192,9 @@ public class StackTrigger
         for listener in onTurnStart
             destroy listener
         destroy onTurnStart
+        for listener in onTurnEnd
+            destroy listener
+        destroy onTurnStart
+        for listener in onAttacked
+            destroy listener
+        destroy onAttacked

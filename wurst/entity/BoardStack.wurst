@@ -25,6 +25,7 @@ public class BoardStack
     private StackType stackType
     private ArmyStack armyStack
     private Cell cell
+    private Board board
     private Player p
 
     private unit u
@@ -70,8 +71,12 @@ public class BoardStack
         return cell
 
     @inline
+    function getPos3Real() returns vec3
+        return u.getPos().withTerrainZ(u.getFlyHeight() + 20.0)
+
+    @inline
     function getBoard() returns Board
-        return cell.getBoard()
+        return board
 
     @inline
     function getPlayer() returns Player
@@ -183,6 +188,7 @@ public class BoardStack
             return
 
         this.cell = cell
+        this.board = cell.getBoard()
         u = createUnit(DUMMY_PLAYER, stackType.unitId, cell.getCoord(), angle(PI * playerIndex))
         u.setColor(p.blzPlayer.getColor())
         u.disableAbility(AbilityIds.attack, true, false)
@@ -204,10 +210,10 @@ public class BoardStack
                 destroy castListener
                 castListener = null
 
-        if cell.getBoard().getInitiative().isFirstTurn() == false
+        if board.getInitiative().isFirstTurn() == false
             SetUnitAnimation(u, "birth")
 
-        stats.resetActionPopints()
+        stats.resetActionPoints()
 
         tt = createTTEx(getTextTagPos(), stats.getAmount().toString(), 10.0)
 
@@ -223,8 +229,7 @@ public class BoardStack
         return this.cell != null
 
     function kill()
-        Log.trace("hello you dead")
-        cell.getBoard().removeStack(this)
+        board.removeStack(this)
         if highlightEffect != null
             highlightEffect.destr()
 
@@ -261,7 +266,7 @@ public class BoardStack
 
     @inline
     function isCurrent() returns boolean
-        return cell.getBoard().getInitiative().getCurrentStack() == this
+        return board.getInitiative().getCurrentStack() == this
 
     @inline
     function isSelectByOwnPlayer() returns boolean
@@ -287,6 +292,9 @@ public class BoardStack
 
     function flashEffectOnPos(string sfx)
         flashEffect(sfx, u.getPos())
+
+    function flashAttachEffect(string sfx, string attachment)
+        flashEffect(sfx, u, attachment)
 
     function addAttachEffect(string sfx, string attachment) returns effect
         return addEffect(sfx, u, attachment)

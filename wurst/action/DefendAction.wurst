@@ -29,9 +29,8 @@ public class DefendAction extends InstantAction
 
     override function activate()
         stack.flashEffectOnPos(Abilities.defendCaster)
-        BoardController.finishAction(stack)
-        OrderSystem.endOrder(stack.getBoard())
-
+        BoardController.finishOrder(stack, false)
+        
     override function onUIMouseEnter()
         tt.display(stack.getPlayer(), false)
         UIActionWindow.updateActionPoints(stack, 99)

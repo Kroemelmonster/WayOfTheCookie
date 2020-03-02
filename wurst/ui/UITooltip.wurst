@@ -7,6 +7,8 @@ import FramehandleNames
 import KUtil
 import initlater BuffType
 import StackStatsModifier
+import initlater DamageResult
+import initlater StackType
 
 constant LINE_HEIGHT = 0.0122
 constant HEIGHT_OFFSET = 0.03
@@ -44,6 +46,11 @@ public class Tooltip
     static constant COLOR_NEGATIVE = color(200,50,50).toColorString()
     static constant COLOR_SECONDARY = color(145, 145, 145).toColorString()
     static constant COLOR_POSITIVE = color(75, 214, 19).toColorString()
+
+    static constant DAMAGE_COLOR_PHYISICAL = colorA(200, 200, 200, 200).toColorString()
+    static constant DAMAGE_COLOR_MAGICAL = colorA(43, 181, 245, 200).toColorString()
+    static constant DAMAGE_COLOR_POISON = colorA(167, 252, 71, 199).toColorString()
+    static constant DAMAGE_COLOR_FIRE = colorA(255, 120, 86, 200).toColorString()
 
     protected string header = ""
     protected LinkedList<TooltipLine> lines = new LinkedList<TooltipLine>
@@ -98,6 +105,25 @@ public class Tooltip
         return COLOR_SECONDARY + value + "|r"
 
     @inline
+    static function coloredDamageResult(DamageResult result) returns string
+        var str = coloredInt(damageType2Color(result.baseDamage.getDamageType()), result.damage)
+        if result.amount > 0
+            str +=  "   " + coloredInt(COLOR_NEGATIVE, result.amount)
+        return str
+
+    @inline
+    static function damageType2Color(DamageType dType) returns string
+        switch dType
+            case MAGIC
+                return DAMAGE_COLOR_MAGICAL
+            case POISON
+                return DAMAGE_COLOR_POISON
+            case FIRE
+                return DAMAGE_COLOR_FIRE
+            default
+                return DAMAGE_COLOR_PHYISICAL
+
+    @inline
     private static function statInner(string prefix, string data) returns string
         return prefix + " : " + data
 
@@ -116,6 +142,10 @@ public class Tooltip
     @inline
     static function stat(string prefix, int value) returns string
         return statInner(prefix, coloredInt(Tooltip.COLOR_PRIMARY, value))
+
+    @inline
+    static function stat(string prefix, Damage value) returns string
+        return statInner(prefix, coloredRange(damageType2Color(value.getDamageType()), value.getDamage().round()))
 
     @inline
     static function stat(string prefix, string value) returns string
@@ -180,6 +210,10 @@ public class Tooltip
     @inline
     function setLine(int index, string str)
         lines.get(index).setLine(str)
+
+    @inline
+    function getLine(int index) returns string
+        return lines.get(index).str
 
     @inline
     function setCost(int value)

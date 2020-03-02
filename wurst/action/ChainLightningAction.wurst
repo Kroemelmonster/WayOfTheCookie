@@ -1,0 +1,194 @@
+package ChainLightningAction
+
+import LinkedList
+import Icons
+import Lightning
+import Abilities
+import AttachmentPoints
+
+import PlayerData
+import KUtil
+import UITooltip
+import BoardController
+import OrderSystem
+
+import Action
+import StackType
+
+import initlater Cell
+import initlater BoardStack
+import initlater StackTypesDefinition
+import UIActionWindow
+import Scheduler
+import DelayAnimation
+import DamageResult
+import CastAnimation
+
+public class ChainLightningAction extends Action
+    private static constant int COST = 1
+    private static constant int COOLDOWN = 3
+    private static constant int MAXRANGE = 6
+    private static constant string NAME = "Chain Lightning"
+    private static constant oskeytype KEY = OSKEY_C
+    private static constant string KEY_STRING = "C"
+    private static constant int MAX_CHAINS = 3
+    private static constant int CHAIN_RANGE = 3
+    private static constant real CHAIN_REDUCTION = 0.90
+    
+    static constant string ICON = Icons.bTNChainLightning
+
+    private static function calculateDamage(int amount, int chain) returns Damage
+        var multi = 1.0
+        for int i = 1 to chain
+            multi *= CHAIN_REDUCTION
+        multi *= amount
+        return new Damage(realRange(42.0 * multi, 55.0 * multi), DamageType.MAGIC)
+
+    static function createTooltip(boolean isDefault, int amount) returns Tooltip
+        let tt = Tooltip.create(NAME)
+        ..setCooldown(COOLDOWN)
+        ..setCost(COST)
+        ..addLine(Tooltip.stat("Target", "Enemy"))
+        ..addLine(Tooltip.stat("Range", MAXRANGE))
+        let dmg = calculateDamage(amount, 0)
+        tt.addLine(Tooltip.stat("Damage", dmg))
+        tt.addLine("")
+        tt.addLine("Lightning chains from the target to other targets")
+        destroy dmg
+        if isDefault == false
+            tt.addKey(KEY_STRING)
+        return tt
+    
+    private LinkedList<Cell> area = new LinkedList<Cell>()
+
+    construct(BoardStack stack)
+        super(stack, ICON, NAME)
+
+    override function getHighlightResultForCell(Player p, Cell cell) returns CellResult
+        if area.has(cell)
+            return CellResult.NEGATIVE
+        return CellResult.NONE
+
+    override function recalculatePreview()
+        recalculatePossibleTargets()
+
+    override function recalculateHighlight(Player p)
+        if area.has(p.currentMousePosition.cell)
+            showPreview(p.currentMousePosition.cell)
+        else
+            hidePreview()
+
+    private function chainToNext(LinkedList<BoardStack> prevTargets, BoardStack prev, Cell prevCell, Damage baseDamage, BoardStack target, int chains)
+        let targetPos = target.getPos3Real()
+        var lightningModel = LIGHTNING_CHAIN_LIGHTNING_SEECONDARY
+        if chains == 0
+            lightningModel = LIGHTNING_CHAIN_LIGHTNING_PRIMARY
+        let bolt = addLightning(lightningModel, true, prev.getPos3Real(), targetPos)
+        let e = addEffect(Abilities.boltImpact, targetPos)
+        DelayAnimation.create(stack.getBoard(), 0.3) ->
+            bolt.destr()
+            e.setPosition(-100000, -10000, 10000)
+            e.destr()
+            let targetCell = target.getCell()
+            BoardController.dealDamage(stack, DamageResult.calculateOneResult(target, baseDamage.copy()), target) -> 
+                if chains < MAX_CHAINS
+                    prevTargets.add(target)
+                    baseDamage.multi(CHAIN_REDUCTION)
+
+                    Cell _newTargetCell = null
+                    if target.isOnBoard()
+                        // why not just use targetCell ?? because the unit might be moved so the chain goes on from there :O
+                        _newTargetCell = target.getCell()
+                    else
+                        _newTargetCell = targetCell
+                    let _nextTarget = getNextTarget(prevTargets, _newTargetCell)
+                    if _nextTarget == null
+                        destroy prevTargets
+                        destroy baseDamage
+                        BoardController.finishOrder(stack, true)
+                    else
+                        chainToNext(prevTargets, target, _newTargetCell, baseDamage, _nextTarget, chains + 1)
+                else
+                    destroy prevTargets
+                    destroy baseDamage
+                    BoardController.finishOrder(stack, true)
+
+    override function sendTargetOrder(Cell cell) returns boolean
+        if area.has(cell)
+            CastAnimation.create(stack, cell) () ->
+                let rolledBaseDamage = calculateDamage(stack.stats.amount, 0)
+                rolledBaseDamage.rollDamageRandomly()
+                chainToNext(new LinkedList<BoardStack>(), stack, stack.getCell(), rolledBaseDamage, cell.getStack(), 0)
+            return true
+        
+        return false
+
+    private function getNextTarget(LinkedList<BoardStack> prevTargets, Cell fromCell) returns BoardStack
+        BoardStack nextTarget = null
+        let itr = fromCell.eachCellInRangeIterator(intRange(1, CHAIN_RANGE))
+        while itr.hasNext() and nextTarget == null
+            let cell = itr.next()
+            let possibleTarget = cell.getStack()
+            if possibleTarget != null and possibleTarget.isEnemy(stack) and prevTargets.has(possibleTarget) == false
+                nextTarget = possibleTarget
+
+        destroy itr
+        return nextTarget
+
+    private function recalculatePossibleTargets()
+        area.clear()
+
+        stack.getCell().forEachCellsInRange(intRange(1, MAXRANGE)) (Cell cell) ->
+            let possibleTarget = cell.getStack()
+            if possibleTarget != null and possibleTarget.isEnemy(stack)
+                area.add(cell)
+
+    override function canActivate() returns boolean
+        return stack.stats.getRemainingActionPoints() >= COST and cooldown <= 0
+
+    @inline
+    private function showPreview(Cell fromCell)
+        let tt = createTooltip(false, stack.stats.amount)
+        if fromCell != null
+            let list = new LinkedList<BoardStack>()
+            list.add(fromCell.getStack())
+            tt.addLine("")
+            var i = 0
+            while i < MAX_CHAINS
+                i++
+                let nextTarget = getNextTarget(list, list.peek().getCell())
+                if nextTarget != null
+                    list.add(nextTarget)
+                else
+                    i = 100
+
+            var chain = 0
+            for target in list
+                let preview = new BasicResultPreview(stack, calculateDamage(stack.stats.amount, chain))
+                ..calculate(target)
+                ..addToTooltip(tt)
+                destroy preview
+                chain ++
+            destroy list
+            
+        tt.display(stack.getPlayer(), true)
+        UIActionWindow.updateActionPoints(stack, COST)
+                
+    @inline
+    private function hidePreview()
+        UITooltip.hide(stack.getPlayer())
+        UIActionWindow.updateActionPoints(stack, 0)
+
+    override function onUIMouseEnter()
+        showPreview(null)
+
+    override function onUIMouseLeave()
+        hidePreview()
+
+    override function canBeActivatedByKey(oskeytype key) returns boolean
+        return key == KEY
+
+    ondestroy
+        if area != null
+            destroy area
+        

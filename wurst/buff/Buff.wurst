@@ -4,6 +4,20 @@ import initlater BoardStack
 import initlater BuffType
 import UITooltip
 
+public class BuffData
+    int duration
+    int intValue
+    real realValue
+
+    construct(int duration)
+        this.duration = duration
+        
+    function setValue(int value)
+        this.intValue = value
+
+    function setRealValue(real value)
+        this.realValue = value
+
 public abstract class Buff
     protected BuffType bType
     protected BoardStack stack
@@ -18,7 +32,17 @@ public abstract class Buff
     function getIcon() returns string
         return bType.getIcon()
     
-    abstract function update(int duration)
+    function update(BuffData data)
+        updateInner(data)
+        destroy data
+
+    /** call this only ONCE when you want to purge a buff from a unit that is no longer alive 
+        This will ONLY remove ANY visuals this buff might have it does not unregister any events
+
+        But since you should only call this on a dead stack, it wont trigger anything anyway **/
+    abstract function hide()
+
+    abstract function updateInner(BuffData data)
 
     /** Always use this tooltip instantly with intend to destroy it **/
     abstract function createCurrentTooltip() returns Tooltip

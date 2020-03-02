@@ -9,8 +9,8 @@ public class WarcryTalent extends Talent
     construct()
         super("Warcry", WarcryAction.ICON)
 
-    static function setup()
-        TalentSet.WARCRY = new WarcryTalent()
+    static function setup() returns Talent
+        return new WarcryTalent()
         ..addGenerateListener() stack ->
             stack.addAction(new WarcryAction(stack))
 

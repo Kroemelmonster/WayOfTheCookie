@@ -25,12 +25,5 @@ public abstract class PassiveAction
     @inline
     abstract function triggerOnStackCreation(BoardStack stack)
 
-    @inline
-    function triggerAfterAttackCheck(BoardStack attacker) returns boolean
-        return triggerAfterAttackCheck(attacker, attacker.getCell())
-
-    function triggerAfterAttackCheck(BoardStack _attacker, Cell _fromCell) returns boolean
+    function checkForCounterAttack(BoardStack _attacker, Cell _fromCell) returns boolean
         return false
-
-    function triggerAfterAttack(BoardStack _attacker, PassiveActionListener listener)
-        destroy listener

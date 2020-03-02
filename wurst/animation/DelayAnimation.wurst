@@ -1,25 +1,25 @@
 package DelayAnimation
 
-import AbilityIds
-
 import Animation
-import initlater BoardStack
 import Scheduler
 import Board
 
 public class DelayAnimation extends Animation
     private real cd
 
-    construct(Board board, int delayUntil, AnimationListener listener)
-        super(board, listener)
-        cd = (delayUntil - Scheduler.getCurrentTime()) / 10.0
-        if cd <= 0
+    static function create(Board board, int delayUntil, AnimationListener listener)
+        create(board, (delayUntil - Scheduler.getCurrentTime()) / 10.0, listener)
+
+    static function create(Board board, real duration, AnimationListener listener)
+        if duration <= 0.0
             listener.execute()
+        else
+            new DelayAnimation(board, duration, listener)
+
+    private construct(Board board, real cd, AnimationListener listener) 
+        super(board, listener)
+        this.cd = cd
 
     override function tick(real delta) returns boolean
         cd -= delta
-
-        return cd >= 0.0
-    
-    ondestroy
-        
+        return cd <= 0.0

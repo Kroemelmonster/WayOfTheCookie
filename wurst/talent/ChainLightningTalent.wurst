@@ -1,0 +1,18 @@
+package ChainLightningTalent
+
+import initlater Talent
+import initlater ChainLightningAction
+import initlater StackType
+import UITooltip
+
+public class ChainLightningTalent extends Talent
+    construct()
+        super("Chain Lightning", ChainLightningAction.ICON)
+
+    static function setup() returns Talent
+        return new ChainLightningTalent()
+        ..addGenerateListener() stack ->
+            stack.addAction(new ChainLightningAction(stack))
+
+    override function createTooltip(StackType sType) returns Tooltip
+        return ChainLightningAction.createTooltip(true, 1)

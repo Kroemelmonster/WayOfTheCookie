@@ -7,14 +7,17 @@ public abstract class AnimationListener
 
 public abstract class Animation
     private AnimationListener onFinishListener
+    private Board board
 
     construct(Board board, AnimationListener onFinishListener)
         board.setAnimation(this)
+        this.board = board
         this.onFinishListener = onFinishListener
 
     abstract function tick(real delta) returns boolean
 
     static function finishAnimation(Animation anim)
+        anim.board.setAnimation(null)
         if anim.onFinishListener != null
             anim.onFinishListener.execute()
         destroy anim

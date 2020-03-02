@@ -74,6 +74,10 @@ public class Cell
         stack.place(this)
 
     @inline
+    function eachCellInRangeIterator(intRange r) returns CellRangeIterator
+        return board.eachCellInRangeIterator(this, r)
+
+    @inline
     function forEachCellsInRange(intRange r, LLItrClosure<Cell> itr)
         board.forEachCellsInRange(this, r, itr)
 
@@ -121,14 +125,17 @@ public class Cell
                     innerColor = INNER_INTERACTABLE_COLOR
                 case CellResult.NEGATIVE
                     innerColor = INNER_INTERACTABLE_NEGATIVE_COLOR
+                    alpha = 100
                 case CellResult.POSITIVE
                     innerColor = INNER_INTERACTABLE_POSITIVE_COLOR
+                    alpha = 100
                 case CellResult.NEUTRAL
                     innerColor = INNER_INTERACTABLE_NEUTRAL_COLOR
+                    alpha = 100
                 default
         
         if this == p.currentMousePosition.cell or this == currentSelectedCell
-            alpha = 90
+            alpha += 50
 
         innerModel.setColor(innerColor)
         innerModel.setAlpha(alpha)

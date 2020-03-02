@@ -6,25 +6,22 @@ import UnitDefinition
 import initlater BoardStack
 import initlater Cell
 
-public abstract class CastAnimation extends Animation
-    protected boolean finished = false
-    protected BoardStack stack
-    protected Cell target
-
-    construct(BoardStack stack, Cell target, AnimationListener listener)
+public class CastAnimation extends Animation
+    private construct(BoardStack stack, Cell target, AnimationListener listener)
         super(stack.getBoard(), listener)
-        this.stack = stack
-        this.target = target
         if target == null
             stack.issueImmediateOrder(AbilityTypesIds.SELFCAST_SPELL_ORDER)
         else
             stack.issuePointOrder(AbilityTypesIds.TARGET_SPELL_ORDER, target)
         stack.doOnNextCast() ->
-            onCastExecute()
-            finished = true
+            finishAnimation(this)
 
-    abstract function onCastExecute()
+    static function create(BoardStack stack, AnimationListener listener)
+        new CastAnimation(stack, null, listener)
 
+    static function create(BoardStack stack, Cell target, AnimationListener listener)
+        new CastAnimation(stack, target, listener)
+        
     override function tick(real delta) returns boolean
-        return finished
+        return false // this triggers individually
         

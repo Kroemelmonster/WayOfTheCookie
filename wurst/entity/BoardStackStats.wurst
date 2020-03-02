@@ -15,8 +15,6 @@ public class BoardStackStats
     int remainingActionPoints
     int hp
 
-    int counterAttacks = 0
-
     StackStatsModifier attackModi = new StackStatsModifier()
     StackStatsModifier defenceModi = new StackStatsModifier()
     StackStatsModifier damageModi = new StackStatsModifier()
@@ -35,7 +33,6 @@ public class BoardStackStats
         this.amount = amount
         this.hp = basis.getMaxHp()
         this.stack = stack
-        resetCounterAttacks()
 
     @inline
     function getInitiative() returns int
@@ -68,10 +65,6 @@ public class BoardStackStats
     @inline
     function getDefence() returns int
         return defenceModi.get(basis.getDefence()).round()
-
-    @inline
-    function getCounterAttacks() returns int
-        return counterAttacks
 
     @inline
     function getDamageType() returns DamageType
@@ -113,10 +106,6 @@ public class BoardStackStats
     /** setters  **/
 
     @inline
-    function setCounterAttacks(int value)
-        counterAttacks = value
-
-    @inline
     function setHp(int i)
         hp = i
         stack.setVisualHp(hp / getMaxHp())
@@ -126,15 +115,15 @@ public class BoardStackStats
         remainingActionPoints = amount
 
     @inline
-    function resetCounterAttacks()
-        counterAttacks = 1
+    function addActionPoints(integer amount)
+        remainingActionPoints += amount
 
     @inline
     function addAmount(int i)
         amount += i
 
     @inline
-    function resetActionPopints()
+    function resetActionPoints()
         remainingActionPoints = getMaxActionPoints()
 
     ondestroy

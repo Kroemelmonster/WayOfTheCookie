@@ -35,10 +35,10 @@ public class WarcryBuff extends Buff
         
         return tooltip
 
-    override function update(int duration)
-        if this.duration < duration
-            let difference = duration - this.duration
-            this.duration = duration
+    override protected function updateInner(BuffData data)
+        if this.duration < data.duration
+            let difference = data.duration - this.duration
+            this.duration = data.duration
             updateInner(difference)
 
     override function createCurrentTooltip() returns Tooltip
@@ -49,6 +49,10 @@ public class WarcryBuff extends Buff
 
     private function onTick()
         updateInner(-1)
+
+    override function hide()
+        if display != null
+            display.destr()
 
     ondestroy
         updateInner(duration * -1)

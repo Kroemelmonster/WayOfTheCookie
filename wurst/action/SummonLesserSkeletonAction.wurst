@@ -2,6 +2,7 @@ package SummonLesserSkeletonAction
 
 import LinkedList
 import Icons
+import Abilities
 
 import PlayerData
 import KUtil
@@ -10,7 +11,6 @@ import BoardController
 import OrderSystem
 
 import Action
-import SummonLesserSkeletonAnimation
 import StackType
 
 import initlater Cell
@@ -19,6 +19,7 @@ import initlater StackTypesDefinition
 import UIActionWindow
 import Scheduler
 import DelayAnimation
+import CastAnimation
 
 public class SummonLesserSkeletonAction extends Action
     private LinkedList<Cell> area = new LinkedList<Cell>()
@@ -29,8 +30,9 @@ public class SummonLesserSkeletonAction extends Action
     private static constant int COOLDOWN = 3
     private static constant int MAXRANGE = 1
     private static constant string NAME = "Summon Skeleton"
+    private static constant string EFFECT = Abilities.raiseSkeleton
+    private static constant oskeytype KEY = OSKEY_S
     private static StackType SUMMONED_TYPE
-    private constant static oskeytype KEY = OSKEY_S
     private static Tooltip BASE_TOOLTIP
     static constant string ICON = Icons.bTNRaiseDead
 
@@ -80,13 +82,13 @@ public class SummonLesserSkeletonAction extends Action
             recalcSummonAmount()
             let summon = cell.getBoard().createSummon(stack.getPlayer(), SUMMONED_TYPE, summonAmount.random())
 
-            new SummonLesserSkeletonAnimation(stack, cell) () ->
+            CastAnimation.create(stack, cell) () ->
+                flashEffect(EFFECT, cell.getCoord())
                 BoardController.placeStackOnBoard(summon, cell)
                 let delayTime = Scheduler.getTimeIn(0.5) // this is the backswing for casting
-                new DelayAnimation(cell.getBoard(), delayTime) ->
+                DelayAnimation.create(cell.getBoard(), delayTime) ->
                     cooldown = COOLDOWN + 1
-                    BoardController.finishAction(stack)
-                    OrderSystem.endOrder(stack.getBoard())
+                    BoardController.finishOrder(stack, false)
             
             return true
         

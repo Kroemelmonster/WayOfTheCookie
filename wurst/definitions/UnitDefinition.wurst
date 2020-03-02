@@ -35,6 +35,8 @@ public class AbilityTypesIds
     static string SELFCAST_SPELL_ORDER = "acidbomb"
     static constant TARGET_UNIT_SPELL = compiletime(ABIL_ID_GEN.next())
     static string TARGET_UNIT_SPELL_ORDER = "acolyteharvest"
+    static constant TARGET_UNIT_LIGHTNING_SPELL = compiletime(ABIL_ID_GEN.next())
+    static string TARGET_UNIT_LIGHTNING_SPELL_ORDER = "acolyteharvest"
 
 @inline
 function createBoardUnit(int basisId, int id, string name, real scale, int speed)
@@ -156,6 +158,5 @@ function setup()
     createUnit(UnitIds.gnoll3, UnitTypesIds.GNOLL_WARDEN, UnitTypesIds.ARMY_GNOLL_WARDEN, "Gnoll Warden", 0.8, 220)
 
     createHero(UnitIds.drekthar, UnitTypesIds.HERO_FAR_SEER, "Farseer", 1.0, 360)
-
     
     
