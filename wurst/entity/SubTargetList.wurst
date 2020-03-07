@@ -1,0 +1,15 @@
+package SubTargetList
+import LinkedList
+import BoardStack
+import Cell
+
+public class SubTarget
+    BoardStack stack
+    real multi
+
+    construct(BoardStack stack, real multi)
+        this.stack = stack
+        this.multi = multi
+
+public abstract class SubTargetList
+    abstract function calculate(Cell reference, BoardStack mainTarget) returns LinkedList<SubTarget>

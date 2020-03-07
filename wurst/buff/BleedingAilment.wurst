@@ -10,7 +10,7 @@ import UITooltip
 import initlater BoardStack
 import initlater BuffType
 import initlater BoardController
-import DamageResult
+import Damage
 import KUtil
 import StackType
 import Cell
@@ -23,21 +23,30 @@ public class BleedingAilment extends Buff
     private static constant string NAME = "Bleeding"
     private static constant string EFFECT = "Objects\\Spawnmodels\\Human\\HumanBlood\\HumanBloodLarge0.mdl"
 
+    static function setup()
+        BuffTypeSet.BLEEDING = new BuffType("Icons\\PASBloodSprinkle.blp", NAME, createTooltip(null)) (BoardStack stack) ->
+            return new BleedingAilment(BuffTypeSet.BLEEDING, stack)
+
+    private static constant DamagePreview damagePreview = createDamagePreview()
+    
+    @inline
+    private static function createDamagePreview() returns DamagePreview
+        let preview = new DamagePreview(realRange(0, 0), SourceType.UNSPECIFIC, DamageType.PHYISICAL)
+        preview.isDot = true
+        preview.isTriggered = true
+        return preview
+
     private BoardTrigger turnStartListener
     private BoardTrigger turnEndListener
     private BoardTriggerOnAnyCellLeave moveListener
 
     private AilmentStacks stacks = new AilmentStacks()
 
-    private function getDamageRange(boolean walking) returns realRange
+    private function calculateDamage(boolean walking)
         var avg = stacks.getHighestDamage()
         if walking
             avg *= 2.0
-        return realRange(avg * 0.8, avg * 1.2)
-
-    static function setup()
-        BuffTypeSet.BLEEDING = new BuffType("Icons\\PASBloodSprinkle.blp", NAME, createTooltip(null)) (BoardStack stack) ->
-            return new BleedingAilment(BuffTypeSet.BLEEDING, stack)
+        damagePreview.dmg = realRange(avg * 0.8, avg * 1.2)
 
     construct(BuffType bType, BoardStack stack)
         super(bType, stack)
@@ -65,8 +74,10 @@ public class BleedingAilment extends Buff
         else
             tooltip.addLine(Tooltip.stat("Duration", b.stacks.getMaxDuration()))
             tooltip.addLine(Tooltip.stat("Stacks", b.stacks.size()))
-            tooltip.addLine("You are currently bleeding and suffer "+Tooltip.coloredRange(Tooltip.COLOR_NEGATIVE, b.getDamageRange(false).round())+ " each turn")
-            tooltip.addLine("As well as "+Tooltip.coloredRange(Tooltip.COLOR_NEGATIVE, b.getDamageRange(true).round())+ " each time you attempt to move into another cell")
+            b.calculateDamage(false)
+            tooltip.addLine("You are currently bleeding and suffer "+Tooltip.coloredRange(Tooltip.COLOR_NEGATIVE, damagePreview.dmg.round())+ " each turn")
+            b.calculateDamage(true)
+            tooltip.addLine("As well as "+Tooltip.coloredRange(Tooltip.COLOR_NEGATIVE, damagePreview.dmg.round())+ " each time you attempt to move into another cell")
         
         return tooltip
 
@@ -81,11 +92,10 @@ public class BleedingAilment extends Buff
     private function dealDamage(boolean walking, SequenzListener next)
         DelayAnimation.create(stack.getBoard(), 0.5) ->
             stack.flashAttachEffect(EFFECT, AttachmentPoints.chest)
-            let dmg = new Damage(getDamageRange(walking), DamageType.PHYISICAL)
-                ..setIsDot()
-                ..setIsTriggered()
-            let result = DamageResult.calculateOneResult(stack, dmg)
-            BoardController.dealDamage(stack, result, stack) ->
+            calculateDamage(walking)
+            let instance = damagePreview.getRandomInstance()
+            BoardController.dealDamage(stack, instance, stack) ->
+                destroy instance
                 DelayAnimation.create(stack.getBoard(), 0.3) ->
                     next.continue()
         //stack.stats.setActionPoints(stack.stats.getRemainingActionPoints() - 1)

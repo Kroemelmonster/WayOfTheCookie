@@ -7,7 +7,7 @@ import FramehandleNames
 import KUtil
 import initlater BuffType
 import StackStatsModifier
-import initlater DamageResult
+import initlater Damage
 import initlater StackType
 
 constant LINE_HEIGHT = 0.0122
@@ -105,10 +105,10 @@ public class Tooltip
         return COLOR_SECONDARY + value + "|r"
 
     @inline
-    static function coloredDamageResult(DamageResult result) returns string
-        var str = coloredInt(damageType2Color(result.baseDamage.getDamageType()), result.damage)
-        if result.amount > 0
-            str +=  "   " + coloredInt(COLOR_NEGATIVE, result.amount)
+    static function coloredSpecificDamageInstance(SpecificDamageInstance instance) returns string
+        var str = coloredInt(damageType2Color(instance.damageInstance.damageType), instance.damage)
+        if instance.amount > 0
+            str +=  "   " + coloredInt(COLOR_NEGATIVE, instance.amount)
         return str
 
     @inline
@@ -144,8 +144,8 @@ public class Tooltip
         return statInner(prefix, coloredInt(Tooltip.COLOR_PRIMARY, value))
 
     @inline
-    static function stat(string prefix, Damage value) returns string
-        return statInner(prefix, coloredRange(damageType2Color(value.getDamageType()), value.getDamage().round()))
+    static function stat(string prefix, DamagePreview value) returns string
+        return statInner(prefix, coloredRange(damageType2Color(value.damageType), value.dmg.round()))
 
     @inline
     static function stat(string prefix, string value) returns string
@@ -206,6 +206,12 @@ public class Tooltip
     function addBuffType(BuffType buffType)
         addLine(statInner("Buff", coloredString(COLOR_SECONDARY, buffType.getName())))
         addTooltip(buffType.getTooltip(), false)
+
+    @inline
+    function addSpecificDamagePreview(SpecificDamagePreview preview)
+        addLine(Tooltip.playerColored(preview.target.getPlayer(), preview.target.getName()))
+        addLine(Tooltip.stat("Damage", Tooltip.damageType2Color(preview.damagePreview.damageType), preview.damage))
+        addLine(Tooltip.stat("Kills", Tooltip.COLOR_NEGATIVE, preview.amount))
 
     @inline
     function setLine(int index, string str)

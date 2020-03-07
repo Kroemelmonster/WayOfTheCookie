@@ -6,6 +6,9 @@ import StackStatsModifier
 import initlater BoardStack
 import StackStats
 import StackType
+import initlater SubTargetList
+import LinkedList
+import initlater Cell
 
 public class BoardStackStats
     private StackStats basis
@@ -27,12 +30,25 @@ public class BoardStackStats
     int fireResistance = 0
     int poisonResistance = 0
 
+    private SubTargetList subAttackList
+
     construct(BoardStack stack, StackStats basis, int amount)
         this.basis = basis
         this.startAmount = amount
         this.amount = amount
         this.hp = basis.getMaxHp()
         this.stack = stack
+
+        setSubAttackTarget() (Cell reference, BoardStack mainTarget) ->
+            let list = new LinkedList<SubTarget>()
+            let itr = mainTarget.getCell().eachCellInRangeIterator(intRange(1, 1))
+            while itr.hasNext()
+                let possibleTarget = itr.next().getStack()
+                if possibleTarget != null
+                    list.add(new SubTarget(possibleTarget, 0.5))
+
+            destroy itr
+            return list
 
     @inline
     function getInitiative() returns int
@@ -126,6 +142,16 @@ public class BoardStackStats
     function resetActionPoints()
         remainingActionPoints = getMaxActionPoints()
 
+    @inline
+    function setSubAttackTarget(SubTargetList list)
+        subAttackList = list
+
+    @inline
+    function getSubAttackTargets(Cell reference, BoardStack mainTarget) returns LinkedList<SubTarget>
+        if subAttackList != null
+            return subAttackList.calculate(reference, mainTarget)
+        return null
+
     ondestroy
         destroy attackModi
         destroy defenceModi
@@ -133,3 +159,4 @@ public class BoardStackStats
         destroy initModi
         destroy actionPointModi
         destroy hpModi
+        destroy subAttackList

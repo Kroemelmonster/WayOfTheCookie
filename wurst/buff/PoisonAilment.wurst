@@ -8,7 +8,7 @@ import UITooltip
 import initlater BoardStack
 import initlater BuffType
 import initlater BoardController
-import DamageResult
+import Damage
 import KUtil
 import StackType
 import Cell
@@ -20,25 +20,34 @@ public class PoisonAilment extends Buff
     private static constant string NAME = "Poison"
     private static constant string EFFECT = "Abilities\\Weapons\\PoisonArrow\\PoisonArrowMissile.mdl"
 
+    static function setup()
+        BuffTypeSet.POISON = new BuffType(Icons.bTNOrbOfVenom, NAME, createTooltip(null)) (BoardStack stack) ->
+            return new PoisonAilment(BuffTypeSet.POISON, stack)
+
+    private static constant DamagePreview damagePreview = createDamagePreview()
+    
+    @inline
+    private static function createDamagePreview() returns DamagePreview
+        let preview = new DamagePreview(realRange(0, 0), SourceType.UNSPECIFIC, DamageType.POISON)
+        preview.isDot = true
+        preview.isTriggered = true
+        return preview
+
     private BoardTrigger turnStartListener
     private BoardTrigger turnEndListener
     private BoardTriggerOnDamageTaken damageTakenListener
 
     private AilmentStacks stacks = new AilmentStacks()
 
-    private function getDamageRange() returns realRange
+    private function calculateDamage()
         let avg = stacks.getCombinedDamage()
-        return realRange(avg * 0.8, avg * 1.2)
-
-    static function setup()
-        BuffTypeSet.POISON = new BuffType(Icons.bTNOrbOfVenom, NAME, createTooltip(null)) (BoardStack stack) ->
-            return new PoisonAilment(BuffTypeSet.POISON, stack)
+        damagePreview.dmg = realRange(avg * 0.8, avg * 1.2)
 
     construct(BuffType bType, BoardStack stack)
         super(bType, stack)
 
-        damageTakenListener = stack.getTriggers().addOnDamageTaken() (BoardStack source, BoardStack target, DamageResult result, SequenzListener next) ->
-            if result.baseDamage.isDot() == false
+        damageTakenListener = stack.getTriggers().addOnDamageTaken() (BoardStack source, BoardStack target, SpecificDamageInstance specificInstance, SequenzListener next) ->
+            if specificInstance.damageInstance.isDot == false
                 dealDamage() ->
                     next.continue()
 
@@ -58,7 +67,8 @@ public class PoisonAilment extends Buff
         else
             tooltip.addLine(Tooltip.stat("Duration", b.stacks.getMaxDuration()))
             tooltip.addLine(Tooltip.stat("Stacks", b.stacks.size()))
-            tooltip.addLine("You are currently poisoned and take "+Tooltip.coloredRange(Tooltip.COLOR_NEGATIVE, b.getDamageRange().round())+ " each turn and each time you take non-dot Damage")
+            b.calculateDamage()
+            tooltip.addLine("You are currently poisoned and take " + Tooltip.coloredRange(Tooltip.COLOR_NEGATIVE, damagePreview.dmg.round()) + " each turn and each time you take non-dot Damage")
         
         return tooltip
 
@@ -73,11 +83,10 @@ public class PoisonAilment extends Buff
     private function dealDamage(SequenzListener next)
         DelayAnimation.create(stack.getBoard(), 0.5) ->
             stack.flashAttachEffect(EFFECT, AttachmentPoints.chest)
-            let dmg = new Damage(getDamageRange(), DamageType.POISON)
-                ..setIsDot()
-                ..setIsTriggered()
-            let result = DamageResult.calculateOneResult(stack, dmg)
-            BoardController.dealDamage(stack, result, stack) ->
+            calculateDamage()
+            let instance = damagePreview.getRandomInstance()
+            BoardController.dealDamage(stack, instance, stack) ->
+                destroy instance
                 DelayAnimation.create(stack.getBoard(), 0.3) ->
                     next.continue()
         //stack.stats.setActionPoints(stack.stats.getRemainingActionPoints() - 1)

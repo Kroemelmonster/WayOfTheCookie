@@ -9,7 +9,7 @@ import initlater BoardStack
 import initlater Cell
 import initlater UIController
 import initlater Board
-import initlater DamageResult
+import initlater Damage
 import initlater StandardTextTags
 import initlater Action
 import initlater OrderSystem
@@ -49,44 +49,44 @@ public class BoardController
         else
             board.getInitiative().next()
 
-    private static function dealDamageContinue(DamageResult result, SequenzListener next)
-        destroy result
+    private static function dealDamageContinue(SpecificDamageInstance specificInstance, SequenzListener next)
+        destroy specificInstance
         next.continue()
 
-    static function dealDamage(BoardStack source, DamageResult result, BoardStack target, SequenzListener next)
+    static function dealDamage(BoardStack source, DamageInstance instance, BoardStack target, SequenzListener next)
+        let specificInstance = instance.getSpecific(source, target)
         if target.stats.getAmount() <= 0
-            dealDamageContinue(result, next)
+            dealDamageContinue(specificInstance, next)
             return
         let coord = target.getCell().getCoord()
         
-        standardTextTag(coord, Tooltip.coloredDamageResult(result))
-            ..setAge(0.0)
-        target.stats.addAmount(-result.amount)
+        standardTextTag(coord, Tooltip.coloredSpecificDamageInstance(specificInstance))
+        target.stats.addAmount(-specificInstance.amount)
         
         if target.stats.getAmount() == 0
-            if result.baseDamage.isTriggered()
-                destroy result
+            if specificInstance.damageInstance.isTriggered
+                destroy specificInstance
                 killStack(target, next)
             else
-                onDamageTaken(source, target, result) ->
-                    destroy result
+                onDamageTaken(source, target, specificInstance) ->
+                    destroy specificInstance
                     killStack(target, next)
         else
-            target.stats.setHp(result.remainingHP)
-            if result.amount > 0
+            target.stats.setHp(specificInstance.remainingHp)
+            if specificInstance.amount > 0
                 UIController.triggerOnStackAmountChange(target)
 
-            if result.baseDamage.isTriggered()
-                dealDamageContinue(result, next)
+            if specificInstance.damageInstance.isTriggered
+                dealDamageContinue(specificInstance, next)
             else
-                onDamageTaken(source, target, result) ->
-                    dealDamageContinue(result, next)
+                onDamageTaken(source, target, specificInstance) ->
+                    dealDamageContinue(specificInstance, next)
 
     
     /** triggers **/
 
-    static function onDamageTaken(BoardStack source, BoardStack target, DamageResult result, SequenzListener next)
-        target.getTriggers().triggerOnDamageTaken(source, target, result) ->
+    static function onDamageTaken(BoardStack source, BoardStack target, SpecificDamageInstance specificInstance, SequenzListener next)
+        target.getTriggers().triggerOnDamageTaken(source, target, specificInstance) ->
             next.continue()
 
     static function onAttackEnd(BoardStack attacker, BoardStack defender, SequenzListener next)

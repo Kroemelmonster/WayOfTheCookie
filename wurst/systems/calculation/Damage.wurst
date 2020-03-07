@@ -1,0 +1,194 @@
+package Damage
+import StackType
+import KUtil
+import BoardStack
+import UITooltip
+
+
+public constant DAMAGECALC_ATTACK_VS_DEFENCE_POSITIVE = 5.0
+public constant DAMAGECALC_ATTACK_VS_DEFENCE_POSITIVE_MAX = 300.0
+public constant DAMAGECALC_ATTACK_VS_DEFENCE_NEGATIVE = -2.5
+public constant DAMAGECALC_ATTACK_VS_DEFENCE_NEGATIVE_MAX = -70.0
+
+public enum SourceType
+    ATTACK
+    SPELL
+    UNSPECIFIC
+
+public abstract class Damage
+    DamageType damageType
+    boolean isDot = false
+    boolean isTriggered = false
+    SourceType sourceType = ATTACK
+
+    construct(SourceType sourceType, DamageType damageType)
+        this.damageType = damageType
+        this.sourceType = sourceType
+
+    function copyTo(Damage copy)
+        copy.isDot = this.isDot
+        copy.isTriggered = this.isTriggered
+    
+
+public class DamageInstance extends Damage
+    real dmg
+
+    construct(real dmg, SourceType sourceType, DamageType damageType)
+        super(sourceType, damageType)
+        this.dmg = dmg
+
+    function copy() returns DamageInstance
+        let copy = new DamageInstance(this.dmg, this.sourceType, this.damageType)
+        this.copyTo(copy)
+        return copy
+
+    function getSpecific(BoardStack source, BoardStack target) returns SpecificDamageInstance
+        return new SpecificDamageInstance(this, source, target)
+
+public class DamagePreview extends Damage
+    realRange dmg
+
+    construct(realRange dmg, SourceType sourceType, DamageType damageType)
+        super(sourceType, damageType)
+        this.dmg = dmg
+
+    function copy() returns DamagePreview
+        let copy = new DamagePreview(this.dmg, this.sourceType, this.damageType)
+        this.copyTo(copy)
+        return copy
+    
+    function getRandomInstance() returns DamageInstance
+        let instance = new DamageInstance(dmg.random(), sourceType, damageType)
+        super.copyTo(instance)
+        return instance
+
+    function addSpecificToTooltip(BoardStack source, BoardStack target, Tooltip tooltip)
+        let preview = new SpecificDamagePreview(this, source, target)
+        tooltip.addSpecificDamagePreview(preview)
+        destroy preview
+
+public abstract class SpecificDamage
+    BoardStack target
+
+    construct(BoardStack target)
+        this.target = target
+
+public class SpecificDamageInstance extends SpecificDamage
+    int damage
+    int amount
+    int remainingHp
+    DamageInstance damageInstance
+
+    construct(DamageInstance baseDamage, BoardStack source, BoardStack target)
+        super(target)
+        damageInstance = baseDamage.copy()
+        let factor = calculateDamageFactor(source, damageInstance, target)
+        damage = (damageInstance.dmg * factor).round()
+        amount = calculateStackLostCount(target, damage)
+        remainingHp = target.stats.getHp()
+        remainingHp += target.stats.getMaxHp() * amount
+        remainingHp -= damage
+
+    ondestroy
+        destroy damageInstance
+
+public class SpecificDamagePreview extends SpecificDamage
+    intRange damage
+    intRange amount
+    DamagePreview damagePreview
+
+    construct(DamagePreview baseDamage, BoardStack source, BoardStack target)
+        super(target)
+        damagePreview = baseDamage.copy()
+        let factor = calculateDamageFactor(source, damagePreview, target)
+        damage = (damagePreview.dmg * factor).round()
+        amount.min = calculateStackLostCount(target, damage.min)
+        amount.max = calculateStackLostCount(target, damage.max)
+
+    ondestroy
+        destroy damagePreview
+
+
+public function calculateAttackVsDefencePercentage(int attack, int defence) returns real
+    let difference = attack - defence
+
+    if difference >= 0
+        var posEffect = difference * DAMAGECALC_ATTACK_VS_DEFENCE_POSITIVE
+        if posEffect > DAMAGECALC_ATTACK_VS_DEFENCE_POSITIVE_MAX
+            posEffect = DAMAGECALC_ATTACK_VS_DEFENCE_POSITIVE_MAX
+        return posEffect
+    else
+        var negativeEffect = difference * -1 * DAMAGECALC_ATTACK_VS_DEFENCE_NEGATIVE
+        if negativeEffect < DAMAGECALC_ATTACK_VS_DEFENCE_NEGATIVE_MAX
+            negativeEffect = DAMAGECALC_ATTACK_VS_DEFENCE_NEGATIVE_MAX
+        return negativeEffect
+
+function calculateDamageFactor(BoardStack source, Damage dmg, BoardStack target) returns real
+    let resistanceFactor = (1 - (target.stats.getResistance(dmg.damageType) / 100.0))
+    if dmg.sourceType == ATTACK
+        let attackFactor = (1 + calculateAttackVsDefencePercentage(source.stats.getAttack(), target.stats.getDefence()) / 100)
+        return resistanceFactor * attackFactor
+    // TODO here could be more triggers for calulating specific dmg
+    return resistanceFactor
+
+
+function calculateStackLostCount(BoardStack target, int damage) returns int
+    var amount = 0
+    let remainingDmg = damage - target.stats.getHp()
+    if remainingDmg >= 0
+        amount ++
+        let maxHp = target.stats.getMaxHp()
+        amount += (remainingDmg / maxHp).floor()
+    
+    if amount > target.stats.getAmount()
+        amount = target.stats.getAmount()
+
+    return amount
+
+
+
+/*
+
+    protected function getUnitLostCount(int dmg) returns int
+        var amount = 0
+        let remainingDmg = dmg - defender.stats.getHp()
+        if remainingDmg >= 0
+            amount ++
+            let maxHp = defender.stats.getMaxHp()
+            amount += (remainingDmg / maxHp).floor()
+        
+        if amount > defender.stats.getAmount()
+            amount = defender.stats.getAmount()
+
+        return amount
+
+    function getOneResult() returns DamageResult
+        var result = new DamageResult()
+        result.damage = this.damage.random()
+        result.amount = getUnitLostCount(result.damage)
+        result.remainingHP = defender.stats.getHp()
+        result.remainingHP += defender.stats.getMaxHp() * result.amount
+        result.remainingHP -= result.damage
+
+        result.baseDamage = this.baseDamage.copy()
+
+        return result
+
+    protected abstract function getBaseDamage() returns Damage
+
+    /** should always return 100 if you dont want to change the damage at all **/
+    /*
+    protected abstract function getBaseEffectivness() returns real
+
+    function calculate(BoardStack defender)
+        this.defender = defender
+        if baseDamage != null
+            destroy baseDamage
+        baseDamage = getBaseDamage()
+        effectivness = getBaseEffectivness() * (1 - (defender.stats.getResistance(baseDamage.damageType) / 100.0))
+        let realDamage = baseDamage.value * (effectivness / 100.0)
+        damage.min = realDamage.min.round()
+        damage.max = realDamage.max.round()
+        amount.min = getUnitLostCount(damage.min)
+        amount.max = getUnitLostCount(damage.max)
+*/

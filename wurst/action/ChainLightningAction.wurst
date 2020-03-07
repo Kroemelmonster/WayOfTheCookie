@@ -21,7 +21,7 @@ import initlater StackTypesDefinition
 import UIActionWindow
 import Scheduler
 import DelayAnimation
-import DamageResult
+import Damage
 import CastAnimation
 
 public class ChainLightningAction extends Action
@@ -37,24 +37,29 @@ public class ChainLightningAction extends Action
     
     static constant string ICON = Icons.bTNChainLightning
 
-    private static function calculateDamage(int amount, int chain) returns Damage
+    private static constant DamagePreview damagePreview = createDamagePreview()
+    
+    @inline
+    private static function createDamagePreview() returns DamagePreview
+        return new DamagePreview(realRange(0, 0), SourceType.SPELL, DamageType.MAGIC)
+
+    private static function calculateDamage(int amount, int chain)
         var multi = 1.0
         for int i = 1 to chain
             multi *= CHAIN_REDUCTION
         multi *= amount
-        return new Damage(realRange(42.0 * multi, 55.0 * multi), DamageType.MAGIC)
+        damagePreview.dmg = realRange(42.0 * multi, 55.0 * multi)
 
     static function createTooltip(boolean isDefault, int amount) returns Tooltip
+        calculateDamage(amount, 0)
         let tt = Tooltip.create(NAME)
         ..setCooldown(COOLDOWN)
         ..setCost(COST)
         ..addLine(Tooltip.stat("Target", "Enemy"))
         ..addLine(Tooltip.stat("Range", MAXRANGE))
-        let dmg = calculateDamage(amount, 0)
-        tt.addLine(Tooltip.stat("Damage", dmg))
+        tt.addLine(Tooltip.stat("Damage", damagePreview))
         tt.addLine("")
         tt.addLine("Lightning chains from the target to other targets")
-        destroy dmg
         if isDefault == false
             tt.addKey(KEY_STRING)
         return tt
@@ -78,7 +83,7 @@ public class ChainLightningAction extends Action
         else
             hidePreview()
 
-    private function chainToNext(LinkedList<BoardStack> prevTargets, BoardStack prev, Cell prevCell, Damage baseDamage, BoardStack target, int chains)
+    private function chainToNext(LinkedList<BoardStack> prevTargets, BoardStack prev, Cell prevCell, DamageInstance baseDamage, BoardStack target, int chains)
         let targetPos = target.getPos3Real()
         var lightningModel = LIGHTNING_CHAIN_LIGHTNING_SEECONDARY
         if chains == 0
@@ -90,10 +95,10 @@ public class ChainLightningAction extends Action
             e.setPosition(-100000, -10000, 10000)
             e.destr()
             let targetCell = target.getCell()
-            BoardController.dealDamage(stack, DamageResult.calculateOneResult(target, baseDamage.copy()), target) -> 
+            BoardController.dealDamage(stack, baseDamage, target) -> 
                 if chains < MAX_CHAINS
                     prevTargets.add(target)
-                    baseDamage.multi(CHAIN_REDUCTION)
+                    baseDamage.dmg *= CHAIN_REDUCTION
 
                     Cell _newTargetCell = null
                     if target.isOnBoard()
@@ -116,8 +121,8 @@ public class ChainLightningAction extends Action
     override function sendTargetOrder(Cell cell) returns boolean
         if area.has(cell)
             CastAnimation.create(stack, cell) () ->
-                let rolledBaseDamage = calculateDamage(stack.stats.amount, 0)
-                rolledBaseDamage.rollDamageRandomly()
+                calculateDamage(stack.stats.amount, 0)
+                let rolledBaseDamage = damagePreview.getRandomInstance()
                 chainToNext(new LinkedList<BoardStack>(), stack, stack.getCell(), rolledBaseDamage, cell.getStack(), 0)
             return true
         
@@ -164,10 +169,8 @@ public class ChainLightningAction extends Action
 
             var chain = 0
             for target in list
-                let preview = new BasicResultPreview(stack, calculateDamage(stack.stats.amount, chain))
-                ..calculate(target)
-                ..addToTooltip(tt)
-                destroy preview
+                calculateDamage(stack.stats.amount, chain)
+                damagePreview.addSpecificToTooltip(stack, target, tt)
                 chain ++
             destroy list
             

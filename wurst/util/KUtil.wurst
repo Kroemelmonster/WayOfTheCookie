@@ -19,5 +19,8 @@ public function realRange.op_mult(real m) returns realRange
 public function realRange.round() returns intRange
     return intRange(this.min.round(), this.max.round())
 
+public function realRange.random() returns real
+    return GetRandomReal(this.min, this.max)
+
 public function realRange.avg() returns real
     return (this.min + this.max) / 2.0

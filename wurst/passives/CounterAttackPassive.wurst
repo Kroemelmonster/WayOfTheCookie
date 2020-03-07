@@ -3,7 +3,7 @@ package CounterAttackPassive
 import PassiveAction
 import AttackAnimation
 import BoardController
-import DamageResult
+import Damage
 import KUtil
 
 import initlater BoardStack
@@ -29,10 +29,8 @@ public class CounterAttackPassive extends PassiveAction
 
         stack.getTriggers().addOnAttacked() (BoardStack attacker, BoardStack defender, SequenzListener next) ->
             if attacker.isAlive() and defender.isAlive() and checkForCounterAttack(attacker, attacker.getCell())
-                let preview = new AttackResultPreview(defender, false)
-                subActionAttack(0, stack, attacker, preview, false) (attackStatus) ->
+                subActionAttack(0, stack, attacker, false) (attackStatus) ->
                     counter --
-                    destroy preview
                     next.continue()
             else
                 next.continue()

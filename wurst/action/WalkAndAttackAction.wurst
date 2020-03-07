@@ -9,7 +9,7 @@ import UIController
 
 import PlayerData
 import AttackAnimation
-import DamageResult
+import Damage
 import DefaultAction
 import UITooltip
 import BoardController
@@ -68,16 +68,23 @@ function subActionAttackEnd(int cost, BoardStack attacker, SequenzListenerStatus
         attacker.stats.addActionPoints(-cost)
     next.continue(status)
 
-public function subActionAttack(int cost, BoardStack attacker, BoardStack defender, AttackResultPreview preview, boolean triggerOnAttack, SequenzListenerStatus next)
+public function subActionAttack(int cost, BoardStack attacker, BoardStack defender, boolean triggerOnAttack, SequenzListenerStatus next)
     let board = attacker.getBoard()
     if cost > 0 and attacker.stats.getRemainingActionPoints() < cost
         next.continue(2) // insufienct Cost
         return
 
-    preview.update(defender)
     AttackAnimation.create(attacker, defender) () ->
-        BoardController.dealDamage(attacker, preview.getOneResult(), defender) ->
+        let subTargets = attacker.stats.getSubAttackTargets(attacker.getCell(), defender)
+        let preview = new DamagePreview(attacker.stats.getDamage(), SourceType.ATTACK, attacker.stats.getDamageType())
+        let instance = preview.getRandomInstance()
+        destroy preview
+        BoardController.dealDamage(attacker, instance, defender) ->
             DelayAnimation.create(board, Scheduler.getTimeIn(0.5)) -> // this is the backswing
+                if subTargets != null
+                    // TODO
+                    
+                destroy instance
                 if triggerOnAttack
                     BoardController.onAttackEnd(attacker, defender) ->
                         subActionAttackEnd(cost, attacker, next, 0)
@@ -88,13 +95,12 @@ public class WalkAndAttackAction extends DefaultAction
     private StackPathFinding walkableCells
     private LinkedList<Cell> path
     private boolean wasPathLimited
-    private AttackResultPreview preview
+    private boolean hasValidTarget = false
 
     construct(BoardStack stack)
         super(stack, "Attack")
         walkableCells = new StackPathFinding(stack, 1.0)
         path = new LinkedList<Cell>()
-        preview = new AttackResultPreview(stack, true)
         targets = new TargetList(stack) (BoardStack possibleStack) -> 
             return getCellToAttackFromWithCheck(possibleStack)
 
@@ -117,11 +123,13 @@ public class WalkAndAttackAction extends DefaultAction
     override function recalculateHighlight(Player p)
         let cell = p.currentMousePosition.cell
         caclulatePath(cell, p.currentMousePosition.nearbyCell)
-        if preview.isEmpty()
+        if hasValidTarget == false
             UITooltip.hide(stack.getPlayer())
         else
             let tt = Tooltip.create(name)
-            preview.addToTooltip(tt)
+            let preview = new DamagePreview(stack.stats.getDamage(), SourceType.ATTACK, stack.stats.getDamageType())
+            preview.addSpecificToTooltip(stack, cell.getStack(), tt)
+            destroy preview
             tt.display(stack.getPlayer(), true)
         
         var showCost = 0
@@ -148,12 +156,12 @@ public class WalkAndAttackAction extends DefaultAction
                 orderIsBeeingExecuted = true
                 // do we need to walk there ?
                 if path.isEmpty()
-                    subActionAttack(1, stack, enemy, preview, true) (attackStatus) ->
+                    subActionAttack(1, stack, enemy, true) (attackStatus) ->
                         BoardController.finishOrder(stack, false)
                 else
                     subActionMove(walkableCells, path, stack) (status) ->
                         if status == 0
-                            subActionAttack(1, stack, enemy, preview, true) (attackStatus) ->
+                            subActionAttack(1, stack, enemy, true) (attackStatus) ->
                                 BoardController.finishOrder(stack, false)
                         else
                             // welp here you COULD theoretically act again but that is only a bug in subActionMove --> so we dont care
@@ -220,8 +228,8 @@ public class WalkAndAttackAction extends DefaultAction
 
     override function caclulatePath(Cell targetCell, Cell preferedCell) returns Cell
         path.clear()
-        preview.reset()
         wasPathLimited = false
+        hasValidTarget = false
 
         
         if targetCell == null
@@ -241,7 +249,7 @@ public class WalkAndAttackAction extends DefaultAction
         if _destionationPath == null
             // you didnt need to walk, maybe you are already in range ?
             if target != null
-                preview.calculate(targetStack, stack.getCell())
+                hasValidTarget = true
                 return targetCell
             // somehow we cant walk there and we also cant attack while standing still
             return null
@@ -268,7 +276,8 @@ public class WalkAndAttackAction extends DefaultAction
         destroy iter
 
         if couldAttack
-            preview.calculate(targetStack, path.peek())
+            // TODO this could be easier
+            hasValidTarget = true
             return targetCell
         else
             let endResultTarget = path.peek()
@@ -283,6 +292,4 @@ public class WalkAndAttackAction extends DefaultAction
             destroy walkableCells
         if path != null
             destroy path
-        if preview != null
-            destroy preview
         

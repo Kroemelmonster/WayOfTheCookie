@@ -10,7 +10,7 @@ import UIInteractableIcon
 
 import initlater BoardStack
 import initlater UIStackInfo
-import initlater DamageResult
+import initlater Damage
 import initlater InitiativeList
 import initlater Stack
 import KUtil

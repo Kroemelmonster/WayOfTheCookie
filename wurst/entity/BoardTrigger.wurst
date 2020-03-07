@@ -4,7 +4,7 @@ import LinkedList
 
 import initlater BoardStack
 import initlater Cell
-import initlater DamageResult
+import initlater Damage
 
 public abstract class SequenzListener
     function continue()
@@ -30,7 +30,7 @@ public abstract class BoardTriggerOnStackInteraction
     abstract function onEvent(BoardStack initator, BoardStack receiver, SequenzListener next)
 
 public abstract class BoardTriggerOnDamageTaken
-    abstract function onEvent(BoardStack source, BoardStack target, DamageResult result, SequenzListener next)
+    abstract function onEvent(BoardStack source, BoardStack target, SpecificDamageInstance specificInstance, SequenzListener next)
 
 public abstract class BoardTrigger
     abstract function onEvent(SequenzListener next)
@@ -86,18 +86,18 @@ public class StackTrigger
     function removeOnDamageTaken(BoardTriggerOnDamageTaken listener)
         onDamageTaken.remove(listener)
 
-    private function triggerOnDamageTakenInner(LLIterator<BoardTriggerOnDamageTaken> iter, BoardStack source, BoardStack target, DamageResult result, SequenzListener next)
+    private function triggerOnDamageTakenInner(LLIterator<BoardTriggerOnDamageTaken> iter, BoardStack source, BoardStack target, SpecificDamageInstance specificInstance, SequenzListener next)
         if iter.hasNext()
             let listener = iter.next()
-            listener.onEvent(source, target, result) ->
-                triggerOnDamageTakenInner(iter, source, target, result, next)
+            listener.onEvent(source, target, specificInstance) ->
+                triggerOnDamageTakenInner(iter, source, target, specificInstance, next)
         else
             next.continue()
 
-    function triggerOnDamageTaken(BoardStack source, BoardStack target, DamageResult result, SequenzListener next)
+    function triggerOnDamageTaken(BoardStack source, BoardStack target, SpecificDamageInstance specificInstance, SequenzListener next)
         let copy = onDamageTaken.copy()
         let itr = copy.iterator()
-        triggerOnDamageTakenInner(itr, source, target, result) () ->
+        triggerOnDamageTakenInner(itr, source, target, specificInstance) () ->
             destroy itr
             destroy copy
             next.continue()
