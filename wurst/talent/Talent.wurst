@@ -8,6 +8,8 @@ import WarcryTalent
 import CounterAttackTalent
 import UITooltip
 import ChainLightningTalent
+import PoisonousTalent
+import DeepCuttingTalent
 
 interface GenerateListener
     function onStackCreation(BoardStack stack)
@@ -21,6 +23,8 @@ public class TalentSet
     static Talent WARCRY
     static Talent COUNTER_ATTACK
     static Talent CHAIN_LIGHTNING
+    static Talent POPISONOUS
+    static Talent DEEP_CUTTING
 
     static function setup()
         DEFAULT = DefaultTalent.setup()
@@ -28,7 +32,8 @@ public class TalentSet
         WARCRY = WarcryTalent.setup()
         COUNTER_ATTACK = CounterAttackTalent.setup()
         CHAIN_LIGHTNING = ChainLightningTalent.setup()
-
+        POPISONOUS = PoisonousTalent.setup()
+        DEEP_CUTTING = DeepCuttingTalent.setup()
 
 public abstract class Talent
     protected string name
@@ -44,13 +49,6 @@ public abstract class Talent
 
     function addGenerateListener(GenerateListener listener)
         this.listener = listener
-
-    function addStackTypCreationListener(StackTypeCreationListener listener)
-        this.stackTypeCreationListener = listener
-
-    function onStackTypeCreation(StackType stackType)
-        if stackTypeCreationListener != null
-            stackTypeCreationListener.onCreation(stackType)
         
     function onStackCreation(BoardStack stack)
         listener.onStackCreation(stack)

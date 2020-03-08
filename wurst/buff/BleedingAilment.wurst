@@ -70,14 +70,16 @@ public class BleedingAilment extends Buff
     private static function createTooltip(BleedingAilment b) returns Tooltip
         let tooltip = Tooltip.create(NAME)
         if b == null
-            tooltip.addLine("This is bad you are bleeding ??")
+            tooltip.addLine("Bleeding makes you suffer damage each turn")
+            tooltip.addLine("Each cell you move or get moved will trigger this damage again with an even greater value")
         else
             tooltip.addLine(Tooltip.stat("Duration", b.stacks.getMaxDuration()))
             tooltip.addLine(Tooltip.stat("Stacks", b.stacks.size()))
+            tooltip.addLine("")
             b.calculateDamage(false)
-            tooltip.addLine("You are currently bleeding and suffer "+Tooltip.coloredRange(Tooltip.COLOR_NEGATIVE, damagePreview.dmg.round())+ " each turn")
+            tooltip.addLine("You are currently bleeding and suffer "+Tooltip.coloredRange(Tooltip.damageType2Color(damagePreview.damageType), damagePreview.dmg.round())+ " each turn")
             b.calculateDamage(true)
-            tooltip.addLine("As well as "+Tooltip.coloredRange(Tooltip.COLOR_NEGATIVE, damagePreview.dmg.round())+ " each time you attempt to move into another cell")
+            tooltip.addLine("As well as "+Tooltip.coloredRange(Tooltip.damageType2Color(damagePreview.damageType), damagePreview.dmg.round())+ " each time you attempt to move into another cell")
         
         return tooltip
 

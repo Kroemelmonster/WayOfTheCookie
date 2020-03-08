@@ -29,6 +29,9 @@ public abstract class BoardTriggerOnAnyCellLeave
 public abstract class BoardTriggerOnStackInteraction
     abstract function onEvent(BoardStack initator, BoardStack receiver, SequenzListener next)
 
+public abstract class BoardTriggerOnDamageDealt
+    abstract function onEvent(BoardStack source, BoardStack target, SpecificDamageInstance specificInstance, SequenzListener next)
+
 public abstract class BoardTriggerOnDamageTaken
     abstract function onEvent(BoardStack source, BoardStack target, SpecificDamageInstance specificInstance, SequenzListener next)
 
@@ -42,6 +45,7 @@ public class StackTrigger
     private LinkedList<BoardTrigger> onTurnEnd = new LinkedList<BoardTrigger>()
     private LinkedList<BoardTriggerOnStackInteraction> onAttacked = new LinkedList<BoardTriggerOnStackInteraction>()
     private LinkedList<BoardTriggerOnDamageTaken> onDamageTaken = new LinkedList<BoardTriggerOnDamageTaken>()
+    private LinkedList<BoardTriggerOnDamageDealt> onDamageDealt = new LinkedList<BoardTriggerOnDamageDealt>()
 
     function addOnAnyCellEnter(BoardTriggerOnAnyCellEnter listener) returns BoardTriggerOnAnyCellEnter
         onAnyCellEnter.add(listener)
@@ -85,6 +89,29 @@ public class StackTrigger
 
     function removeOnDamageTaken(BoardTriggerOnDamageTaken listener)
         onDamageTaken.remove(listener)
+
+    function addOnDamageDealt(BoardTriggerOnDamageDealt listener) returns BoardTriggerOnDamageDealt
+        onDamageDealt.add(listener)
+        return listener
+
+    function removeOnDamageDealt(BoardTriggerOnDamageDealt listener)
+        onDamageDealt.remove(listener)
+
+    private function triggerOnDamageDealtInner(LLIterator<BoardTriggerOnDamageDealt> iter, BoardStack source, BoardStack target, SpecificDamageInstance specificInstance, SequenzListener next)
+        if iter.hasNext()
+            let listener = iter.next()
+            listener.onEvent(source, target, specificInstance) ->
+                triggerOnDamageDealtInner(iter, source, target, specificInstance, next)
+        else
+            next.continue()
+
+    function triggerOnDamageDealt(BoardStack source, BoardStack target, SpecificDamageInstance specificInstance, SequenzListener next)
+        let copy = onDamageDealt.copy()
+        let itr = copy.iterator()
+        triggerOnDamageDealtInner(itr, source, target, specificInstance) () ->
+            destroy itr
+            destroy copy
+            next.continue()
 
     private function triggerOnDamageTakenInner(LLIterator<BoardTriggerOnDamageTaken> iter, BoardStack source, BoardStack target, SpecificDamageInstance specificInstance, SequenzListener next)
         if iter.hasNext()
@@ -198,3 +225,9 @@ public class StackTrigger
         for listener in onAttacked
             destroy listener
         destroy onAttacked
+        for listener in onDamageTaken
+            destroy listener
+        destroy onDamageTaken
+        for listener in onDamageDealt
+            destroy listener
+        destroy onDamageDealt

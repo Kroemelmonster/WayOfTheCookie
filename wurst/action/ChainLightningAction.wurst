@@ -23,11 +23,15 @@ import Scheduler
 import DelayAnimation
 import Damage
 import CastAnimation
+import BoardTrigger
+import HashMap
+import ClosureTimers
+import Effect
 
 public class ChainLightningAction extends Action
     private static constant int COST = 1
     private static constant int COOLDOWN = 3
-    private static constant int MAXRANGE = 6
+    private static constant int MAXRANGE = 4
     private static constant string NAME = "Chain Lightning"
     private static constant oskeytype KEY = OSKEY_C
     private static constant string KEY_STRING = "C"
@@ -59,7 +63,7 @@ public class ChainLightningAction extends Action
         ..addLine(Tooltip.stat("Range", MAXRANGE))
         tt.addLine(Tooltip.stat("Damage", damagePreview))
         tt.addLine("")
-        tt.addLine("Lightning chains from the target to other targets")
+        tt.addLine("Lightning strikes from one target and chains to nearby other targets")
         if isDefault == false
             tt.addKey(KEY_STRING)
         return tt
@@ -82,6 +86,12 @@ public class ChainLightningAction extends Action
             showPreview(p.currentMousePosition.cell)
         else
             hidePreview()
+
+    private function finishOrder(LinkedList<BoardStack> prevTargets, DamageInstance baseDamage)
+        destroy prevTargets
+        destroy baseDamage
+        cooldown = COOLDOWN + 1
+        BoardController.finishOrder(stack, false)
 
     private function chainToNext(LinkedList<BoardStack> prevTargets, BoardStack prev, Cell prevCell, DamageInstance baseDamage, BoardStack target, int chains)
         let targetPos = target.getPos3Real()
@@ -108,15 +118,11 @@ public class ChainLightningAction extends Action
                         _newTargetCell = targetCell
                     let _nextTarget = getNextTarget(prevTargets, _newTargetCell)
                     if _nextTarget == null
-                        destroy prevTargets
-                        destroy baseDamage
-                        BoardController.finishOrder(stack, true)
+                        finishOrder(prevTargets, baseDamage)
                     else
                         chainToNext(prevTargets, target, _newTargetCell, baseDamage, _nextTarget, chains + 1)
                 else
-                    destroy prevTargets
-                    destroy baseDamage
-                    BoardController.finishOrder(stack, true)
+                    finishOrder(prevTargets, baseDamage)
 
     override function sendTargetOrder(Cell cell) returns boolean
         if area.has(cell)
@@ -175,7 +181,7 @@ public class ChainLightningAction extends Action
             destroy list
             
         tt.display(stack.getPlayer(), true)
-        UIActionWindow.updateActionPoints(stack, COST)
+        UIActionWindow.updateActionPoints(stack, 99)
                 
     @inline
     private function hidePreview()
@@ -190,6 +196,60 @@ public class ChainLightningAction extends Action
 
     override function canBeActivatedByKey(oskeytype key) returns boolean
         return key == KEY
+
+    override function executeForKI(SequenzListenerStatus listener)
+        let defaultAction = stack.getDefaultAction()
+        let pathing = defaultAction.getPathing()
+        let weightCells = new HashMap<Cell, real>()
+        var cost = COST
+        if cost == 0
+            cost = 1 // after you moved all points you cant even use a spell that cost nothing
+        let possibleMovePoints = stack.stats.getMoveSpeed() - cost
+        Cell bestCell = null
+        BoardStack bestTarget = null
+        var highestWeightSoFar = 0.0
+        var highestRemainingActionPoints = 0
+        // what if possibleMovePoints <= 0 ?? nutzlos
+        let stackItr = stack.getBoard().getAllStacks().iterator()
+        while stackItr.hasNext()
+            let target = stackItr.next()
+            if target.isEnemy(stack)
+                let weight =  target.stats.getWeight()
+                let itr = target.getCell().eachCellInRangeIterator(intRange(1, MAXRANGE))
+                while itr.hasNext()
+                    let cell = itr.next()
+                    let currentCost = pathing.get(cell).cost
+                    if currentCost <= possibleMovePoints
+                        let newWeight = weight
+                        weightCells.put(cell, newWeight)
+                        let remaining = (possibleMovePoints - currentCost).floor()
+                        if newWeight > highestWeightSoFar
+                            highestWeightSoFar = newWeight
+                            bestCell = cell
+                            bestTarget = target
+                            highestRemainingActionPoints = remaining
+                        else if newWeight == highestWeightSoFar and remaining > highestRemainingActionPoints
+                            bestCell = cell
+                            bestTarget = target
+                            highestRemainingActionPoints = remaining
+
+                destroy itr
+
+        destroy stackItr
+        destroy weightCells
+        nullTimer() ->
+            if bestCell != null
+                if bestCell == stack.getCell()
+                    activate()
+                    nullTimer() ->
+                        sendTargetOrder(bestTarget.getCell())
+                else
+                    let order = defaultAction.caclulatePath(bestCell, null)
+                
+                    defaultAction.sendTargetOrder(order)
+                listener.continue(0)
+            else
+                listener.continue(1)
 
     ondestroy
         if area != null

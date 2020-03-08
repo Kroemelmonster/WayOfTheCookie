@@ -35,7 +35,7 @@ public class CounterAttackPassive extends PassiveAction
             else
                 next.continue()
 
-    override function checkForCounterAttack(BoardStack _attacker, Cell fromCell) returns boolean
+    private function checkForCounterAttack(BoardStack _attacker, Cell fromCell) returns boolean
         if counter <= 0
             return false
 

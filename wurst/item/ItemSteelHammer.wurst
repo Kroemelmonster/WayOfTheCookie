@@ -6,7 +6,7 @@ import KItem
 
 public class ItemSteelHammer extends KItem
 
-    private static constant string NAME = "Warcry"
+    private static constant string NAME = "Steel Hammer"
     private static constant string ICON = Icons.bTNHammer
 
     private static constant int TEST = 20

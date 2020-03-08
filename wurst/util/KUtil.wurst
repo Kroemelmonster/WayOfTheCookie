@@ -1,4 +1,5 @@
 package KUtil
+import ClosureTimers
 
 public tuple intRange(int min, int max)
 
@@ -24,3 +25,10 @@ public function realRange.random() returns real
 
 public function realRange.avg() returns real
     return (this.min + this.max) / 2.0
+
+public abstract class SetupListener
+    function continue()
+        continueInner()
+        destroy this
+
+    abstract function continueInner()

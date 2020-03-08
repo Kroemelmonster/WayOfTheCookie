@@ -25,6 +25,17 @@ public class UnitTypesIds
     static constant GNOLL_WARDEN = compiletime(UNIT_ID_GEN.next())
     static constant ARMY_GNOLL_WARDEN = compiletime(UNIT_ID_GEN.next())
 
+
+    static constant WIDOW_SPIDER = compiletime(UNIT_ID_GEN.next())
+    static constant ARMY_WIDOW_SPIDER = compiletime(UNIT_ID_GEN.next())
+
+    static constant FOREST_TROLL = compiletime(UNIT_ID_GEN.next())
+    static constant ARMY_FOREST_TROLL = compiletime(UNIT_ID_GEN.next())
+    static constant FOREST_TROLL_BERSERKER = compiletime(UNIT_ID_GEN.next())
+    static constant ARMY_FOREST_TROLL_BERSERKER = compiletime(UNIT_ID_GEN.next())
+    static constant FOREST_TROLL_HIGH_PRIEST = compiletime(UNIT_ID_GEN.next())
+    static constant ARMY_FOREST_TROLL_HIGH_PRIEST = compiletime(UNIT_ID_GEN.next())
+
     static constant HERO_FAR_SEER = compiletime(UNIT_ID_GEN.next())
 
 
@@ -156,6 +167,12 @@ function setup()
     createUnit(UnitIds.gnoll1, UnitTypesIds.GNOLL, UnitTypesIds.ARMY_GNOLL, "Gnoll", 0.6, 220)
     createUnit(UnitIds.gnollpoacher, UnitTypesIds.GNOLL_POACHER, UnitTypesIds.ARMY_GNOLL_POACHER, "Gnoll Poacher", 0.6, 220)
     createUnit(UnitIds.gnoll3, UnitTypesIds.GNOLL_WARDEN, UnitTypesIds.ARMY_GNOLL_WARDEN, "Gnoll Warden", 0.8, 220)
+
+    createUnit(UnitIds.spiderblack, UnitTypesIds.WIDOW_SPIDER, UnitTypesIds.ARMY_WIDOW_SPIDER, "Widow Spider", 0.9, 220)
+
+    createUnit(UnitIds.foresttroll, UnitTypesIds.FOREST_TROLL, UnitTypesIds.ARMY_FOREST_TROLL, "Forest Troll", 0.6, 240)
+    createUnit(UnitIds.foresttrollberserker, UnitTypesIds.FOREST_TROLL_BERSERKER, UnitTypesIds.ARMY_FOREST_TROLL_BERSERKER, "Forest Troll Berserker", 0.8, 240)
+    createUnit(UnitIds.foresttrollhighpriest, UnitTypesIds.FOREST_TROLL_HIGH_PRIEST, UnitTypesIds.ARMY_FOREST_TROLL_HIGH_PRIEST, "Forest Troll High Priest", 0.8, 240)
 
     createHero(UnitIds.drekthar, UnitTypesIds.HERO_FAR_SEER, "Farseer", 1.0, 360)
     

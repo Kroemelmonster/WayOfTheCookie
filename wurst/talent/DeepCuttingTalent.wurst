@@ -1,0 +1,22 @@
+package DeepCuttingTalent
+
+import Icons
+
+import initlater Talent
+import initlater DeepCuttingPassive
+import initlater StackType
+import UITooltip
+
+public class DeepCuttingTalent extends Talent
+    construct()
+        super("Deep Cutting", Icons.pASBTNCriticalStrike)
+
+    static function setup() returns Talent
+        return new DeepCuttingTalent()
+        ..addGenerateListener() stack ->
+            let passive = new DeepCuttingPassive(stack)
+            stack.addPassive(passive)
+            passive.triggerOnStackCreation(stack)
+
+    override function createTooltip(StackType sType) returns Tooltip
+        return DeepCuttingPassive.createTooltip(sType)

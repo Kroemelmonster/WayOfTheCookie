@@ -39,17 +39,22 @@ public class BoardStackStats
         this.hp = basis.getMaxHp()
         this.stack = stack
 
+        /*
         setSubAttackTarget() (Cell reference, BoardStack mainTarget) ->
             let list = new LinkedList<SubTarget>()
             let itr = mainTarget.getCell().eachCellInRangeIterator(intRange(1, 1))
             while itr.hasNext()
                 let possibleTarget = itr.next().getStack()
-                if possibleTarget != null
+                if possibleTarget != null and mainTarget.isEnemy(possibleTarget) == false
                     list.add(new SubTarget(possibleTarget, 0.5))
 
             destroy itr
             return list
+        */
 
+    function getBasis() returns StackStats
+        return basis
+    
     @inline
     function getInitiative() returns int
         return initModi.get(basis.getInitiative()).round()
@@ -119,6 +124,10 @@ public class BoardStackStats
     function getStartAmount() returns int
         return startAmount
 
+    @inline
+    function getWeight() returns real
+        return basis.getWeight()
+    
     /** setters  **/
 
     @inline

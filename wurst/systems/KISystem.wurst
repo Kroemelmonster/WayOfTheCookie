@@ -4,41 +4,80 @@ import ClosureTimers
 import LinkedList
 
 import BoardStack
+import initlater Action
+import initlater WaitAction
+import initlater DefendAction
+import BoardTrigger
 
 public class KISystem
-    protected static function getBestTarget(BoardStack _attacker, LinkedList<BoardStack> targets) returns BoardStack
-        BoardStack target = null
-        if targets.isEmpty() == false
-            target = targets.get(GetRandomInt(0, targets.size() - 1))
-        return target
+    static function getBestTarget(LinkedList<BoardStack> targets) returns BoardStack
+        if targets.isEmpty()
+            return null
+        var maxWeight = 0.0
+        for target in targets
+            maxWeight += target.stats.getWeight()
+        let weightedRandom = GetRandomReal(0, maxWeight)
+        var currentWeight = 0.0
+        BoardStack result = null
+        let itr = targets.iterator()
+        while itr.hasNext() and result == null
+            let target = itr.next()
+            currentWeight += target.stats.getWeight()
+            if currentWeight >= weightedRandom
+                result = target
+
+        return result
+
+
+    @inline
+    protected static function isActionWait(Action action) returns boolean
+        return action instanceof WaitAction
+
+    @inline
+    protected static function isActionDefend(Action action) returns boolean
+        return action instanceof DefendAction
+
+    @inline
+    protected static function isActionSpecial(Action action) returns boolean
+        return isActionWait(action) == false and isActionDefend(action) == false
+
+    protected static function executeDefendOrSkipAction(BoardStack stack)
+        let itr = stack.getActions().iterator()
+        Action defendOrSkipAction = null
+        while itr.hasNext() and defendOrSkipAction == null
+            let action = itr.next()
+            if isActionDefend(action) and action.canActivate()
+                defendOrSkipAction = action
+        destroy itr
+        defendOrSkipAction.activate()
+
+    protected static function executeDefaultAction(BoardStack stack)
+        let defaultAction = stack.getDefaultAction()
+        defaultAction.executeForKI() (status) ->
+            if status == 1
+                doAfter(0.2) ->
+                    // there is litterly nothing you can doo ?
+                    executeDefendOrSkipAction(stack)
+
+    protected static function executeNextAction(LLIterator<Action> itr, BoardStack stack, SequenzListenerStatus next)
+        if itr.hasNext()
+            let action = itr.next()
+            if isActionSpecial(action) and action.canActivate()
+                action.executeForKI() (int status) ->
+                    if status == 1 // he did not do anything
+                        executeNextAction(itr, stack, next)
+                    else if status == 0
+                        next.continue(1)
+            else
+                executeNextAction(itr, stack, next)
+            
+        else
+            next.continue(0)
 
     static function executeTurn(BoardStack stack)
-        // simulate thinking :D
-        doAfter(0.2) ->  
-            // Log.trace("START KI")
-            // determ your action --> we do default
-            // if default -->
-            // can he allready attack smth ?
-            
-            let defaultAction = stack.getDefaultAction()
-
-            BoardStack enemy = getBestTarget(stack, defaultAction.getTargets(true))
-            if enemy != null
-                //Log.trace("Target in Range is "+enemy.getName()+ " he is at "+enemy.getCell().toString())
-            else
-                enemy = getBestTarget(stack, defaultAction.getTargets(false))
-                if enemy != null
-                    //Log.trace("Target out of range "+enemy.getName()+ " he is at "+enemy.getCell().toString())
-               
-            if enemy == null
-                doAfter(0.5) -> 
-                    // TODO this prob is always going to be defend but what if not ? XD
-                    stack.getAction(1).activate()
-            else
-                let order = defaultAction.caclulatePath(enemy.getCell(), null)
-                    
-                defaultAction.sendTargetOrder(order)
-
-            
-                
-            //Log.trace("END KI")
+        doAfter(0.2) ->
+            let itr = stack.getActions().iterator()
+            executeNextAction(itr, stack) (status) ->
+                destroy itr
+                if status == 0
+                    executeDefaultAction(stack)

@@ -33,6 +33,9 @@ public class PoisonAilment extends Buff
         preview.isTriggered = true
         return preview
 
+    static function flashEffect(BoardStack target)
+        target.flashEffectOnPos(EFFECT)
+
     private BoardTrigger turnStartListener
     private BoardTrigger turnEndListener
     private BoardTriggerOnDamageTaken damageTakenListener
@@ -63,12 +66,14 @@ public class PoisonAilment extends Buff
     private static function createTooltip(PoisonAilment b) returns Tooltip
         let tooltip = Tooltip.create(NAME)
         if b == null
-            tooltip.addLine("This is bad you are poisonned ??")
+            tooltip.addLine("Poisoned makes you suffer damage each turn")
+            tooltip.addLine("Each time you take non-dot damage you also suffer this damage as well")
         else
             tooltip.addLine(Tooltip.stat("Duration", b.stacks.getMaxDuration()))
             tooltip.addLine(Tooltip.stat("Stacks", b.stacks.size()))
+            tooltip.addLine("")
             b.calculateDamage()
-            tooltip.addLine("You are currently poisoned and take " + Tooltip.coloredRange(Tooltip.COLOR_NEGATIVE, damagePreview.dmg.round()) + " each turn and each time you take non-dot Damage")
+            tooltip.addLine("You are currently poisoned and take " + Tooltip.coloredRange(Tooltip.damageType2Color(damagePreview.damageType), damagePreview.dmg.round()) + " each turn aswell as each time you take non-dot Damage")
         
         return tooltip
 
@@ -82,7 +87,7 @@ public class PoisonAilment extends Buff
 
     private function dealDamage(SequenzListener next)
         DelayAnimation.create(stack.getBoard(), 0.5) ->
-            stack.flashAttachEffect(EFFECT, AttachmentPoints.chest)
+            flashEffect(stack)
             calculateDamage()
             let instance = damagePreview.getRandomInstance()
             BoardController.dealDamage(stack, instance, stack) ->

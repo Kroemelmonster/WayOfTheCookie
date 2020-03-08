@@ -25,6 +25,7 @@ public class Hero
     protected int defence = 0
 
     protected KItem array[8] items
+    protected KItem array[20] backpack
 
     protected Army army
 
@@ -173,8 +174,22 @@ public class Hero
         for int i = 0 to Army.MAX_SIZE - 1
             let armyStack = army.getStack(i)
             if armyStack != null
-                kItem.onStackUpdate(armyStack, true)
+                kItem.onStackUpdate(armyStack, false)
         items[index] = null
+
+    function getBackPackItemsLength() returns int
+        return backpack.length
+
+    function getBackPackItem(int index) returns KItem
+        if index < 0 or index >= backpack.length
+            return null
+        return backpack[index]
+    
+    function setBackPackItem(int index, KItem kItem)
+        backpack[index] = kItem
+        
+    function removeBackPackItem(int index)
+        backpack[index] = null
 
     function setAttack(int value)
         for int i = 0 to Army.MAX_SIZE - 1

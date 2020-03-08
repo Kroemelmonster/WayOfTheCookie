@@ -1,4 +1,4 @@
-package WarcryAction
+package FunWarcryAction
 
 
 import Icons
@@ -24,16 +24,13 @@ import DelayAnimation
 import Buff
 import CastAnimation
 import BoardTrigger
-import HashMap
-import Cell
-import ClosureTimers
 
 public class WarcryAction extends InstantAction
     private Tooltip tooltip
     
     private static constant int COST = 0
     private static constant int COOLDOWN = 0
-    private static constant int MAXRANGE = 2
+    private static constant int MAXRANGE = 8
     private static constant int BUFF_DURATION = 1
     private static constant string NAME = "Warcry"
     private static constant oskeytype KEY = OSKEY_Y
@@ -71,7 +68,7 @@ public class WarcryAction extends InstantAction
         let targets = new LinkedList<BoardStack>()
         for cell in area
             let possibleTarget = cell.getStack()
-            if possibleTarget != null and stack.isEnemy(possibleTarget)
+            if possibleTarget != null
                 targets.add(possibleTarget)
         destroy area
         return targets
@@ -113,55 +110,8 @@ public class WarcryAction extends InstantAction
         return key == KEY
             
     override function executeForKI(SequenzListenerStatus listener)
-        let defaultAction = stack.getDefaultAction()
-        let pathing = defaultAction.getPathing()
-        let weightCells = new HashMap<Cell, real>()
-        var cost = COST
-        if cost == 0
-            cost = 1 // after you moved all points you cant even use a spell that cost nothing
-        let possibleMovePoints = stack.stats.getMoveSpeed() - cost
-        Cell bestCell = null
-        var highestWeightSoFar = 0.0
-        var highestRemainingActionPoints = 0
-        // what if possibleMovePoints <= 0 ?? nutzlos
-        let stackItr = stack.getBoard().getAllStacks().iterator()
-        while stackItr.hasNext()
-            let target = stackItr.next()
-            if target.isEnemy(stack)
-                let weight =  target.stats.getWeight()
-                let itr = target.getCell().eachCellInRangeIterator(intRange(1, MAXRANGE))
-                while itr.hasNext()
-                    let cell = itr.next()
-                    let currentCost = pathing.get(cell).cost
-                    if currentCost <= possibleMovePoints
-                        var newWeight = weight
-                        if weightCells.has(cell)
-                            newWeight += weightCells.get(cell)
-                        weightCells.put(cell, newWeight)
-                        let remaining = (possibleMovePoints - currentCost).floor()
-                        if newWeight > highestWeightSoFar
-                            highestWeightSoFar = newWeight
-                            bestCell = cell
-                            highestRemainingActionPoints = remaining
-                        else if newWeight == highestWeightSoFar and remaining > highestRemainingActionPoints
-                            bestCell = cell
-                            highestRemainingActionPoints = remaining
-
-                destroy itr
-
-        destroy stackItr
-        destroy weightCells
-        nullTimer() ->
-            if bestCell != null
-                if bestCell == stack.getCell()
-                    activate()
-                else
-                    let order = defaultAction.caclulatePath(bestCell, null)
-                
-                    defaultAction.sendTargetOrder(order)
-                listener.continue(0)
-            else
-                listener.continue(1)
+        activate()
+        listener.continue(0)
 
     ondestroy
         if tooltip != null

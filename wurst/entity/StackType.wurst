@@ -5,6 +5,7 @@ import LinkedList
 import StackSoundSet
 import KUtil
 import Talent
+import initlater BoardStack
 
 public enum DamageType
     PHYISICAL
@@ -22,6 +23,7 @@ public class StackType
     integer level
     integer leadership
     integer value
+    int weight
 
     integer initiative
     integer actionPoints
@@ -41,7 +43,7 @@ public class StackType
 
     LinkedList<Talent> talents = new LinkedList<Talent>()
 
-    construct(integer unitId, integer armyUnitId, string icon, StackSoundSet soundSet, string name, int level, int leadership, int value)
+    construct(integer unitId, integer armyUnitId, string icon, StackSoundSet soundSet, string name, int level, int leadership, int value, int weight)
         this.unitId = unitId
         this.armyUnitId = armyUnitId
         this.soundSet = soundSet
@@ -50,29 +52,14 @@ public class StackType
         this.level = level
         this.leadership = leadership
         this.value = value
+        this.weight = weight
 
     function addTalent(Talent talent)
         talents.add(talent)
-        talent.onStackTypeCreation(this)
-
-    @inline
-    function getNonHiddenTalent(int index) returns Talent
-        Talent found = null
-        var counter = 0
-        let itr = talents.iterator()
-        while itr.hasNext() and found == null
-            let talent = itr.next()
-            if talent.isHidden() == false
-                if index == counter
-                    found = talent
-                counter++
-
-        destroy itr
-        return found
-
-    @inline
-    function talentIterator() returns LLIterator<Talent>
-        return talents.iterator()
+        
+    function getAllVisibleTalents() returns LinkedList<Talent>
+        return talents.filter() (Talent t) ->
+            return t.isHidden() == false
 
     @inline
     function getResistance(DamageType dType) returns int
@@ -121,3 +108,15 @@ public class StackType
     @inline
     function setDamageType(DamageType value)
         this.damageType = value
+
+    @inline
+    function setResistanceAgainst(DamageType dType, int value)
+        switch dType
+            case MAGIC
+                magicResistance = value
+            case FIRE
+                fireResistance = value
+            case POISON
+                poisonResistance = value
+            default
+                phyisicalResistance = value

@@ -63,8 +63,7 @@ public class BoardStack
         this.buffs = new LinkedList<Buff>
         this.triggers = new StackTrigger()
 
-        for talent in stackType.talents
-            talent.onStackCreation(this)
+        stack.stats.triggerOnCreation(this)
 
     @inline
     function getCell() returns Cell
@@ -102,6 +101,10 @@ public class BoardStack
     function resetCurrentSelectedAction()
         currentSelectedAction = -1
     
+    @inline
+    function setCurrentAction(Action action)
+        currentSelectedAction = actions.indexOf(action)
+
     @inline
     function setCurrentActionIndex(int index)
         currentSelectedAction = index
@@ -142,6 +145,10 @@ public class BoardStack
     function passiveActionIterator() returns LLIterator<PassiveAction>
         return passiveActions.iterator()
 
+    @inline
+    function getActions() returns LinkedList<Action>
+        return actions
+    
     function getAction(int index) returns Action
         if index == -1
             return defaultAction

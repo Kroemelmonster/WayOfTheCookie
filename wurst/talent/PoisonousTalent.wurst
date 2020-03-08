@@ -1,0 +1,22 @@
+package PoisonousTalent
+
+import Icons
+
+import initlater Talent
+import initlater PoisonousPassive
+import initlater StackType
+import UITooltip
+
+public class PoisonousTalent extends Talent
+    construct()
+        super("Poisonous", Icons.pASBTNPoisonSting)
+
+    static function setup() returns Talent
+        return new PoisonousTalent()
+        ..addGenerateListener() stack ->
+            let passive = new PoisonousPassive(stack)
+            stack.addPassive(passive)
+            passive.triggerOnStackCreation(stack)
+
+    override function createTooltip(StackType sType) returns Tooltip
+        return PoisonousPassive.createTooltip(sType)

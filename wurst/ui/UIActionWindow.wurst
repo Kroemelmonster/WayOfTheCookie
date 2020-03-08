@@ -152,11 +152,6 @@ class UIActionWindow
         if newAction.canActivate() == false
             return
         newAction.activate()
-        if newAction.isInstant()
-            return
-
-        p.currentSelectedStack.setCurrentActionIndex(index)
-        UIController.triggerOnActionChange(p.playingBoard)
 
     private static function onMouseEnter(int index, Player p)
         let action = p.currentSelectedStack.getAction(index)

@@ -8,6 +8,8 @@ import TargetList
 
 import initlater Cell
 import initlater BoardStack
+import BoardTrigger
+import PathFinding
 
 public abstract class DefaultAction extends Action
     protected TargetList targets
@@ -20,6 +22,8 @@ public abstract class DefaultAction extends Action
 
     override function canActivate() returns boolean
         return false
+
+    abstract function getPathing() returns StackPathFinding
 
     abstract function getTargets(boolean shouldBeAbleToAttackThisTurn) returns LinkedList<BoardStack>
 

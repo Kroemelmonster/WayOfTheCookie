@@ -24,6 +24,3 @@ public abstract class PassiveAction
     
     @inline
     abstract function triggerOnStackCreation(BoardStack stack)
-
-    function checkForCounterAttack(BoardStack _attacker, Cell _fromCell) returns boolean
-        return false

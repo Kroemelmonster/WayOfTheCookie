@@ -11,6 +11,8 @@ import initlater Hero
 import initlater StackTypesDefinition
 import initlater NPC
 import ItemSteelHammer
+import StackType
+import PoisionousStingItem
 
 public class World
     protected static LinkedList<Board> boards = new LinkedList<Board>
@@ -19,21 +21,22 @@ public class World
     protected static LinkedList<NPC> npcs = new LinkedList<NPC>
 
     static function generateBoards()
+        boards.add(new Board(gg_rct_BoardPlainsOne, gg_rct_BoardPlainsOneV))
         boards.add(new Board(gg_rct_BoardPlainsTwo, gg_rct_BoardPlainsTwoV))
+        boards.add(new Board(gg_rct_BoardPlainsThree, gg_rct_BoardPlainsThreeV))
 
     static function generateNPCs()
-        npcs.add(new NPCShop(gg_unit_n000_0002)
-        ..addStock(StackTypes.GNOLL, 120)
-        ..addStock(StackTypes.GNOLL_POACHER, 120)
-        ..addStock(StackTypes.NECROMANCER, 20))
-    
+        let shop = new NPCShop(gg_unit_n000_0002)
+        StackTypes.list.forEach() (StackType t) ->
+            shop.addStock(t, GetRandomInt(20, 30))
+        npcs.add(shop)
+        
     static function generateArmies()
         armies.add(new HostileArmy(gg_unit_n001_0003)
-        ..addStack(StackTypes.GNOLL_WARDEN, 2)
-        ..addStackAtFree(StackTypes.GNOLL, GetRandomInt(15, 20))
-        ..addStackAtFree(StackTypes.GNOLL, GetRandomInt(15, 20))
-        ..addStackAtFree(StackTypes.GNOLL_POACHER, GetRandomInt(15, 20))
-        ..addStackAtFree(StackTypes.GNOLL_POACHER, GetRandomInt(15, 20))
+        ..addStack(StackTypes.FOREST_TROLL_HIGH_PRIEST, 2)
+        ..addStackAtFree(StackTypes.FOREST_TROLL_BERSERKER, GetRandomInt(1, 2))
+        ..addStackAtFree(StackTypes.FOREST_TROLL, GetRandomInt(15, 20))
+        ..addStackAtFree(StackTypes.FOREST_TROLL, GetRandomInt(15, 20))
         ..replaceChicken())
 
     static function getBoardToFightOn(HostileArmy _enemy) returns Board
@@ -43,11 +46,13 @@ public class World
         let theHammer = new ItemSteelHammer()
 
         heroes.add(new Hero(playerData[0])
-        ..addStackAtFree(StackTypes.GNOLL, 100)
-        ..addStackAtFree(StackTypes.SASQUATCH_ORACLE, 1)
+        ..addStackAtFree(StackTypes.FOREST_TROLL_HIGH_PRIEST, 3)
+        ..addStackAtFree(StackTypes.FOREST_TROLL_BERSERKER, 2)
         ..setAttack(7)
         ..setDefence(3)
-        ..setActiveItem(0, theHammer))
+        ..setActiveItem(0, theHammer)
+        ..setBackPackItem(0, new PoisionousStingItem())
+        ..setBackPackItem(1, new PoisionousStingItem()))
  
     static function onHeroDamaged(Hero hero, unit u)
         let enemy = HostileArmy.getFromUnit(u)

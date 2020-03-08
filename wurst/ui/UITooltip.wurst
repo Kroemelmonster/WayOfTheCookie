@@ -180,6 +180,10 @@ public class Tooltip
         return coloredString(COLOR_SECONDARY, percent(perc))
 
     @inline
+    static function primaryPercent(real perc) returns string
+        return coloredString(COLOR_PRIMARY, percent(perc))
+
+    @inline
     static function modi(StackStatsModifier modi) returns string
         var str = coloredModiInt(modi.addBonus)
         if modi.multi != 100

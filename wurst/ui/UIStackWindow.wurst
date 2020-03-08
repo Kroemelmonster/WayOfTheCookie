@@ -15,6 +15,8 @@ import initlater InitiativeList
 import initlater Stack
 import KUtil
 import StackStatsModifier
+import Talent
+import LinkedList
 
 public class UIStackWindowInfo
     protected BoardStack boardStack
@@ -214,13 +216,20 @@ class UIStackWindow
             ..setVisible(false)
             talents[i].onMouseEnter() ->
                 let p = GetTriggerPlayerData()
-                StackType _stackType = p.stackWindowInfo.stackType
+                LinkedList<Talent> talents = null
+                StackType _stackType = null
                 if p.stackWindowInfo.boardStack != null
+                    talents = p.stackWindowInfo.boardStack.stats.getBasis().getAllVisibleTalents()
                     _stackType = p.stackWindowInfo.boardStack.getStackType()
-                else
+                else if p.stackWindowInfo.armyStack != null
+                    talents = p.stackWindowInfo.armyStack.stats.getAllVisibleTalents()
                     _stackType = p.stackWindowInfo.armyStack.getStackType()
-                let talent = _stackType.getNonHiddenTalent(i)
-                talent.createTooltip(_stackType).display(p, true)
+                else
+                    talents = p.stackWindowInfo.stackType.getAllVisibleTalents()
+                    _stackType = p.stackWindowInfo.stackType
+
+                talents.get(i).createTooltip(_stackType).display(p, true)
+                destroy talents
             talents[i].onMouseLeave() ->
                 let p = GetTriggerPlayerData()
                 UITooltip.hide(p)
@@ -268,6 +277,7 @@ class UIStackWindow
         upateStackInfo(stackInfoHp, stackType.maxHp, stackType.maxHp, null)
         updateLeadership(p, stackType)
 
+        updateTalents(stackType.getAllVisibleTalents())
         for int i = 0 to buffs.length
             buffs[i].setVisible(false)
 
@@ -298,6 +308,7 @@ class UIStackWindow
         upateStackInfo(stackInfoHp, stackType.maxHp, armyStats.getMaxHp(), armyStats.hpModi)
         updateLeadership(p, stackType)
 
+        updateTalents(armyStats.getAllVisibleTalents())
         for int i = 0 to buffs.length
             buffs[i].setVisible(false)
 
@@ -336,6 +347,7 @@ class UIStackWindow
         hpBarText.setText(boardStats.getHp().toString() + " / " + boardStats.getMaxHp().toString())
         stackInfoLeadership.setVisible(false)
 
+        updateTalents(armyStats.getAllVisibleTalents())
         let itr = boardStack.buffIterator()
         for int i = 0 to buffs.length
             buffs[i].setVisible(itr.hasNext())
@@ -374,22 +386,19 @@ class UIStackWindow
     private static function updateSpecifcForStackType(StackType stackType)
         icon.setTexture(stackType.icon, 0, true)
         header.setText(stackType.name)
-        updateTalent(stackType)
 
-    private static function updateTalent(StackType stackType)
-        let itr = stackType.talentIterator()
-        var counter = 0
-        while itr.hasNext()
-            let talent = itr.next()
-            if talent.isHidden() == false
-                talents[counter].setVisible(true)
-                talents[counter].setIcon(talent.getIcon())
-                counter++
-            
-        for int i = counter to talents.length
-            talents[i].setVisible(false)
+    private static function updateTalents(LinkedList<Talent> visibleTalents)
+        let itr = visibleTalents.iterator()
+        for int i = 0 to talents.length
+            if itr.hasNext()
+                let talent = itr.next()
+                talents[i].setVisible(true)
+                talents[i].setIcon(talent.getIcon())
+            else
+                talents[i].setVisible(false)
         
         destroy itr
+        destroy visibleTalents
 
     private static function rangeToText(intRange attackRange) returns string
         if attackRange.max == 1

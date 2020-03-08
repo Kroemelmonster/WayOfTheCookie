@@ -12,35 +12,40 @@ import Action
 import BuffType
 import World
 import Scheduler
+import KUtil
 
-public abstract class SetupListener
-    abstract function onSetup()
+let globalSetups = new LinkedList<SetupListener>()
 
 init
-	let setups = new LinkedList<SetupListener>()
 	UIMain.removeBlizzardUI()
-	setups.add() ->
-		setupSystems()
 
+	globalSetups.add() ->
+		setupSystems()
 	for int i = 0 to UIMain.MAX_PARTS
-		setups.add() ->
+		globalSetups.add() ->
 			UIMain.load(i)
-	setups.add() ->
+	StackTypesDefinition.setup(globalSetups)
+	globalSetups.add() ->
 		defineObjects()
-	setups.add() ->
+	globalSetups.add() ->
 		createTestBoard()
-	setups.add() ->
+	globalSetups.add() ->
 		createWorld()
-	setups.add() ->
+	globalSetups.add() ->
 		start()
 
-	doPeriodically(0.15) cb ->
-		let nextSetup = setups.dequeue()
-		nextSetup.onSetup()
-		destroy nextSetup
-		if setups.size() == 0
-			destroy cb
-			destroy setups
+	doAfter(0.1) ->
+		setupNext(globalSetups.iterator())
+
+function setupNext(LLIterator<SetupListener> itr)
+	if itr.hasNext()
+		nullTimer() ->
+			itr.next().continue()
+			setupNext(itr)
+	else
+		destroy itr
+		destroy globalSetups
+	
 
 function createWorld()
 	// Log.info("Build World")
@@ -65,6 +70,5 @@ function start()
 
 function defineObjects()
 	// Log.info("Flesh out some Units")
-	StackTypesDefinition.setup()
 	BuffTypeSet.setup()
 	Action.setup()

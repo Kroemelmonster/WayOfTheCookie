@@ -31,6 +31,7 @@ public class WarcryBuff extends Buff
             tooltip.addLine("Increases the damage dealt by "+Tooltip.coloredPercent(DAMAGE_MULTI / 100.0) +" per reamining duration")
         else
             tooltip.addLine(Tooltip.stat("Duration", b.duration))
+            tooltip.addLine("")
             tooltip.addLine("Increases the damage dealt by "+Tooltip.coloredPercent((DAMAGE_MULTI * b.duration) / 100.0))
         
         return tooltip

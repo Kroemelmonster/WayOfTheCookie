@@ -25,6 +25,9 @@ import MovePositionAnimation
 import Scheduler
 import DelayAnimation
 import BoardTrigger
+import SubTargetList
+import KISystem
+import ClosureTimers
 
 function subActionMoveEnd(Board board, SequenzListenerStatus next, int status)
     UIController.triggerOnAnyStackCellChange(board)
@@ -68,6 +71,25 @@ function subActionAttackEnd(int cost, BoardStack attacker, SequenzListenerStatus
         attacker.stats.addActionPoints(-cost)
     next.continue(status)
 
+function subActionAttackBackSwing(int cost, Board board, BoardStack attacker, BoardStack defender, boolean triggerOnAttack, SequenzListenerStatus next)
+    DelayAnimation.create(board, 0.5) ->
+        if triggerOnAttack
+            BoardController.onAttackEnd(attacker, defender) ->
+                subActionAttackEnd(cost, attacker, next, 0)
+        else
+            subActionAttackEnd(cost, attacker, next, 0)
+
+function subActionAttackDealDamageToSubTargets(LLIterator<SubTarget> itr, BoardStack attacker, DamageInstance instance, SequenzListener next)
+    if itr.hasNext()
+        let subTarget = itr.next()
+        let subInstance = instance.copy()
+        subInstance.dmg *= subTarget.multi
+        BoardController.dealDamage(attacker, subInstance, subTarget.stack) ->
+            destroy subInstance
+            subActionAttackDealDamageToSubTargets(itr, attacker, instance, next)
+    else
+        next.continue()
+
 public function subActionAttack(int cost, BoardStack attacker, BoardStack defender, boolean triggerOnAttack, SequenzListenerStatus next)
     let board = attacker.getBoard()
     if cost > 0 and attacker.stats.getRemainingActionPoints() < cost
@@ -80,16 +102,16 @@ public function subActionAttack(int cost, BoardStack attacker, BoardStack defend
         let instance = preview.getRandomInstance()
         destroy preview
         BoardController.dealDamage(attacker, instance, defender) ->
-            DelayAnimation.create(board, Scheduler.getTimeIn(0.5)) -> // this is the backswing
-                if subTargets != null
-                    // TODO
-                    
+            if subTargets != null
+                let itr = subTargets.iterator()
+                subActionAttackDealDamageToSubTargets(itr, attacker, instance) ->
+                    destroy itr
+                    destroy instance
+                    subActionAttackBackSwing(cost, board, attacker, defender, triggerOnAttack, next)
+            else
                 destroy instance
-                if triggerOnAttack
-                    BoardController.onAttackEnd(attacker, defender) ->
-                        subActionAttackEnd(cost, attacker, next, 0)
-                else
-                    subActionAttackEnd(cost, attacker, next, 0)
+                subActionAttackBackSwing(cost, board, attacker, defender, triggerOnAttack, next)
+           
 
 public class WalkAndAttackAction extends DefaultAction
     private StackPathFinding walkableCells
@@ -117,7 +139,7 @@ public class WalkAndAttackAction extends DefaultAction
         return CellResult.NONE
 
     override function recalculatePreview()
-        walkableCells.recalculate(KI_MOVEPOINTS)
+        walkableCells.recalculate()
         targets.recalculate()
 
     override function recalculateHighlight(Player p)
@@ -287,6 +309,23 @@ public class WalkAndAttackAction extends DefaultAction
             // ansotnen kansch nur laufen
             return endResultTarget
 
+    override function getPathing() returns StackPathFinding
+        return walkableCells
+
+    override function executeForKI(SequenzListenerStatus listener)
+        BoardStack enemy = KISystem.getBestTarget(getTargets(true))
+        if enemy == null
+            enemy = KISystem.getBestTarget(getTargets(false))
+        
+        nullTimer() ->
+            if enemy == null
+                listener.continue(1)
+            else
+                let order = caclulatePath(enemy.getCell(), null)
+                sendTargetOrder(order)
+                listener.continue(0)
+    
+                
     ondestroy
         if walkableCells != null
             destroy walkableCells

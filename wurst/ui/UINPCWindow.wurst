@@ -14,7 +14,7 @@ public class UINPCWindow
     protected static framehandle pane
     protected static UIStackSellDialog stackSellDialog
 
-    protected static CommandButton array[8] shopStock
+    protected static CommandButton array[15] shopStock
 
     static function setup()
         frame = createFrame("BasicBorderWindow", GAME_UI, 0, 0)

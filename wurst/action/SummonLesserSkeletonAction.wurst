@@ -20,6 +20,7 @@ import UIActionWindow
 import Scheduler
 import DelayAnimation
 import CastAnimation
+import BoardTrigger
 
 public class SummonLesserSkeletonAction extends Action
     private LinkedList<Cell> area = new LinkedList<Cell>()
@@ -133,6 +134,9 @@ public class SummonLesserSkeletonAction extends Action
 
     override function canBeActivatedByKey(oskeytype key) returns boolean
         return key == KEY
+
+    override function executeForKI(SequenzListenerStatus listener)
+        listener.continue(1)
 
     ondestroy
         if area != null

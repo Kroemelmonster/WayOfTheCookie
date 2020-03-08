@@ -5,6 +5,9 @@ import KUtil
 import StackStatsModifier
 
 import initlater Stack
+import LinkedList
+import Talent
+import initlater BoardStack
 
 public class StackStats
     private Stack stack
@@ -22,9 +25,26 @@ public class StackStats
     int fireResistance = 0
     int poisonResistance = 0
 
+    LinkedList<Talent> talents = new LinkedList<Talent>()
+
+    function getAllVisibleTalents() returns LinkedList<Talent>
+        return talents.filter() (Talent t) ->
+            return t.isHidden() == false
+
+    function addTalent(Talent talent)
+        talents.add(talent)
+
+    function removeTalent(Talent talent)
+        talents.remove(talent)
+
+    function triggerOnCreation(BoardStack boardStack)
+        for talent in talents
+            talent.onStackCreation(boardStack)
+
     construct(Stack stack, StackType stackType)
         this.stackType = stackType
         this.stack = stack
+        this.talents.addAll(stackType.talents)
 
     @inline
     function getInitiative() returns int
@@ -74,6 +94,10 @@ public class StackStats
     @inline
     function getAmount() returns int
         return stack.getAmount()
+
+    @inline
+    function getWeight() returns real
+        return stackType.weight.toReal()
 
     ondestroy
         destroy attackModi

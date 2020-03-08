@@ -52,7 +52,7 @@ public class Board
         this.cols = (playArea.width() / WIDTH).floor()
         this.coord = playArea.getLeftBot()
         boundMin = offsetCells
-        boundMax = cols * rows
+        boundMax = offsetCells + cols * rows
         offsetCells += cols * rows
         for col = 0 to cols - 1 
             for row = 0 to rows - 1
@@ -107,7 +107,7 @@ public class Board
         p.playingBoard = this
 
         let col = left ? 0 : cols - 1
-        var row = (rows / 2).round()
+        var row = (rows / 2).floor()
         var rowChange = 1
         
         for int i = 0 to Army.MAX_SIZE - 1

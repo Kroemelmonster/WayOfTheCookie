@@ -43,6 +43,8 @@ public class BoardController
             if isAllowedToContinue and stack.canStillAct()
                 stack.resetCurrentSelectedAction()
                 UIController.triggerOnActionPointChange(stack)
+                if stack.getPlayer().isConntrolledByKI
+                    KISystem.executeTurn(stack)
             else
                 stack.stats.resetActionPoints()
                 board.getInitiative().next()
@@ -69,8 +71,9 @@ public class BoardController
                 killStack(target, next)
             else
                 onDamageTaken(source, target, specificInstance) ->
-                    destroy specificInstance
-                    killStack(target, next)
+                    onDamageDealt(source, target, specificInstance) ->
+                        destroy specificInstance
+                        killStack(target, next)
         else
             target.stats.setHp(specificInstance.remainingHp)
             if specificInstance.amount > 0
@@ -80,11 +83,16 @@ public class BoardController
                 dealDamageContinue(specificInstance, next)
             else
                 onDamageTaken(source, target, specificInstance) ->
-                    dealDamageContinue(specificInstance, next)
+                    onDamageDealt(source, target, specificInstance) ->
+                        dealDamageContinue(specificInstance, next)
 
     
     /** triggers **/
 
+    static function onDamageDealt(BoardStack source, BoardStack target, SpecificDamageInstance specificInstance, SequenzListener next)
+        source.getTriggers().triggerOnDamageDealt(source, target, specificInstance) ->
+            next.continue()
+    
     static function onDamageTaken(BoardStack source, BoardStack target, SpecificDamageInstance specificInstance, SequenzListener next)
         target.getTriggers().triggerOnDamageTaken(source, target, specificInstance) ->
             next.continue()
