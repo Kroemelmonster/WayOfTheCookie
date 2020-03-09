@@ -10,6 +10,9 @@ import UITooltip
 import ChainLightningTalent
 import PoisonousTalent
 import DeepCuttingTalent
+import CrackleTalent
+import SlamTalent
+import CleavingAttackTalent
 
 interface GenerateListener
     function onStackCreation(BoardStack stack)
@@ -25,6 +28,11 @@ public class TalentSet
     static Talent CHAIN_LIGHTNING
     static Talent POPISONOUS
     static Talent DEEP_CUTTING
+    static Talent CRACKLE
+    static Talent SLAM
+    
+    static Talent CLEAVE50
+    static Talent CLEAVE100
 
     static function setup()
         DEFAULT = DefaultTalent.setup()
@@ -34,12 +42,17 @@ public class TalentSet
         CHAIN_LIGHTNING = ChainLightningTalent.setup()
         POPISONOUS = PoisonousTalent.setup()
         DEEP_CUTTING = DeepCuttingTalent.setup()
+        CRACKLE = CrackleTalent.setup()
+        SLAM = SlamTalent.setup()
+
+        CLEAVE50 = CleavingAttackTalent.setup(0.5)
+        CLEAVE100 = CleavingAttackTalent.setup(1)
+
 
 public abstract class Talent
     protected string name
     protected string icon = null
     private GenerateListener listener
-    private StackTypeCreationListener stackTypeCreationListener
 
     construct(string name, string icon)
         this.name = name

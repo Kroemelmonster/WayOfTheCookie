@@ -1,0 +1,22 @@
+package CrackleTalent
+
+import Icons
+
+import initlater Talent
+import initlater StackType
+import UITooltip
+import initlater CracklePassive
+
+public class CrackleTalent extends Talent
+    construct()
+        super("Crackle", Icons.bTNOrbOfLightning)
+
+    static function setup() returns Talent
+        return new CrackleTalent()
+        ..addGenerateListener() stack ->
+            let passive = new CracklePassive(stack)
+            stack.addPassive(passive)
+            passive.triggerOnStackCreation(stack)
+
+    override function createTooltip(StackType sType) returns Tooltip
+        return CracklePassive.createTooltip(sType)

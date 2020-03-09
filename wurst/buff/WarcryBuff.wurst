@@ -9,13 +9,16 @@ import UITooltip
 
 import initlater BoardStack
 import initlater BuffType
+import BoardTrigger
 
 public class WarcryBuff extends Buff
-    private effect display
-    private int duration
-    
     private static constant DAMAGE_MULTI = 10
     private static constant string NAME = "Warcry"
+
+    private effect display
+    private int duration
+
+    private BoardTrigger turnEndListener
 
     static function setup()
         BuffTypeSet.WARCRY = new BuffType(Icons.bTNBattleRoar, NAME, createTooltip(null)) (BoardStack stack) ->
@@ -24,6 +27,13 @@ public class WarcryBuff extends Buff
     construct(BuffType bType, BoardStack stack)
         super(bType, stack)
         display = stack.addAttachEffect(Abilities.roarTarget, AttachmentPoints.overhead)
+        
+        turnEndListener = stack.getTriggers().addTurnEnd() (SequenzListener next) ->
+            duration--
+            updateInner(-1)
+            if duration <= 0
+                kill()
+            next.continue()
 
     private static function createTooltip(WarcryBuff b) returns Tooltip
         let tooltip = Tooltip.create(NAME)
@@ -48,14 +58,12 @@ public class WarcryBuff extends Buff
     private function updateInner(int durationChange)
         stack.stats.damageModi.multi += (durationChange * DAMAGE_MULTI)
 
-    private function onTick()
-        updateInner(-1)
-
     override function hide()
         if display != null
             display.destr()
 
     ondestroy
         updateInner(duration * -1)
+        stack.getTriggers().removeOnTurnEnd(turnEndListener)
         if display != null
             display.destr()

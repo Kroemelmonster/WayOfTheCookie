@@ -11,13 +11,14 @@ import initlater BoardStack
 import BoardTrigger
 
 public class WaitAction extends InstantAction
+
+    private constant static string KEY = "W"
+
+
     private Tooltip tt
-
-    private constant static oskeytype KEY = OSKEY_W
-
     construct(BoardStack stack)
         super(stack, Icons.bTNPatrol, "Wait")
-        tt = Tooltip.create(name, "W")
+        tt = Tooltip.create(name, KEY)
         ..addLine("Postpone this turn")
         ..addLine("")
         ..addLine("")
@@ -48,7 +49,7 @@ public class WaitAction extends InstantAction
             tt.setLine(2, "You already waited this turn")
         tt.display(stack.getPlayer(), false)
 
-    override function canBeActivatedByKey(oskeytype key) returns boolean
+    override function canBeActivatedByKey(string key) returns boolean
         return key == KEY
 
     override function executeForKI(SequenzListenerStatus listener)

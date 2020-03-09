@@ -70,8 +70,14 @@ class UIController
             p.dialogInfo.current.cancel(p)
         p.stackWindowInfo.clear()
         UIWorldConsole.setVisible(p, false)
+        UIInitiativeWindow.setVisible(p, true)
 
     static function switchToCombat(Board b)
         switchToCombat(b.getPlayer(0))
         switchToCombat(b.getPlayer(1))
         
+    static function switchToWorld(Player p)
+        p.stackWindowInfo.clear()
+        p.blzPlayer.setCameraPosition(p.hero.getCoord())
+        UIWorldConsole.setVisible(p, true)
+        UIInitiativeWindow.setVisible(p, false)

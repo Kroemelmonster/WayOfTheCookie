@@ -17,16 +17,23 @@ import LinkedList
 import BoardTrigger
 import UITooltip
 import StackType
+import initlater MainController
 
 constant TEXTTAG_COLOR_KILLS = colorA(250, 57, 57, 199).toColorString()
 
 public class BoardController
+    static function pushInitiative(BoardStack stack, real time)
+        stack.getBoard().getInitiative().push(stack, time)
+        UIController.triggerOnStackAmountChange(stack)
+
+
     /** Use this to summon / create a Stack mid Fight */
-    static function placeStackOnBoard(BoardStack stack, Cell cell)
+    static function placeStackOnBoard(BoardStack stack, Cell cell, SequenzListener next)
         let board = cell.getBoard()
         nullTimer() ->  
             board.placeStack(stack, cell, true)
             UIController.triggerOnStackCreationOrDeathChange(board)
+            onCellEnter(stack, cell, cell, next)
 
     static function killStack(BoardStack stack, SequenzListener next)
         let board = stack.getBoard()
@@ -102,10 +109,10 @@ public class BoardController
             defender.getTriggers().triggerOnAttacked(attacker, defender) ->
                 next.continue()
 
-    static function onTurnEnd(BoardStack stack, boolean wasWaiting, SequenzListener next)
+    static function onTurnEnd(BoardStack stack, boolean isWaiting, SequenzListener next)
         UIController.onTurnEnd(stack)
         
-        if wasWaiting == false and stack.isAlive()
+        if isWaiting == false and stack.isAlive()
             stack.forEachAction() (Action action) ->
                 action.tickCooldown()
             stack.getTriggers().triggerOnTurnEnd() ->
@@ -121,21 +128,41 @@ public class BoardController
         if stack.getPlayer().isConntrolledByKI
             KISystem.executeTurn(stack)
             
+        
+    private static function getWonnedSide(Board board) returns int
+        var sideWon = -2
+        let list = board.getAllStacks()
+        let itr = list.iterator()
+        while itr.hasNext() and sideWon != -1
+            let stack = itr.next()
+            let side = board.getPlayerIndex(stack.getPlayer())
+            if sideWon == -2
+                sideWon = side
+            else if sideWon != side
+                sideWon = -1
+
+        destroy itr
+        destroy list
+        return sideWon
 
     static function onTurnStart(BoardStack stack, boolean wasWaiting)
         nullTimer() ->
-            if wasWaiting
-                turnStartContinue(stack)
+            let board = stack.getBoard()
+            let side = getWonnedSide(board)
+            if side == -1
+                if wasWaiting
+                    turnStartContinue(stack)
+                else
+                    stack.getTriggers().triggerOnTurnStart() ->
+                        if stack.isAlive() and stack.canStillAct()
+                            turnStartContinue(stack)
+                        else
+                            board.getInitiative().next()
             else
-                let board = stack.getBoard()
-                stack.getTriggers().triggerOnTurnStart() ->
-                    if stack.isAlive() and stack.canStillAct()
-                        turnStartContinue(stack)
-                    else
-                        board.getInitiative().next()
+                MainController.endFight(board, side)
                     
 
-    static function onCellLeaveForAllStacks(LLIterator<BoardStack> stackItr, BoardStack stack, Cell fromCell, Cell toCell, SequenzListener next)
+    private static function onCellLeaveForAllStacks(LLIterator<BoardStack> stackItr, BoardStack stack, Cell fromCell, Cell toCell, SequenzListener next)
         if stackItr.hasNext()
             let current = stackItr.next()
             current.getTriggers().triggerOnAnyCellLeave(stack, fromCell, toCell) -> 
@@ -154,7 +181,7 @@ public class BoardController
             next.continue()
 
             
-    static function onCellEnterForAllStacks(LLIterator<BoardStack> stackItr, BoardStack stack, Cell fromCell, Cell toCell, SequenzListener next)
+    private static function onCellEnterForAllStacks(LLIterator<BoardStack> stackItr, BoardStack stack, Cell fromCell, Cell toCell, SequenzListener next)
         if stackItr.hasNext()
             let current = stackItr.next()
             current.getTriggers().triggerOnAnyCellEnter(stack, fromCell, toCell) -> 

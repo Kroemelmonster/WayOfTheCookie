@@ -17,10 +17,10 @@ import BuffType
 import Buff
 import DelayAnimation
 import AttachmentPoints
+import BleedingAilment
 
 public class DeepCuttingPassive extends PassiveAction
-    private static constant int DURATION = 1
-    private static constant string EFFECT = "Objects\\Spawnmodels\\Human\\HumanBlood\\HumanBloodLarge0.mdl"
+    private static constant int DURATION = 2
     private static constant real PERCENTAGE = 0.8
 
     @inline
@@ -43,7 +43,7 @@ public class DeepCuttingPassive extends PassiveAction
             else if specificInstance.damageInstance.damageType != DamageType.PHYISICAL
                 next.continue()
             else
-                target.flashAttachEffect(EFFECT, AttachmentPoints.chest)
+                BleedingAilment.flashEffect(target)
                 BuffController.addBuff(BUFF(), target, new BuffData(DURATION)
                 ..setRealValue(getDamage(specificInstance.damageInstance.dmg)))
                 DelayAnimation.create(stack.getBoard(), 0.1) ->

@@ -21,21 +21,19 @@ import Scheduler
 import DelayAnimation
 import CastAnimation
 import BoardTrigger
+import ClosureTimers
 
 public class SummonLesserSkeletonAction extends Action
-    private LinkedList<Cell> area = new LinkedList<Cell>()
-    private Tooltip tooltip
-    private intRange summonAmount  
+    static constant string NAME = "Summon Skeleton"
+    static constant string ICON = Icons.bTNRaiseDead
 
     private static constant int COST = 2
     private static constant int COOLDOWN = 3
     private static constant int MAXRANGE = 1
-    private static constant string NAME = "Summon Skeleton"
     private static constant string EFFECT = Abilities.raiseSkeleton
-    private static constant oskeytype KEY = OSKEY_S
+    private static constant string KEY = "S"
     private static StackType SUMMONED_TYPE
     private static Tooltip BASE_TOOLTIP
-    static constant string ICON = Icons.bTNRaiseDead
 
     static function setup()
         SUMMONED_TYPE = StackTypes.LESSER_SKELETON
@@ -59,10 +57,14 @@ public class SummonLesserSkeletonAction extends Action
 
         return tt
 
+    private LinkedList<Cell> area = new LinkedList<Cell>()
+    private Tooltip tooltip
+    private intRange summonAmount  
+
     construct(BoardStack stack)
         super(stack, ICON, NAME)
         tooltip = Tooltip.copy(BASE_TOOLTIP)
-        ..addKey("S")
+        ..addKey(KEY)
 
     override function getHighlightResultForCell(Player p, Cell cell) returns CellResult
         if area.has(cell)
@@ -85,11 +87,11 @@ public class SummonLesserSkeletonAction extends Action
 
             CastAnimation.create(stack, cell) () ->
                 flashEffect(EFFECT, cell.getCoord())
-                BoardController.placeStackOnBoard(summon, cell)
-                let delayTime = Scheduler.getTimeIn(0.5) // this is the backswing for casting
-                DelayAnimation.create(cell.getBoard(), delayTime) ->
-                    cooldown = COOLDOWN + 1
-                    BoardController.finishOrder(stack, false)
+                BoardController.placeStackOnBoard(summon, cell) ->
+                    let delayTime = Scheduler.getTimeIn(0.5) // this is the backswing for casting
+                    DelayAnimation.create(cell.getBoard(), delayTime) ->
+                        cooldown = COOLDOWN + 1
+                        BoardController.finishOrder(stack, false)
             
             return true
         
@@ -132,11 +134,20 @@ public class SummonLesserSkeletonAction extends Action
     override function onUIMouseLeave()
         hidePreview()
 
-    override function canBeActivatedByKey(oskeytype key) returns boolean
+    override function canBeActivatedByKey(string key) returns boolean
         return key == KEY
 
     override function executeForKI(SequenzListenerStatus listener)
-        listener.continue(1)
+        // just someone it when there is a place
+        recalculate()
+        if area.isEmpty()
+            listener.continue(1)
+        else
+            activate()
+            nullTimer() ->
+                let random = area.get(GetRandomInt(0, area.size() - 1))
+                sendTargetOrder(random)
+
 
     ondestroy
         if area != null

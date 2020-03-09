@@ -56,6 +56,7 @@ public class BoardStack
         this.stats = new BoardStackStats(this, stack.stats, stack.getAmount())
         this.armyStack = stack
         this.stackType = stack.getStackType()
+        stack.representive = this
 
         this.actions = new LinkedList<Action>
         this.passiveActions = new LinkedList<PassiveAction>
@@ -236,24 +237,9 @@ public class BoardStack
         return this.cell != null
 
     function kill()
-        board.removeStack(this)
-        if highlightEffect != null
-            highlightEffect.destr()
-
-        if castListener != null
-            destroy castListener
-        if damageTakenListener != null
-            destroy damageTakenListener
-
-        destroy unitOnCastListener
-        destroy unitDamageTakenListener
-        if tt != null
-            tt.destr()
+        board.triggerOnStackKilled(this)
+        prepareToRemoveBlzUnit()
         u.kill()
-    
-    function remove()
-        this.cell.removeStack()
-        this.cell = null
 
     @inline
     function issuePointOrder(string order, Cell cell)
@@ -325,32 +311,55 @@ public class BoardStack
         pos.y -= 50
         pos.x += 33
         return pos
-    
-    ondestroy
+
+    private function prepareToRemoveBlzUnit()
+        if cell != null
+            cell.removeStack()
+            cell = null
         if highlightEffect != null
             highlightEffect.destr()
+            highlightEffect = null
+
+        if castListener != null
+            destroy castListener
+            castListener = null
+        if damageTakenListener != null
+            destroy damageTakenListener
+            damageTakenListener = null
+
+        if unitOnCastListener != null
+            destroy unitOnCastListener
+            unitOnCastListener = null
+        if unitDamageTakenListener != null
+            destroy unitDamageTakenListener
+            unitDamageTakenListener = null
+        if unitOnCastImmediateListener != null
+            destroy unitOnCastImmediateListener
+            unitOnCastImmediateListener = null
+        if tt != null
+            tt.destr()
+            tt = null
+    
+    ondestroy
+        prepareToRemoveBlzUnit()
         if actions != null
             for action in actions
                 destroy action
             destroy actions
+        if passiveActions != null
+            for action in passiveActions
+                destroy action
+            destroy passiveActions
         if buffs != null
             for b in buffs
                 destroy b
             destroy buffs
         if defaultAction != null
             destroy defaultAction
-        if castListener != null
-            destroy castListener
-        if damageTakenListener != null
-            destroy damageTakenListener
 
         if armyStack.isSummoned()
             destroy armyStack
         destroy stats
-        destroy unitOnCastListener
-        destroy unitOnCastImmediateListener
-        destroy unitDamageTakenListener
         destroy triggers
-        if tt != null
-            tt.destr()
-        u.kill()
+    
+        u.remove()

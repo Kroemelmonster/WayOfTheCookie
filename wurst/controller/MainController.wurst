@@ -10,6 +10,7 @@ import initlater Board
 import PlayerData
 import initlater UIHeroWindow
 import initlater UINPCWindow
+import ClosureTimers
 
 public class MainController
     static function startFight(Hero hero, HostileArmy enemy, Board board)
@@ -20,6 +21,43 @@ public class MainController
         board.placeCombat(hero, enemy)
         UIController.switchToCombat(board)
         board.startCombat()
+
+
+    static function endFight(Board board, int side)
+        if side == -2
+            Log.trace("Draw!")
+        else if side == 0
+            Log.trace("You Won")
+        else
+            Log.trace("You Lost")
+        
+        let hero = board.getHero(0)
+        let heroArmy = hero.getArmy()
+        for int i = 0 to Army.MAX_SIZE - 1
+            let stack = heroArmy.getStack(i)
+            if stack != null
+                let looseAmount = stack.getAmount() - stack.representive.stats.getAmount()
+                if looseAmount > 0
+                    Log.trace("you lost "+looseAmount.toString()+" of "+stack.toString())
+
+        let enemy = board.getHostileArmy()
+        let army = enemy.getArmy()
+        var exp = 0
+        for int i = 0 to Army.MAX_SIZE - 1
+            let stack = army.getStack(i)
+            if stack != null
+                let looseAmount = stack.getAmount() - stack.representive.stats.getAmount()
+                exp += looseAmount * stack.getStackType().value
+                if looseAmount > 0
+                    Log.trace("you killed "+looseAmount.toString()+" of "+stack.toString())
+
+        Log.trace("this would have give you a net exp of "+exp.toString() + " IF I HAD IMPLEMENTED IT!!")
+        doAfter(2) ->
+            UIController.switchToWorld(hero.getPlayer())
+            board.endFight()
+            nullTimer() ->
+                hero.enable(true)
+                enemy.kill()
 
     static function interact(Hero hero, NPC npc)
         hero.startInteract(npc)

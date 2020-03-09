@@ -94,6 +94,14 @@ public class Cell
         return board.getNeighbour(this, index)
 
     @inline
+    function getNeighbourSecure(int index) returns Cell
+        return board.getNeighbourSecure(this, index)
+
+    @inline
+    function getNeighbourIndex(Cell otherCell) returns int
+        return board.getNeighbourIndex(this, otherCell)
+
+    @inline
     function getDistanceTo(Cell otherCell) returns int
         return board.getDistanceTo(this, otherCell)
     

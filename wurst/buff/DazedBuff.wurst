@@ -1,0 +1,50 @@
+package DazedBuff
+
+import AttachmentPoints
+import Icons
+import Abilities
+
+import Buff
+import UITooltip
+
+import initlater BoardStack
+import initlater BuffType
+import BoardTrigger
+
+public class DazedBuff extends Buff
+    private effect display
+    
+    private static constant string NAME = "Dazed"
+
+    private BoardTrigger turnStartListener
+
+    static function setup()
+        BuffTypeSet.DAZED = new BuffType(Icons.bTNStun, NAME, createTooltip()) (BoardStack stack) ->
+            return new DazedBuff(BuffTypeSet.DAZED, stack)
+
+    construct(BuffType bType, BoardStack stack)
+        super(bType, stack)
+        display = stack.addAttachEffect(Abilities.stasisTotemTarget, AttachmentPoints.overhead)
+
+        turnStartListener = stack.getTriggers().addTurnStart() (SequenzListener next) ->
+            kill()
+            next.continue()
+
+    private static function createTooltip() returns Tooltip
+        let tooltip = Tooltip.create(NAME)
+        tooltip.addLine("You are dazed!")
+        return tooltip
+
+    override function updateInner(BuffData data)
+
+    override function createCurrentTooltip() returns Tooltip
+        return createTooltip()
+
+    override function hide()
+        if display != null
+            display.destr()
+
+    ondestroy
+        stack.getTriggers().removeOnTurnStart(turnStartListener)
+        if display != null
+            display.destr()

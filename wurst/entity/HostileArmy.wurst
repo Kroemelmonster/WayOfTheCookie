@@ -64,10 +64,16 @@ public class HostileArmy
     function toString() returns string
         return "Hostile "+army.toString()
 
+    function kill()
+        map.remove(u)
+        u.unpause()
+        u.kill()
+        destroy this
+
     ondestroy
         destroy army
         destroy damagedListener
 
-        map.remove(u)
+        
 
  

@@ -6,6 +6,7 @@ import BoardStack
 import UITooltip
 import BleedingAilment
 import PoisonAilment
+import DazedBuff
 
 interface BuffCreateListener
     function create(BoardStack stack) returns Buff
@@ -14,11 +15,13 @@ public class BuffTypeSet
     static BuffType WARCRY
     static BuffType BLEEDING
     static BuffType POISON
+    static BuffType DAZED
 
     static function setup()
         WarcryBuff.setup()
         BleedingAilment.setup()
         PoisonAilment.setup()
+        DazedBuff.setup()
 
 
 public class BuffType

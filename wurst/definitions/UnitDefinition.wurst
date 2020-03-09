@@ -14,8 +14,11 @@ public class UnitTypesIds
     static constant ARMY_NECROMANCER = compiletime(UNIT_ID_GEN.next())
     static constant SKELETON_LESSER = compiletime(UNIT_ID_GEN.next())
     static constant ARMY_SKELETON_LESSER = compiletime(UNIT_ID_GEN.next())
+
     static constant SASQUATCH_ORACLE = compiletime(UNIT_ID_GEN.next())
     static constant ARMY_SASQUATCH_ORACLE = compiletime(UNIT_ID_GEN.next())
+    static constant ANCIENT_SASQUATCH = compiletime(UNIT_ID_GEN.next())
+    static constant ARMY_ANCIENT_SASQUATCH = compiletime(UNIT_ID_GEN.next())
 
     
     static constant GNOLL = compiletime(UNIT_ID_GEN.next())
@@ -162,7 +165,9 @@ function setup()
     createUnit(UnitIds.skeletalorc, UnitTypesIds.SKELTAL_ORC, UnitTypesIds.ARMY_SKELTAL_ORC, "Skeletal Orc", 0.8, 230)
     createUnit(UnitIds.necromancer, UnitTypesIds.NECROMANCER, UnitTypesIds.ARMY_NECROMANCER, "Necromancer", 0.7, 200)
     createUnit(UnitIds.darkminion1, UnitTypesIds.SKELETON_LESSER, UnitTypesIds.ARMY_SKELETON_LESSER, "Lesser Skeleton", 0.6, 220)
+    
     createUnit(UnitIds.sasquatchoracle, UnitTypesIds.SASQUATCH_ORACLE, UnitTypesIds.ARMY_SASQUATCH_ORACLE, "Sasquatch Oracle", 0.7, 360)
+    createUnit(UnitIds.ancientsasquatch, UnitTypesIds.ANCIENT_SASQUATCH, UnitTypesIds.ARMY_ANCIENT_SASQUATCH, "Ancient Sasquatch", 0.7, 360)
 
     createUnit(UnitIds.gnoll1, UnitTypesIds.GNOLL, UnitTypesIds.ARMY_GNOLL, "Gnoll", 0.6, 220)
     createUnit(UnitIds.gnollpoacher, UnitTypesIds.GNOLL_POACHER, UnitTypesIds.ARMY_GNOLL_POACHER, "Gnoll Poacher", 0.6, 220)

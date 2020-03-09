@@ -12,6 +12,7 @@ import initlater Board
     Also is the palce where the board knows all his Stacks
 **/
 public class InitiativeList
+    private static constant real TIME_FACTOR = 100000.0
     // Show at minimum the very first 2 turn
     private static constant int MAX_TIME = initiativeToTime(0) * 2
 
@@ -29,7 +30,7 @@ public class InitiativeList
         addStack(stack, false)
 
     function addStack(BoardStack stack, boolean comeInHalfTheTime)
-        addEntry(stack, true, 0, false, comeInHalfTheTime)
+        addEntry(stack, true, 0, false, comeInHalfTheTime, 0)
 
     function removeStack(BoardStack stack)
         removeEntry(stack)
@@ -54,18 +55,27 @@ public class InitiativeList
     function wait()
         nextInner(true)
 
+    function push(BoardStack stack, real pushedTime)
+        let nextEntry = getFirstEntry(stack)
+        let allreadyTimeWaited = initiativeToTime(stack.stats.getInitiative()) - (nextEntry.time - time)
+
+        destroyEntry(nextEntry)
+        
+        let factor = pushedTime / 100.0
+        addEntry(stack, false, 0, false, false, (TIME_FACTOR * factor).round() - allreadyTimeWaited)
+
 
     private function nextInner(boolean wait)
         var current = entrys.getFirst()
         let oldWaitingTime = current.waitTime
         
-        BoardController.onTurnEnd(current.stack, oldWaitingTime > 0.0) ->
+        BoardController.onTurnEnd(current.stack, wait) ->
             if isFirstTurn == false
 
                 let stack = current.stack
                 destroyEntry(current)
                 if stack.isAlive()
-                    addEntry(stack, false, oldWaitingTime, wait, false)
+                    addEntry(stack, false, oldWaitingTime, wait, false, 0)
             
             isFirstTurn = false
 
@@ -82,7 +92,7 @@ public class InitiativeList
     **/
     @inline
     static function initiativeToTime(int initivative) returns int
-        return (100000.0 / ((initivative / 10.0) + 1.0)).round()
+        return (TIME_FACTOR / ((initivative / 10.0) + 1.0)).round()
 
     /** removes this entry and all duplicates **/
     private function destroyEntry(InitiativeEntry entryP)
@@ -104,15 +114,15 @@ public class InitiativeList
         @wait true if you want the first entry to wait
         
     **/
-    private function addEntry(BoardStack stack, boolean isEntrysFirstRound, int oldWaitingTime, boolean wait, boolean comeInHalfTheTime)
+    private function addEntry(BoardStack stack, boolean isEntrysFirstRound, int oldWaitingTime, boolean wait, boolean comeInHalfTheTime, int offsetTimeInital)
         // progress the time a little so same initative stacks will always be same ordered
         if isEntrysFirstRound
             time += 1
         let initiativeTime = initiativeToTime(stack.stats.getInitiative())
-        var entry = addEntrySingle(stack, initiativeTime, -oldWaitingTime, wait, comeInHalfTheTime)
+        var entry = addEntrySingle(stack, initiativeTime + offsetTimeInital, -oldWaitingTime, wait, comeInHalfTheTime)
         
         // add duplicates as long as possible
-        var offsetTime = 0
+        var offsetTime = offsetTimeInital
         if wait
             offsetTime -= initiativeTime
         if comeInHalfTheTime
@@ -184,6 +194,17 @@ public class InitiativeList
 
     function get(int index) returns InitiativeEntry
         return entrys.get(index)
+
+    function reset()
+        time = 0
+        isFirstTurn = true
+        let itr = entrys.iterator()
+        while itr.hasNext()
+            let entry = itr.next()
+            destroy entry
+            itr.remove()
+        destroy itr
+        entrys.clear()
 
 public class InitiativeEntry
     protected BoardStack stack

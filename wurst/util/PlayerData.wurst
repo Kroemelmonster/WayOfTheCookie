@@ -12,18 +12,10 @@ import initlater UIWorldConsole
 import initlater UINPCWindow
 import initlater UIDialog
 import initlater UIHeroWindow
-
-constant KEY_TRIGGER = CreateTrigger()..addAction(function onKeyPress)
+import initlater KeyPressSystem
 
 public abstract class KeyPressListener
-    abstract function onEvent(Player p, oskeytype key)
-
-public function registerPlayerOnAnyKeyPresses(player p)
-    for k = 0x00 to 0xFF
-        let key = ConvertOsKeyType(k)
-        // only register meta key shift
-        BlzTriggerRegisterPlayerKeyEvent(KEY_TRIGGER, p, key, 0, true)
-        BlzTriggerRegisterPlayerKeyEvent(KEY_TRIGGER, p, key, 1, true)
+    abstract function onEvent(Player p, string key)
 
 public tuple mousePosition(Cell cell, Cell nearbyCell)
 
@@ -78,10 +70,6 @@ public class Player
     function toString() returns string
         return blzPlayer.getNameColored()
 
-    function setCameraBoundsToRect(rect r)
-        blzPlayer.setCameraBoundsToRect(r)
-        blzPlayer.setCameraPosition(r.getCenter())
-
     function onAnyKeyPress(KeyPressListener listener)
         this.keyPressListener = listener
 
@@ -101,13 +89,4 @@ public function player.getData() returns Player
 
 public function GetTriggerPlayerData() returns Player
     return GetTriggerPlayer().getData()
-
-function onKeyPress()
-    let p = GetTriggerPlayerData()
-    let key = BlzGetTriggerPlayerKey()
-    let isDown = BlzGetTriggerPlayerIsKeyDown()
-
-    if isDown and p.keyPressListener != null
-        p.keyPressListener.onEvent(p, key)
-
         

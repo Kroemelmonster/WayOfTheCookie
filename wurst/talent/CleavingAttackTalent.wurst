@@ -1,0 +1,43 @@
+package CleavingAttackTalent
+
+import initlater Talent
+import initlater StackType
+import UITooltip
+import Icons
+import initlater Cell
+import initlater BoardStack
+import LinkedList
+import initlater SubTargetList
+import KUtil
+
+public class CleavingAttackTalent extends Talent
+    protected real percent
+
+    construct(real percent)
+        super("Cleaving Attack", Icons.pASBTNCleavingAttack)
+        this.percent = percent
+        addGenerateListener() stack ->
+            stack.stats.setSubAttackTarget() (Cell reference, BoardStack mainTarget) ->
+                let neighbourIndex = reference.getNeighbourIndex(mainTarget.getCell())
+                let list = new LinkedList<SubTarget>()
+                if neighbourIndex != -1
+                    addNeighbour(stack, reference, neighbourIndex, -1, list)
+                    addNeighbour(stack, reference, neighbourIndex, 1, list)
+                return list
+
+    private function addNeighbour(BoardStack stack, Cell reference, int index, int add, LinkedList<SubTarget> toList)
+        let cell = reference.getNeighbourSecure(index + add)
+        if cell == null
+            return
+        let result = cell.getStack()
+        if result == null or stack.isEnemy(result) == false
+            return
+        toList.add(new SubTarget(result, percent))
+
+    static function setup(real percent) returns Talent
+        return new CleavingAttackTalent(percent)
+
+    override function createTooltip(StackType sType) returns Tooltip
+        let tt = Tooltip.create(name)
+        tt.addLine("Your Attacks cleave for "+Tooltip.primaryPercent(percent)+" to the two adjacent targets.")
+        return tt

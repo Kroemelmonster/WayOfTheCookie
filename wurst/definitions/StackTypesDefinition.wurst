@@ -17,7 +17,9 @@ public class StackTypes
     static StackType SKELETALORC
     static StackType NECROMANCER
     static StackType LESSER_SKELETON
+
     static StackType SASQUATCH_ORACLE
+    static StackType ANCIENT_SASQUATCH
     
     static StackType GNOLL
     static StackType GNOLL_POACHER
@@ -96,13 +98,23 @@ class StackTypesDefinition
         StackTypes.SASQUATCH_ORACLE = createMelee(UnitTypesIds.SASQUATCH_ORACLE, UnitTypesIds.ARMY_SASQUATCH_ORACLE, 
         "ReplaceableTextures\\CommandButtons\\BTNSasquatchOracle.blp", StackSoundSets.SKELETON, 4, 350, 120)
             ..addTalent(TalentSet.WARCRY)
-            ..addTalent(TalentSet.CHAIN_LIGHTNING)
             ..setInitiative(6)
-            ..setActionPoints(6)
+            ..setActionPoints(5)
             ..setMaxHp(480)
             ..setDamage(intRange(90, 160))
             ..setAttack(35)
             ..setDefence(30)
+
+        StackTypes.ANCIENT_SASQUATCH = createMelee(UnitTypesIds.ANCIENT_SASQUATCH, UnitTypesIds.ARMY_ANCIENT_SASQUATCH, 
+        "ReplaceableTextures\\CommandButtons\\BTNSasquatchAncient.blp", StackSoundSets.SKELETON, 5, 950, 100)
+            ..addTalent(TalentSet.SLAM)
+            ..addTalent(TalentSet.CLEAVE100)
+            ..setInitiative(6)
+            ..setActionPoints(6)
+            ..setMaxHp(1200)
+            ..setDamage(intRange(200, 305))
+            ..setAttack(44)
+            ..setDefence(39)
 
         StackTypes.GNOLL = createMelee(UnitTypesIds.GNOLL, UnitTypesIds.ARMY_GNOLL, Icons.bTNGnoll, StackSoundSets.SKELETON, 1, 10, 100)
             ..setInitiative(3)
@@ -122,7 +134,7 @@ class StackTypesDefinition
             ..setDefence(4)
 
         StackTypes.GNOLL_WARDEN = createMelee(UnitTypesIds.GNOLL_WARDEN, UnitTypesIds.ARMY_GNOLL_WARDEN, Icons.bTNGnollWarden, StackSoundSets.SKELETON, 3, 170, 100)
-           // ..addTalent(TalentSet.WARCRY)
+            ..addTalent(TalentSet.CRACKLE)
             ..setInitiative(5)
             ..setActionPoints(5)
             ..setMaxHp(220)

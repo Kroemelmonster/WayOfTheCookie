@@ -74,8 +74,6 @@ class UIInitiativeWindow
 
         destroy iterator
 
-        frame.setVisible(true)
-
     static function highlightStack(Player p, BoardStack highlightStack)
         if p.isLocal() == false
             return
@@ -87,6 +85,10 @@ class UIInitiativeWindow
                 btns[i].setHighlight(highlightStack == stack)
 
         destroy iterator
+
+    static function setVisible(Player p, boolean flag)
+        if p.isLocal()
+            frame.setVisible(flag)
 
     static function resetHighlight(Player p)
         if p.isLocal() == false

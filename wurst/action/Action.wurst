@@ -8,6 +8,7 @@ import initlater OrderSystem
 
 import initlater SummonLesserSkeletonAction
 import initlater WarcryAction
+import initlater SlamAction
 import BoardTrigger
 import UIController
 
@@ -36,6 +37,7 @@ public abstract class Action
     static function setup()
         SummonLesserSkeletonAction.setup()
         WarcryAction.setup()
+        SlamAction.setup()
 
     function getPreviewResultForCell(Cell _cell) returns CellResult
         return CellResult.NONE
@@ -90,7 +92,7 @@ public abstract class Action
 
     abstract function executeForKI(SequenzListenerStatus listener)
 
-    abstract function canBeActivatedByKey(oskeytype key) returns boolean
+    abstract function canBeActivatedByKey(string key) returns boolean
 
     @inline
     function getName() returns string

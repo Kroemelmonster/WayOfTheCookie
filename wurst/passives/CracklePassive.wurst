@@ -1,0 +1,49 @@
+package CracklePassive
+
+import PassiveAction
+import AttackAnimation
+import BoardController
+import Damage
+import KUtil
+
+import initlater BoardStack
+import initlater Cell
+import UITooltip
+import StackType
+import BoardTrigger
+import WalkAndAttackAction
+import Abilities
+import AttachmentPoints
+import DelayAnimation
+
+public class CracklePassive extends PassiveAction
+    private static constant string EFFECT = Abilities.lightningShieldBuff
+
+    construct(BoardStack stack)
+        super(stack, "Crackle")
+
+    override function triggerOnStackCreation(BoardStack stack)
+        stack.getTriggers().addOnDamageDealt() (BoardStack source, BoardStack target, SpecificDamageInstance specificInstance, SequenzListener next) ->
+            if specificInstance.damageInstance.isTriggered
+                next.continue()
+            else if specificInstance.damageInstance.sourceType != ATTACK
+                next.continue()
+            else if specificInstance.damageInstance.damageType != DamageType.PHYISICAL
+                next.continue()
+            else
+                DelayAnimation.create(stack.getBoard(), 0.6) ->
+                    target.flashAttachEffect(EFFECT, AttachmentPoints.chest)
+                    let damage = new DamageInstance(specificInstance.damageInstance.dmg * 0.5, SourceType.ATTACK, DamageType.MAGIC)
+                    damage.isTriggered = true
+
+                    BoardController.dealDamage(source, damage, target) -> 
+                        destroy damage
+                        DelayAnimation.create(stack.getBoard(), 0.1) ->
+                            next.continue()
+            
+    static function createTooltip(StackType _sType) returns Tooltip
+        let tooltip = Tooltip.create("Crackle")
+        ..addLine("On attack this unit will also strike the enemy with "+Tooltip.primaryPercent(0.5)+ " of the damage dealt as additional magic damage")
+        return tooltip
+            
+

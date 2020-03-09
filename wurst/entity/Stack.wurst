@@ -2,6 +2,7 @@ package Stack
 
 import StackType
 import StackStats
+import initlater BoardStack
 
 public class Stack
     protected StackType stackType
@@ -28,6 +29,7 @@ public class Stack
 
 public class ArmyStack extends Stack
     StackStats stats
+    BoardStack representive
     protected boolean isSummoned
 
     construct(StackType stackType, int amount, boolean isSummoned)

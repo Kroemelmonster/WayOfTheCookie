@@ -33,7 +33,7 @@ public abstract class DefaultAction extends Action
 
     override function onUIMouseLeave()
 
-    override function canBeActivatedByKey(oskeytype key) returns boolean
+    override function canBeActivatedByKey(string key) returns boolean
         return false
 
     ondestroy

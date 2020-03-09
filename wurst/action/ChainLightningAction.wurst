@@ -29,17 +29,17 @@ import ClosureTimers
 import Effect
 
 public class ChainLightningAction extends Action
+    static constant string NAME = "Chain Lightning"
+    static constant string ICON = Icons.bTNChainLightning
+
     private static constant int COST = 1
     private static constant int COOLDOWN = 3
     private static constant int MAXRANGE = 4
-    private static constant string NAME = "Chain Lightning"
-    private static constant oskeytype KEY = OSKEY_C
-    private static constant string KEY_STRING = "C"
+    private static constant string KEY = "C"
     private static constant int MAX_CHAINS = 3
     private static constant int CHAIN_RANGE = 3
     private static constant real CHAIN_REDUCTION = 0.90
     
-    static constant string ICON = Icons.bTNChainLightning
 
     private static constant DamagePreview damagePreview = createDamagePreview()
     
@@ -61,11 +61,11 @@ public class ChainLightningAction extends Action
         ..setCost(COST)
         ..addLine(Tooltip.stat("Target", "Enemy"))
         ..addLine(Tooltip.stat("Range", MAXRANGE))
-        tt.addLine(Tooltip.stat("Damage", damagePreview))
-        tt.addLine("")
-        tt.addLine("Lightning strikes from one target and chains to nearby other targets")
+        ..addLine(Tooltip.stat("Damage", damagePreview))
+        ..addLine("")
+        ..addLine("Lightning strikes from one target and chains to nearby other targets")
         if isDefault == false
-            tt.addKey(KEY_STRING)
+            tt.addKey(KEY)
         return tt
     
     private LinkedList<Cell> area = new LinkedList<Cell>()
@@ -194,7 +194,7 @@ public class ChainLightningAction extends Action
     override function onUIMouseLeave()
         hidePreview()
 
-    override function canBeActivatedByKey(oskeytype key) returns boolean
+    override function canBeActivatedByKey(string key) returns boolean
         return key == KEY
 
     override function executeForKI(SequenzListenerStatus listener)

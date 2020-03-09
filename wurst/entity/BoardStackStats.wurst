@@ -30,7 +30,7 @@ public class BoardStackStats
     int fireResistance = 0
     int poisonResistance = 0
 
-    private SubTargetList subAttackList
+    private SubTargetList subAttackList = null
 
     construct(BoardStack stack, StackStats basis, int amount)
         this.basis = basis
@@ -168,4 +168,6 @@ public class BoardStackStats
         destroy initModi
         destroy actionPointModi
         destroy hpModi
-        destroy subAttackList
+        if subAttackList != null
+            destroy subAttackList
+            subAttackList = null

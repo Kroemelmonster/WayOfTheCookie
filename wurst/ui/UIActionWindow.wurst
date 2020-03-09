@@ -51,13 +51,13 @@ class UIActionWindow
         hide()
 
         Player.forEachActive() (Player activePlayer) ->
-            activePlayer.onAnyKeyPress() (Player p, oskeytype key) ->
+            activePlayer.onAnyKeyPress() (Player p, string key) ->
                 onkeyPress(p, key)
 
-    private static function onkeyPress(Player p, oskeytype key)
+    private static function onkeyPress(Player p, string key)
         if OrderSystem.canOrder(p) == false
             return
-        if key == OSKEY_ESCAPE
+        if key == "Escape"
             OrderSystem.resetCurrentSelectedAction(p.currentSelectedStack)
             return
 

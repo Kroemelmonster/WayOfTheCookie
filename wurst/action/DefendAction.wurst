@@ -16,13 +16,12 @@ import initlater BoardStack
 import BoardTrigger
 
 public class DefendAction extends InstantAction
-    private Tooltip tt
-    
-    private constant static oskeytype KEY = OSKEY_D
+    private constant static string KEY = "D"
 
+    private Tooltip tt
     construct(BoardStack stack)
         super(stack, Icons.bTNStop, "Defend")
-        tt = Tooltip.create(name, "D")
+        tt = Tooltip.create(name, KEY)
         tt.addLine("Skips your turn ( thats it for now )")
         
     override function canActivate() returns boolean
@@ -40,7 +39,7 @@ public class DefendAction extends InstantAction
         UITooltip.hide(stack.getPlayer())
         UIActionWindow.updateActionPoints(stack, 0)
 
-    override function canBeActivatedByKey(oskeytype key) returns boolean
+    override function canBeActivatedByKey(string key) returns boolean
         return key == KEY
 
     override function executeForKI(SequenzListenerStatus listener)

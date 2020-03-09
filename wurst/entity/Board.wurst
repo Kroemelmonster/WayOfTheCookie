@@ -16,6 +16,8 @@ import HostileArmy
 import Stack
 import Hero
 import StackType
+import DummyRecycler
+import ClosureTimers
 
 public class Board
     private static Cell array allCells
@@ -35,7 +37,8 @@ public class Board
     private Hero h2
     private HostileArmy hostileArmy
     private InitiativeList initiative
-    private LinkedList<BoardStack> stacks
+    private LinkedList<BoardStack> stacks = new LinkedList<BoardStack>()
+    private LinkedList<BoardStack> graveyard = new LinkedList<BoardStack>()
 
     private Animation currentAnim
     private boolean isInteractAble = true
@@ -44,6 +47,7 @@ public class Board
 
     
     private rect visibleArea
+    private unit dummyCam
     private fogmodifier visibleModiPlayer1
     private fogmodifier visibleModiPlayer2
 
@@ -63,7 +67,7 @@ public class Board
         this.area = playArea
         this.visibleArea = visibleArea
         this.initiative = new InitiativeList(this)
-        stacks = new LinkedList<BoardStack>()
+        dummyCam = DummyRecycler.get(area.getCenter(), angle(0.0))
     
     @inline
     private function getIndex(hex hex) returns int
@@ -84,6 +88,14 @@ public class Board
     function getInitiative() returns InitiativeList
         return initiative
 
+    function getHero(int side) returns Hero
+        if side == 0
+            return h1
+        return null
+    
+    function getHostileArmy() returns HostileArmy
+        return hostileArmy
+
     function placeCombat(Hero hero, HostileArmy army)
         p1 = hero.getPlayer()
         p2 = army.getPlayer()
@@ -97,11 +109,30 @@ public class Board
             ..start()
         visibleModiPlayer2 = createVision(p2.blzPlayer, visibleArea, false)
             ..start()
-        p1.setCameraBoundsToRect(area)
-        p2.setCameraBoundsToRect(area)
-
-        
+            
+        p1.blzPlayer.setCameraTargetControllerNoZ(dummyCam, vec2(0.0, 0.0), false)
+        p2.blzPlayer.setCameraTargetControllerNoZ(dummyCam, vec2(0.0, 0.0), false)
+            
         UIController.triggerOnAnyStackCellChange(this)
+
+    function endFight()
+        initiative.reset()
+        removePlayer(p1)
+        removePlayer(p1)
+
+        for stack in stacks
+            destroy stack
+        stacks.clear()
+        
+        for stack in graveyard
+            destroy stack
+        graveyard.clear()
+
+    private function removePlayer(Player p)
+        p.playingBoard = null
+
+        visibleModiPlayer1.destr()
+
 
     private function placeArmy(Army army, Player p, boolean left)
         p.playingBoard = this
@@ -164,10 +195,10 @@ public class Board
         stacks.add(stack)
         initiative.addStack(stack, comeInHalfTheTime)
 
-    function removeStack(BoardStack stack)
-        stack.remove()
+    function triggerOnStackKilled(BoardStack stack)
         stacks.remove(stack)
         initiative.removeStack(stack)
+        graveyard.add(stack)
 
     function updateStackAfterTurnEnd()
         let itr = stacks.iterator()
@@ -203,6 +234,17 @@ public class Board
     function getNeighbour(Cell cell, int index) returns Cell
         let h = cell.getHex().getNeighbour(index)
         return getCell(h)
+
+    function getNeighbourSecure(Cell cell, int index) returns Cell
+        return getNeighbour(cell, ModuloInteger(index, 6))
+
+    function getNeighbourIndex(Cell start, Cell other) returns int
+        let startCube = start.getHex().toCube()
+        let endCube = other.getHex().toCube()
+        for int i = 0 to 5
+            if startCube + CUBE_NEIGHBOURS[i] == endCube
+                return i
+        return -1
 
     function getDistanceTo(Cell cell, Cell otherCell) returns int
         let c1 = cell.getHex().toCube()

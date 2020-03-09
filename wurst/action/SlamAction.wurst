@@ -1,5 +1,4 @@
-package WarcryAction
-
+package SlamAction
 
 import Icons
 import Abilities
@@ -27,75 +26,98 @@ import BoardTrigger
 import HashMap
 import Cell
 import ClosureTimers
+import Damage
 
-public class WarcryAction extends InstantAction
-    static constant string NAME = "Warcry"
-    static constant string ICON = Icons.bTNBattleRoar
-    
+public class SlamAction extends InstantAction
+    static constant string NAME = "Slam"
+    static constant string ICON = Icons.bTNGolemThunderClap
+
     private static constant int COST = 0
-    private static constant int COOLDOWN = 0
-    private static constant int MAXRANGE = 3
-    private static constant int BUFF_DURATION = 3
-    private static constant string KEY = "Y"
-    private static constant string EFFECT = Abilities.roarCaster
+    private static constant int COOLDOWN = 2
+    private static constant int MAXRANGE = 1
+    private static constant string KEY = "S"
+    private static constant string EFFECT = Abilities.thunderclapCaster
     private static BuffType BUFF
-    private static Tooltip BASE_TOOLTIP
 
-    static function setup()
-        BUFF = BuffTypeSet.WARCRY
-        BASE_TOOLTIP = Tooltip.create(NAME)
+    private static constant real DAZZED = 60.0
+    private static constant DamagePreview damagePreview = createDamagePreview()
+    
+    @inline
+    private static function createDamagePreview() returns DamagePreview
+        return new DamagePreview(realRange(0, 0), SourceType.SPELL, DamageType.PHYISICAL)
+
+    private static function calculateDamage(int amount)
+        damagePreview.dmg = realRange(100.0 * amount, 150.0 * amount)
+
+    static function createTooltip(boolean isDefault, int amount) returns Tooltip
+        calculateDamage(amount)
+        let tt = Tooltip.create(NAME)
+        ..setCooldown(COOLDOWN)
         ..setCost(COST)
-        
         ..addLine(Tooltip.stat("Target", "Self"))
         ..addLine(Tooltip.stat("Range", MAXRANGE))
+        ..addLine(Tooltip.stat("Damage", damagePreview))
         ..addLine("")
-        ..addLine("Gives every enemy unit in range the "+Tooltip.secondaryString(BUFF.getName())+ " Buff effect for "+Tooltip.primaryString(BUFF_DURATION.toString())+ " rounds")
-        ..addLine("-----")
-        ..addBuffType(BUFF)
+        ..addLine("Slams the Ground around and dealing massive AoE Damage")
+        ..addLine("This Slam is so powerfull that enemys get "+Tooltip.secondaryString(BUFF.getName())+ " and placed back in the initaive by "+Tooltip.primaryString(DAZZED.round().toString())+ " time units")
 
-    private Tooltip tooltip
+        if isDefault == false
+            tt.addKey(KEY)
+        return tt
+
+    static function setup()
+        BUFF = BuffTypeSet.DAZED
+
     construct(BoardStack stack)
         super(stack, ICON, NAME)
-        charge = 1
-        tooltip = Tooltip.copy(BASE_TOOLTIP)
-        ..addKey(KEY)
-
-    static function createTooltip(StackType _sType) returns Tooltip
-        return Tooltip.copy(BASE_TOOLTIP)
         
     override function canActivate() returns boolean
-        return charge > 0 and cooldown <= 0
+        return cooldown <= 0
 
     private function getTargets() returns LinkedList<BoardStack>
         let area = stack.getCell().getAllCellsInRange(intRange(0, MAXRANGE))
         let targets = new LinkedList<BoardStack>()
         for cell in area
             let possibleTarget = cell.getStack()
-            if possibleTarget != null and stack.isEnemy(possibleTarget) == false
+            if possibleTarget != null and stack.isEnemy(possibleTarget)
                 targets.add(possibleTarget)
         destroy area
         return targets
 
-    override function activate()
-        let targets = getTargets()
-        let board = stack.getBoard()
-
-        CastAnimation.create(stack) () ->
-            flashEffect(EFFECT, stack.getCell().getCoord())
-            for target in targets
-                BuffController.addBuff(BUFF, target, new BuffData(BUFF_DURATION))
-            destroy targets
-
-            DelayAnimation.create(board, 0.5) -> // this is the backswing for casting
-                charge --
+    private function hit(LLIterator<BoardStack> itr, DamageInstance instance)
+        if itr.hasNext()
+            let target = itr.next()
+            BoardController.dealDamage(stack, instance, target) -> 
+                if target.isAlive()
+                    let level = target.getStackType().level
+                    if level < 4
+                        BoardController.pushInitiative(target, DAZZED)
+                    else if level == 4
+                        BoardController.pushInitiative(target, DAZZED / 2)
+                    else if level == 5
+                        BoardController.pushInitiative(target, DAZZED / 3)
+                    BuffController.addBuff(BUFF, target, new BuffData(1))
+                hit(itr, instance)
+        else
+            destroy itr
+            destroy instance
+            DelayAnimation.create(stack.getBoard(), 0.5) -> // this is the backswing for casting
                 cooldown = COOLDOWN + 1
 
                 stack.stats.addActionPoints(-COST)
                 BoardController.finishOrder(stack, true)
+
+    override function activate()
+        let targets = getTargets()
+
+        CastAnimation.create(stack) () ->
+            flashEffect(EFFECT, stack.getCell().getCoord())
+            calculateDamage(stack.stats.amount)
+            hit(targets.iterator(), damagePreview.getRandomInstance())
             
 
     override function onUIMouseEnter()
-        tooltip.display(stack.getPlayer(), false)
+        createTooltip(false, stack.stats.amount).display(stack.getPlayer(), true)
         UIActionWindow.updateActionPoints(stack, COST)
             
     override function onUIMouseLeave()
@@ -120,13 +142,14 @@ public class WarcryAction extends InstantAction
         let stackItr = stack.getBoard().getAllStacks().iterator()
         while stackItr.hasNext()
             let target = stackItr.next()
-            if stack != target and target.isEnemy(stack) == false
+            if target.isEnemy(stack)
+                let weight =  target.stats.getWeight()
                 let itr = target.getCell().eachCellInRangeIterator(intRange(1, MAXRANGE))
                 while itr.hasNext()
                     let cell = itr.next()
                     let currentCost = pathing.get(cell).cost
                     if currentCost <= possibleMovePoints
-                        var newWeight = 100.0
+                        var newWeight = weight
                         if weightCells.has(cell)
                             newWeight += weightCells.get(cell)
                         weightCells.put(cell, newWeight)
@@ -156,6 +179,4 @@ public class WarcryAction extends InstantAction
                 listener.continue(1)
 
     ondestroy
-        if tooltip != null
-            destroy tooltip
         

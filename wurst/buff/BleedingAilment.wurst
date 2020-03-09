@@ -36,6 +36,9 @@ public class BleedingAilment extends Buff
         preview.isTriggered = true
         return preview
 
+    static function flashEffect(BoardStack target)
+        target.flashAttachEffect(EFFECT, AttachmentPoints.chest)
+
     private BoardTrigger turnStartListener
     private BoardTrigger turnEndListener
     private BoardTriggerOnAnyCellLeave moveListener
@@ -93,7 +96,7 @@ public class BleedingAilment extends Buff
 
     private function dealDamage(boolean walking, SequenzListener next)
         DelayAnimation.create(stack.getBoard(), 0.5) ->
-            stack.flashAttachEffect(EFFECT, AttachmentPoints.chest)
+            flashEffect(stack)
             calculateDamage(walking)
             let instance = damagePreview.getRandomInstance()
             BoardController.dealDamage(stack, instance, stack) ->
