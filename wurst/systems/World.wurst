@@ -21,9 +21,9 @@ public class World
     protected static LinkedList<NPC> npcs = new LinkedList<NPC>
 
     static function generateBoards()
-        boards.add(new Board(gg_rct_BoardPlainsOne, gg_rct_BoardPlainsOneV))
-        boards.add(new Board(gg_rct_BoardPlainsTwo, gg_rct_BoardPlainsTwoV))
-        boards.add(new Board(gg_rct_BoardPlainsThree, gg_rct_BoardPlainsThreeV))
+        boards.add(new Board(gg_rct_BoardIsleOne, gg_rct_BoardIsleOneV))
+        boards.add(new Board(gg_rct_BoardIsleTwo, gg_rct_BoardIsleTwoV))
+        boards.add(new Board(gg_rct_BoardIsleThree, gg_rct_BoardIsleThreeV))
 
     static function generateNPCs()
         let shop = new NPCShop(gg_unit_n000_0002)
@@ -35,26 +35,43 @@ public class World
         armies.add(new HostileArmy(gg_unit_n001_0003)
         ..addStackAtFree(StackTypes.ANCIENT_SASQUATCH, 1)
         ..addStackAtFree(StackTypes.SASQUATCH_ORACLE, 1)
+        ..addStackAtFree(StackTypes.GNOLL_POACHER, GetRandomInt(10, 20))
+        ..addStackAtFree(StackTypes.GNOLL_POACHER, GetRandomInt(10, 20))
         ..replaceChicken())
 
-        armies.add(new HostileArmy(gg_unit_n001_0006)
+        armies.add(new HostileArmy(gg_unit_n001_0008)
         ..addStackAtFree(StackTypes.FOREST_TROLL_BERSERKER, GetRandomInt(4, 7))
         ..addStackAtFree(StackTypes.NECROMANCER, GetRandomInt(5, 10))
         ..addStackAtFree(StackTypes.FOREST_TROLL, GetRandomInt(15, 20))
         ..replaceChicken())
 
+        armies.add(new HostileArmy(gg_unit_n001_0009)
+        ..addStackAtFree(StackTypes.NECROMANCER, GetRandomInt(15, 20))
+        ..addStackAtFree(StackTypes.NECROMANCER, GetRandomInt(15, 20))
+        ..addStackAtFree(StackTypes.SKELETALORC, GetRandomInt(6, 10))
+        ..replaceChicken())
+
+        armies.add(new HostileArmy(gg_unit_n001_0010)
+        ..addStackAtFree(StackTypes.GNOLL_WARDEN, GetRandomInt(5, 10))
+        ..addStackAtFree(StackTypes.GNOLL_POACHER, GetRandomInt(50, 100))
+        ..addStackAtFree(StackTypes.GNOLL, GetRandomInt(50, 100))
+        ..replaceChicken())
+
+        armies.add(new HostileArmy(gg_unit_n001_0011)
+        ..addStackAtFree(StackTypes.GNOLL_POACHER, GetRandomInt(120, 200))
+        ..addStackAtFree(StackTypes.GNOLL, GetRandomInt(120, 200))
+        ..replaceChicken())
+
     static function getBoardToFightOn(HostileArmy _enemy) returns Board
-        return boards.get(1)//GetRandomInt(0, boards.size() - 1))
+        return boards.get(GetRandomInt(0, boards.size() - 1))
         
     static function generateHeroes()
-        let theHammer = new ItemSteelHammer()
-
         heroes.add(new Hero(playerData[0])
         ..addStackAtFree(StackTypes.FOREST_TROLL_HIGH_PRIEST, 3)
         //..addStackAtFree(StackTypes.FOREST_TROLL_BERSERKER, 2)
         ..setAttack(7)
         ..setDefence(3)
-        ..setActiveItem(0, theHammer)
+        ..setActiveItem(0, new ItemSteelHammer())
         ..setBackPackItem(0, new PoisionousStingItem())
         ..setBackPackItem(1, new PoisionousStingItem()))
  
