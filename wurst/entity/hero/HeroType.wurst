@@ -22,7 +22,7 @@ public class HeroType
     
     DamageType damageType = PHYISICAL
 
-    LinkedList<SkillTreeType> skillTrees = new LinkedList<SkillTreeType>()
+    SkillTreeType array[3] skillTrees
 
     construct(integer unitId, integer armyUnitId, string icon, string name)
         this.unitId = unitId
@@ -31,8 +31,10 @@ public class HeroType
         this.name = name
 
     @inline
-    function addSkillTree(SkillTreeType skillTreeType)
-        skillTrees.add(skillTreeType)
+    function setSkillTrees(SkillTreeType type1, SkillTreeType type2, SkillTreeType type3)
+        skillTrees[0] = type1
+        skillTrees[1] = type2
+        skillTrees[2] = type3
     
     @inline
     function setDamage(intRange value)

@@ -1,7 +1,9 @@
 package SkillTree
 import Stack
 import LinkedList
-import SkillTreeTactician
+import SkillTreeChieftain
+import SkillTreeLightning
+import SkillTreeSpirit
 import SkillTreeVenomancer
 import initlater Hero
 import UITooltip
@@ -16,11 +18,15 @@ interface SkillTreeCreateListener
     function create() returns SkillTree
 
 public class SkillTreeTypeSet
-    static SkillTreeType TACTICIAN
+    static SkillTreeType CHIEFTAIN
+    static SkillTreeType LIGHTNING
+    static SkillTreeType SPIRIT
     static SkillTreeType VENOMANCER
 
     static function setup()
-        TACTICIAN = SkillTreeTactician.setup()
+        CHIEFTAIN = SkillTreeChieftain.setup()
+        LIGHTNING = SkillTreeLightning.setup()
+        SPIRIT = SkillTreeSpirit.setup()
         VENOMANCER = SkillTreeVenomancer.setup()
 
 public class SkillLevel
@@ -199,6 +205,10 @@ public class SkillTreeType
     
     function addListener(SkillTreeCreateListener listener)
         this.listener = listener
+
+    @inline
+    function getName() returns string
+        return name
 
     @inline
     function createNew() returns SkillTree

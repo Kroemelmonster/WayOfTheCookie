@@ -1,37 +1,29 @@
-package SkillTreeTactician
+package SkillTreeLightning
 import initlater SkillTree
-import Icons
-import BoardStack
 import initlater Hero
+
+import Icons
 import LinkedList
 import UITooltip
-import Stack
-import Talent
 
-public class SkillTreeTactician extends SkillTree
-    private static constant string NAME = "Tactician"
+public class SkillTreeLightning extends SkillTree
+    private static constant string NAME = "Lightning"
 
     static function setup() returns SkillTreeType
         let skillTreeType = new SkillTreeType(NAME)
         skillTreeType.addListener() -> 
-            return new SkillTreeTactician(skillTreeType)
+            return new SkillTreeLightning(skillTreeType)
         return skillTreeType
-
 
     construct(SkillTreeType skillTreeType)
         super(skillTreeType)
 
-        var skill = new Skill("AttackUpgrade", Icons.bTNIllidanPrisonWagon, 0, 0)
+        var skill = new Skill("AttackUpgrade", Icons.bTNColdArrowsOff, 0, 0)
         skills.add(skill)
         let attackUprgade1 = skill.addLevel(2, 0, 0, null)
         ..addLine("Increases the Attack by "+Tooltip.coloredInt(Tooltip.COLOR_PRIMARY, 1))
         ..addLevelListener() (Hero hero) ->
             hero.stats.basicAttack += 1
-        attackUprgade1.addStackListener() (ArmyStack armyStack, boolean add) ->
-            if add
-                armyStack.stats.addTalent(TalentSet.POPISONOUS)
-            else
-                armyStack.stats.removeTalent(TalentSet.POPISONOUS)
         skill.addLevel(4, 1, 0, null)
         ..addLine("Increases the Attack by "+Tooltip.coloredInt(Tooltip.COLOR_PRIMARY, 3))
         ..addLevelListener() (Hero hero) ->
@@ -39,7 +31,7 @@ public class SkillTreeTactician extends SkillTree
 
         
 
-        skill = new Skill("DefenceUpgrade", Icons.bTNImpale, 1, 0)
+        skill = new Skill("DefenceUpgrade", Icons.bTNCorpseExplode, 1, 0)
         skills.add(skill)
         let defenceUprgade1 = skill.addLevel(0, 2, 0, null)
         ..addLine("Increases the Defence by "+Tooltip.coloredInt(Tooltip.COLOR_PRIMARY, 1))

@@ -48,7 +48,7 @@ public class Hero
     int magic = 3
     int mind = 4
 
-    protected SkillTree skillTree
+    protected SkillTree array[3] skillTrees
 
     protected KItem array[8] items
     protected KItem array[20] backpack
@@ -70,7 +70,8 @@ public class Hero
         u = createUnit(playerData[0].blzPlayer, heroType.armyUnitId, playerData[0].blzPlayer.getStartLocation(), angle(0))
         army = new Army(stats)
         map.put(u, this)
-        skillTree = heroType.skillTrees.get(0).createNew()
+        for int i = 0 to skillTrees.length - 1
+            skillTrees[i] = heroType.skillTrees[i].createNew()
 
         damagedListener = EventListener.add(u, EVENT_PLAYER_UNIT_DAMAGED) ->
             if u.isInvulnerable() == false
@@ -205,9 +206,10 @@ public class Hero
             if items[i] != null
                 items[i].onStackUpdate(armyStack, true)
 
-        skillTree.onStackUpdate(armyStack, true)
-        for skill in skillTree.skills
-            skill.onStackUpdate(armyStack, true)
+        for int i = 0 to skillTrees.length - 1
+            skillTrees[i].onStackUpdate(armyStack, true)
+            for skill in skillTrees[i].skills
+                skill.onStackUpdate(armyStack, true)
 
     function startInteract(NPC npc)
         currentInteract = npc
@@ -218,8 +220,8 @@ public class Hero
             currentInteract.endInteraction(this)
             currentInteract = null
 
-    function getSkillTree() returns SkillTree
-        return skillTree
+    function getSkillTree(int i) returns SkillTree
+        return skillTrees[i]
 
     function getActiveItemsLength() returns int
         return items.length

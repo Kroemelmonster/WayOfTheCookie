@@ -34,7 +34,7 @@ class HeroTypesDefinition
         ..setInitiative(7)
         ..setActionPoints(3)
         ..setDamage(intRange(5, 10))
-        ..addSkillTree(SkillTreeTypeSet.VENOMANCER)
+        ..setSkillTrees(SkillTreeTypeSet.CHIEFTAIN, SkillTreeTypeSet.LIGHTNING, SkillTreeTypeSet.SPIRIT)
 
         ..setAttack(1)
         ..setDefence(1)

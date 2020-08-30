@@ -1,8 +1,9 @@
 package SkillTreeVenomancer
+
 import initlater SkillTree
+import initlater Hero
 import Icons
 import BoardStack
-import initlater Hero
 import LinkedList
 import UITooltip
 import Stack
@@ -66,7 +67,7 @@ public class SkillTreeVenomancer extends SkillTree
             stack.addPassive(passive)
             passive.triggerOnStackCreation(stack)
 
-        let venomousWeapon = new Skill("Venomous Weapon", Icons.bTNEnvenomedSpear, 0.5, 0)
+        let venomousWeapon = new Skill("Venomous Weapon", Icons.bTNEnvenomedSpear, 0, 0)
         ..addDescription(Tooltip.DESCRIPTION_POISON)
         skills.add(venomousWeapon)
         let venoWep1 = venomousWeapon.addLevel(1, 1, 0, null)

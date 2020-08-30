@@ -1,0 +1,81 @@
+package SkillTreeSpirit
+import initlater SkillTree
+import initlater Hero
+
+import Icons
+import LinkedList
+import UITooltip
+
+public class SkillTreeSpirit extends SkillTree
+    private static constant string NAME = "Spirit"
+
+    static function setup() returns SkillTreeType
+        let skillTreeType = new SkillTreeType(NAME)
+        skillTreeType.addListener() -> 
+            return new SkillTreeSpirit(skillTreeType)
+        return skillTreeType
+
+    construct(SkillTreeType skillTreeType)
+        super(skillTreeType)
+
+        var skill = new Skill("AttackUpgrade", Icons.bTNPatrol, 0, 0)
+        skills.add(skill)
+        let attackUprgade1 = skill.addLevel(2, 0, 0, null)
+        ..addLine("Increases the Attack by "+Tooltip.coloredInt(Tooltip.COLOR_PRIMARY, 1))
+        ..addLevelListener() (Hero hero) ->
+            hero.stats.basicAttack += 1
+        skill.addLevel(4, 1, 0, null)
+        ..addLine("Increases the Attack by "+Tooltip.coloredInt(Tooltip.COLOR_PRIMARY, 3))
+        ..addLevelListener() (Hero hero) ->
+            hero.stats.basicAttack += 2
+
+        
+
+        skill = new Skill("DefenceUpgrade", Icons.bTNImpale, 0.3, 0.3)
+        skills.add(skill)
+        let defenceUprgade1 = skill.addLevel(0, 2, 0, null)
+        ..addLine("Increases the Defence by "+Tooltip.coloredInt(Tooltip.COLOR_PRIMARY, 1))
+        ..addLevelListener() (Hero hero) ->
+            hero.stats.basicDefence += 1
+        skill.addLevel(1, 4, 0, null)
+        ..addLine("Increases the Defence by "+Tooltip.coloredInt(Tooltip.COLOR_PRIMARY, 3))
+        ..addLevelListener() (Hero hero) ->
+            hero.stats.basicDefence += 2
+
+        
+
+        skill = new Skill("Very Strong", Icons.bTNMammoth, 0.5, 0.3)
+        skills.add(skill)
+        var requirements = new LinkedList<SkillLevel>()
+        requirements.add(attackUprgade1)
+        requirements.add(defenceUprgade1)
+
+        let veryStrong1 = skill.addLevel(2, 2, 0, requirements)
+        ..addLine("Increases the Attack and Defence by "+Tooltip.coloredInt(Tooltip.COLOR_PRIMARY, 1))
+        ..addLevelListener() (Hero hero) ->
+            hero.stats.basicAttack += 1
+            hero.stats.basicDefence += 1
+        skill.addLevel(4, 4, 0, null)
+        ..addLine("Increases the Attack and Defence by "+Tooltip.coloredInt(Tooltip.COLOR_PRIMARY, 3))
+        ..addLevelListener() (Hero hero) ->
+            hero.stats.basicAttack += 2
+            hero.stats.basicDefence += 2
+
+
+        skill = new Skill("Very Strong 2", Icons.bTNKoboldGeomancer, 0.5, 1.0)
+        skills.add(skill)
+        requirements = new LinkedList<SkillLevel>()
+        requirements.add(veryStrong1)
+        skill.addLevel(2, 2, 0, requirements)
+        ..addLine("This does nothing")
+        ..addLine("but it has multiple lines!")
+        ..addLine("wow")
+        skill.addLevel(4, 4, 0, null)
+        ..addLine("This does nothing")
+        ..addLine("but it has multiple lines!")
+        ..addLine("wow")
+            
+            
+
+
+

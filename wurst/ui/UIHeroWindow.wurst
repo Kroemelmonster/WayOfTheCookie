@@ -14,10 +14,12 @@ import Damage
 public class UIHeroWindowInfo
     protected boolean visible = false
     UIHeroInventoryInfo inventory = new UIHeroInventoryInfo()
+    UIHeroSkillTreeInfo skillTree = new UIHeroSkillTreeInfo()
 
 public class UIHeroWindow
     private static framehandle self
-    private static framehandle pane
+    private static framehandle leftPanel
+    private static framehandle rightPanel
 
     private static framehandle mightText
     private static framehandle mindText
@@ -32,16 +34,33 @@ public class UIHeroWindow
     private static UIHeroSkillTree skillTree
 
     static function setup()
+        /*
         self = createFrame("BasicBorderWindow", GAME_UI, 0, 0)
         ..setPoint(FRAMEPOINT_TOPRIGHT, GAME_UI, FRAMEPOINT_TOPRIGHT, -0.04, 0.0)
         ..setPoint(FRAMEPOINT_BOTTOMLEFT, UIWorldConsole.self, FRAMEPOINT_TOPLEFT)
-        ..setVisible(false)
-        
-        pane = getFrame("WindowPane")
+        ..setVisible(false)*/
 
-        let infoBar = createFrame("FRAME", "", pane, "", 0)
-        ..setPoint(FRAMEPOINT_TOPLEFT, pane, FRAMEPOINT_BOTTOMLEFT, 0.0, 0.2)
-        ..setPoint(FRAMEPOINT_BOTTOMRIGHT, pane, FRAMEPOINT_BOTTOM)
+        self = createFrame("FRAME", "", GAME_UI, "", 0)
+        ..setPoint(FRAMEPOINT_TOPRIGHT, GAME_UI, FRAMEPOINT_TOPRIGHT, -0.04, 0.0)
+        ..setPoint(FRAMEPOINT_BOTTOMLEFT, UIWorldConsole.self, FRAMEPOINT_TOPLEFT)
+        ..setVisible(false)
+
+        createFrame("BACKDROP", "", self, "", 0)
+        ..setPoint(FRAMEPOINT_TOPLEFT, self, FRAMEPOINT_TOPLEFT)
+        ..setPoint(FRAMEPOINT_BOTTOMRIGHT, self, FRAMEPOINT_BOTTOMRIGHT)
+        ..setTexture("UI/Textures/main-background.dds", 0, true)
+
+        leftPanel = createFrame("FRAME", "", self, "", 0)
+        ..setPoint(FRAMEPOINT_TOPLEFT, self, FRAMEPOINT_TOPLEFT, 0.01, -0.038)
+        ..setPoint(FRAMEPOINT_BOTTOMRIGHT, self, FRAMEPOINT_BOTTOMRIGHT, -0.325, 0.01)
+
+        rightPanel = createFrame("FRAME", "", self, "", 0)
+        ..setPoint(FRAMEPOINT_TOPLEFT, self, FRAMEPOINT_TOPRIGHT, -0.315, -0.038)
+        ..setPoint(FRAMEPOINT_BOTTOMRIGHT, self, FRAMEPOINT_BOTTOMRIGHT, -0.01, 0.01)
+
+        let infoBar = createFrame("FRAME", "", leftPanel, "", 0)
+        ..setPoint(FRAMEPOINT_TOPLEFT, leftPanel, FRAMEPOINT_BOTTOMLEFT, 0.0, 0.2)
+        ..setPoint(FRAMEPOINT_BOTTOMRIGHT, leftPanel, FRAMEPOINT_BOTTOM)
 
         var t = Tooltip.create("Attack")
         ..addLine("Increases the attack of all your troops.")
@@ -98,34 +117,24 @@ public class UIHeroWindow
         getFrame("Icon").setTexture("UI/Textures/defence-borderless.dds", 0, true)
         defenceText = getFrame("Text")*/
 
-        inventory = new UIHeroInventory(pane)
+        inventory = new UIHeroInventory(leftPanel)
 
-        let right = createFrame("FRAME", "", pane, "", 0)
-        ..setPoint(FRAMEPOINT_TOPRIGHT, pane, FRAMEPOINT_TOPRIGHT)
-        ..setPoint(FRAMEPOINT_BOTTOMRIGHT, pane, FRAMEPOINT_BOTTOMRIGHT)
-        ..setWidth(0.3)
-
-        createFrame("HeroTome", right, 0, 0)
-        ..setPoint(FRAMEPOINT_TOPRIGHT, right, FRAMEPOINT_TOPRIGHT, -0.2, 0)
+        createFrame("HeroTome", leftPanel, 0, 0)
+        ..setPoint(FRAMEPOINT_TOPRIGHT, leftPanel, FRAMEPOINT_BOTTOMRIGHT, -0.03, 0.15)
         getFrame("Icon").setTexture("UI/Textures/might.dds", 0, true)
         mightText = getFrame("Text")
 
-        createFrame("HeroTome", right, 0, 0)
-        ..setPoint(FRAMEPOINT_TOPRIGHT, right, FRAMEPOINT_TOPRIGHT, -0.1, 0)
+        createFrame("HeroTome", leftPanel, 0, 0)
+        ..setPoint(FRAMEPOINT_TOPRIGHT, leftPanel, FRAMEPOINT_BOTTOMRIGHT, -0.03, 0.1)
         getFrame("Icon").setTexture("UI/Textures/mind.dds", 0, true)
         mindText = getFrame("Text")
 
-        createFrame("HeroTome", right, 0, 0)
-        ..setPoint(FRAMEPOINT_TOPRIGHT, right, FRAMEPOINT_TOPRIGHT, 0, 0)
+        createFrame("HeroTome", leftPanel, 0, 0)
+        ..setPoint(FRAMEPOINT_TOPRIGHT, leftPanel, FRAMEPOINT_BOTTOMRIGHT, -0.03, 0.05)
         getFrame("Icon").setTexture("UI/Textures/magic.dds", 0, true)
         magicText = getFrame("Text")
 
-        let skillTreeReference = createFrame("FRAME", "", right, "", 0)
-        ..setPoint(FRAMEPOINT_TOPLEFT, right, FRAMEPOINT_TOPLEFT, 0.03, -0.05)
-        ..setPoint(FRAMEPOINT_TOPRIGHT, right, FRAMEPOINT_TOPRIGHT, -0.03, -0.05)
-        ..setHeight(0.40)
-        ..setTexture("UI/Textures/hero-spectral-background.dds", 0, true)
-        skillTree = new UIHeroSkillTree(skillTreeReference, 0.3 - 0.06, 0.40)
+        skillTree = new UIHeroSkillTree(self, rightPanel)
 
 
     static function setVisible(Player p, boolean flag)
