@@ -9,7 +9,7 @@ import UITooltip
 
 public class CounterAttackTalent extends Talent
     construct()
-        super("Counter Attack", Icons.bTNHoldPosition)
+        super("Counter Attack", "Icons\\PASCounterAttack.blp")
 
     static function setup() returns Talent
         return new CounterAttackTalent()

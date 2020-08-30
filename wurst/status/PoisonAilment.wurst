@@ -1,12 +1,12 @@
 package PoisonAilment
 
 import AttachmentPoints
-import Buff
+import Status
 import Icons
 import UITooltip
 
 import initlater BoardStack
-import initlater BuffType
+import initlater StatusType
 import initlater BoardController
 import Damage
 import KUtil
@@ -15,14 +15,18 @@ import Cell
 import BoardTrigger
 import initlater DelayAnimation
 import Ailment
+import initlater BoardEntity
 
-public class PoisonAilment extends Buff
+public class PoisonAilment extends Status
     private static constant string NAME = "Poison"
     private static constant string EFFECT = "Abilities\\Weapons\\PoisonArrow\\PoisonArrowMissile.mdl"
 
-    static function setup()
-        BuffTypeSet.POISON = new BuffType(Icons.bTNOrbOfVenom, NAME, createTooltip(null)) (BoardStack stack) ->
-            return new PoisonAilment(BuffTypeSet.POISON, stack)
+    static function setup() returns StatusType
+        let statusType = new StatusType(Icons.bTNOrbOfVenom, NAME, createTooltip(null))
+        statusType.setCreationListener()(BoardStack stack) ->
+            return new PoisonAilment(statusType, stack)
+
+        return statusType
 
     private static constant DamagePreview damagePreview = createDamagePreview()
     
@@ -46,10 +50,10 @@ public class PoisonAilment extends Buff
         let avg = stacks.getCombinedDamage()
         damagePreview.dmg = realRange(avg * 0.8, avg * 1.2)
 
-    construct(BuffType bType, BoardStack stack)
-        super(bType, stack)
+    construct(StatusType statusType, BoardStack stack)
+        super(statusType, stack)
 
-        damageTakenListener = stack.getTriggers().addOnDamageTaken() (BoardStack source, BoardStack target, SpecificDamageInstance specificInstance, SequenzListener next) ->
+        damageTakenListener = stack.getTriggers().addOnDamageTaken() (BoardEntity source, BoardStack target, SpecificDamageInstance specificInstance, SequenzListener next) ->
             if specificInstance.damageInstance.isDot == false
                 dealDamage() ->
                     next.continue()
@@ -77,7 +81,7 @@ public class PoisonAilment extends Buff
         
         return tooltip
 
-    override protected function updateInner(BuffData data)
+    override protected function updateInner(StatusData data)
         stacks.add(data.duration, data.realValue)
 
     override protected function hide()

@@ -2,23 +2,25 @@ package StackStats
 
 import StackType
 import KUtil
-import StackStatsModifier
+import StatsModifier
 
 import initlater Stack
 import LinkedList
 import Talent
 import initlater BoardStack
+import HeroStats
 
 public class StackStats
     private Stack stack
+    private HeroStats heroStats
     StackType stackType
 
-    StackStatsModifier attackModi = new StackStatsModifier()
-    StackStatsModifier defenceModi = new StackStatsModifier()
-    StackStatsModifier damageModi = new StackStatsModifier()
-    StackStatsModifier initModi = new StackStatsModifier()
-    StackStatsModifier hpModi = new StackStatsModifier()
-    StackStatsModifier actionPointModi = new StackStatsModifier()
+    StatsModifier attackModi = new StatsModifier()
+    StatsModifier defenceModi = new StatsModifier()
+    StatsModifier damageModi = new StatsModifier()
+    StatsModifier initModi = new StatsModifier()
+    StatsModifier hpModi = new StatsModifier()
+    StatsModifier actionPointModi = new StatsModifier()
 
     int phyisicalResistance = 0
     int magicResistance = 0
@@ -31,6 +33,10 @@ public class StackStats
         return talents.filter() (Talent t) ->
             return t.isHidden() == false
 
+    function addUniqueTalent(Talent talent)
+        if talents.has(talent) == false
+            talents.add(talent)
+            
     function addTalent(Talent talent)
         talents.add(talent)
 
@@ -41,9 +47,10 @@ public class StackStats
         for talent in talents
             talent.onStackCreation(boardStack)
 
-    construct(Stack stack, StackType stackType)
+    construct(Stack stack, StackType stackType, HeroStats heroStats)
         this.stackType = stackType
         this.stack = stack
+        this.heroStats = heroStats
         this.talents.addAll(stackType.talents)
 
     @inline
@@ -72,11 +79,17 @@ public class StackStats
 
     @inline
     function getAttack() returns int
-        return attackModi.get(stackType.attack).round()
+        var basis = stackType.attack
+        if heroStats != null
+            basis += heroStats.getAttack()
+        return attackModi.get(basis).round()
 
     @inline
     function getDefence() returns int
-        return defenceModi.get(stackType.defence).round()
+        var basis = stackType.defence
+        if heroStats != null
+            basis += heroStats.getDefence()
+        return defenceModi.get(basis).round()
 
     @inline
     function getResistance(DamageType dType) returns int

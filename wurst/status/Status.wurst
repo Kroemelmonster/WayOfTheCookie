@@ -1,10 +1,10 @@
-package Buff
+package Status
 
 import initlater BoardStack
-import initlater BuffType
+import initlater StatusType
 import UITooltip
 
-public class BuffData
+public class StatusData
     int duration
     int intValue
     real realValue
@@ -18,21 +18,21 @@ public class BuffData
     function setRealValue(real value)
         this.realValue = value
 
-public abstract class Buff
-    protected BuffType bType
+public abstract class Status
+    protected StatusType statusType
     protected BoardStack stack
 
-    construct(BuffType bType, BoardStack stack)
-        this.bType = bType
+    construct(StatusType statusType, BoardStack stack)
+        this.statusType = statusType
         this.stack = stack
 
-    function getBuffType() returns BuffType
-        return bType
+    function getType() returns StatusType
+        return statusType
 
     function getIcon() returns string
-        return bType.getIcon()
+        return statusType.getIcon()
     
-    function update(BuffData data)
+    function update(StatusData data)
         updateInner(data)
         destroy data
 
@@ -42,12 +42,12 @@ public abstract class Buff
         But since you should only call this on a dead stack, it wont trigger anything anyway **/
     abstract function hide()
 
-    abstract function updateInner(BuffData data)
+    abstract function updateInner(StatusData data)
 
     /** Always use this tooltip instantly with intend to destroy it **/
     abstract function createCurrentTooltip() returns Tooltip
 
     protected function kill()
-        stack.removeBuff(this)
+        stack.removeStatus(this)
         destroy this
 

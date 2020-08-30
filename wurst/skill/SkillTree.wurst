@@ -1,0 +1,225 @@
+package SkillTree
+import Stack
+import LinkedList
+import SkillTreeTactician
+import SkillTreeVenomancer
+import initlater Hero
+import UITooltip
+
+public interface SkillStackUpdateListener
+    function onStackUpdate(ArmyStack armyStack, boolean add)
+
+interface SkillHeroUpdateListener
+    function onLevel(Hero hero)
+
+interface SkillTreeCreateListener
+    function create() returns SkillTree
+
+public class SkillTreeTypeSet
+    static SkillTreeType TACTICIAN
+    static SkillTreeType VENOMANCER
+
+    static function setup()
+        TACTICIAN = SkillTreeTactician.setup()
+        VENOMANCER = SkillTreeVenomancer.setup()
+
+public class SkillLevel
+    int costMight
+    int costMind
+    int costMagic
+    protected LinkedList<string> desc = new LinkedList<string>
+    protected Skill skill
+    protected int level
+    protected boolean learned = false
+    LinkedList<SkillLevel> requirements
+
+    protected SkillHeroUpdateListener listener
+    protected SkillStackUpdateListener stackListener
+
+    construct(Skill skill, int level)
+        this.skill = skill
+        this.level = level
+
+    function addLevelListener(SkillHeroUpdateListener listener)
+        this.listener = listener
+
+    function addStackListener(SkillStackUpdateListener stackListener)
+        this.stackListener = stackListener
+
+    function onStackUpdate(ArmyStack armyStack, boolean add)
+        if stackListener != null
+            this.stackListener.onStackUpdate(armyStack, add)
+
+    function addLine(string str)
+        desc.add(str)
+
+    function canLevel(Hero h) returns boolean
+        if h.might < costMight
+            return false
+        if h.mind < costMind
+            return false
+        if h.magic < costMagic
+            return false
+
+        if requirements != null
+            for SkillLevel requirement in requirements
+                if requirement.learned == false
+                    return false
+
+        return true
+
+    function doLevel(Hero h)
+        h.might -= costMight
+        h.mind -= costMind
+        h.magic -= costMagic
+
+        learned = true
+        if listener != null
+            listener.onLevel(h)
+
+
+public class Skill
+    string icon
+    string name
+    real x
+    real y
+    
+    int level = 0
+
+    protected LinkedList<SkillLevel> levels = new LinkedList<SkillLevel>()
+    protected LinkedList<Description> descriptions = null
+
+    construct(string name, string icon, real x, real y)
+        this.icon = icon
+        this.name = name
+        this.x = x
+        this.y = y
+
+    function addLevel(int costMight, int costMind, int costMagic, LinkedList<SkillLevel> requirements) returns SkillLevel
+        let newLevel = new SkillLevel(this, levels.size())
+        newLevel.costMight = costMight
+        newLevel.costMagic = costMagic
+        newLevel.costMind = costMind
+        newLevel.requirements = requirements
+        levels.add(newLevel)
+        return newLevel
+
+    function addDescription(Description description)
+        if descriptions == null
+            descriptions = new LinkedList<Description>
+        descriptions.add(description)
+
+    function onStackUpdate(ArmyStack armyStack, boolean add)
+        if level > 0
+            levels.get(level - 1).onStackUpdate(armyStack, add)
+
+    function canLevelUp(Hero h) returns boolean
+        if levels.size() <= level
+            return false
+        return levels.get(level).canLevel(h)
+
+    function dolevelUp(Hero h)
+        if canLevelUp(h) == false
+            return
+        let army = h.getArmy()
+        if level > 0
+            let earlierStackListener = levels.get(level - 1).stackListener
+            if earlierStackListener != null
+                for int i = 0 to Army.MAX_SIZE - 1
+                    let stack = army.getStack(i)
+                    if stack != null
+                        earlierStackListener.onStackUpdate(stack, false)
+
+        levels.get(level).doLevel(h)
+        let stackListener = levels.get(level).stackListener
+        if stackListener != null
+            for int i = 0 to Army.MAX_SIZE - 1
+                let stack = army.getStack(i)
+                if stack != null
+                    stackListener.onStackUpdate(stack, true)
+        
+        level ++
+    
+    function createTooltip(Hero h) returns Tooltip
+        let tt = Tooltip.create(name)
+        if level > 0
+            let curLevel = levels.get(level - 1)
+            for line in curLevel.desc
+                tt.addLine(line)
+
+        if level < levels.size()
+            if level > 0
+                tt.addLine("")
+            tt.addLine(Tooltip.secondaryString("Next Level"))
+            let nextLevel = levels.get(level)
+            if nextLevel.costMight > 0
+                if h.might >= nextLevel.costMight
+                    tt.addLine(Tooltip.stat("Might", Tooltip.COLOR_POSITIVE, nextLevel.costMight))
+                else
+                    tt.addLine(Tooltip.stat("Might", Tooltip.COLOR_NEGATIVE, nextLevel.costMight))
+            if nextLevel.costMind > 0
+                if h.mind >= nextLevel.costMind
+                    tt.addLine(Tooltip.stat("Mind", Tooltip.COLOR_POSITIVE, nextLevel.costMind))
+                else
+                    tt.addLine(Tooltip.stat("Mind", Tooltip.COLOR_NEGATIVE, nextLevel.costMind))
+            if nextLevel.costMagic > 0
+                if h.magic >= nextLevel.costMagic
+                    tt.addLine(Tooltip.stat("Magic", Tooltip.COLOR_POSITIVE, nextLevel.costMagic))
+                else
+                    tt.addLine(Tooltip.stat("Magic", Tooltip.COLOR_NEGATIVE, nextLevel.costMagic))
+            if nextLevel.requirements != null
+                for requirement in nextLevel.requirements
+                    let txt = requirement.skill.name + " ["+(requirement.level + 1).toString() + "]"
+                    if requirement.learned
+                        tt.addLine(Tooltip.stat("Requires", Tooltip.COLOR_POSITIVE, txt))
+                    else
+                        tt.addLine(Tooltip.stat("Requires", Tooltip.COLOR_NEGATIVE, txt))
+
+            tt.addLine("")
+            for line in nextLevel.desc
+                tt.addLine(line)
+        
+        if descriptions != null
+            for description in descriptions
+                tt.addLine("")
+                for line in description.lines
+                    tt.addLine(line)
+
+
+        
+        return tt
+
+
+public class SkillTreeType
+    protected string name
+    protected SkillTreeCreateListener listener
+
+    construct(string name)
+        this.name = name
+    
+    function addListener(SkillTreeCreateListener listener)
+        this.listener = listener
+
+    @inline
+    function createNew() returns SkillTree
+        return listener.create()
+    
+
+public abstract class SkillTree
+    protected SkillTreeType skillTreeType
+    LinkedList<Skill> skills = new LinkedList<Skill>()
+    
+    protected SkillStackUpdateListener stackListener
+
+    protected function addSkillTreeListener(SkillStackUpdateListener listener)
+        this.stackListener = listener
+
+    function onStackUpdate(ArmyStack armyStack, boolean add)
+        if stackListener != null
+            this.stackListener.onStackUpdate(armyStack, add)
+
+    construct(SkillTreeType skillTreeType)
+        this.skillTreeType = skillTreeType
+    
+    function getName() returns string
+        return skillTreeType.name

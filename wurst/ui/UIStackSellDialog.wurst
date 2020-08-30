@@ -31,7 +31,7 @@ public class UIStackSellDialog extends UIDialog
     private static constant goldCancelIndicatorColor = colorA(255, 20, 20, 255)
 
     construct()
-        super()
+        super(true)
 
         slider = new UISlider(pane)
         slider.getFrame().setPoint(FRAMEPOINT_TOP, pane, FRAMEPOINT_TOP, 0, -0.065)
@@ -127,6 +127,19 @@ public class UIStackSellDialog extends UIDialog
         MainController.buyStack(p.hero, info.stack, info.amount, info.cost)
         hide(p)
 
+    private function update(Player p)
+        let info = p.dialogInfo.sellInfo
+        if p.isLocal()
+            slider.setValue(info.amount)
+            editBox.setText(info.amount.toString())
+            totalGoldPrice.setText((info.amount * info.cost).toString())
+            if info.amount > info.maxAmountGold
+                totalGoldPrice.setTextColor(goldCancelIndicatorColor)
+            else
+                totalGoldPrice.setTextColor(COLOR_WHITE)
+            acceptButton.setEnabled(info.amount > 0 and info.amount <= info.maxAmount)
+            leaderShipCancelIndicator.setVisible(info.amount > info.maxAmountLeaderShip)
+
     function show(Player p, Stack stack, int cost)
         let info = p.dialogInfo.sellInfo
         info.stack = stack
@@ -144,18 +157,5 @@ public class UIStackSellDialog extends UIDialog
 
 
         update(p)
-
-    function update(Player p)
-        let info = p.dialogInfo.sellInfo
-        if p.isLocal()
-            slider.setValue(info.amount)
-            editBox.setText(info.amount.toString())
-            totalGoldPrice.setText((info.amount * info.cost).toString())
-            if info.amount > info.maxAmountGold
-                totalGoldPrice.setTextColor(goldCancelIndicatorColor)
-            else
-                totalGoldPrice.setTextColor(COLOR_WHITE)
-            acceptButton.setEnabled(info.amount > 0 and info.amount <= info.maxAmount)
-            leaderShipCancelIndicator.setVisible(info.amount > info.maxAmountLeaderShip)
 
         

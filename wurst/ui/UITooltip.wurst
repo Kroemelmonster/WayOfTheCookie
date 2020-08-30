@@ -5,8 +5,8 @@ import UIActionWindow
 import LinkedList
 import FramehandleNames
 import KUtil
-import initlater BuffType
-import StackStatsModifier
+import initlater StatusType
+import StatsModifier
 import initlater Damage
 import initlater StackType
 
@@ -17,9 +17,19 @@ constant MIN_HEIGHT = 0.08
 framehandle lineTest
 real tooltipTextWidth
 
-class TooltipLine
-    protected string str
-    protected int resultingLines
+public class Description
+    LinkedList<string> lines = new LinkedList<string>()
+
+public enum TooltipAnchor
+    TOP_LEFT
+    TOP_RIGHT
+    BOTTOM_RIGHT
+    BOTTOM_LEFT
+    BOTTOM_LEFT_UP
+
+public class TooltipLine
+    string str
+    int resultingLines
 
     construct(string str)
         setLine(str)
@@ -51,6 +61,14 @@ public class Tooltip
     static constant DAMAGE_COLOR_MAGICAL = colorA(43, 181, 245, 200).toColorString()
     static constant DAMAGE_COLOR_POISON = colorA(167, 252, 71, 199).toColorString()
     static constant DAMAGE_COLOR_FIRE = colorA(255, 120, 86, 200).toColorString()
+
+    static Description DESCRIPTION_POISON = new Description()
+
+    static function setup()
+        DESCRIPTION_POISON.lines.add(Tooltip.secondaryString("Poisoned") + " is an Ailment that makes you suffer a small percentage of the initial hit as " + 
+            Tooltip.coloredString(Tooltip.DAMAGE_COLOR_POISON, "poison") + " Damage")
+        DESCRIPTION_POISON.lines.add("Additionaly to inflict its damage on the start of the turn, it also procs everytime the unit takes non-dot damage")
+        
 
     protected string header = ""
     protected LinkedList<TooltipLine> lines = new LinkedList<TooltipLine>
@@ -136,6 +154,10 @@ public class Tooltip
         return statInner(prefix, coloredRange(Tooltip.COLOR_PRIMARY, value))
 
     @inline
+    static function stat(string prefix, string color, string value) returns string
+        return statInner(prefix, coloredString(color, value))
+
+    @inline
     static function stat(string prefix, string color, int value) returns string
         return statInner(prefix, coloredInt(color, value))
 
@@ -184,7 +206,7 @@ public class Tooltip
         return coloredString(COLOR_PRIMARY, percent(perc))
 
     @inline
-    static function modi(StackStatsModifier modi) returns string
+    static function modi(StatsModifier modi) returns string
         var str = coloredModiInt(modi.addBonus)
         if modi.multi != 100
             str += " (" + coloredPercent((modi.multi - 100) / 100.0) + ")"
@@ -207,9 +229,9 @@ public class Tooltip
             destroy other
 
     @inline
-    function addBuffType(BuffType buffType)
-        addLine(statInner("Buff", coloredString(COLOR_SECONDARY, buffType.getName())))
-        addTooltip(buffType.getTooltip(), false)
+    function addStatusType(StatusType statusType)
+        addLine(statInner("Status", coloredString(COLOR_SECONDARY, statusType.getName())))
+        addTooltip(statusType.getTooltip(), false)
 
     @inline
     function addSpecificDamagePreview(SpecificDamagePreview preview)
@@ -247,6 +269,11 @@ public class Tooltip
                 count += ttLine.resultingLines
         return count
 
+    function display(Player p, boolean once, TooltipAnchor anchor, framehandle reference)
+        UITooltip.setTooltip(p, this, anchor, reference)
+        if once
+            destroy this
+
     function display(Player p, boolean once)
         UITooltip.setTooltip(p, this)
         if once
@@ -277,7 +304,7 @@ class UITooltip
 
         tooltipTextWidth = self.getWidth() - 0.01
 
-        self.setPoint(FRAMEPOINT_BOTTOMRIGHT, UIActionWindow.self(), FRAMEPOINT_TOPRIGHT)
+        //self.setPoint(FRAMEPOINT_BOTTOMRIGHT, UIActionWindow.self(), FRAMEPOINT_TOPRIGHT)
 
         for int i = 0 to 3
             costPoints[i] = createFrame(FramehandleTypeNames.backdrop, "", header, "", 0)
@@ -298,10 +325,34 @@ class UITooltip
             ..setTexture("cooldown.blp", 0, true)
             ..setVisible(false)
 
+    static protected function setTooltip(Player p, Tooltip tt, TooltipAnchor anchor, framehandle reference)
+        if p.isLocal() == false
+            return
+        
+        self.clearAllPoints()
+        switch anchor
+            case TOP_RIGHT
+                self.setPoint(FRAMEPOINT_TOPRIGHT, reference, FRAMEPOINT_TOPLEFT)
+            case BOTTOM_RIGHT
+                self.setPoint(FRAMEPOINT_BOTTOMRIGHT, reference, FRAMEPOINT_BOTTOMLEFT)
+            case BOTTOM_LEFT
+                self.setPoint(FRAMEPOINT_BOTTOMLEFT, reference, FRAMEPOINT_BOTTOMRIGHT)
+            case BOTTOM_LEFT_UP
+                self.setPoint(FRAMEPOINT_BOTTOMLEFT, reference, FRAMEPOINT_TOPLEFT)
+            default
+                self.setPoint(FRAMEPOINT_TOPLEFT, reference, FRAMEPOINT_TOPRIGHT)
+        setTooltipInner(tt)
+
+
     static protected function setTooltip(Player p, Tooltip tt)
         if p.isLocal() == false
             return
-     
+        
+        self.clearAllPoints()
+        self.setPoint(FRAMEPOINT_BOTTOMRIGHT, UIActionWindow.self(), FRAMEPOINT_TOPRIGHT)
+        setTooltipInner(tt)
+
+    private static function setTooltipInner(Tooltip tt)
         text.setText(tt.convert())
         let lineNumbers = tt.getLineCount()
         let height = lineNumbers * LINE_HEIGHT
@@ -320,7 +371,6 @@ class UITooltip
         cooldownIcon.setVisible(tt.cooldown > 0)
 
         headerText.setText(tt.header)
-
 
     static function hide(Player p)
         if p.isLocal()

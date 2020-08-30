@@ -6,12 +6,14 @@ import PlayerData
 
 import initlater UIStackSellDialog
 import initlater UIStackSplitDialog
+import initlater UIFightResultDialog
 
 public class DialogInfo
     UIDialog current = null
 
     StackSellDialogInfo sellInfo = new StackSellDialogInfo()
     StackSplitDialogInfo splitInfo = new StackSplitDialogInfo()
+    FightResultDialogInfo fightResultInfo = new FightResultDialogInfo()
 
 public abstract class UIDialog
     protected framehandle self
@@ -19,7 +21,7 @@ public abstract class UIDialog
 
     protected framehandle cancelBtn
 
-    construct()
+    construct(boolean withCancel)
         self = createFrame("BasicBorderWindow", GAME_UI, 0, 0)
         ..setSize(0.25, 0.12)
         ..setVisible(false)
@@ -27,16 +29,18 @@ public abstract class UIDialog
         ..setPoint(FRAMEPOINT_CENTER, GAME_UI, FRAMEPOINT_CENTER)
         pane = getFrame("WindowPane")
 
-        
-        createFrame("DialogCancelButton", pane, 0, 0)
-        ..setPoint(FRAMEPOINT_BOTTOMRIGHT, pane, FRAMEPOINT_BOTTOMRIGHT, 0.0, 0.0)
-        ..setLevel(100)
-        ..onClick() ->
-            cancel(GetTriggerPlayerData())
-        getFrame("DialogButtonText").setText("Cancel")
+        if withCancel
+            createFrame("DialogCancelButton", pane, 0, 0)
+            ..setPoint(FRAMEPOINT_BOTTOMRIGHT, pane, FRAMEPOINT_BOTTOMRIGHT, 0.0, 0.0)
+            ..setLevel(100)
+            ..onClick() ->
+                cancel(GetTriggerPlayerData())
+            getFrame("DialogButtonText").setText("Cancel")
 
 
     function show(Player p)
+        if p.dialogInfo.current != null
+            p.dialogInfo.current.cancel(p)
         p.dialogInfo.current = this
         self.setVisible(p.blzPlayer, true)
 

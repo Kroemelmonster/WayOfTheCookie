@@ -1,6 +1,6 @@
 package UIController
 
-import UIStackWindow
+import UIEntityWindow
 import UIWorldConsole
 
 import initlater Board
@@ -14,24 +14,25 @@ import initlater UIActionWindow
 import initlater OrderSystem
 import initlater InitiativeList
 import initlater MouseContext
+import initlater BoardEntity
 
 class UIController
 
-    static function selectStack(Player p, BoardStack stack)
+    static function selectEntity(Player p, BoardEntity entity)
         UIActionWindow.update(p)
-        p.stackWindowInfo.setBoardStack(stack)
+        p.stackWindowInfo.setBoardEntity(entity)
             
     static function triggerOnActionChange(Board board)
-        let currentStack = board.getInitiative().getCurrentStack()
-        let currentPlayer = currentStack.getPlayer()
-
-        currentStack.getCurrentAction().onAnyStackCellChange()
+        let currentEntry = board.getInitiative().getCurrent().getBoardEntity()
+        currentEntry.getCurrentAction().onAnyStackCellChange()
+        let currentPlayer = currentEntry.getPlayer()
 
         board.draw(currentPlayer)
         UIActionWindow.update(currentPlayer)
 
     static function triggerOnStackCreationOrDeathChange(Board board)
         triggerOnAnyStackCellChange(board)
+        // TODO this should be hannelded in initiative List
         UIInitiativeWindow.refresh(board.getInitiative())
         
     static function triggerOnAnyStackCellChange(Board board)
@@ -43,7 +44,7 @@ class UIController
     static function triggerOnPlayerCellHighlight(Player p)
         if OrderSystem.canOrder(p)
             // currentSelectStack is also the current stack inintaitve
-            p.currentSelectedStack.getCurrentAction().recalculateHighlight(p)
+            p.currentSelectedEntity.getCurrentAction().recalculateHighlight(p)
 
         
         p.playingBoard.draw(p)
@@ -51,19 +52,19 @@ class UIController
     static function triggerOnStackAmountChange(BoardStack stack)
         UIInitiativeWindow.refresh(stack.getPlayer().playingBoard.getInitiative())
     
-    static function onTurnEnd(BoardStack stack)
-        stack.setHighlight(false)
-        UIActionWindow.hide(stack.getPlayer())
+    static function onTurnEnd(BoardEntity entity)
+        entity.setHighlight(false)
+        UIActionWindow.hide(entity.getPlayer())
 
-    static function onTurnStart(BoardStack stack)
-        UIInitiativeWindow.refresh(stack.getPlayer().playingBoard.getInitiative())
-        MouseContext.forcePlayerSelect(stack.getPlayer(), stack.getCell())
-        stack.getPlayer().playingBoard.drawAll()
+    static function onTurnStart(BoardEntity entity)
+        MouseContext.forcePlayerSelect(entity.getPlayer(), entity.getCell())
+        entity.setHighlight(true)
+        entity.getPlayer().playingBoard.drawAll()
 
-    static function triggerOnActionPointChange(BoardStack stack)
-        UIActionWindow.update(stack.getPlayer())
-        stack.getDefaultAction().onAnyStackCellChange()
-        stack.getBoard().drawAll()
+    static function triggerOnActionPointChange(BoardEntity entity)
+        UIActionWindow.update(entity.getPlayer())
+        entity.getDefaultAction().onAnyStackCellChange()
+        entity.getBoard().drawAll()
 
     private static function switchToCombat(Player p)
         if p.dialogInfo.current != null
@@ -81,3 +82,4 @@ class UIController
         p.blzPlayer.setCameraPosition(p.hero.getCoord())
         UIWorldConsole.setVisible(p, true)
         UIInitiativeWindow.setVisible(p, false)
+        UIActionWindow.hide(p)

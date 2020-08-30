@@ -3,6 +3,7 @@ import StackType
 import KUtil
 import BoardStack
 import UITooltip
+import BoardEntity
 
 
 public constant DAMAGECALC_ATTACK_VS_DEFENCE_POSITIVE = 5.0
@@ -42,7 +43,7 @@ public class DamageInstance extends Damage
         this.copyTo(copy)
         return copy
 
-    function getSpecific(BoardStack source, BoardStack target) returns SpecificDamageInstance
+    function getSpecific(BoardEntity source, BoardStack target) returns SpecificDamageInstance
         return new SpecificDamageInstance(this, source, target)
 
 public class DamagePreview extends Damage
@@ -62,7 +63,7 @@ public class DamagePreview extends Damage
         super.copyTo(instance)
         return instance
 
-    function addSpecificToTooltip(BoardStack source, BoardStack target, Tooltip tooltip)
+    function addSpecificToTooltip(BoardEntity source, BoardStack target, Tooltip tooltip)
         let preview = new SpecificDamagePreview(this, source, target)
         tooltip.addSpecificDamagePreview(preview)
         destroy preview
@@ -79,7 +80,7 @@ public class SpecificDamageInstance extends SpecificDamage
     int remainingHp
     DamageInstance damageInstance
 
-    construct(DamageInstance baseDamage, BoardStack source, BoardStack target)
+    construct(DamageInstance baseDamage, BoardEntity source, BoardStack target)
         super(target)
         damageInstance = baseDamage.copy()
         let factor = calculateDamageFactor(source, damageInstance, target)
@@ -97,7 +98,7 @@ public class SpecificDamagePreview extends SpecificDamage
     intRange amount
     DamagePreview damagePreview
 
-    construct(DamagePreview baseDamage, BoardStack source, BoardStack target)
+    construct(DamagePreview baseDamage, BoardEntity source, BoardStack target)
         super(target)
         damagePreview = baseDamage.copy()
         let factor = calculateDamageFactor(source, damagePreview, target)
@@ -123,10 +124,11 @@ public function calculateAttackVsDefencePercentage(int attack, int defence) retu
             negativeEffect = DAMAGECALC_ATTACK_VS_DEFENCE_NEGATIVE_MAX
         return negativeEffect
 
-function calculateDamageFactor(BoardStack source, Damage dmg, BoardStack target) returns real
+function calculateDamageFactor(BoardEntity source, Damage dmg, BoardStack target) returns real
     let resistanceFactor = (1 - (target.stats.getResistance(dmg.damageType) / 100.0))
-    if dmg.sourceType == ATTACK
-        let attackFactor = (1 + calculateAttackVsDefencePercentage(source.stats.getAttack(), target.stats.getDefence()) / 100)
+    if dmg.sourceType == ATTACK and source.getType() == EntityType.STACK
+        let sourceAttacker = source.toStack()
+        let attackFactor = (1 + calculateAttackVsDefencePercentage(sourceAttacker.stats.getAttack(), target.stats.getDefence()) / 100)
         return resistanceFactor * attackFactor
     // TODO here could be more triggers for calulating specific dmg
     return resistanceFactor

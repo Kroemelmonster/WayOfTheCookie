@@ -1,0 +1,67 @@
+package HeroType
+
+import KUtil
+import StackType
+import LinkedList
+import SkillTree
+
+public class HeroType
+    integer unitId
+    integer armyUnitId
+    string icon
+    string name
+
+    int attack
+    int defence
+    int power
+    int wisdom
+    int initiative
+    int actionPoints
+
+    intRange damage
+    
+    DamageType damageType = PHYISICAL
+
+    LinkedList<SkillTreeType> skillTrees = new LinkedList<SkillTreeType>()
+
+    construct(integer unitId, integer armyUnitId, string icon, string name)
+        this.unitId = unitId
+        this.armyUnitId = armyUnitId
+        this.icon = icon
+        this.name = name
+
+    @inline
+    function addSkillTree(SkillTreeType skillTreeType)
+        skillTrees.add(skillTreeType)
+    
+    @inline
+    function setDamage(intRange value)
+        damage = value
+
+    @inline
+    function setInitiative(int value)
+        initiative = value
+
+    @inline
+    function setActionPoints(int value)
+        actionPoints = value
+
+    @inline
+    function setAttack(int value)
+        attack = value
+
+    @inline
+    function setDefence(int value)
+        defence = value
+
+    @inline
+    function setPower(int value)
+        power = value
+
+    @inline
+    function setWisdom(int value)
+        wisdom = value
+    
+    @inline
+    function setDamageType(DamageType value)
+        this.damageType = value

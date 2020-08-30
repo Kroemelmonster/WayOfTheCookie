@@ -15,10 +15,10 @@ public class Cell
     private static constant MODEL_FILE_OUTER = "HexicModularOuter.mdl"
     private static constant INNER_DEFAULT_COLOR = color(20, 20, 20)
     private static constant INNER_SELECT_COLOR = color(139, 15, 240)
-    private static constant INNER_INTERACTABLE_COLOR = color(120, 120, 120)
+    private static constant INNER_INTERACTABLE_COLOR = color(136, 136, 136)
     private static constant INNER_INTERACTABLE_NEGATIVE_COLOR = color(200, 20, 20)
     private static constant INNER_INTERACTABLE_POSITIVE_COLOR = color(20, 200, 20)
-    private static constant INNER_INTERACTABLE_NEUTRAL_COLOR = color(255, 255, 255)
+    private static constant INNER_INTERACTABLE_NEUTRAL_COLOR = color(255, 218, 53)
 
     private static constant OUTER_DEFAULT_COLOR = color(255, 255, 255)
     private static constant OUTER_ALPHA = 90
@@ -111,10 +111,7 @@ public class Cell
 
     /**  VISUALS  **/
      // ! this method is already behind localPlayer
-    function draw(Player p, Action action, boolean canGiveOrders, Cell currentStackCell, Cell currentSelectedCell)
-        if this == currentStackCell
-            // later aligator
-        
+    function draw(Player p, Action action, boolean canGiveOrders, Cell currentSelectedCell)
         var innerColor = INNER_DEFAULT_COLOR
         var alpha = 20
 
@@ -131,6 +128,7 @@ public class Cell
             switch(cellResult)
                 case CellResult.DEFAULT
                     innerColor = INNER_INTERACTABLE_COLOR
+                    alpha = 100
                 case CellResult.NEGATIVE
                     innerColor = INNER_INTERACTABLE_NEGATIVE_COLOR
                     alpha = 100

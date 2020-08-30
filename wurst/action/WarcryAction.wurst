@@ -7,21 +7,18 @@ import Abilities
 import Action
 import InstantAction
 
-import OrderSystem
 import BoardController
 import UITooltip
-import BuffController
-import BuffType
+import StatusController
+import StatusType
 import UIActionWindow
 import KUtil
 import LinkedList
-import Stack
 
 import initlater BoardStack
 import StackType
-import Scheduler
 import DelayAnimation
-import Buff
+import Status
 import CastAnimation
 import BoardTrigger
 import HashMap
@@ -38,11 +35,11 @@ public class WarcryAction extends InstantAction
     private static constant int BUFF_DURATION = 3
     private static constant string KEY = "Y"
     private static constant string EFFECT = Abilities.roarCaster
-    private static BuffType BUFF
+    private static StatusType BUFF
     private static Tooltip BASE_TOOLTIP
 
     static function setup()
-        BUFF = BuffTypeSet.WARCRY
+        BUFF = StatusTypeSet.WARCRY
         BASE_TOOLTIP = Tooltip.create(NAME)
         ..setCost(COST)
         
@@ -51,7 +48,7 @@ public class WarcryAction extends InstantAction
         ..addLine("")
         ..addLine("Gives every enemy unit in range the "+Tooltip.secondaryString(BUFF.getName())+ " Buff effect for "+Tooltip.primaryString(BUFF_DURATION.toString())+ " rounds")
         ..addLine("-----")
-        ..addBuffType(BUFF)
+        ..addStatusType(BUFF)
 
     private Tooltip tooltip
     construct(BoardStack stack)
@@ -83,24 +80,24 @@ public class WarcryAction extends InstantAction
         CastAnimation.create(stack) () ->
             flashEffect(EFFECT, stack.getCell().getCoord())
             for target in targets
-                BuffController.addBuff(BUFF, target, new BuffData(BUFF_DURATION))
+                StatusController.add(BUFF, target, new StatusData(BUFF_DURATION))
             destroy targets
 
             DelayAnimation.create(board, 0.5) -> // this is the backswing for casting
                 charge --
                 cooldown = COOLDOWN + 1
 
-                stack.stats.addActionPoints(-COST)
-                BoardController.finishOrder(stack, true)
+                stack.addActionPoints(-COST)
+                BoardController.finishOrder(entity, true)
             
 
     override function onUIMouseEnter()
         tooltip.display(stack.getPlayer(), false)
-        UIActionWindow.updateActionPoints(stack, COST)
+        UIActionWindow.updateActionPoints(entity, COST)
             
     override function onUIMouseLeave()
         UITooltip.hide(stack.getPlayer())
-        UIActionWindow.updateActionPoints(stack, 0)
+        UIActionWindow.updateActionPoints(entity, 0)
 
     override function canBeActivatedByKey(string key) returns boolean
         return key == KEY
@@ -112,7 +109,6 @@ public class WarcryAction extends InstantAction
         var cost = COST
         if cost == 0
             cost = 1 // after you moved all points you cant even use a spell that cost nothing
-        let possibleMovePoints = stack.stats.getMoveSpeed() - cost
         Cell bestCell = null
         var highestWeightSoFar = 0.0
         var highestRemainingActionPoints = 0
@@ -124,13 +120,17 @@ public class WarcryAction extends InstantAction
                 let itr = target.getCell().eachCellInRangeIterator(intRange(1, MAXRANGE))
                 while itr.hasNext()
                     let cell = itr.next()
-                    let currentCost = pathing.get(cell).cost
-                    if currentCost <= possibleMovePoints
+                    var remaining = stack.getRemainingActionPoints()
+                    if cell != stack.getCell()
+                        remaining = -1
+                        let pCell = pathing.get(cell)
+                        if pCell != null
+                            remaining = pCell.getRemainingActionPoints(stack)
+                    if remaining >= cost
                         var newWeight = 100.0
                         if weightCells.has(cell)
                             newWeight += weightCells.get(cell)
                         weightCells.put(cell, newWeight)
-                        let remaining = (possibleMovePoints - currentCost).floor()
                         if newWeight > highestWeightSoFar
                             highestWeightSoFar = newWeight
                             bestCell = cell

@@ -1,0 +1,159 @@
+package UIFightResultDialog
+
+import ClosureFrames
+
+import PlayerData
+
+import UIDialog
+import UISlider
+
+import initlater MainController
+import initlater Stack
+import initlater Board
+import BoardTrigger
+import ClosureTimers
+import FightResult
+import UITooltip
+
+public class FightResultDialogInfo
+    protected SequenzListener listener
+
+class UIFightResultStack
+    protected framehandle icon
+    protected framehandle before
+    protected framehandle after
+
+    construct(framehandle pane)
+        icon = createFrame("BACKDROP", "", pane, "", 0)
+        ..setSize(0.04, 0.04)
+        ..setVisible(false)
+
+        before = createFrame("CommandButtonText", icon, 0, 0)
+        ..setPoint(FRAMEPOINT_TOPLEFT, icon, FRAMEPOINT_BOTTOMLEFT)
+        ..setPoint(FRAMEPOINT_TOPRIGHT, icon, FRAMEPOINT_BOTTOMRIGHT, -0.002, 0)
+        ..setHeight(0.009)
+
+        after = createFrame("CommandButtonText", icon, 0, 0)
+        ..setPoint(FRAMEPOINT_TOPLEFT, before, FRAMEPOINT_BOTTOMLEFT)
+        ..setPoint(FRAMEPOINT_TOPRIGHT, before, FRAMEPOINT_BOTTOMRIGHT, -0.0, 0)
+        ..setHeight(0.009)
+
+
+public class UIFightResultDialog extends UIDialog
+    private static constant MAX_STACKS = 10
+    private framehandle title
+    private framehandle rewardLeft
+    private framehandle rewardRight
+
+    private UIFightResultStack array[MAX_STACKS] firstStacks
+    private UIFightResultStack array[MAX_STACKS] secondStacks
+
+    construct()
+        super(false)
+        
+        self.setSize(0.4, 0.25)
+
+        title = createFrame("HeaderText", pane, 0, 0)
+        ..setPoint(FRAMEPOINT_TOPLEFT, pane, FRAMEPOINT_TOPLEFT, 0.0, 0.0)
+        ..setPoint(FRAMEPOINT_TOPRIGHT, pane, FRAMEPOINT_TOPRIGHT, 0.0, 0.0)
+
+        createFrame("DialogAcceptButton", pane, 0, 0)
+        ..setPoint(FRAMEPOINT_BOTTOMRIGHT, pane, FRAMEPOINT_BOTTOMRIGHT, 0.0, 0.0)
+        ..setLevel(100)
+        ..onClick() ->
+            cancel(GetTriggerPlayerData())
+        getFrame("DialogButtonText").setText("Ok")
+
+        let rewardFrame = createFrame("FRAME", "", pane, "", 0)
+        ..setPoint(FRAMEPOINT_TOPLEFT, pane, FRAMEPOINT_BOTTOMLEFT, 0.01, 0.04)
+        ..setPoint(FRAMEPOINT_BOTTOMRIGHT, pane, FRAMEPOINT_BOTTOMRIGHT, -0.1, 0.0)
+        
+        rewardLeft = createFrame("TEXT", "", rewardFrame, "", 0)
+        ..setPoint(FRAMEPOINT_TOPLEFT, rewardFrame, FRAMEPOINT_TOPLEFT, 0.0, -0.0)
+        ..setPoint(FRAMEPOINT_BOTTOMRIGHT, rewardFrame, FRAMEPOINT_BOTTOM, 0.0, -0.0)
+
+        rewardRight = createFrame("TEXT", "", rewardFrame, "", 0)
+        ..setPoint(FRAMEPOINT_TOPLEFT, rewardFrame, FRAMEPOINT_TOP, 0.0, -0.0)
+        ..setPoint(FRAMEPOINT_BOTTOMRIGHT, rewardFrame, FRAMEPOINT_BOTTOMRIGHT, 0.0, -0.0)
+
+
+        for int i = 0 to MAX_STACKS - 1
+            firstStacks[i] = new UIFightResultStack(pane)
+            if i == 0
+                firstStacks[i].icon.setPoint(FRAMEPOINT_TOPLEFT, pane, FRAMEPOINT_TOPLEFT, 0.01, -0.02)
+            else
+                firstStacks[i].icon.setPoint(FRAMEPOINT_TOPLEFT, firstStacks[i-1].icon, FRAMEPOINT_TOPRIGHT, 0.002, 0.0)
+
+            secondStacks[i] = new UIFightResultStack(pane)
+            if i == 0
+                secondStacks[i].icon.setPoint(FRAMEPOINT_TOPLEFT, pane, FRAMEPOINT_TOPLEFT, 0.01, -0.08)
+            else
+                secondStacks[i].icon.setPoint(FRAMEPOINT_TOPLEFT, secondStacks[i-1].icon, FRAMEPOINT_TOPRIGHT, 0.002, 0.0)
+
+
+            
+
+    override function cancelInner(Player p)
+        p.dialogInfo.fightResultInfo.listener.continue()
+
+    function show(Player p, FightResult result, SequenzListener listener)
+        super.show(p)
+
+        let info = p.dialogInfo.fightResultInfo
+        info.listener = listener
+
+        if p.isLocal() == false
+            return
+
+        switch result.getResult()
+            case WON
+                title.setText("You Won")
+            case LOST
+                title.setText("You Lost")
+            default
+                title.setText("Draw")
+
+        let reward = result.getReward()
+        var str = Tooltip.stat("Experience", Tooltip.COLOR_POSITIVE, "+"+reward.exp.toString()) + "|n"
+        str += Tooltip.stat("Gold", Tooltip.COLOR_NEGATIVE, "+NOTHING")
+        rewardLeft.setText(str)
+
+        str = ""
+        if reward.level > 0
+            str = Tooltip.stat("LevelUp!", Tooltip.COLOR_POSITIVE, "+"+reward.level.toString()) + "|n"
+            str += Tooltip.stat("Might", Tooltip.COLOR_POSITIVE, "+"+reward.might.toString()) + "|n"
+            str += Tooltip.stat("Mind", Tooltip.COLOR_POSITIVE, "+"+reward.mind.toString()) + "|n"
+            str += Tooltip.stat("Magic", Tooltip.COLOR_POSITIVE, "+"+reward.magic.toString())
+        rewardRight.setText(str)
+
+        for int i = 0 to MAX_STACKS - 1
+            if i < result.self.size()
+                let selfStack = result.self.get(i)
+                firstStacks[i].icon.setVisible(true)
+                firstStacks[i].icon.setTexture(selfStack.getStackType().icon, 0, true)
+                firstStacks[i].before.setText(selfStack.getBefor().toString())
+                let dif = selfStack.getAfter() - selfStack.getBefor()
+                if dif < 0
+                    firstStacks[i].after.setText(Tooltip.coloredInt(Tooltip.COLOR_NEGATIVE, dif))
+                else if dif == 0
+                    firstStacks[i].after.setText(Tooltip.coloredInt(Tooltip.COLOR_SECONDARY, dif))
+                else
+                    firstStacks[i].after.setText(Tooltip.coloredString(Tooltip.COLOR_NEGATIVE, "+" + dif.toString()))
+            else
+                firstStacks[i].icon.setVisible(false)
+
+            if i < result.enemy.size()
+                let selfStack = result.enemy.get(i)
+                secondStacks[i].icon.setVisible(true)
+                secondStacks[i].icon.setTexture(selfStack.getStackType().icon, 0, true)
+                secondStacks[i].before.setText(selfStack.getBefor().toString())
+                let dif = selfStack.getAfter() - selfStack.getBefor()
+                if dif < 0
+                    secondStacks[i].after.setText(Tooltip.coloredInt(Tooltip.COLOR_NEGATIVE, dif))
+                else if dif == 0
+                    secondStacks[i].after.setText(Tooltip.coloredInt(Tooltip.COLOR_SECONDARY, dif))
+                else
+                    secondStacks[i].after.setText(Tooltip.coloredString(Tooltip.COLOR_NEGATIVE, "+" + dif.toString()))
+            else
+                secondStacks[i].icon.setVisible(false)
+    

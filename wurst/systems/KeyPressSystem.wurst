@@ -31,6 +31,7 @@ function onKeyPress()
 
     let keyString = KEY2STRING[key]
 
-    if isDown and p.keyPressListener != null
-        p.keyPressListener.onEvent(p, keyString)
+    if isDown and p.keyPressListener.size() > 0
+        for listener in p.keyPressListener
+            listener.onEvent(p, keyString)
         

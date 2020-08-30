@@ -1,0 +1,81 @@
+package HeroStats
+
+import KUtil
+import StatsModifier
+
+import initlater Hero
+import initlater HeroType
+
+public class HeroStats
+    private Hero hero
+    HeroType heroType
+
+    protected int mana = 0
+
+    int basicAttack
+    int basicDefence
+    int basicPower
+    int basicWisdom
+
+    StatsModifier attackModi = new StatsModifier()
+    StatsModifier defenceModi = new StatsModifier()
+    StatsModifier powerModi = new StatsModifier()
+    StatsModifier wisdomModi = new StatsModifier()
+
+    StatsModifier damageModi = new StatsModifier()
+    StatsModifier initModi = new StatsModifier()
+    StatsModifier actionPointModi = new StatsModifier()
+    StatsModifier additionalManaModi = new StatsModifier()
+
+    construct(Hero hero, HeroType heroType)
+        this.hero = hero
+        this.heroType = heroType
+        basicAttack = heroType.attack
+        basicDefence = heroType.defence
+        basicPower = heroType.power
+        basicWisdom = heroType.wisdom
+        
+        this.mana = getMaxMana()
+
+    @inline
+    function getInitiative() returns int
+        return initModi.get(heroType.initiative).round()
+
+    @inline
+    function getMaxActionPoints() returns int
+        return actionPointModi.get(heroType.actionPoints).round()
+
+    @inline
+    function getAttack() returns int
+        return attackModi.get(basicAttack).round()
+
+    @inline
+    function getDefence() returns int
+        return defenceModi.get(basicDefence).round()
+
+    @inline
+    function getPower() returns int
+        return defenceModi.get(basicPower).round()
+
+    @inline
+    function getWisdom() returns int
+        return wisdomModi.get(basicWisdom).round()
+
+    @inline
+    function getAdditionalMana() returns int
+        return additionalManaModi.get(0).round()
+    
+    @inline
+    function getMaxMana() returns int
+        return getWisdom() * 10 + getAdditionalMana()
+
+    @inline
+    function getDamage() returns realRange
+        return damageModi.getRealRange(heroType.damage, (hero.getLevel() + 2))
+
+    @inline
+    function getMana() returns int
+        return mana
+
+    ondestroy
+        Log.error("tried to destroy herostats ???")

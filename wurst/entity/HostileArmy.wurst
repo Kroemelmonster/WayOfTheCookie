@@ -21,7 +21,7 @@ public class HostileArmy
     construct(unit u)
         this.p = Player.NEUTRAL_AGGRESIVE
         this.u = u
-        this.army = new Army()
+        this.army = new Army(null)
 
     function getPlayer() returns Player
         return p
@@ -30,7 +30,7 @@ public class HostileArmy
         return map.get(u)
 
     function createSummon(StackType stackType, int amount) returns ArmyStack
-        return new ArmyStack(stackType, amount, true)
+        return new ArmyStack(stackType, amount, true, null)
 
     function getArmy() returns Army
         return army

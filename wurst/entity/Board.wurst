@@ -18,6 +18,7 @@ import Hero
 import StackType
 import DummyRecycler
 import ClosureTimers
+import BoardHero
 
 public class Board
     private static Cell array allCells
@@ -39,6 +40,7 @@ public class Board
     private InitiativeList initiative
     private LinkedList<BoardStack> stacks = new LinkedList<BoardStack>()
     private LinkedList<BoardStack> graveyard = new LinkedList<BoardStack>()
+    private BoardHero boardHero1
 
     private Animation currentAnim
     private boolean isInteractAble = true
@@ -101,8 +103,16 @@ public class Board
         p2 = army.getPlayer()
         h1 = hero
         hostileArmy = army
+
+        boardHero1 = new BoardHero(hero, area.getLeftTop(), this, 0)
+        initiative.addHeroInitital(boardHero1)
+        
         placeArmy(hero.getArmy(), p1, true)
         placeArmy(army.getArmy(), p2, false)
+
+        
+        initiative.update()
+
 
         // TODO clear old visibilityModi.. and such
         visibleModiPlayer1 = createVision(p1.blzPlayer, visibleArea, false)
@@ -119,6 +129,8 @@ public class Board
         initiative.reset()
         removePlayer(p1)
         removePlayer(p1)
+
+        destroy boardHero1
 
         for stack in stacks
             destroy stack
@@ -190,10 +202,13 @@ public class Board
             return new BoardStack(p, armyStack)
         return null
 
-    function placeStack(BoardStack stack, Cell cell, boolean comeInHalfTheTime)
+    function placeStack(BoardStack stack, Cell cell, boolean isSummoned)
         cell.placeStack(stack)
         stacks.add(stack)
-        initiative.addStack(stack, comeInHalfTheTime)
+        if isSummoned
+            initiative.addSummon(stack)
+        else
+            initiative.addStackInitial(stack)
 
     function triggerOnStackKilled(BoardStack stack)
         stacks.remove(stack)
@@ -333,29 +348,26 @@ public class Board
         if p.isLocal() == false or p.isConntrolledByKI
             return
 
-        let currentStack = initiative.getCurrentStack()
+        let currentEntity = initiative.getCurrent()
+        //let currentStack = initiative.getCurrent().getStack()
+        let canGiveOrders = (currentEntity != null and p == currentEntity.getPlayer() and p.currentSelectedEntity == currentEntity.getBoardEntity())
 
         Action action = null
         Cell currentSelectedCell = null
-        if p.currentSelectedStack != null
-            currentSelectedCell = p.currentSelectedStack.getCell()
+        if p.currentSelectedEntity != null
+            currentSelectedCell = p.currentSelectedEntity.getCell()
 
-            if currentStack == p.currentSelectedStack and p == currentStack.getPlayer()
-                action = p.currentSelectedStack.getCurrentAction()
+            if canGiveOrders
+                action = p.currentSelectedEntity.getCurrentAction()
             else
-                action = p.currentSelectedStack.getDefaultAction()
+                action = p.currentSelectedEntity.getDefaultAction()
         else if p.currentMousePosition.cell != null
             let stack = p.currentMousePosition.cell.getStack()
             if stack != null
                 action = stack.getDefaultAction()
 
-        
-        let currentStackCell = currentStack.getCell()
-
-        let canGiveOrders = p == currentStack.getPlayer() and p.currentSelectedStack == currentStack
-
         for int i = boundMin to boundMax - 1
-            allCells[i].draw(p, action, canGiveOrders, currentStackCell, currentSelectedCell)
+            allCells[i].draw(p, action, canGiveOrders, currentSelectedCell)
 
     
     function getCellBasedOnCoords(vec2 mouseCoord) returns Cell

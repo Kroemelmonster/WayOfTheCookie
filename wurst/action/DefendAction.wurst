@@ -19,6 +19,7 @@ public class DefendAction extends InstantAction
     private constant static string KEY = "D"
 
     private Tooltip tt
+
     construct(BoardStack stack)
         super(stack, Icons.bTNStop, "Defend")
         tt = Tooltip.create(name, KEY)
@@ -29,15 +30,15 @@ public class DefendAction extends InstantAction
 
     override function activate()
         stack.flashEffectOnPos(Abilities.defendCaster)
-        BoardController.finishOrder(stack, false)
+        BoardController.finishOrder(entity, false)
         
     override function onUIMouseEnter()
         tt.display(stack.getPlayer(), false)
-        UIActionWindow.updateActionPoints(stack, 99)
+        UIActionWindow.updateActionPoints(entity, 99)
 
     override function onUIMouseLeave()
         UITooltip.hide(stack.getPlayer())
-        UIActionWindow.updateActionPoints(stack, 0)
+        UIActionWindow.updateActionPoints(entity, 0)
 
     override function canBeActivatedByKey(string key) returns boolean
         return key == KEY
@@ -45,3 +46,6 @@ public class DefendAction extends InstantAction
     override function executeForKI(SequenzListenerStatus listener)
         activate()
         listener.continue(0)
+
+    ondestroy
+        destroy tt

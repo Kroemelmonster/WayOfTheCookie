@@ -9,8 +9,8 @@ import InstantAction
 import OrderSystem
 import BoardController
 import UITooltip
-import BuffController
-import BuffType
+import StatusController
+import StatusType
 import UIActionWindow
 import KUtil
 import LinkedList
@@ -20,7 +20,7 @@ import initlater BoardStack
 import StackType
 import Scheduler
 import DelayAnimation
-import Buff
+import Status
 import CastAnimation
 import BoardTrigger
 import HashMap
@@ -37,9 +37,11 @@ public class SlamAction extends InstantAction
     private static constant int MAXRANGE = 1
     private static constant string KEY = "S"
     private static constant string EFFECT = Abilities.thunderclapCaster
-    private static BuffType BUFF
+    private static StatusType STATUS
 
-    private static constant real DAZZED = 60.0
+    private static constant int DAZZED_TIME = 400
+    private static constant int DAZZED_TIME_LVL_4 = 300
+    private static constant int DAZZED_TIME_LVL_5 = 200
     private static constant DamagePreview damagePreview = createDamagePreview()
     
     @inline
@@ -59,14 +61,14 @@ public class SlamAction extends InstantAction
         ..addLine(Tooltip.stat("Damage", damagePreview))
         ..addLine("")
         ..addLine("Slams the Ground around and dealing massive AoE Damage")
-        ..addLine("This Slam is so powerfull that enemys get "+Tooltip.secondaryString(BUFF.getName())+ " and placed back in the initaive by "+Tooltip.primaryString(DAZZED.round().toString())+ " time units")
+        ..addLine("This Slam is so powerfull that enemys get "+Tooltip.secondaryString(STATUS.getName())+ " and placed back in the initaive by "+Tooltip.primaryString(DAZZED_TIME.toString())+ " "+Tooltip.secondaryString("timeunits"))
 
         if isDefault == false
             tt.addKey(KEY)
         return tt
 
     static function setup()
-        BUFF = BuffTypeSet.DAZED
+        STATUS = StatusTypeSet.DAZED
 
     construct(BoardStack stack)
         super(stack, ICON, NAME)
@@ -91,12 +93,12 @@ public class SlamAction extends InstantAction
                 if target.isAlive()
                     let level = target.getStackType().level
                     if level < 4
-                        BoardController.pushInitiative(target, DAZZED)
+                        BoardController.pushBoardStackInInitiative(target, DAZZED_TIME)
                     else if level == 4
-                        BoardController.pushInitiative(target, DAZZED / 2)
+                        BoardController.pushBoardStackInInitiative(target, DAZZED_TIME_LVL_4)
                     else if level == 5
-                        BoardController.pushInitiative(target, DAZZED / 3)
-                    BuffController.addBuff(BUFF, target, new BuffData(1))
+                        BoardController.pushBoardStackInInitiative(target, DAZZED_TIME_LVL_5)
+                    StatusController.add(STATUS, target, new StatusData(1))
                 hit(itr, instance)
         else
             destroy itr
@@ -104,8 +106,8 @@ public class SlamAction extends InstantAction
             DelayAnimation.create(stack.getBoard(), 0.5) -> // this is the backswing for casting
                 cooldown = COOLDOWN + 1
 
-                stack.stats.addActionPoints(-COST)
-                BoardController.finishOrder(stack, true)
+                stack.addActionPoints(-COST)
+                BoardController.finishOrder(entity, true)
 
     override function activate()
         let targets = getTargets()
@@ -118,11 +120,11 @@ public class SlamAction extends InstantAction
 
     override function onUIMouseEnter()
         createTooltip(false, stack.stats.amount).display(stack.getPlayer(), true)
-        UIActionWindow.updateActionPoints(stack, COST)
+        UIActionWindow.updateActionPoints(entity, COST)
             
     override function onUIMouseLeave()
         UITooltip.hide(stack.getPlayer())
-        UIActionWindow.updateActionPoints(stack, 0)
+        UIActionWindow.updateActionPoints(entity, 0)
 
     override function canBeActivatedByKey(string key) returns boolean
         return key == KEY
@@ -134,11 +136,9 @@ public class SlamAction extends InstantAction
         var cost = COST
         if cost == 0
             cost = 1 // after you moved all points you cant even use a spell that cost nothing
-        let possibleMovePoints = stack.stats.getMoveSpeed() - cost
         Cell bestCell = null
         var highestWeightSoFar = 0.0
         var highestRemainingActionPoints = 0
-        // what if possibleMovePoints <= 0 ?? nutzlos
         let stackItr = stack.getBoard().getAllStacks().iterator()
         while stackItr.hasNext()
             let target = stackItr.next()
@@ -147,13 +147,17 @@ public class SlamAction extends InstantAction
                 let itr = target.getCell().eachCellInRangeIterator(intRange(1, MAXRANGE))
                 while itr.hasNext()
                     let cell = itr.next()
-                    let currentCost = pathing.get(cell).cost
-                    if currentCost <= possibleMovePoints
+                    var remaining = stack.getRemainingActionPoints()
+                    if cell != stack.getCell()
+                        remaining = -1
+                        let pCell = pathing.get(cell)
+                        if pCell != null
+                            remaining = pCell.getRemainingActionPoints(stack)
+                    if remaining >= cost
                         var newWeight = weight
                         if weightCells.has(cell)
                             newWeight += weightCells.get(cell)
                         weightCells.put(cell, newWeight)
-                        let remaining = (possibleMovePoints - currentCost).floor()
                         if newWeight > highestWeightSoFar
                             highestWeightSoFar = newWeight
                             bestCell = cell

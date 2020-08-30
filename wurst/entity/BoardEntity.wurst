@@ -1,0 +1,103 @@
+package BoardEntity
+import PlayerData
+import LinkedList
+import Action
+import initlater Board
+import initlater BoardStack
+import initlater Cell
+import initlater BoardHero
+import ClosureEvents
+
+public enum EntityType
+    STACK
+    HERO
+
+public abstract class BoardEntity
+    protected Board board
+    protected unit u
+    private EntityType entityType
+
+    construct(EntityType entityType, Board board)
+        this.entityType = entityType
+        this.board = board
+
+    @inline
+    function getBoard() returns Board
+        return board
+
+    @inline
+    function getType() returns EntityType
+        return entityType
+
+    abstract function getCell() returns Cell
+
+    abstract function getPlayer() returns Player
+
+    abstract function getIcon() returns string
+
+    abstract function getActions() returns LinkedList<Action>
+    
+    abstract function getAction(int index) returns Action
+
+    abstract function getCurrentAction() returns Action
+
+    abstract function getDefaultAction() returns Action
+
+    abstract function setCurrentAction(Action action)
+
+    abstract function resetCurrentSelectedAction() returns boolean
+
+    abstract function getMaxActionPoints() returns int
+
+    abstract function doOnNextCast(EventListener listener)
+
+    abstract function getRemainingActionPoints() returns int
+
+    abstract function addActionPoints(int amount)
+
+    abstract function resetActionPoints()
+
+    function canStillAct() returns boolean
+        return getRemainingActionPoints() > 0
+
+    abstract function setHighlight(boolean flag)
+
+    abstract function isAlive() returns boolean
+
+    abstract function toString() returns string
+
+    abstract function getInitiative() returns int
+
+    @inline
+    function getPos3Real() returns vec3
+        return u.getPos().withTerrainZ(u.getFlyHeight() + 20.0)
+
+    @inline
+    function issuePointOrder(string order, Cell cell)
+        u.issuePointOrder(order, cell.getCoord())
+
+    @inline
+    function issueImmediateOrder(string order)
+        u.issueImmediateOrder(order)
+
+    @inline
+    function issuePointOrder(string order, vec2 pos)
+        u.issuePointOrder(order, pos)
+    
+    @inline
+    function issueTargetOrder(string order, BoardEntity target)
+        u.issueTargetOrder(order, target.u)
+
+    @inline
+    function enableAbility(int id, boolean flag)
+        u.disableAbility(id, flag == false, false)
+
+    function toStack() returns BoardStack
+        if entityType == STACK
+            return this castTo BoardStack
+        return null
+
+    function toHero() returns BoardHero
+        if entityType == HERO
+            return this castTo BoardHero
+        return null

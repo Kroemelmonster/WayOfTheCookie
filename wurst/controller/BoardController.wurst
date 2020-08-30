@@ -3,7 +3,7 @@ package BoardController
 import ClosureTimers
 
 import KISystem
-import BuffController
+import StatusController
 
 import initlater BoardStack
 import initlater Cell
@@ -18,42 +18,41 @@ import BoardTrigger
 import UITooltip
 import StackType
 import initlater MainController
+import BoardEntity
 
 constant TEXTTAG_COLOR_KILLS = colorA(250, 57, 57, 199).toColorString()
 
 public class BoardController
-    static function pushInitiative(BoardStack stack, real time)
-        stack.getBoard().getInitiative().push(stack, time)
-        UIController.triggerOnStackAmountChange(stack)
+    static function pushBoardStackInInitiative(BoardStack stack, int time)
+        stack.getBoard().getInitiative().pushEntity(stack, time)
 
 
     /** Use this to summon / create a Stack mid Fight */
-    static function placeStackOnBoard(BoardStack stack, Cell cell, SequenzListener next)
+    static function placeStackOnBoard(BoardStack stack, Cell cell, boolean isSummoned, SequenzListener next)
         let board = cell.getBoard()
         nullTimer() ->  
-            board.placeStack(stack, cell, true)
-            UIController.triggerOnStackCreationOrDeathChange(board)
+            board.placeStack(stack, cell, isSummoned)
             onCellEnter(stack, cell, cell, next)
 
     static function killStack(BoardStack stack, SequenzListener next)
         let board = stack.getBoard()
         nullTimer() ->  
-            BuffController.hideAllBuffs(stack)
+            StatusController.hideAll(stack)
             stack.kill()
             UIController.triggerOnStackCreationOrDeathChange(board)
             next.continue()
 
-    static function finishOrder(BoardStack stack, boolean isAllowedToContinue)
-        let board = stack.getBoard()
+    static function finishOrder(BoardEntity entity, boolean isAllowedToContinue)
+        let board = entity.getBoard()
         OrderSystem.endOrder(board)
-        if stack.isAlive()
-            if isAllowedToContinue and stack.canStillAct()
-                stack.resetCurrentSelectedAction()
-                UIController.triggerOnActionPointChange(stack)
-                if stack.getPlayer().isConntrolledByKI
-                    KISystem.executeTurn(stack)
+        if entity.isAlive()
+            if isAllowedToContinue and entity.canStillAct()
+                entity.resetCurrentSelectedAction()
+                UIController.triggerOnActionPointChange(entity)
+                if entity.getPlayer().isConntrolledByKI
+                    KISystem.executeTurn(entity)
             else
-                stack.stats.resetActionPoints()
+                entity.resetActionPoints()
                 board.getInitiative().next()
         else
             board.getInitiative().next()
@@ -62,7 +61,7 @@ public class BoardController
         destroy specificInstance
         next.continue()
 
-    static function dealDamage(BoardStack source, DamageInstance instance, BoardStack target, SequenzListener next)
+    static function dealDamage(BoardEntity source, DamageInstance instance, BoardStack target, SequenzListener next)
         let specificInstance = instance.getSpecific(source, target)
         if target.stats.getAmount() <= 0
             dealDamageContinue(specificInstance, next)
@@ -96,11 +95,15 @@ public class BoardController
     
     /** triggers **/
 
-    static function onDamageDealt(BoardStack source, BoardStack target, SpecificDamageInstance specificInstance, SequenzListener next)
-        source.getTriggers().triggerOnDamageDealt(source, target, specificInstance) ->
+    static function onDamageDealt(BoardEntity source, BoardStack target, SpecificDamageInstance specificInstance, SequenzListener next)
+        if source.getType() == EntityType.STACK
+            let stackSource = source.toStack()
+            stackSource.getTriggers().triggerOnDamageDealt(source, target, specificInstance) ->
+                next.continue()
+        else
             next.continue()
-    
-    static function onDamageTaken(BoardStack source, BoardStack target, SpecificDamageInstance specificInstance, SequenzListener next)
+        
+    static function onDamageTaken(BoardEntity source, BoardStack target, SpecificDamageInstance specificInstance, SequenzListener next)
         target.getTriggers().triggerOnDamageTaken(source, target, specificInstance) ->
             next.continue()
 
@@ -109,24 +112,30 @@ public class BoardController
             defender.getTriggers().triggerOnAttacked(attacker, defender) ->
                 next.continue()
 
-    static function onTurnEnd(BoardStack stack, boolean isWaiting, SequenzListener next)
-        UIController.onTurnEnd(stack)
+    static function onTurnEnd(BoardEntity entity, boolean isWaiting, SequenzListener next)
+        UIController.onTurnEnd(entity)
         
-        if isWaiting == false and stack.isAlive()
-            stack.forEachAction() (Action action) ->
+        if isWaiting == false and entity.isAlive()
+            let actionItr = entity.getActions().iterator()
+            while actionItr.hasNext()
+                let action = actionItr.next()
                 action.tickCooldown()
-            stack.getTriggers().triggerOnTurnEnd() ->
+            destroy actionItr
+
+            if entity.getType() == EntityType.STACK
+                entity.toStack().getTriggers().triggerOnTurnEnd() ->
+                    next.continue()
+            else
                 next.continue()
         else
             next.continue()
 
-    private static function turnStartContinue(BoardStack stack)
-        stack.setHighlight(true)
-        stack.resetCurrentSelectedAction()
-        UIController.onTurnStart(stack)
+    private static function turnStartContinue(BoardEntity entity)
+        entity.resetCurrentSelectedAction()
+        UIController.onTurnStart(entity)
 
-        if stack.getPlayer().isConntrolledByKI
-            KISystem.executeTurn(stack)
+        if entity.getPlayer().isConntrolledByKI
+            KISystem.executeTurn(entity)
             
         
     private static function getWonnedSide(Board board) returns int
@@ -145,19 +154,23 @@ public class BoardController
         destroy list
         return sideWon
 
-    static function onTurnStart(BoardStack stack, boolean wasWaiting)
+    static function onTurnStart(BoardEntity entity, boolean wasWaiting)
         nullTimer() ->
-            let board = stack.getBoard()
+            let board = entity.getBoard()
             let side = getWonnedSide(board)
             if side == -1
-                if wasWaiting
-                    turnStartContinue(stack)
+                if entity.getType() == EntityType.STACK
+                    let stack = entity.toStack()
+                    if wasWaiting
+                        turnStartContinue(entity)
+                    else
+                        stack.getTriggers().triggerOnTurnStart() ->
+                            if stack.isAlive() and stack.canStillAct()
+                                turnStartContinue(entity)
+                            else
+                                board.getInitiative().next()
                 else
-                    stack.getTriggers().triggerOnTurnStart() ->
-                        if stack.isAlive() and stack.canStillAct()
-                            turnStartContinue(stack)
-                        else
-                            board.getInitiative().next()
+                    turnStartContinue(entity)
             else
                 MainController.endFight(board, side)
                     

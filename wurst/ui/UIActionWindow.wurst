@@ -10,6 +10,8 @@ import initlater OrderSystem
 import initlater Action
 import initlater BoardStack
 import initlater UIController
+import initlater BoardEntity
+import initlater UISpellBook
 
 constant framepointtype array[6] points = [FRAMEPOINT_TOPLEFT, FRAMEPOINT_TOP, FRAMEPOINT_TOPRIGHT, FRAMEPOINT_BOTTOMLEFT, FRAMEPOINT_BOTTOM, FRAMEPOINT_BOTTOMRIGHT]
 
@@ -33,14 +35,14 @@ class UIActionWindow
 
         buttons = new LinkedList<ActionButton>()
         for int i = 0 to points.length
-            let btn = new ActionButton(self, Icons.bTNWitchDoctorAdept)
+            let btn = new ActionButton(self)
             btn.setPoint(points[i], pane, points[i], 0, 0)
             btn.onClick() () -> 
-                activate(i, GetTriggerPlayerData())
+                activate(btn.action, GetTriggerPlayerData())
             btn.onMouseEnter() -> 
-                onMouseEnter(i, GetTriggerPlayerData())
+                onMouseEnter(btn.action, GetTriggerPlayerData())
             btn.onMouseLeave() -> 
-                onMouseLeave(i, GetTriggerPlayerData())
+                onMouseLeave(btn.action, GetTriggerPlayerData())
             buttons.add(btn)
 
         for int i = 0 to actionPoints.length
@@ -58,17 +60,17 @@ class UIActionWindow
         if OrderSystem.canOrder(p) == false
             return
         if key == "Escape"
-            OrderSystem.resetCurrentSelectedAction(p.currentSelectedStack)
+            OrderSystem.resetCurrentSelectedAction(p.currentSelectedEntity)
             return
 
-        let itr = p.currentSelectedStack.actionIterator()
+        let itr = p.currentSelectedEntity.getActions().iterator()
         boolean continue = true
         var counter = 0
         while itr.hasNext() and continue
             let action = itr.next()
 
-            if action.canBeActivatedByKey(key)
-                activate(counter, p)
+            if action.showInActionBar() and action.canBeActivatedByKey(key)
+                activate(action, p)
                 // only trigger on action
                 continue = false
             counter ++
@@ -77,9 +79,9 @@ class UIActionWindow
     static function self() returns framehandle
         return self
 
-    private static function updateActionPointsLocal(BoardStack stack, int previewLoosingPoints)
-        let maxActionPoints = stack.stats.getMaxActionPoints()
-        let maxRemainingPoints = stack.stats.getRemainingActionPoints()
+    private static function updateActionPointsLocal(BoardEntity entity, int previewLoosingPoints)
+        let maxActionPoints = entity.getMaxActionPoints()
+        let maxRemainingPoints = entity.getRemainingActionPoints()
         let startPreview = maxRemainingPoints - previewLoosingPoints
         for int i = 0 to actionPoints.length
             actionPoints[i].setVisible(i < maxActionPoints)
@@ -97,12 +99,12 @@ class UIActionWindow
 
                 
             
-    static function updateActionPoints(BoardStack stack, int previewLoosingPoints)
+    static function updateActionPoints(BoardEntity entity, int previewLoosingPoints)
         // we just change it for the current active player
         // even if that player might have selected some other unit, the whole frame would not be visible so it does not matter
         // the other player who is currently not ordering also cant have this action frame --> does not matter
-        if stack.getPlayer().playingBoard.isLocalPlayer()
-            updateActionPointsLocal(stack, previewLoosingPoints)
+        if entity.getPlayer().playingBoard.isLocalPlayer()
+            updateActionPointsLocal(entity, previewLoosingPoints)
     
     static function update(Player p)
         if p.isLocal() == false or p.isConntrolledByKI
@@ -111,57 +113,44 @@ class UIActionWindow
         if OrderSystem.couldOrderIFInteractable(p) == false
             hide()
             return
-        var index = 0
-        let stack = p.currentSelectedStack
-        let max = stack.getUsableActionSize()
+        let entity = p.currentSelectedEntity
 
-        let currentAction = stack.getCurrentAction()
+        let currentAction = entity.getCurrentAction()
+        let actionItr = entity.getActions().iterator()
 
         for ActionButton btn in buttons
-            if index < max
-                let action = stack.getAction(index)
-                btn.setVisible(true)
-                btn.setIcon(action.getButton())
+            btn.setVisible(false)
 
-                if action == currentAction
-                    btn.enable()
-                    btn.setGlowVisible(true)
-                else
-                    btn.setGlowVisible(false)
-                    btn.setCharge(action.getCharge())
-                    if action.canActivate()
-                        btn.enable()
-                    else
-                        let cooldown = action.getCooldown()
-                        if cooldown > 0 and action.hasEnoughCharges()
-                            btn.disable("BtnBlockCooldown"+cooldown.toString()+".blp")
-                        else
-                            btn.disable("BtnBlockDisabled.blp")
-            else
-                btn.setVisible(false)
+        var index = 0
+        while actionItr.hasNext()
+            let action = actionItr.next()
+            if action.showInActionBar()
+                buttons.get(index).setAction(action, currentAction)
+                index ++
 
-            index ++
         self.setVisible(true)
-        updateActionPointsLocal(stack, 0)
+        updateActionPointsLocal(entity, 0)
+
+        if entity.getType() == EntityType.HERO
+            UISpellBook.update(p)
         
-    private static function activate(int index, Player p)
+    private static function activate(Action action, Player p)
         if OrderSystem.canOrder(p) == false
             return
-        let newAction = p.currentSelectedStack.getAction(index)
 
-        if newAction.canActivate() == false
+        if action.canActivate() == false
             return
-        newAction.activate()
+        action.activate()
 
-    private static function onMouseEnter(int index, Player p)
-        let action = p.currentSelectedStack.getAction(index)
+    private static function onMouseEnter(Action action, Player p)
         action.onUIMouseEnter()
 
-    private static function onMouseLeave(int index, Player p)
-        let action = p.currentSelectedStack.getAction(index)
-        action.onUIMouseLeave()
+    private static function onMouseLeave(Action action, Player p)
+        if action != null
+            action.onUIMouseLeave()
 
     static function hide(Player p)
+        UISpellBook.hide(p)
         if p.isLocal()
             hide()
 

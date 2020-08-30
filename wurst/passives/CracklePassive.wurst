@@ -8,6 +8,7 @@ import KUtil
 
 import initlater BoardStack
 import initlater Cell
+import initlater BoardEntity
 import UITooltip
 import StackType
 import BoardTrigger
@@ -23,7 +24,7 @@ public class CracklePassive extends PassiveAction
         super(stack, "Crackle")
 
     override function triggerOnStackCreation(BoardStack stack)
-        stack.getTriggers().addOnDamageDealt() (BoardStack source, BoardStack target, SpecificDamageInstance specificInstance, SequenzListener next) ->
+        stack.getTriggers().addOnDamageDealt() (BoardEntity source, BoardStack target, SpecificDamageInstance specificInstance, SequenzListener next) ->
             if specificInstance.damageInstance.isTriggered
                 next.continue()
             else if specificInstance.damageInstance.sourceType != ATTACK

@@ -13,6 +13,18 @@ public enum DamageType
     FIRE
     POISON
 
+public class Family
+    string name
+
+    construct(string name)
+        this.name = name
+
+    static Family TROLL = new Family("Troll")
+    static Family GNOLL = new Family("Gnoll")
+    static Family SKELTON = new Family("Skelton")
+    static Family SASQUATCH = new Family("Sasquatch")
+
+
 public class StackType
     integer unitId
     integer armyUnitId
@@ -43,6 +55,8 @@ public class StackType
 
     LinkedList<Talent> talents = new LinkedList<Talent>()
 
+    LinkedList<Family> families = new LinkedList<Family>()
+
     construct(integer unitId, integer armyUnitId, string icon, StackSoundSet soundSet, string name, int level, int leadership, int value, int weight)
         this.unitId = unitId
         this.armyUnitId = armyUnitId
@@ -56,6 +70,12 @@ public class StackType
 
     function addTalent(Talent talent)
         talents.add(talent)
+
+    function addFamily(Family fam)
+        families.add(fam)
+    
+    function isFamily(Family fam) returns boolean
+        return families.has(fam)
         
     function getAllVisibleTalents() returns LinkedList<Talent>
         return talents.filter() (Talent t) ->

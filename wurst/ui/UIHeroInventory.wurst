@@ -10,6 +10,7 @@ import UIStackSplitDialog
 import initlater PlayerData
 import initlater Hero
 import initlater KItem
+import UITooltip
 
 constant int MAX_ACTIVESLOTS = 8
 
@@ -65,7 +66,7 @@ public class UIHeroInventory
         for int i = 0 to activeBtns.length - 1
             activeBtns[i] = new CommandButton(reference, false)
             if i == 0
-                activeBtns[i].setPoint(FRAMEPOINT_TOPLEFT, reference, FRAMEPOINT_TOPLEFT, 0.03, -0.03)
+                activeBtns[i].setPoint(FRAMEPOINT_TOPLEFT, reference, FRAMEPOINT_TOPLEFT, 0.015, -0.015)
             else
                 activeBtns[i].setPoint(FRAMEPOINT_TOPLEFT, activeBtns[i - 1].self, FRAMEPOINT_TOPRIGHT, 0.002, 0)
             activeBtns[i].onClick() ->
@@ -97,11 +98,17 @@ public class UIHeroInventory
                 if info.startDrag.pos >= 0
                     info.setupDragEnd(i, true)
                     update(p)
+                else
+                    showItemInfo(p, activeBtns[i], p.heroWindoInfo.inventory.hero.getActiveItem(i))
+
+            activeBtns[i].onMouseLeave() ->
+                let p = GetTriggerPlayerData()
+                UITooltip.hide(p)
         
         for int i = 0 to backPackBtns.length - 1
             backPackBtns[i] = new CommandButton(reference, false)
             if ModuloInteger(i, 5) == 0
-                backPackBtns[i].setPoint(FRAMEPOINT_TOPLEFT, reference, FRAMEPOINT_TOPLEFT, 0.03, (i / 5.0).floor() * -0.04 - 0.08)
+                backPackBtns[i].setPoint(FRAMEPOINT_TOPLEFT, reference, FRAMEPOINT_TOPLEFT, 0.015, (i / 5.0).floor() * -0.04 - 0.08)
             else
                 backPackBtns[i].setPoint(FRAMEPOINT_TOPLEFT, backPackBtns[i - 1].self, FRAMEPOINT_TOPRIGHT, 0.002, 0)
             backPackBtns[i].onClick() ->
@@ -133,7 +140,18 @@ public class UIHeroInventory
                 if info.startDrag.pos >= 0
                     info.setupDragEnd(i, false)
                     update(p)
+                else
+                    showItemInfo(p, backPackBtns[i], p.heroWindoInfo.inventory.hero.getBackPackItem(i))
+            
+            backPackBtns[i].onMouseLeave() ->
+                let p = GetTriggerPlayerData()
+                UITooltip.hide(p)
 
+    protected function showItemInfo(Player p, CommandButton btn, KItem kitem)
+        if kitem == null
+            return
+        let tt = kitem.createTooltip()
+        tt.display(p, true, TooltipAnchor.TOP_LEFT, btn.self)
 
     function firstOpen(Player p)
         p.heroWindoInfo.inventory.hero = p.hero

@@ -19,12 +19,6 @@ Frame "BACKDROP" "StackWindow" {
         SetPoint TOPLEFT, "StackWindow", TOPLEFT, 0.01, -0.01,
         SetPoint BOTTOMRIGHT, "StackWindow", BOTTOMRIGHT, -0.01, 0.01,
 
-        Frame "BACKDROP" "StackWindowIcon" {
-            SetPoint TOPLEFT, "WindowPane", TOPLEFT, 0.0, 0.0,
-            Width 0.04,
-            Height 0.04,
-        }
-
         Frame "TEXT" "StackWindowHeader" {
 			UseActiveContext,
 			DecorateFileNames,
@@ -84,6 +78,33 @@ Frame "MENU" "StackInfo" {
         FontColor 1.0 1.0 1.0 1.0,
         FontJustificationH JUSTIFYLEFT,
         FontJustificationV JUSTIFYMIDDLE,
+        FontJustificationOffset 0.0 0.0,
+    }
+}
+
+Frame "FRAME" "Spell" {
+    UseActiveContext,
+    Height 0.04,
+
+    Frame "TEXT" "SpellText" {
+        LayerStyle "IGNORETRACKEVENTS",
+        SetPoint TOPLEFT, "Spell", TOPLEFT, 0.045, 0.0,
+        SetPoint BOTTOMRIGHT, "Spell", BOTTOMRIGHT, -0.045, 0.0,
+        FrameFont "MasterFont", 0.013,"",
+        FontColor 1.0 1.0 1.0 1.0,
+        FontJustificationH JUSTIFYLEFT,
+        FontJustificationV JUSTIFYMIDDLE,
+        FontJustificationOffset 0.0 0.0,
+    }
+
+    Frame "TEXT" "SpellCostText" {
+        LayerStyle "IGNORETRACKEVENTS",
+        SetPoint TOPLEFT, "Spell", TOPRIGHT, -0.045, 0.0,
+        SetPoint BOTTOMRIGHT, "Spell", BOTTOMRIGHT, 0.0, 0.0,
+        FrameFont "MasterFont", 0.013,"",
+        FontColor 1.0 1.0 1.0 1.0,
+        FontJustificationH JUSTIFYRIGHT,
+        FontJustificationV JUSTIFYTOP,
         FontJustificationOffset 0.0 0.0,
     }
 }

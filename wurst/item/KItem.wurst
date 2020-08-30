@@ -1,18 +1,64 @@
 package KItem
 import Stack
+import UITooltip
 
-public abstract class KItem
+import ItemSteelHammer
+import ItemSimpleAxe
+import initlater Hero
+
+interface KItemCreateListener
+    function create() returns KItem
+
+public class KItemTypeSet
+    static KItemType STEEL_HAMMER
+    static KItemType SIMPLE_AXE
+
+    static function setup()
+        STEEL_HAMMER = ItemSteelHammer.setup()
+        SIMPLE_AXE = ItemSimpleAxe.setup()
+
+public class KItemType
     protected string icon
     protected string name
+    protected KItemCreateListener listener
 
-    construct(string name, string icon)
+    construct(string icon, string name)
         this.icon = icon
         this.name = name
+    
+    function addListener(KItemCreateListener listener)
+        this.listener = listener
+
+    @inline
+    function createNew() returns KItem
+        return listener.create()
+
+    @inline
+    function getIcon() returns string
+        return icon
+    
+    @inline
+    function getName() returns string
+        return name
+
+    @inline
+    function toString() returns string
+        return "KItemType '"+name+"'"
+
+public abstract class KItem
+    protected KItemType itemType
+
+    construct(KItemType itemType)
+        this.itemType = itemType
 
     abstract function onStackUpdate(ArmyStack armyStack, boolean add)
 
+    abstract function onEquip(Hero h, boolean add)
+
     function getIcon() returns string
-        return icon
+        return itemType.icon
 
     function toString() returns string
-        return "Item [" + name + "]"
+        return "Item [" + itemType.name + "]"
+
+    abstract function createTooltip() returns Tooltip

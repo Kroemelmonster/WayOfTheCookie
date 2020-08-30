@@ -7,6 +7,7 @@ import PlayerData
 import initlater MouseContext
 import UITooltip
 import initlater StackType
+import StatsModifier
 
 public class UIStackInfo
     framehandle self
@@ -14,6 +15,7 @@ public class UIStackInfo
     protected framehandle text
 
     private Tooltip tooltip
+    private TooltipAnchor anchor = TooltipAnchor.TOP_RIGHT
     
     construct(framehandle parent)
         self = createFrame("StackInfo", parent, 0, 0)
@@ -24,7 +26,7 @@ public class UIStackInfo
             let p = GetTriggerPlayerData()
             MouseContext.enableMouseMovement(p, false)
             if tooltip != null
-                tooltip.display(p, false)
+                tooltip.display(p, false, anchor, self)
         self.onMouseLeave() () ->
             let p = GetTriggerPlayerData()
             MouseContext.enableMouseMovement(p, true)
@@ -57,12 +59,18 @@ public class UIStackInfo
         self.setAlpha(alpha)
 
     function setTooltip(Tooltip t)
-        if this.tooltip != null
-            destroy this.tooltip
         this.tooltip = t
+
+    function setTooltip(Tooltip t, TooltipAnchor anchor)
+        this.tooltip = t
+        this.anchor = anchor
 
     function setTooltipLine(int index, string str)
         this.tooltip.setLine(index, str)
+
+    @inline
+    function setTextBasedOnStats(int basic, int modified, StatsModifier _modi)
+        text.setText(basic.toString() + Tooltip.coloredModiInt(modified - basic))
 
     ondestroy
         Log.error("DONT DESTROY SUCH A THING WTF ?")

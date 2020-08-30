@@ -9,6 +9,7 @@ import UITooltip
 
 import initlater BoardStack
 import BoardTrigger
+import InitiativeList
 
 public class WaitAction extends InstantAction
 
@@ -20,8 +21,6 @@ public class WaitAction extends InstantAction
         super(stack, Icons.bTNPatrol, "Wait")
         tt = Tooltip.create(name, KEY)
         ..addLine("Postpone this turn")
-        ..addLine("")
-        ..addLine("")
 
         
     override function canActivate() returns boolean
@@ -42,11 +41,11 @@ public class WaitAction extends InstantAction
 
     private function showPreview()
         if canActivate()
-            tt.setLine(1, null)
-            tt.setLine(2, null)
+            let str = Tooltip.primaryString((InitiativeList.intiativeToDisplayTime(stack.stats.getInitiative()) / 2.0).round().toString())
+            + " " + Tooltip.secondaryString("timeunits")
+            tt.setLine(0, "Postpone the turn by "+str)
         else
-            tt.setLine(1, "")
-            tt.setLine(2, "You already waited this turn")
+            tt.setLine(0, "You cant postpone again")
         tt.display(stack.getPlayer(), false)
 
     override function canBeActivatedByKey(string key) returns boolean

@@ -8,6 +8,7 @@ import initlater Action
 import initlater WaitAction
 import initlater DefendAction
 import BoardTrigger
+import BoardEntity
 
 public class KISystem
     static function getBestTarget(LinkedList<BoardStack> targets) returns BoardStack
@@ -41,8 +42,8 @@ public class KISystem
     protected static function isActionSpecial(Action action) returns boolean
         return isActionWait(action) == false and isActionDefend(action) == false
 
-    protected static function executeDefendOrSkipAction(BoardStack stack)
-        let itr = stack.getActions().iterator()
+    protected static function executeDefendOrSkipAction(BoardEntity entity)
+        let itr = entity.getActions().iterator()
         Action defendOrSkipAction = null
         while itr.hasNext() and defendOrSkipAction == null
             let action = itr.next()
@@ -51,33 +52,33 @@ public class KISystem
         destroy itr
         defendOrSkipAction.activate()
 
-    protected static function executeDefaultAction(BoardStack stack)
-        let defaultAction = stack.getDefaultAction()
+    protected static function executeDefaultAction(BoardEntity entity)
+        let defaultAction = entity.getDefaultAction()
         defaultAction.executeForKI() (status) ->
             if status == 1
                 doAfter(0.2) ->
                     // there is litterly nothing you can doo ?
-                    executeDefendOrSkipAction(stack)
+                    executeDefendOrSkipAction(entity)
 
-    protected static function executeNextAction(LLIterator<Action> itr, BoardStack stack, SequenzListenerStatus next)
+    protected static function executeNextAction(LLIterator<Action> itr, BoardEntity entity, SequenzListenerStatus next)
         if itr.hasNext()
             let action = itr.next()
             if isActionSpecial(action) and action.canActivate()
                 action.executeForKI() (int status) ->
                     if status == 1 // he did not do anything
-                        executeNextAction(itr, stack, next)
+                        executeNextAction(itr, entity, next)
                     else if status == 0
                         next.continue(1)
             else
-                executeNextAction(itr, stack, next)
+                executeNextAction(itr, entity, next)
             
         else
             next.continue(0)
 
-    static function executeTurn(BoardStack stack)
+    static function executeTurn(BoardEntity entity)
         doAfter(0.2) ->
-            let itr = stack.getActions().iterator()
-            executeNextAction(itr, stack) (status) ->
+            let itr = entity.getActions().iterator()
+            executeNextAction(itr, entity) (status) ->
                 destroy itr
                 if status == 0
-                    executeDefaultAction(stack)
+                    executeDefaultAction(entity)

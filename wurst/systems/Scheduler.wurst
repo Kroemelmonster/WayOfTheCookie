@@ -5,7 +5,7 @@ import TimerUtils
 
 import UIWorldConsole
 import PlayerData
-import UIStackWindow
+import UIEntityWindow
 import UINPCWindow
 import UIHeroWindow
 
@@ -35,7 +35,7 @@ class Scheduler
 
             doPeriodically(0.2) cb ->
                 UIWorldConsole.update(p)
-                UIStackWindow.update(p)
+                UIEntityWindow.update(p)
             doPeriodically(0.2) cb ->
                 UINPCWindow.update(p)
                 UIHeroWindow.update(p)

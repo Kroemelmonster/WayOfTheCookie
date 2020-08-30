@@ -12,7 +12,7 @@ import Action
 import UnitDefinition
 import DefaultAction
 import PassiveAction
-import Buff
+import Status
 
 import initlater Cell
 import initlater Board
@@ -20,15 +20,14 @@ import BoardStackStats
 import StackStats
 import Stack
 import BoardTrigger
+import BoardEntity
 
-public class BoardStack
+public class BoardStack extends BoardEntity
     private StackType stackType
     private ArmyStack armyStack
     private Cell cell
-    private Board board
     private Player p
 
-    private unit u
     private effect highlightEffect
     private texttag tt
 
@@ -38,7 +37,7 @@ public class BoardStack
     private integer currentSelectedAction = 0
     private LinkedList<PassiveAction> passiveActions
 
-    private LinkedList<Buff> buffs
+    private LinkedList<Status> stati
 
     private EventListener damageTakenListener
     private EventListener castListener
@@ -52,6 +51,7 @@ public class BoardStack
     BoardStackStats stats
 
     construct(Player p, ArmyStack stack)
+        super(EntityType.STACK, null)
         this.p = p
         this.stats = new BoardStackStats(this, stack.stats, stack.getAmount())
         this.armyStack = stack
@@ -61,29 +61,21 @@ public class BoardStack
         this.actions = new LinkedList<Action>
         this.passiveActions = new LinkedList<PassiveAction>
 
-        this.buffs = new LinkedList<Buff>
+        this.stati = new LinkedList<Status>
         this.triggers = new StackTrigger()
 
         stack.stats.triggerOnCreation(this)
 
     @inline
-    function getCell() returns Cell
+    override function getCell() returns Cell
         return cell
 
     @inline
-    function getPos3Real() returns vec3
-        return u.getPos().withTerrainZ(u.getFlyHeight() + 20.0)
-
-    @inline
-    function getBoard() returns Board
-        return board
-
-    @inline
-    function getPlayer() returns Player
+    override function getPlayer() returns Player
         return p
 
     @inline
-    function getIcon() returns string
+    override function getIcon() returns string
         return stackType.icon
 
     @inline
@@ -98,20 +90,18 @@ public class BoardStack
     function getArmyStack() returns ArmyStack
         return armyStack
 
-    @inline
-    function resetCurrentSelectedAction()
+    override function resetCurrentSelectedAction() returns boolean
+        if currentSelectedAction == -1
+            return false
         currentSelectedAction = -1
+        return true
     
     @inline
-    function setCurrentAction(Action action)
+    override function setCurrentAction(Action action)
         currentSelectedAction = actions.indexOf(action)
 
     @inline
-    function setCurrentActionIndex(int index)
-        currentSelectedAction = index
-
-    @inline
-    function getDefaultAction() returns DefaultAction
+    override function getDefaultAction() returns DefaultAction
         return defaultAction
 
     @inline
@@ -123,20 +113,20 @@ public class BoardStack
         return actions.iterator()
 
     @inline
-    function buffIterator() returns LLIterator<Buff>
-        return buffs.iterator()
+    function statusIterator() returns LLIterator<Status>
+        return stati.iterator()
 
     @inline
-    function getBuff(int index) returns Buff
-        return buffs.get(index)
+    function getStatus(int index) returns Status
+        return stati.get(index)
         
     @inline
-    function addBuff(Buff b)
-        buffs.add(b)
+    function addStatus(Status status)
+        stati.add(status)
 
     @inline
-    function removeBuff(Buff b)
-        buffs.remove(b)
+    function removeStatus(Status status)
+        stati.remove(status)
 
     @inline
     function getTriggers() returns StackTrigger
@@ -147,25 +137,17 @@ public class BoardStack
         return passiveActions.iterator()
 
     @inline
-    function getActions() returns LinkedList<Action>
+    override function getActions() returns LinkedList<Action>
         return actions
     
-    function getAction(int index) returns Action
+    override function getAction(int index) returns Action
         if index == -1
             return defaultAction
         return actions.get(index)
 
     @inline
-    function getCurrentAction() returns Action
+    override function getCurrentAction() returns Action
         return getAction(currentSelectedAction)
-
-    @inline
-    function isCurrentActionDefault() returns boolean
-        return currentSelectedAction == -1
-
-    @inline
-    function getUsableActionSize() returns int
-        return actions.size()
 
     function addAction(Action action)
         if action.isDefault()
@@ -179,11 +161,23 @@ public class BoardStack
         passiveActions.add(passive)
 
     @inline
-    function canStillAct() returns boolean
-        return stats.getRemainingActionPoints() > 0
+    override function getMaxActionPoints() returns int
+        return stats.getMaxActionPoints()
+
+    @inline
+    override function getRemainingActionPoints() returns int
+        return stats.getRemainingActionPoints()
+
+    @inline
+    override function addActionPoints(integer amount)
+        stats.addActionPoints(amount)
+
+    @inline
+    override function resetActionPoints()
+        stats.resetActionPoints()
 
     @inline 
-    function isEnemy(BoardStack other) returns boolean
+    function isEnemy(BoardEntity other) returns boolean
         return p != other.getPlayer()
 
     @inline
@@ -221,7 +215,7 @@ public class BoardStack
         if board.getInitiative().isFirstTurn() == false
             SetUnitAnimation(u, "birth")
 
-        stats.resetActionPoints()
+        resetActionPoints()
 
         tt = createTTEx(getTextTagPos(), stats.getAmount().toString(), 10.0)
 
@@ -230,11 +224,15 @@ public class BoardStack
         this.cell = cell
         this.cell.setStack(this)
 
-    function isAlive() returns boolean
+    override function isAlive() returns boolean
         return isOnBoard()
     
     function isOnBoard() returns boolean
         return this.cell != null
+
+    @inline
+    override function getInitiative() returns int
+        return stats.getInitiative()
 
     function kill()
         board.triggerOnStackKilled(this)
@@ -242,37 +240,14 @@ public class BoardStack
         u.kill()
 
     @inline
-    function issuePointOrder(string order, Cell cell)
-        u.issuePointOrder(order, cell.getCoord())
-
-    @inline
-    function issueImmediateOrder(string order)
-        u.issueImmediateOrder(order)
-
-    @inline
-    function issuePointOrder(string order, vec2 pos)
-        u.issuePointOrder(order, pos)
-    
-    @inline
-    function issueTargetOrder(string order, BoardStack target)
-        u.issueTargetOrder(order, target.u)
-
-    @inline
-    function isCurrent() returns boolean
-        return board.getInitiative().getCurrentStack() == this
-
-    @inline
     function isSelectByOwnPlayer() returns boolean
-        return p.currentSelectedStack == this
+        return p.currentSelectedEntity == this
     
     function doOnNextDamageTaken(EventListener listener)
         damageTakenListener = listener
 
-    function doOnNextCast(EventListener listener)
+    override function doOnNextCast(EventListener listener)
         castListener = listener
-
-    function enableAbility(int id, boolean flag)
-        u.disableAbility(id, flag == false, false)
 
     function getCurrentOrder() returns int
         return u.getCurrentOrder()
@@ -292,7 +267,7 @@ public class BoardStack
     function addAttachEffect(string sfx, string attachment) returns effect
         return addEffect(sfx, u, attachment)
 
-    function setHighlight(boolean flag)
+    override function setHighlight(boolean flag)
         if flag == false or highlightEffect != null
             highlightEffect.destr()
             highlightEffect = null
@@ -303,7 +278,7 @@ public class BoardStack
         tt.setPos(getTextTagPos())
         tt.setText(stats.getAmount().toString(), 10.0)
 
-    function toString() returns string
+    override function toString() returns string
         return getName() +" [" + stats.getAmount().toString() +"]"
 
     private function getTextTagPos() returns vec3
@@ -350,10 +325,10 @@ public class BoardStack
             for action in passiveActions
                 destroy action
             destroy passiveActions
-        if buffs != null
-            for b in buffs
-                destroy b
-            destroy buffs
+        if stati != null
+            for status in stati
+                destroy status
+            destroy stati
         if defaultAction != null
             destroy defaultAction
 

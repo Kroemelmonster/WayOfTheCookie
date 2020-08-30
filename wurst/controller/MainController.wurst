@@ -11,8 +11,27 @@ import PlayerData
 import initlater UIHeroWindow
 import initlater UINPCWindow
 import ClosureTimers
+import UIWorldConsole
+import FightResult
 
 public class MainController
+    static function setup()
+        Player.forEachActive() (Player activePlayer) ->
+            activePlayer.onAnyKeyPress() (Player p, string key) ->
+                onkeyPress(p, key)
+
+    private static function onkeyPress(Player p, string key)
+        if p.playingBoard != null
+            return
+        if key == "Escape"
+            if UIHeroWindow.isVisibleToPlayer(p)
+                openHeroWindow(p, false)
+        else if key == "H"
+            if UIHeroWindow.isVisibleToPlayer(p) == false
+                openHeroWindow(p, true)
+
+
+
     static function startFight(Hero hero, HostileArmy enemy, Board board)
         // Log.trace("HIER BEGINNT DER KAMPF ZWISCHEN "+hero.toString()+ " vs "+enemy.toString())
         hero.enable(false)
@@ -24,40 +43,20 @@ public class MainController
 
 
     static function endFight(Board board, int side)
-        if side == -2
-            Log.trace("Draw!")
-        else if side == 0
-            Log.trace("You Won")
-        else
-            Log.trace("You Lost")
-        
         let hero = board.getHero(0)
-        let heroArmy = hero.getArmy()
-        for int i = 0 to Army.MAX_SIZE - 1
-            let stack = heroArmy.getStack(i)
-            if stack != null
-                let looseAmount = stack.getAmount() - stack.representive.stats.getAmount()
-                if looseAmount > 0
-                    Log.trace("you lost "+looseAmount.toString()+" of "+stack.toString())
-
         let enemy = board.getHostileArmy()
-        let army = enemy.getArmy()
-        var exp = 0
-        for int i = 0 to Army.MAX_SIZE - 1
-            let stack = army.getStack(i)
-            if stack != null
-                let looseAmount = stack.getAmount() - stack.representive.stats.getAmount()
-                exp += looseAmount * stack.getStackType().value
-                if looseAmount > 0
-                    Log.trace("you killed "+looseAmount.toString()+" of "+stack.toString())
+        let p = hero.getPlayer()
 
-        Log.trace("this would have give you a net exp of "+exp.toString() + " IF I HAD IMPLEMENTED IT!!")
-        doAfter(2) ->
-            UIController.switchToWorld(hero.getPlayer())
+        let result = new FightResult(hero, enemy.getArmy(), side)
+
+        UIWorldConsole.showFightResult(p, result) -> 
+            UIController.switchToWorld(p)
             board.endFight()
             nullTimer() ->
+                result.execute(hero)
                 hero.enable(true)
                 enemy.kill()
+            
 
     static function interact(Hero hero, NPC npc)
         hero.startInteract(npc)
@@ -77,6 +76,9 @@ public class MainController
         if hero.getArmy().hasStack(stack)
             stack.setAmount(stack.getAmount() - intoAmount)
             hero.addStackAtFree(stack.getStackType(), intoAmount)
+
+    static function toggleHeroWindow(Player p)
+        openHeroWindow(p, UIHeroWindow.isVisibleToPlayer(p) == false)
 
     static function openHeroWindow(Player p, boolean flag)
         if flag

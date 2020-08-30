@@ -5,6 +5,7 @@ import LinkedList
 import initlater BoardStack
 import initlater Cell
 import initlater Damage
+import initlater BoardEntity
 
 public abstract class SequenzListener
     function continue()
@@ -30,10 +31,10 @@ public abstract class BoardTriggerOnStackInteraction
     abstract function onEvent(BoardStack initator, BoardStack receiver, SequenzListener next)
 
 public abstract class BoardTriggerOnDamageDealt
-    abstract function onEvent(BoardStack source, BoardStack target, SpecificDamageInstance specificInstance, SequenzListener next)
+    abstract function onEvent(BoardEntity source, BoardStack target, SpecificDamageInstance specificInstance, SequenzListener next)
 
 public abstract class BoardTriggerOnDamageTaken
-    abstract function onEvent(BoardStack source, BoardStack target, SpecificDamageInstance specificInstance, SequenzListener next)
+    abstract function onEvent(BoardEntity source, BoardStack target, SpecificDamageInstance specificInstance, SequenzListener next)
 
 public abstract class BoardTrigger
     abstract function onEvent(SequenzListener next)
@@ -103,7 +104,7 @@ public class StackTrigger
         onDamageDealt.remove(listener)
         destroy listener
 
-    private function triggerOnDamageDealtInner(LLIterator<BoardTriggerOnDamageDealt> iter, BoardStack source, BoardStack target, SpecificDamageInstance specificInstance, SequenzListener next)
+    private function triggerOnDamageDealtInner(LLIterator<BoardTriggerOnDamageDealt> iter, BoardEntity source, BoardStack target, SpecificDamageInstance specificInstance, SequenzListener next)
         if iter.hasNext()
             let listener = iter.next()
             listener.onEvent(source, target, specificInstance) ->
@@ -111,7 +112,7 @@ public class StackTrigger
         else
             next.continue()
 
-    function triggerOnDamageDealt(BoardStack source, BoardStack target, SpecificDamageInstance specificInstance, SequenzListener next)
+    function triggerOnDamageDealt(BoardEntity source, BoardStack target, SpecificDamageInstance specificInstance, SequenzListener next)
         let copy = onDamageDealt.copy()
         let itr = copy.iterator()
         triggerOnDamageDealtInner(itr, source, target, specificInstance) () ->
@@ -119,7 +120,7 @@ public class StackTrigger
             destroy copy
             next.continue()
 
-    private function triggerOnDamageTakenInner(LLIterator<BoardTriggerOnDamageTaken> iter, BoardStack source, BoardStack target, SpecificDamageInstance specificInstance, SequenzListener next)
+    private function triggerOnDamageTakenInner(LLIterator<BoardTriggerOnDamageTaken> iter, BoardEntity source, BoardStack target, SpecificDamageInstance specificInstance, SequenzListener next)
         if iter.hasNext()
             let listener = iter.next()
             listener.onEvent(source, target, specificInstance) ->
@@ -127,7 +128,7 @@ public class StackTrigger
         else
             next.continue()
 
-    function triggerOnDamageTaken(BoardStack source, BoardStack target, SpecificDamageInstance specificInstance, SequenzListener next)
+    function triggerOnDamageTaken(BoardEntity source, BoardStack target, SpecificDamageInstance specificInstance, SequenzListener next)
         let copy = onDamageTaken.copy()
         let itr = copy.iterator()
         triggerOnDamageTakenInner(itr, source, target, specificInstance) () ->

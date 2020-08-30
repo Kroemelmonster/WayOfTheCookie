@@ -1,3 +1,5 @@
+IncludeFile "UI\FrameDef\UI\EscMenuMainPanel.fdf",
+
 Frame "TEXT" "CenteredText" {
 	UseActiveContext,
 	SetPoint TOPLEFT, "Ressource", TOPLEFT, 0, 0.0,
@@ -6,7 +8,14 @@ Frame "TEXT" "CenteredText" {
 	FontColor 1.0 1.0 1.0 1.0,
     FontJustificationH JUSTIFYCENTER,
     FontJustificationV JUSTIFYMIDDLE,
-    FontJustificationOffset 0.0 0.0,
+}
+
+Frame "TEXT" "HeaderText" {
+	UseActiveContext,
+	FrameFont "MasterFont", 0.015,"",
+	FontColor 1.0 1.0 1.0 1.0,
+    FontJustificationH JUSTIFYCENTER,
+    FontJustificationV JUSTIFYMIDDLE,
 }
 
 Frame "BACKDROP" "RoundBoxBackground" {
@@ -25,26 +34,20 @@ Frame "BACKDROP" "RoundBoxBackground" {
     }
 }
 
-Frame "GLUEBUTTON" "CancelButton" {
+Frame "GLUEBUTTON" "ArrowButtonTopRight" {
     Width 0.07,
     Height 0.02,
     ControlStyle "AUTOTRACK|HIGHLIGHTONMOUSEOVER",
 
     ControlBackdrop "CancelButtonIcon",
     Frame "BACKDROP" "CancelButtonIcon" {
-        BackdropBackground "UI\Textures\Button\btn-cancel.dds",
+        BackdropBackground "UI\Textures\Button\btn-arrow-tr.dds",
         BackdropBlendAll,
     }
 
     ControlPushedBackdrop "CancelButtonIconPushed",
     Frame "BACKDROP" "CancelButtonIconPushed" {
-        BackdropBackground "UI\Textures\Button\btn-cancel-pushed.dds",
-        BackdropBlendAll,
-    }
-
-    ControlDisabledBackdrop "CancelButtonIconDisabled",
-    Frame "BACKDROP" "CancelButtonIconDisabled" {
-        BackdropBackground "UI\Textures\Button\btn-cancel-disabled.dds",
+        BackdropBackground "UI\Textures\Button\btn-arrow-tr-pushed.dds",
         BackdropBlendAll,
     }
 
@@ -54,4 +57,37 @@ Frame "GLUEBUTTON" "CancelButton" {
         HighlightAlphaFile "UI\Glues\ScoreScreen\scorescreen-tab-hilight.blp",
         HighlightAlphaMode "ADD",
     }
+}
+
+Frame "GLUEBUTTON" "ArrowButtonBottomLeft" {
+    Width 0.07,
+    Height 0.02,
+    ControlStyle "AUTOTRACK|HIGHLIGHTONMOUSEOVER",
+
+    ControlBackdrop "CancelButtonIcon",
+    Frame "BACKDROP" "CancelButtonIcon" {
+        BackdropBackground "UI\Textures\Button\btn-arrow-bl.dds",
+        BackdropBlendAll,
+    }
+
+    ControlPushedBackdrop "CancelButtonIconPushed",
+    Frame "BACKDROP" "CancelButtonIconPushed" {
+        BackdropBackground "UI\Textures\Button\btn-arrow-bl-pushed.dds",
+        BackdropBlendAll,
+    }
+
+    ControlMouseOverHighlight "CancelButtonHighlight",
+    Frame "HIGHLIGHT" "CancelButtonHighlight" {
+        HighlightType "FILETEXTURE",
+        HighlightAlphaFile "UI\Glues\ScoreScreen\scorescreen-tab-hilight.blp",
+        HighlightAlphaMode "ADD",
+    }
+}
+
+Frame "BACKDROP" "BackdropWithoutEvents" {
+	LayerStyle "IGNORETRACKEVENTS",
+}
+
+Frame "TEXT" "TextWithoutEvents" {
+    LayerStyle "IGNORETRACKEVENTS",
 }

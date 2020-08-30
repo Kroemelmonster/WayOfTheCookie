@@ -8,27 +8,47 @@ import UIButton
 import initlater InitiativeList
 import initlater BoardStack
 import initlater MouseContext
+import initlater BoardEntity
 
 constant MAX_ENTRYS = 14
 
+class InitiativeCommandButton extends CommandButton
+    protected framehandle time
+
+    construct(framehandle pane, boolean withTime)
+        super(pane, true)
+        addBorder()
+        addText(false)
+
+        if withTime
+            time = createFrame("TEXT", "", self, "", 0)
+            ..setPoint(FRAMEPOINT_BOTTOMLEFT, self, FRAMEPOINT_TOPLEFT)
+            ..setPoint(FRAMEPOINT_BOTTOMRIGHT, self, FRAMEPOINT_TOPRIGHT)
+            ..setHeight(0.009)
+            ..setTextAlignment(TEXT_JUSTIFY_MIDDLE, TEXT_JUSTIFY_CENTER)
+
+
 class UIInitiativeWindow
-    private static framehandle frame
+    static framehandle self
     private static framehandle pane
-    private static CommandButton array[MAX_ENTRYS] btns
+    private static InitiativeCommandButton currentBtn
+    private static InitiativeCommandButton array[MAX_ENTRYS] btns
 
     static function setup()
-        frame = createFrame("BasicBorderWindow", GAME_UI, 0, 0)
-        ..setSize(((MAX_ENTRYS + 1) * (0.035 + 0.002)) + 0.02, 0.065)
+        self = createFrame("FRAME", "ActionWindowFrame", GAME_UI, "", 0)
         ..setVisible(false)
         ..setPoint(FRAMEPOINT_BOTTOMLEFT,  GAME_UI, FRAMEPOINT_BOTTOMLEFT)
-        pane = getFrame("WindowPane")
+        ..setSize(0.4, 0.07)
+        pane = self
+
+        currentBtn = new InitiativeCommandButton(pane, false)
+        ..setPoint(FRAMEPOINT_TOPLEFT, pane, FRAMEPOINT_TOPLEFT, 0, 0)
+        ..setScale(1.5)
 
         for int i = 0 to MAX_ENTRYS
-            btns[i] = new CommandButton(pane, true)
-            ..addText(false)
-            ..addBorder()
+            btns[i] = new InitiativeCommandButton(pane, true)
             if i == 0
-                btns[i].setPoint(FRAMEPOINT_TOPLEFT, pane, FRAMEPOINT_TOPLEFT, 0, 0)
+                btns[i].setPoint(FRAMEPOINT_TOPLEFT, currentBtn.self, FRAMEPOINT_TOPRIGHT, 0.002, -0.0175)
             else
                 btns[i].setPoint(FRAMEPOINT_TOPLEFT, btns[i - 1].self, FRAMEPOINT_TOPRIGHT, 0.002, 0)
             btns[i].onClick() () ->
@@ -46,14 +66,18 @@ class UIInitiativeWindow
         if entry == null
             return
         
-        MouseContext.forcePlayerSelect(p, entry.getStack().getCell())
+        let entityCell = entry.getEnitity().getBoardEntity().getCell()
+        if entityCell != null
+            MouseContext.forcePlayerSelect(p, entityCell)
     
     private static function onMouseEnter(Player p, integer i)
         let entry = getEntryAt(p, i)
         if entry == null
             return
 
-        MouseContext.forceMouseEnter(p, entry.getStack().getCell())
+        let entityCell = entry.getEnitity().getBoardEntity().getCell()
+        if entityCell != null
+            MouseContext.forceMouseEnter(p, entityCell)
 
     private static function onMouseLeave(Player p)
         MouseContext.forceMouseLeave(p)
@@ -62,33 +86,52 @@ class UIInitiativeWindow
         if initiative.getBoard().isLocalPlayer() == false
             return
         
+        let cur = initiative.getCurrent()
+        if cur != null
+            refreshButton(currentBtn, cur.getBoardEntity())
+
         let iterator = initiative.iterator()
         for int i = 0 to MAX_ENTRYS
-            let hasStack = iterator.hasNext()
-            btns[i].setVisible(hasStack)
-            if hasStack
-                let stack = iterator.next().getStack()
-                btns[i].setIcon(stack.getIcon())
-                btns[i].setBorder(stack.getPlayer().borderColor)
-                btns[i].setText(stack.stats.getAmount().toString())
+            let hasEntry = iterator.hasNext()
+            btns[i].setVisible(hasEntry)
+
+            if hasEntry
+                let entry = iterator.next()
+                refreshButton(btns[i], entry)
 
         destroy iterator
 
-    static function highlightStack(Player p, BoardStack highlightStack)
+    private static function refreshButton(InitiativeCommandButton btn, InitiativeEntry entry)
+        btn.time.setText(entry.getTime().toString())
+
+        refreshButton(btn, entry.getEnitity().getBoardEntity())
+
+    private static function refreshButton(InitiativeCommandButton btn, BoardEntity entity)
+        btn.setIcon(entity.getIcon())
+        btn.setBorder(entity.getPlayer().borderColor)
+
+        switch(entity.getType())
+            case STACK
+                btn.setText(entity.toStack().stats.getAmount().toString())
+            case HERO
+                btn.setText("Hero")
+        
+
+    static function highlightEntity(Player p, BoardEntity highlightEntit)
         if p.isLocal() == false
             return
 
         let iterator = p.playingBoard.getInitiative().iterator()
         for int i = 0 to MAX_ENTRYS
             if iterator.hasNext()
-                let stack = iterator.next().getStack()
-                btns[i].setHighlight(highlightStack == stack)
+                let stack = iterator.next().getEnitity().getBoardEntity()
+                btns[i].setHighlight(highlightEntit == stack)
 
         destroy iterator
 
     static function setVisible(Player p, boolean flag)
         if p.isLocal()
-            frame.setVisible(flag)
+            self.setVisible(flag)
 
     static function resetHighlight(Player p)
         if p.isLocal() == false

@@ -3,12 +3,13 @@ package Action
 import PlayerData
 
 import initlater Cell
-import initlater BoardStack
+import initlater BoardEntity
 import initlater OrderSystem
 
 import initlater SummonLesserSkeletonAction
 import initlater WarcryAction
 import initlater SlamAction
+import initlater BoardStack
 import BoardTrigger
 import UIController
 
@@ -20,17 +21,20 @@ public enum CellResult
     NONE
 
 public abstract class Action
+    protected BoardEntity entity
     protected BoardStack stack
     protected string btn
     protected string name
     protected boolean isInstant = false
     protected boolean isDefault = false
-    protected int cooldown
+    protected boolean isSpell = false
+    protected int cooldown = 0
     protected int charge = -1
     protected int maxCharge = -1
 
-    construct(BoardStack stack, string btn, string name)
-        this.stack = stack
+    construct(BoardEntity entity, string btn, string name)
+        this.entity = entity
+        this.stack = entity.toStack()
         this.btn = btn
         this.name = name
     
@@ -46,8 +50,8 @@ public abstract class Action
 
     function onAnyStackCellChange()
         recalculatePreview()
-        if OrderSystem.canOrder(stack.getPlayer())
-            recalculateHighlight(stack.getPlayer())
+        if OrderSystem.canOrder(entity.getPlayer())
+            recalculateHighlight(entity.getPlayer())
 
     protected abstract function recalculatePreview()
 
@@ -72,14 +76,22 @@ public abstract class Action
         if isInstant
             return
 
-        stack.setCurrentAction(this)
-        UIController.triggerOnActionChange(stack.getPlayer().playingBoard)
+        entity.setCurrentAction(this)
+        UIController.triggerOnActionChange(entity.getPlayer().playingBoard)
 
     function isInstant() returns boolean
         return isInstant
+
+    function showInActionBar() returns boolean
+        if isDefault
+            return false
+        return isSpell == false
     
     function isDefault() returns boolean
         return isDefault
+
+    function isSpell() returns boolean
+        return isSpell
 
     function getButton() returns string
         return btn

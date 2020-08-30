@@ -1,0 +1,30 @@
+package Spell
+import Action
+import BoardHero
+
+public abstract class Spell extends Action
+    protected BoardHero hero
+    private int manacost = 0
+    private int maxCooldown
+
+    construct(BoardHero hero, string name, string btn, int manacost, int cooldown)
+        super(hero, name, btn)
+        this.hero = hero
+        this.manacost = manacost
+        this.maxCooldown = cooldown
+        this.isSpell = true
+
+    protected function cast()
+        hero.stats.addMana(-manacost)
+        cooldown = maxCooldown
+
+    function getManaCost() returns int
+        return manacost
+
+    override function canBeActivatedByKey(string key) returns boolean
+        return false
+
+    override function canActivate() returns boolean
+        if manacost <= hero.stats.getMana()
+            return cooldown <= 0
+        return false

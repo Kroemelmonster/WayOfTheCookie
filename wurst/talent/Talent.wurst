@@ -49,7 +49,7 @@ public class TalentSet
         CLEAVE100 = CleavingAttackTalent.setup(1)
 
 
-public abstract class Talent
+public class Talent
     protected string name
     protected string icon = null
     private GenerateListener listener
@@ -71,6 +71,9 @@ public abstract class Talent
 
     function getIcon() returns string
         return icon
+
+    function getName() returns string
+        return name
     
     function createTooltip(StackType _sType) returns Tooltip
         return null

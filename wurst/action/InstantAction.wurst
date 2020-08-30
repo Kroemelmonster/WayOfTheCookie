@@ -4,12 +4,12 @@ import PlayerData
 import Action
 
 import initlater Cell
-import initlater BoardStack
+import initlater BoardEntity
 
 public abstract class InstantAction extends Action
 
-    construct(BoardStack stack, string btn, string name)
-        super(stack, btn, name)
+    construct(BoardEntity entity, string btn, string name)
+        super(entity, btn, name)
         this.isInstant = true
 
     override function getPreviewResultForCell(Cell cell) returns CellResult
@@ -26,4 +26,6 @@ public abstract class InstantAction extends Action
 
     override function sendTargetOrder(Cell cell) returns boolean
         return false
+    
+    abstract override function activate()
         

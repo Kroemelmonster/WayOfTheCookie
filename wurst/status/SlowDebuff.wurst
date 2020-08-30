@@ -1,0 +1,74 @@
+package SlowDebuff
+
+import AttachmentPoints
+import Icons
+import Abilities
+
+import Status
+import UITooltip
+
+import initlater BoardStack
+import initlater StatusType
+import BoardTrigger
+
+public class SlowDebuff extends Status
+    private effect display
+    
+    private static constant string NAME = "Slowed"
+
+    private BoardTrigger turnStartListener
+    private int duration = 0
+
+    static function setup() returns StatusType
+        let statusType = new StatusType(Icons.bTNSlow, NAME, createTooltip(null))
+        statusType.setCreationListener()(BoardStack stack) ->
+            return new SlowDebuff(statusType, stack)
+
+        return statusType
+
+    construct(StatusType statusType, BoardStack stack)
+        super(statusType, stack)
+        display = stack.addAttachEffect(Abilities.slowTarget, AttachmentPoints.foot)
+
+        toggle(true)
+
+
+        turnStartListener = stack.getTriggers().addTurnStart() (SequenzListener next) ->
+            duration--
+            if duration <= 0
+                kill()
+            next.continue()
+
+    private static function createTooltip(SlowDebuff b) returns Tooltip
+        let tooltip = Tooltip.create(NAME)
+        if b == null
+            tooltip.addLine("Reduces the initative by 1 and increases move cost per cell by 50%")
+        else
+            tooltip.addLine(Tooltip.stat("Duration", b.duration))
+            tooltip.addLine("")
+            tooltip.addLine("Reduces the initative by 1 and increases move cost per cell by 50%")
+        
+        return tooltip
+
+    override function updateInner(StatusData data)
+        this.duration += data.duration
+
+    override function createCurrentTooltip() returns Tooltip
+        return createTooltip(this)
+
+    private function toggle(boolean flag)
+        let multi = flag ? 1 : -1
+        stack.stats.moveCoefficient += 50 * multi
+        stack.stats.initModi.addBonus -= 1 * multi
+        stack.getBoard().getInitiative().update()
+
+    override function hide()
+        if display != null
+            display.destr()
+
+    ondestroy
+        toggle(false)
+
+        stack.getTriggers().removeOnTurnStart(turnStartListener)
+        if display != null
+            display.destr()

@@ -1,0 +1,162 @@
+package BoardHero
+import Hero
+import PlayerData
+import BoardEntity
+import LinkedList
+import Action
+import Cell
+import DefaultAction
+import Abilities
+import AttachmentPoints
+import initlater Board
+import initlater HeroAttackAction
+import initlater HeroSkipAction
+import initlater HeroOpenSpellBookAction
+import AbilityIds
+import initlater BoardHeroStats
+import HeroType
+import ClosureEvents
+import UnitDefinition
+import initlater ChainLightningSpell
+import initlater MassSlowSpell
+import initlater MassHasteSpell
+
+public class BoardHero extends BoardEntity
+    Hero hero
+
+    BoardHeroStats stats
+    private HeroType heroType
+
+    private LinkedList<Action> actions
+    private DefaultAction defaultAction
+    private integer currentSelectedAction = -1
+
+    private EventListener castListener
+    
+    private OnCastListener unitOnCastListener
+    private OnCastListener unitOnCastImmediateListener
+
+    private effect highlightEffect = null
+    
+    construct(Hero hero, vec2 coord, Board board, int side)
+        super(EntityType.HERO, board)
+        this.hero = hero
+        this.stats = new BoardHeroStats(this, hero.stats)
+        this.heroType = hero.getType()
+
+        u = createUnit(DUMMY_PLAYER, heroType.unitId, coord , angle(PI * side))
+        actions = new LinkedList<Action>()
+        u.setColor(hero.getPlayer().blzPlayer.getColor())
+        u.disableAbility(AbilityIds.attack, true, false)
+        defaultAction = new HeroAttackAction(this)
+        actions.add(new HeroSkipAction(this))
+        actions.add(new HeroOpenSpellBookAction(this))
+
+        actions.add(new ChainLightningSpell(this))
+        actions.add(new MassSlowSpell(this))
+        actions.add(new MassHasteSpell(this))
+
+        unitOnCastListener = EventListener.onCast(u, AbilityTypesIds.TARGET_SPELL) (unit caster) ->
+            if castListener != null
+                castListener.onEvent()
+                destroy castListener
+                castListener = null
+        unitOnCastImmediateListener = EventListener.onCast(u, AbilityTypesIds.SELFCAST_SPELL) (unit caster) ->
+            if castListener != null
+                castListener.onEvent()
+                destroy castListener
+                castListener = null
+
+        resetActionPoints()
+
+    @inline
+    override function getCell() returns Cell
+        return null
+
+    override function getPlayer() returns Player
+        return hero.getPlayer()
+
+    override function getIcon() returns string
+        return hero.getType().icon
+
+    @inline
+    override function setCurrentAction(Action action)
+        currentSelectedAction = actions.indexOf(action)
+
+    @inline
+    override function getActions() returns LinkedList<Action>
+        return actions
+
+    override function getAction(int index) returns Action
+        if index == -1
+            return defaultAction
+        return actions.get(index)
+
+    @inline
+    override function getCurrentAction() returns Action
+        return getAction(currentSelectedAction)
+
+    @inline
+    override function getDefaultAction() returns DefaultAction
+        return defaultAction
+
+    override function setHighlight(boolean flag)
+        if flag == false or highlightEffect != null
+            highlightEffect.destr()
+            highlightEffect = null
+        if flag
+            highlightEffect = addEffect(Abilities.aneuTarget, u, AttachmentPoints.overhead)
+
+    override function doOnNextCast(EventListener listener)
+        castListener = listener
+
+    @inline
+    override function getInitiative() returns int
+        return stats.getInitiative()
+
+    @inline
+    override function getMaxActionPoints() returns int
+        return stats.getMaxActionPoints()
+
+    @inline
+    override function getRemainingActionPoints() returns int
+        return stats.getRemainingActionPoints()
+
+    @inline
+    override function addActionPoints(integer amount)
+        stats.addActionPoints(amount)
+
+    @inline
+    override function resetActionPoints()
+        stats.resetActionPoints()
+
+    override function isAlive() returns boolean
+        return true
+
+    @inline
+    override function toString() returns string
+        return "BoardHero [ level : "+hero.getLevel().toString()+"]"
+
+    override function resetCurrentSelectedAction() returns boolean
+        if currentSelectedAction == -1
+            return false
+        currentSelectedAction = -1
+        return true
+
+    ondestroy
+        if castListener != null
+            destroy castListener
+            castListener = null
+
+        if unitOnCastListener != null
+            destroy unitOnCastListener
+            unitOnCastListener = null
+        if unitOnCastImmediateListener != null
+            destroy unitOnCastImmediateListener
+            unitOnCastImmediateListener = null
+            
+        if actions != null
+            for action in actions
+                destroy action
+            destroy actions
+        u.remove()

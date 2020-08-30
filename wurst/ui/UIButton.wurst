@@ -6,6 +6,7 @@ import UI
 import PlayerData
 
 import initlater MouseContext
+import initlater Action
 
 public enum BorderColor
     RED
@@ -123,21 +124,41 @@ public abstract class UIButton
             destroy onMouseLeaveListener
             */
     
+public class UIIconCharge
+    private framehandle backdrop
+    private framehandle text
 
+    construct(framehandle icon)
+        backdrop = createFrame("BackdropWithoutEvents", icon, 0, 0)
+        ..setPoint(FRAMEPOINT_TOPLEFT, icon, FRAMEPOINT_CENTER, vec2(0.005, -0.005))
+        ..setPoint(FRAMEPOINT_BOTTOMRIGHT, icon, FRAMEPOINT_BOTTOMRIGHT)
+        ..setTexture("UI\\Widgets\\Console\\Human\\human-transport-slot.blp", 0, true)
+
+        text = createFrame("TextWithoutEvents", backdrop, 0, 0)
+        ..setAllPoints(backdrop)
+        ..setTextAlignment(TEXT_JUSTIFY_MIDDLE, TEXT_JUSTIFY_CENTER)
+
+    function setVisible(boolean flag)
+        backdrop.setVisible(flag)
+
+    function setText(string str)
+        text.setText(str)
+            
 
 public class ActionButton extends UIButton
     private framehandle glow
     private framehandle block
-    private framehandle chargeBackdrop
-    private framehandle chargeText
+    private UIIconCharge charge
+
+    Action action
 
     override function setIcon(string str)
         icon.setTexture(str, 0, true)
 
-    construct(framehandle parent, string str)
+
+    construct(framehandle parent)
         self = createFrame("Button", parent, 0, 0)
         icon = getFrame("ButtonIcon")
-        setIcon(str)
 
         glow = createFrame("SPRITE", "ButtonGlow", self, "", 0)
         ..setAllPoints(icon)
@@ -145,18 +166,32 @@ public class ActionButton extends UIButton
 
         block = createFrame("BACKDROP", "ButtoBlock", self, "", 0)
         ..setAllPoints(icon)
-
-        chargeBackdrop = createFrame("BACKDROP", "ButtonCharge", self, "", 0)
-        ..setPoint(FRAMEPOINT_TOPLEFT, icon, FRAMEPOINT_CENTER, vec2(0.005, -0.005))
-        ..setPoint(FRAMEPOINT_BOTTOMRIGHT, icon, FRAMEPOINT_BOTTOMRIGHT)
-        ..setTexture("UI\\Widgets\\Console\\Human\\human-transport-slot.blp", 0, true)
         ..setVisible(false)
 
-        chargeText = createFrame("TEXT", "ButtonChargeText", chargeBackdrop, "", 0)
-        ..setAllPoints(chargeBackdrop)
-        ..setTextAlignment(TEXT_JUSTIFY_MIDDLE, TEXT_JUSTIFY_CENTER)
+        charge = new UIIconCharge(icon)
+        ..setVisible(false)
 
         setup()
+        
+    function setAction(Action action, Action currentAction)
+        this.action = action
+        setVisible(true)
+        setIcon(action.getButton())
+
+        if action == currentAction
+            enable()
+            setGlowVisible(true)
+        else
+            setGlowVisible(false)
+            setCharge(action.getCharge())
+            if action.canActivate()
+                enable()
+            else
+                let cooldown = action.getCooldown()
+                if cooldown > 0 and action.hasEnoughCharges()
+                    disable("BtnBlockCooldown"+cooldown.toString()+".blp")
+                else
+                    disable("BtnBlockDisabled.blp")
 
     function setGlowVisible(boolean flag)
         glow.setVisible(flag)
@@ -167,8 +202,12 @@ public class ActionButton extends UIButton
         block.setVisible(true)
 
     function setCharge(int value)
-        chargeBackdrop.setVisible(value > 0)
-        chargeText.setText(value.toString())
+        charge.setVisible(value > 0)
+        charge.setText(value.toString())
+
+    function setLevel(int value)
+        charge.setVisible(true)
+        charge.setText(value.toString())
 
     function enable()
         self.setEnabled(true)
@@ -214,6 +253,9 @@ public class CommandButton extends UIButton
 
     function addBorder()
         border = new ButtonBorder(self)
+
+    function setScale(real scale)
+        self.setScale(scale)
 
     function addText(boolean withGold)
         text = createFrame("CommandButtonText", self, 0, 0)

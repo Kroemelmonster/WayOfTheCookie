@@ -1,7 +1,6 @@
 package PassiveAction
 
 import initlater BoardStack
-import initlater Cell
 
 public abstract class PassiveActionListener
     abstract function onFinish()

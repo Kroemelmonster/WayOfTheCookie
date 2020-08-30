@@ -12,17 +12,43 @@ import Orders
 import NPC
 import UIWorldConsole
 import KItem
+import SkillTree
+import FightResult
+import KUtil
+import HeroType
+import HeroStats
+import LinkedList
+import initlater Spell
 
 constant HashMap<unit, Hero> map = new HashMap<unit, Hero>
 
 public class Hero
+    static constant int array LEVELS = [1000, 2000, 3500, 6000]
+
     protected unit u
+    protected HeroType heroType
+    HeroStats stats
+
+
+    protected int unitboardid
+    protected string icon
     protected Player p
     protected int gold
+    protected int mana = 10
+    protected int maxMana = 20
     protected int leadership
+
+    protected int exp = 0
+    protected int level = 0
 
     protected int attack = 0
     protected int defence = 0
+
+    int might = 3
+    int magic = 3
+    int mind = 4
+
+    protected SkillTree skillTree
 
     protected KItem array[8] items
     protected KItem array[20] backpack
@@ -36,17 +62,19 @@ public class Hero
     protected EventListener orderPointListener
     protected OnCastListener interactWithNPCListener
 
-    construct(Player p)
+    construct(Player p, HeroType heroType)
         this.p = p
-        u = createUnit(playerData[0].blzPlayer, UnitTypesIds.HERO_FAR_SEER, playerData[0].blzPlayer.getStartLocation(), angle(0))
-        army = new Army()
-        p.hero = this
+        this.heroType = heroType
+        this.stats = new HeroStats(this, heroType)
+
+        u = createUnit(playerData[0].blzPlayer, heroType.armyUnitId, playerData[0].blzPlayer.getStartLocation(), angle(0))
+        army = new Army(stats)
         map.put(u, this)
+        skillTree = heroType.skillTrees.get(0).createNew()
 
         damagedListener = EventListener.add(u, EVENT_PLAYER_UNIT_DAMAGED) ->
             if u.isInvulnerable() == false
                 World.onHeroDamaged(this, GetEventDamageSource())
-
 
         orderUnitListener = EventListener.add(u, EVENT_PLAYER_UNIT_ISSUED_UNIT_ORDER) ->
             if GetIssuedOrderId() == SpecialOrders.smart
@@ -62,14 +90,25 @@ public class Hero
         gold = 9500
         leadership = 4000
 
+        p.hero = this
         UIWorldConsole.setupHero(this)
+        select()
+
+    function getType() returns HeroType
+        return heroType
+
+    function getUnitType() returns int
+        return unitboardid
+
+    private function select()
         p.blzPlayer.selectSingle(u)
+        p.blzPlayer.setCameraTargetControllerNoZ(u, vec2(0.0, 0.0), false)    
 
     static function getFromUnit(unit u) returns Hero
         return map.get(u)
 
     function createSummon(StackType stackType, int amount) returns ArmyStack
-        let summon = new ArmyStack(stackType, amount, true)
+        let summon = new ArmyStack(stackType, amount, true, stats)
         updateArmyStackStats(summon)
         return summon
     
@@ -92,6 +131,32 @@ public class Hero
         
     function getGold() returns int
         return gold
+
+    function getLevel() returns int
+        return level
+
+    function getExp() returns int
+        return exp
+
+    function addExp(Reward reward)
+        exp += reward.exp
+        while exp >= LEVELS[level]
+            exp -= LEVELS[level]
+            let statsGain = 6 + level
+            level ++
+            
+            reward.level ++
+            // TODO here better rewards for level up
+            let dominantPerc = GetRandomReal(0.35, 0.5)
+            let otherPerc = GetRandomReal(0.4, 0.6)
+
+            reward.mind += (statsGain * dominantPerc).round()
+            reward.might += (statsGain * otherPerc * (1 - dominantPerc)).round()
+            reward.magic += (statsGain * (1 - otherPerc) * (1 - dominantPerc)).round()
+
+        might += reward.might
+        mind += reward.mind
+        magic += reward.magic
 
     function addGold(int amount)
         gold += amount
@@ -125,7 +190,7 @@ public class Hero
         setVulnearble(flag)
         if flag
             u.unpause()
-            p.blzPlayer.selectSingle(u)
+            select()
         else
             u.pause()
 
@@ -135,12 +200,14 @@ public class Hero
     private function updateArmyStackStats(ArmyStack armyStack)
         if armyStack == null
             return
-        armyStack.stats.attackModi.addBonus += attack
-        armyStack.stats.defenceModi.addBonus += defence
 
         for int i = 0 to items.length - 1
             if items[i] != null
                 items[i].onStackUpdate(armyStack, true)
+
+        skillTree.onStackUpdate(armyStack, true)
+        for skill in skillTree.skills
+            skill.onStackUpdate(armyStack, true)
 
     function startInteract(NPC npc)
         currentInteract = npc
@@ -151,11 +218,8 @@ public class Hero
             currentInteract.endInteraction(this)
             currentInteract = null
 
-    function getAttack() returns int
-        return attack
-
-    function getDefence() returns int
-        return defence
+    function getSkillTree() returns SkillTree
+        return skillTree
 
     function getActiveItemsLength() returns int
         return items.length
@@ -167,6 +231,7 @@ public class Hero
 
     function setActiveItem(int index, KItem kItem)
         items[index] = kItem
+        kItem.onEquip(this, true)
         for int i = 0 to Army.MAX_SIZE - 1
             let armyStack = army.getStack(i)
             if armyStack != null
@@ -174,6 +239,7 @@ public class Hero
         
     function removeActiveItem(int index)
         let kItem = items[index]
+        kItem.onEquip(this, false)
         for int i = 0 to Army.MAX_SIZE - 1
             let armyStack = army.getStack(i)
             if armyStack != null
@@ -193,20 +259,6 @@ public class Hero
         
     function removeBackPackItem(int index)
         backpack[index] = null
-
-    function setAttack(int value)
-        for int i = 0 to Army.MAX_SIZE - 1
-            let armyStack = army.getStack(i)
-            if armyStack != null
-                armyStack.stats.attackModi.addBonus += value - attack
-        this.attack = value
-
-    function setDefence(int value)
-        for int i = 0 to Army.MAX_SIZE - 1
-            let armyStack = army.getStack(i)
-            if armyStack != null
-                armyStack.stats.defenceModi.addBonus += value - defence
-        this.defence = value
 
     function toString() returns string
         return "Hero [" + u.getName() +"]"

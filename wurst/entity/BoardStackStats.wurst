@@ -1,7 +1,7 @@
 package BoardStackStats
 
 import KUtil
-import StackStatsModifier
+import StatsModifier
 
 import initlater BoardStack
 import StackStats
@@ -18,12 +18,14 @@ public class BoardStackStats
     int remainingActionPoints
     int hp
 
-    StackStatsModifier attackModi = new StackStatsModifier()
-    StackStatsModifier defenceModi = new StackStatsModifier()
-    StackStatsModifier damageModi = new StackStatsModifier()
-    StackStatsModifier initModi = new StackStatsModifier()
-    StackStatsModifier hpModi = new StackStatsModifier()
-    StackStatsModifier actionPointModi = new StackStatsModifier()
+    StatsModifier attackModi = new StatsModifier()
+    StatsModifier defenceModi = new StatsModifier()
+    StatsModifier damageModi = new StatsModifier()
+    StatsModifier initModi = new StatsModifier()
+    StatsModifier hpModi = new StatsModifier()
+    StatsModifier actionPointModi = new StatsModifier()
+
+    int moveCoefficient = 100
 
     int phyisicalResistance = 0
     int magicResistance = 0
@@ -107,10 +109,6 @@ public class BoardStackStats
     @inline
     function getRemainingActionPoints() returns integer
         return remainingActionPoints
-    
-    @inline
-    function getMoveSpeed() returns real
-        return remainingActionPoints.toReal()
 
     @inline
     function getAmount() returns int
@@ -136,12 +134,12 @@ public class BoardStackStats
         stack.setVisualHp(hp / getMaxHp())
 
     @inline
-    function setActionPoints(integer amount)
-        remainingActionPoints = amount
-
-    @inline
     function addActionPoints(integer amount)
         remainingActionPoints += amount
+
+    @inline
+    function setRemainingActionPoints(integer amount)
+        remainingActionPoints = amount
 
     @inline
     function addAmount(int i)

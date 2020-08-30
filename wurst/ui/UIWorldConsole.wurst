@@ -7,6 +7,10 @@ import UIArmyPanel
 
 import initlater Hero
 import initlater MainController
+import UIFightResultDialog
+import initlater Board
+import BoardTrigger
+import FightResult
 
 public class UIWorldConsoleInfo
     protected boolean visible = false
@@ -16,10 +20,13 @@ public class UIWorldConsole
     static framehandle self
     protected static framehandle pane
     protected static framehandle portrait
-    protected static framehandle bar
+    protected static framehandle expBar
+    protected static framehandle expBarName
 
     protected static framehandle goldText
     protected static framehandle leadershipText
+
+    protected static UIFightResultDialog fightResultDialog
 
     protected static UIArmyPanel armyPanel
 
@@ -44,15 +51,15 @@ public class UIWorldConsole
         ..setPoint(FRAMEPOINT_TOPLEFT, pane, FRAMEPOINT_TOPLEFT, 0.13, 0.0)
         ..setPoint(FRAMEPOINT_BOTTOMRIGHT, pane, FRAMEPOINT_BOTTOMLEFT, 0.18, 0.0)
         ..onClick() ->
-            MainController.openHeroWindow(GetTriggerPlayerData(), true)
+            MainController.toggleHeroWindow(GetTriggerPlayerData())
 
 
-        bar = createSimpleFrame("MyBarEx", self, 0)
+        expBar = createSimpleFrame("MyBarEx", self, 0)
         ..setTexture("Replaceabletextures\\Teamcolor\\Teamcolor03.blp", 0, true)
         ..setWidth(0.05)
         ..setVisible(false)
         ..setPoint(FRAMEPOINT_BOTTOMLEFT, pane, FRAMEPOINT_BOTTOMLEFT, 0.13, -0.01)
-        getFrame("MyBarExText").setText("Level 1")
+        expBarName = getFrame("MyBarExText")
 
         createFrame("WorldConsoleRessource", pane, 0, 0)
         ..setPoint(FRAMEPOINT_TOPLEFT, pane, FRAMEPOINT_TOPLEFT)
@@ -65,6 +72,8 @@ public class UIWorldConsole
         leadershipText = getFrame("RessourceText")
         
         armyPanel = new UIArmyPanel(armyPanelReference)
+
+        fightResultDialog = new UIFightResultDialog()
 
     static function setupHero(Hero h)
         armyPanel.setupHero(h)
@@ -86,6 +95,11 @@ public class UIWorldConsole
             goldText.setText(p.hero.getGold().toString())
             leadershipText.setText(p.hero.getLeadership().toString())
 
+            let lvl = p.hero.getLevel()
+            expBarName.setText("Level "+(lvl + 1).toString())
+            expBar.setMinMax(0.0, Hero.LEVELS[lvl].toReal())
+            expBar.setValue(p.hero.getExp().toReal())
+
         armyPanel.update(p)
 
     static function setVisible(Player p, boolean flag)
@@ -95,7 +109,7 @@ public class UIWorldConsole
         if p.isLocal()
             self.setVisible(flag)
             portrait.setVisible(flag)
-            bar.setVisible(flag)
+            expBar.setVisible(flag)
         p.worldConsoleInfo.visible = flag
 
         if flag == false
@@ -103,3 +117,6 @@ public class UIWorldConsole
 
         if flag
             update(p)
+
+    static function showFightResult(Player p, FightResult result, SequenzListener listener)
+        fightResultDialog.show(p, result, listener)

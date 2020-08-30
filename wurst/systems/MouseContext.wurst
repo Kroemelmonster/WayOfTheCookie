@@ -9,11 +9,12 @@ import OrderSystem
 import initlater UIInitiativeWindow
 import initlater Mouse3DPositionSystem
 import initlater UITooltip
+import BoardEntity
 
 class MouseContext
     /** Use this to force a player to select a cell **/
     static function forcePlayerSelect(Player p, Cell cell)
-        p.currentSelectedStack = null
+        p.currentSelectedEntity = null
         onMouseSelect(p, mousePosition(cell, null))
 
     /** Use this to simulate a Mouse Entering **/
@@ -40,7 +41,7 @@ class MouseContext
         if mP.cell != null
             let stack = mP.cell.getStack()
             if stack != null
-                UIInitiativeWindow.highlightStack(p, stack)
+                UIInitiativeWindow.highlightEntity(p, stack)
 
         p.currentMousePosition = mP
         UIController.triggerOnPlayerCellHighlight(p)
@@ -51,22 +52,20 @@ class MouseContext
 
     /** is used as an interpreted version of a userinput selecting ANY cell / stack **/
     static function onMouseSelect(Player p, mousePosition mP)
-        let stack = getStackToSelect(p, mP)
+        let entity = getEntityToSelect(p, mP)
 
-        p.currentSelectedStack = stack
-        UIController.selectStack(p, stack)
+        p.currentSelectedEntity = entity
+        UIController.selectEntity(p, entity)
         UIController.triggerOnPlayerCellHighlight(p)
 
     /** is used as an interpreted version of a userinput ordering ANY cell / stack **/
     static function onOrder(Player p, mousePosition mP)
         OrderSystem.sendSimpleTargetOrder(p, mP.cell)
 
-    private static function getStackToSelect(Player p, mousePosition mP) returns BoardStack
-        let currentStack = p.playingBoard.getInitiative().getCurrentStack()
-        if mP.cell == null
-            return currentStack
-        if mP.cell.getStack() == null
-            return currentStack
+    private static function getEntityToSelect(Player p, mousePosition mP) returns BoardEntity
+        let currentEntity = p.playingBoard.getInitiative().getCurrent()
+        if mP.cell == null or mP.cell.getStack() == null
+            return currentEntity.getBoardEntity()
         return mP.cell.getStack()
 
     @inline

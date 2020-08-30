@@ -1,0 +1,108 @@
+package BoardHeroStats
+
+import KUtil
+import StatsModifier
+
+import initlater BoardStack
+import HeroStats
+import StackType
+import initlater SubTargetList
+import LinkedList
+import initlater Cell
+import BoardHero
+
+public class BoardHeroStats
+    private HeroStats basis
+    private BoardHero hero
+
+    int remainingActionPoints
+    int mana
+
+    StatsModifier powerModi = new StatsModifier()
+    StatsModifier wisdomModi = new StatsModifier()
+
+    StatsModifier damageModi = new StatsModifier()
+    StatsModifier initModi = new StatsModifier()
+    StatsModifier actionPointModi = new StatsModifier()
+    StatsModifier additionalManaModi = new StatsModifier()
+
+
+    construct(BoardHero hero, HeroStats basis)
+        this.basis = basis
+        this.hero = hero
+        this.mana = basis.getMana()
+
+    function getBasis() returns HeroStats
+        return basis
+    
+    @inline
+    function getInitiative() returns int
+        return initModi.get(basis.getInitiative()).round()
+
+    @inline
+    function getMaxActionPoints() returns int
+        return actionPointModi.get(basis.getMaxActionPoints()).round()
+
+    @inline
+    function getAttack() returns int
+        return basis.getAttack()
+
+    @inline
+    function getDefence() returns int
+        return basis.getDefence()
+
+    @inline
+    function getPower() returns int
+        return powerModi.get(basis.getPower()).round()
+
+    @inline
+    function getWisdom() returns int
+        return wisdomModi.get(basis.getWisdom()).round()
+
+    @inline
+    function getMaxMana() returns int
+        let wis = getWisdom()
+        let additionalMana = additionalManaModi.get(basis.getAdditionalMana()).round()
+        return wis * 10 + additionalMana
+
+    @inline
+    function getDamage() returns realRange
+        return damageModi.getRealRange(basis.getDamage(), 1)
+
+    @inline
+    function getDamageType() returns DamageType
+        return basis.heroType.damageType
+
+    @inline
+    function getMana() returns int
+        return mana
+
+    @inline
+    function getRemainingActionPoints() returns integer
+        return remainingActionPoints
+    
+    /** setters  **/
+    @inline
+    function addActionPoints(integer amount)
+        remainingActionPoints += amount
+
+    @inline
+    function resetActionPoints()
+        remainingActionPoints = getMaxActionPoints()
+
+    function addMana(int amount)
+        mana += amount
+        if mana > getMaxMana()
+            mana = getMaxMana()
+        else if mana < 0
+            mana = 0
+
+
+    ondestroy
+        destroy powerModi
+        destroy wisdomModi
+
+        destroy damageModi
+        destroy initModi
+        destroy actionPointModi
+        destroy additionalManaModi

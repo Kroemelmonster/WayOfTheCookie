@@ -8,16 +8,17 @@ import TargetList
 
 import initlater Cell
 import initlater BoardStack
-import BoardTrigger
+import initlater BoardTrigger
 import PathFinding
+import BoardEntity
 
 public abstract class DefaultAction extends Action
     protected TargetList targets
 
     protected static constant KI_MOVEPOINTS = 100.0
 
-    construct(BoardStack stack, string name)
-        super(stack, null, name)
+    construct(BoardEntity entity, string name)
+        super(entity, null, name)
         this.isDefault = true
 
     override function canActivate() returns boolean

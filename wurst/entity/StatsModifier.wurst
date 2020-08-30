@@ -1,8 +1,8 @@
-package StackStatsModifier
+package StatsModifier
 
 import KUtil
 
-public class StackStatsModifier
+public class StatsModifier
     int multi = 100
     int addBonus = 0
 

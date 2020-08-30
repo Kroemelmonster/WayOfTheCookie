@@ -1,0 +1,94 @@
+package FightResult
+import LinkedList
+import StackType
+import Stack
+import initlater Hero
+import Abilities
+
+public enum FIGHT_RESULT
+    WON
+    LOST
+    DRAW
+
+public class Reward
+    int might = 0
+    int mind = 0
+    int magic = 0
+
+    int exp = 0
+    int level = 0
+
+public class FightResult
+    LinkedList<FightResultStack> self = new LinkedList<FightResultStack>()
+    LinkedList<FightResultStack> enemy = new LinkedList<FightResultStack>()
+
+    protected FIGHT_RESULT result
+    protected Reward reward = new Reward()
+
+    construct(Hero hero, Army enemyArmy, int side)
+        if side == -2
+            result = DRAW
+        else if side == 0
+            result = WON
+        else
+            result = LOST
+        
+        
+        let yourArmy = hero.getArmy()
+        for int i = 0 to Army.MAX_SIZE - 1
+            let stack = yourArmy.getStack(i)
+            if stack != null
+                let resultStack = new FightResultStack(stack.getStackType(), stack.getAmount(), stack.representive.stats.getAmount())
+                self.add(resultStack)
+
+        
+        for int i = 0 to Army.MAX_SIZE - 1
+            let stack = enemyArmy.getStack(i)
+            if stack != null
+                let resultStack = new FightResultStack(stack.getStackType(), stack.getAmount(), stack.representive.stats.getAmount())
+                enemy.add(resultStack)
+                let looseAmount = resultStack.befor - resultStack.after
+                reward.exp += looseAmount * resultStack.stackType.value
+
+        hero.addExp(reward)
+
+    function getResult() returns FIGHT_RESULT
+        return result
+    
+    function getReward() returns Reward
+        return reward
+
+    function execute(Hero hero)
+        let yourArmy = hero.getArmy()
+        var count = 0
+        for int i = 0 to Army.MAX_SIZE - 1
+            let stack = yourArmy.getStack(i)
+            if stack != null
+                let resultStack = self.get(count)
+                if resultStack.after <= 0
+                    yourArmy.remove(i)
+                else
+                    stack.setAmount(resultStack.after)
+                count++
+
+        if reward.level > 0
+            flashEffect(Abilities.levelupcaster, hero.getCoord())
+
+public class FightResultStack
+    protected StackType stackType
+    protected int befor
+    protected int after
+
+    construct(StackType stackType, int befor, int after)
+        this.stackType = stackType
+        this.befor = befor
+        this.after = after
+
+    function getStackType() returns StackType
+        return stackType
+    
+    function getBefor() returns int
+        return befor
+
+    function getAfter() returns int
+        return after

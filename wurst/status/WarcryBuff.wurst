@@ -4,14 +4,14 @@ import AttachmentPoints
 import Icons
 import Abilities
 
-import Buff
+import Status
 import UITooltip
 
 import initlater BoardStack
-import initlater BuffType
+import initlater StatusType
 import BoardTrigger
 
-public class WarcryBuff extends Buff
+public class WarcryBuff extends Status
     private static constant DAMAGE_MULTI = 10
     private static constant string NAME = "Warcry"
 
@@ -20,11 +20,14 @@ public class WarcryBuff extends Buff
 
     private BoardTrigger turnEndListener
 
-    static function setup()
-        BuffTypeSet.WARCRY = new BuffType(Icons.bTNBattleRoar, NAME, createTooltip(null)) (BoardStack stack) ->
-            return new WarcryBuff(BuffTypeSet.WARCRY, stack)
+    static function setup() returns StatusType
+        let statusType = new StatusType(Icons.bTNBattleRoar, NAME, createTooltip(null))
+        statusType.setCreationListener()(BoardStack stack) ->
+            return new WarcryBuff(statusType, stack)
 
-    construct(BuffType bType, BoardStack stack)
+        return statusType
+
+    construct(StatusType bType, BoardStack stack)
         super(bType, stack)
         display = stack.addAttachEffect(Abilities.roarTarget, AttachmentPoints.overhead)
         
@@ -46,7 +49,7 @@ public class WarcryBuff extends Buff
         
         return tooltip
 
-    override protected function updateInner(BuffData data)
+    override protected function updateInner(StatusData data)
         if this.duration < data.duration
             let difference = data.duration - this.duration
             this.duration = data.duration

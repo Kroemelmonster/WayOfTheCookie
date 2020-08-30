@@ -2,7 +2,7 @@ package DelayAnimation
 
 import Animation
 import Scheduler
-import Board
+import initlater Board
 
 public class DelayAnimation extends Animation
     private real cd

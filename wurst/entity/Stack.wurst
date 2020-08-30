@@ -3,6 +3,7 @@ package Stack
 import StackType
 import StackStats
 import initlater BoardStack
+import HeroStats
 
 public class Stack
     protected StackType stackType
@@ -32,9 +33,9 @@ public class ArmyStack extends Stack
     BoardStack representive
     protected boolean isSummoned
 
-    construct(StackType stackType, int amount, boolean isSummoned)
+    construct(StackType stackType, int amount, boolean isSummoned, HeroStats heroStats)
         super(stackType, amount)
-        stats = new StackStats(this, stackType)
+        stats = new StackStats(this, stackType, heroStats)
         this.isSummoned = isSummoned
 
     function isSummoned() returns boolean
@@ -46,6 +47,10 @@ public class ArmyStack extends Stack
 public class Army
     static constant MAX_SIZE = 8
     protected ArmyStack array[MAX_SIZE] stacks
+    protected HeroStats heroStats
+
+    construct(HeroStats heroStats)
+        this.heroStats = heroStats
 
     @inline
     function setStack(int i, ArmyStack stack)
@@ -53,11 +58,11 @@ public class Army
 
     function addStackAt(int i, StackType stackType, int amount) returns ArmyStack
         if stacks[i] == null
-            stacks[i] = new ArmyStack(stackType, amount, false)
+            stacks[i] = new ArmyStack(stackType, amount, false, heroStats)
         return stacks[i]
         
     function remove(int i)
-        if stacks[i] == null
+        if stacks[i] != null
             destroy stacks[i]
             stacks[i] = null
 

@@ -8,21 +8,25 @@ import initlater BoardStack
 import initlater InitiativeList
 import initlater UIController
 import initlater Action
+import BoardEntity
 
 class OrderSystem
     static function couldOrderIFInteractable(Player p) returns boolean
         if p.playingBoard == null
             return false
 
-        let currentStack = p.playingBoard.getInitiative().getCurrentStack()
-        // player must be owner of current Stack
-        if currentStack.getPlayer() != p
+        let currentEntity = p.playingBoard.getInitiative().getCurrent()
+        // maybe there isnt even a initittive
+        if currentEntity == null
+            return false
+        // player must be owner of current Entry
+        if currentEntity.getPlayer() != p
             return false
         
-        // player also has to have the current Unit selected
-        if p.currentSelectedStack != currentStack
+        let boardEntity = currentEntity.getBoardEntity()
+        // player also has to have the current Unit selected if it is a unit
+        if boardEntity != null and p.currentSelectedEntity != boardEntity
             return false
-
         return true
 
 
@@ -32,18 +36,16 @@ class OrderSystem
 
         return p.playingBoard.isInteractAble()
 
-    static function resetCurrentSelectedAction(BoardStack stack)
-        if stack.isCurrentActionDefault()
-            return
-        stack.resetCurrentSelectedAction()
-        UIController.triggerOnActionChange(stack.getBoard())
+    static function resetCurrentSelectedAction(BoardEntity entity)
+        if entity.resetCurrentSelectedAction()
+            UIController.triggerOnActionChange(entity.getBoard())
 
     static function sendSimpleTargetOrder(Player p, Cell cell)
         if canOrder(p) == false
             return
-        let currentAction = p.currentSelectedStack.getCurrentAction()
+        let currentAction = p.currentSelectedEntity.getCurrentAction()
         if sendTargetOrder(currentAction, cell) == false
-            resetCurrentSelectedAction(p.currentSelectedStack)
+            resetCurrentSelectedAction(p.currentSelectedEntity)
         else
             p.playingBoard.enableInteraction(false)
 

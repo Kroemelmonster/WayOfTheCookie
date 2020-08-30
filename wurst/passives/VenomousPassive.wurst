@@ -1,0 +1,38 @@
+package VenomousPassive
+
+import PassiveAction
+import AttackAnimation
+import Damage
+
+import initlater BoardStack
+import initlater BoardEntity
+import BoardTrigger
+import StatusController
+import StatusType
+import Status
+import PoisonAilment
+import initlater SkillTreeVenomancer
+import DelayAnimation
+
+public class VenomousPassive extends PassiveAction
+    @inline
+    private static function getStatus() returns StatusType
+        return StatusTypeSet.POISON
+
+    private SkillTreeVenomancer skillTree
+
+    construct(BoardStack stack, SkillTreeVenomancer skillTree)
+        super(stack, "Venomous")
+        this.skillTree = skillTree
+
+    override function triggerOnStackCreation(BoardStack stack)
+        // TODO can this be destroyed ? yes -> you need to delete stuff
+        stack.getTriggers().addOnDamageDealt() (BoardEntity source, BoardStack target, SpecificDamageInstance specificInstance, SequenzListener next) ->
+            if skillTree.canApplyPoison(source, target, specificInstance)
+                PoisonAilment.flashEffect(target)
+                StatusController.add(getStatus(), target, new StatusData(skillTree.getPoisonDuration())
+                ..setRealValue(skillTree.getPoisonDamage(source, target, specificInstance)))
+                DelayAnimation.create(stack.getBoard(), 0.2) ->
+                    next.continue()
+            else
+                next.continue()

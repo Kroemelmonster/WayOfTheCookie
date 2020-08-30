@@ -87,11 +87,11 @@ public class SummonLesserSkeletonAction extends Action
 
             CastAnimation.create(stack, cell) () ->
                 flashEffect(EFFECT, cell.getCoord())
-                BoardController.placeStackOnBoard(summon, cell) ->
+                BoardController.placeStackOnBoard(summon, cell, true) ->
                     let delayTime = Scheduler.getTimeIn(0.5) // this is the backswing for casting
                     DelayAnimation.create(cell.getBoard(), delayTime) ->
                         cooldown = COOLDOWN + 1
-                        BoardController.finishOrder(stack, false)
+                        BoardController.finishOrder(entity, false)
             
             return true
         
@@ -120,12 +120,12 @@ public class SummonLesserSkeletonAction extends Action
     @inline
     private function showPreview()
         tooltip.display(stack.getPlayer(), false)
-        UIActionWindow.updateActionPoints(stack, 99)
+        UIActionWindow.updateActionPoints(entity, 99)
                 
     @inline
     private function hidePreview()
         UITooltip.hide(stack.getPlayer())
-        UIActionWindow.updateActionPoints(stack, 0)
+        UIActionWindow.updateActionPoints(entity, 0)
 
     override function onUIMouseEnter()
         recalcSummonAmount()

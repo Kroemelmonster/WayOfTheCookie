@@ -1,0 +1,61 @@
+package UIHeroSkillTree
+import UIButton
+import PlayerData
+import UITooltip
+
+public class UIHeroSkillTree
+    private static constant int MAX_SKILLS = 15
+
+    private framehandle self
+    private ActionButton array[MAX_SKILLS] skills
+
+    private real width
+    private real height
+
+    construct(framehandle self, real width, real height)
+        this.self = self
+        this.width = width
+        this.height = height
+
+        for int i = 0 to MAX_SKILLS - 1
+            skills[i] = new ActionButton(self)
+            skills[i].onClick() -> 
+                let p = GetTriggerPlayerData()
+                let h = p.hero
+                let skill = h.getSkillTree().skills.get(i)
+                skill.dolevelUp(h)
+                let tt = skill.createTooltip(h)
+                tt.display(p, true, TooltipAnchor.TOP_RIGHT, skills[i].self)
+
+            skills[i].onMouseEnter() -> 
+                let p = GetTriggerPlayerData()
+                let h = p.hero
+                let skill = h.getSkillTree().skills.get(i)
+                let tt = skill.createTooltip(h)
+                tt.display(p, true, TooltipAnchor.TOP_RIGHT, skills[i].self)
+
+            skills[i].onMouseLeave() -> 
+                let p = GetTriggerPlayerData()
+                UITooltip.hide(p)
+
+    function openSkillTree(Player p)
+    
+    function update(Player p)
+        if p.isLocal() == false
+            return
+        let h = p.hero
+        let skillTree = h.getSkillTree()
+        let size = skillTree.skills.size()
+        for int i = 0 to MAX_SKILLS - 1
+            if i < size
+                let skill = skillTree.skills.get(i)
+                skills[i].setPoint(FRAMEPOINT_TOP, self, FRAMEPOINT_TOPLEFT, width * skill.x, height * -skill.y)
+                skills[i].setVisible(true)
+                skills[i].setLevel(skill.level)
+                skills[i].setIcon(skill.icon)
+                skills[i].setGlowVisible(skill.canLevelUp(h))
+            else
+                skills[i].setVisible(false)
+        
+
+        

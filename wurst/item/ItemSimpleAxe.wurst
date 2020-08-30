@@ -1,0 +1,50 @@
+package ItemSimpleAxe
+
+import Icons
+import initlater Stack
+import initlater KItem
+import UITooltip
+import initlater Hero
+import StackType
+
+public class ItemSimpleAxe extends KItem
+    private static constant string NAME = "Simple Axe"
+    private static constant string ICON = Icons.bTNOrcMeleeUpOne
+
+    private int value
+    private Family family
+
+    static function setup() returns KItemType
+        let itemType = new KItemType(ICON, NAME)
+        itemType.addListener() -> 
+            return new ItemSimpleAxe(itemType)
+        return itemType
+
+    construct(KItemType itemType)
+        super(itemType)
+        value = GetRandomInt(3, 8)
+        let i = GetRandomInt(0, 2)
+        if i == 0
+            family = Family.TROLL
+        else if i == 1
+            family = Family.SKELTON
+        else
+            family = Family.GNOLL
+
+
+    override function onEquip(Hero h, boolean add)
+
+
+    override function onStackUpdate(ArmyStack armyStack, boolean add)
+        if armyStack.getStackType().isFamily(family) == false
+            return
+        if add
+            armyStack.stats.damageModi.addBonus += value
+        else
+            armyStack.stats.damageModi.addBonus -= value
+   
+    override function createTooltip() returns Tooltip
+        let tt = Tooltip.create(NAME)
+        tt.addLine("Adds "+Tooltip.primaryString(value.toString())+" Damage to all "+family.name)
+        return tt
+        

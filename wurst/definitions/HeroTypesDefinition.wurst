@@ -1,0 +1,42 @@
+package HeroTypesDefinition
+
+import Icons
+
+import StackType
+import StackSoundSet
+import UnitDefinition
+import StackSoundTypesDefinition
+import KUtil
+import Talent
+import LinkedList
+import HeroType
+import SkillTree
+
+
+public class HeroTypes
+    static HeroType FAR_SEER
+    
+    static LinkedList<HeroType> list = new LinkedList<HeroType>
+
+class HeroTypesDefinition
+    private static function createDefault(integer unitId, integer armyId, string icon) returns HeroType
+        let heroType = new HeroType(unitId, armyId, icon, GetObjectName(unitId))
+        HeroTypes.list.add(heroType)
+        return heroType
+
+    static function setup(LinkedList<SetupListener> setups)
+        setups.add() ->
+            SkillTreeTypeSet.setup()
+            setupOne()
+
+    private static function setupOne()
+        HeroTypes.FAR_SEER = createDefault(UnitTypesIds.BOARD_HERO_FAR_SEER, UnitTypesIds.HERO_FAR_SEER, Icons.bTNHeroFarseer)
+        ..setInitiative(7)
+        ..setActionPoints(3)
+        ..setDamage(intRange(5, 10))
+        ..addSkillTree(SkillTreeTypeSet.VENOMANCER)
+
+        ..setAttack(1)
+        ..setDefence(1)
+        ..setWisdom(3)
+        ..setPower(2)

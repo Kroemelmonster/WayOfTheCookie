@@ -2,22 +2,36 @@ package ItemSteelHammer
 
 import Icons
 import initlater Stack
-import KItem
+import initlater KItem
+import UITooltip
+import initlater Hero
 
 public class ItemSteelHammer extends KItem
-
     private static constant string NAME = "Steel Hammer"
     private static constant string ICON = Icons.bTNHammer
 
-    private static constant int TEST = 20
+    private static constant int VALUE = 5
 
-    construct()
-        super(NAME, ICON)
+    static function setup() returns KItemType
+        let itemType = new KItemType(ICON, NAME)
+        itemType.addListener() -> 
+            return new ItemSteelHammer(itemType)
+        return itemType
+
+    construct(KItemType itemType)
+        super(itemType)
+
+    override function onEquip(Hero h, boolean add)
+        if add
+            h.stats.attackModi.addBonus += VALUE
+        else
+            h.stats.attackModi.addBonus -= VALUE
+
 
     override function onStackUpdate(ArmyStack armyStack, boolean add)
-        if armyStack.getStackType().name.contains("Gnoll")
-            if add
-                armyStack.stats.attackModi.addBonus += TEST
-            else
-                armyStack.stats.attackModi.addBonus -= TEST
-    
+   
+    override function createTooltip() returns Tooltip
+        let tt = Tooltip.create(NAME)
+        tt.addLine("Adds "+Tooltip.primaryString(VALUE.toString())+" Attack")
+        return tt
+        

@@ -40,6 +40,7 @@ public class UnitTypesIds
     static constant ARMY_FOREST_TROLL_HIGH_PRIEST = compiletime(UNIT_ID_GEN.next())
 
     static constant HERO_FAR_SEER = compiletime(UNIT_ID_GEN.next())
+    static constant BOARD_HERO_FAR_SEER = compiletime(UNIT_ID_GEN.next())
 
 
 public class AbilityTypesIds
@@ -102,7 +103,8 @@ function createArmyUnit(int basisId, int id, string name, real scale, int speed)
         ..setSpeedBase(speed)
         ..setName(name)
 @inline
-function createHero(int basisId, int id, string name, real scale, int speed)
+function createHero(int basisId, int id, int boardId, string name, real scale, int speed)
+    createBoardUnit(basisId, boardId, name, scale, speed)
     new HeroDefinition(id, basisId)
         ..setUnitClassification("Peon")
         ..setPointValue(0)
@@ -179,6 +181,6 @@ function setup()
     createUnit(UnitIds.foresttrollberserker, UnitTypesIds.FOREST_TROLL_BERSERKER, UnitTypesIds.ARMY_FOREST_TROLL_BERSERKER, "Forest Troll Berserker", 0.8, 240)
     createUnit(UnitIds.foresttrollhighpriest, UnitTypesIds.FOREST_TROLL_HIGH_PRIEST, UnitTypesIds.ARMY_FOREST_TROLL_HIGH_PRIEST, "Forest Troll High Priest", 0.8, 240)
 
-    createHero(UnitIds.drekthar, UnitTypesIds.HERO_FAR_SEER, "Farseer", 1.0, 360)
+    createHero(UnitIds.drekthar, UnitTypesIds.HERO_FAR_SEER, UnitTypesIds.BOARD_HERO_FAR_SEER, "Farseer", 1.0, 360)
     
     

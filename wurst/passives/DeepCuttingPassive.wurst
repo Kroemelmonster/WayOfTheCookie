@@ -8,13 +8,14 @@ import KUtil
 
 import initlater BoardStack
 import initlater Cell
+import initlater BoardEntity
 import UITooltip
 import StackType
 import BoardTrigger
 import WalkAndAttackAction
-import BuffController
-import BuffType
-import Buff
+import StatusController
+import StatusType
+import Status
 import DelayAnimation
 import AttachmentPoints
 import BleedingAilment
@@ -24,8 +25,8 @@ public class DeepCuttingPassive extends PassiveAction
     private static constant real PERCENTAGE = 0.8
 
     @inline
-    private static function BUFF() returns BuffType
-        return BuffTypeSet.BLEEDING
+    private static function getStatus() returns StatusType
+        return StatusTypeSet.BLEEDING
 
     private static function getDamage(real damage) returns real
         return damage * PERCENTAGE
@@ -35,7 +36,7 @@ public class DeepCuttingPassive extends PassiveAction
 
     override function triggerOnStackCreation(BoardStack stack)
         // TODO can this be destroyed ? yes -> you need to delete stuff
-        stack.getTriggers().addOnDamageDealt() (BoardStack source, BoardStack target, SpecificDamageInstance specificInstance, SequenzListener next) ->
+        stack.getTriggers().addOnDamageDealt() (BoardEntity source, BoardStack target, SpecificDamageInstance specificInstance, SequenzListener next) ->
             if specificInstance.damageInstance.isDot
                 next.continue()
             else if specificInstance.damageInstance.sourceType != ATTACK
@@ -44,7 +45,7 @@ public class DeepCuttingPassive extends PassiveAction
                 next.continue()
             else
                 BleedingAilment.flashEffect(target)
-                BuffController.addBuff(BUFF(), target, new BuffData(DURATION)
+                StatusController.add(getStatus(), target, new StatusData(DURATION)
                 ..setRealValue(getDamage(specificInstance.damageInstance.dmg)))
                 DelayAnimation.create(stack.getBoard(), 0.1) ->
                     next.continue()
@@ -55,9 +56,9 @@ public class DeepCuttingPassive extends PassiveAction
 
         ..addLine(Tooltip.stat("Duration", DURATION))
         ..addLine("")
-        ..addLine("Every time this unit deals phyisical attack damage it will inflict a Stack of "+Tooltip.secondaryString(BUFF().getName()))
+        ..addLine("Every time this unit deals phyisical attack damage it will inflict a Stack of "+Tooltip.secondaryString(getStatus().getName()))
         ..addLine("which deals "+Tooltip.primaryPercent(PERCENTAGE)+ " of the triggering base Damage")
         ..addLine("-----")
-        ..addBuffType(BUFF())
+        ..addStatusType(getStatus())
         return tooltip
         

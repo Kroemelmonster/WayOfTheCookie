@@ -1,0 +1,35 @@
+package StatusController
+
+import StatusType
+
+import initlater Status
+import initlater BoardStack
+
+public class StatusController 
+
+    static function has(StatusType statusType, BoardStack stack) returns boolean
+        return get(statusType, stack) != null
+
+    static function get(StatusType statusType, BoardStack stack) returns Status
+        Status result = null
+        let itr = stack.statusIterator()
+        while itr.hasNext() and result == null
+            let b = itr.next()
+            if b.getType() == statusType
+                result = b
+        destroy itr
+        return result
+
+    static function add(StatusType statusType, BoardStack stack, StatusData data)
+        var b = get(statusType, stack)
+        if b == null
+            b = statusType.createNew(stack)
+            stack.addStatus(b)
+        b.update(data)
+
+    static function hideAll(BoardStack stack)
+        let itr = stack.statusIterator()
+        while itr.hasNext()
+            itr.next().hide()
+
+        destroy itr

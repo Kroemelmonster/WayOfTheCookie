@@ -10,9 +10,13 @@ import initlater HostileArmy
 import initlater Hero
 import initlater StackTypesDefinition
 import initlater NPC
-import ItemSteelHammer
 import StackType
-import PoisionousStingItem
+import KItem
+import SkillTree
+import UnitDefinition
+import Icons
+import HeroTypesDefinition
+import initlater ChainLightningSpell
 
 public class World
     protected static LinkedList<Board> boards = new LinkedList<Board>
@@ -66,14 +70,12 @@ public class World
         return boards.get(GetRandomInt(0, boards.size() - 1))
         
     static function generateHeroes()
-        heroes.add(new Hero(playerData[0])
+        heroes.add(new Hero(playerData[0], HeroTypes.FAR_SEER)
         ..addStackAtFree(StackTypes.FOREST_TROLL_HIGH_PRIEST, 3)
         //..addStackAtFree(StackTypes.FOREST_TROLL_BERSERKER, 2)
-        ..setAttack(7)
-        ..setDefence(3)
-        ..setActiveItem(0, new ItemSteelHammer())
-        ..setBackPackItem(0, new PoisionousStingItem())
-        ..setBackPackItem(1, new PoisionousStingItem()))
+        ..setActiveItem(0, KItemTypeSet.STEEL_HAMMER.createNew())
+        ..setBackPackItem(0, KItemTypeSet.SIMPLE_AXE.createNew())
+        ..setBackPackItem(1, KItemTypeSet.SIMPLE_AXE.createNew()))
  
     static function onHeroDamaged(Hero hero, unit u)
         let enemy = HostileArmy.getFromUnit(u)

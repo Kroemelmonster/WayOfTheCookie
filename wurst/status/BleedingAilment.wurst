@@ -4,11 +4,11 @@ import AttachmentPoints
 import Icons
 import Abilities
 
-import Buff
+import Status
 import UITooltip
 
 import initlater BoardStack
-import initlater BuffType
+import initlater StatusType
 import initlater BoardController
 import Damage
 import KUtil
@@ -19,13 +19,16 @@ import LinkedList
 import initlater DelayAnimation
 import Ailment
 
-public class BleedingAilment extends Buff
+public class BleedingAilment extends Status
     private static constant string NAME = "Bleeding"
     private static constant string EFFECT = "Objects\\Spawnmodels\\Human\\HumanBlood\\HumanBloodLarge0.mdl"
 
-    static function setup()
-        BuffTypeSet.BLEEDING = new BuffType("Icons\\PASBloodSprinkle.blp", NAME, createTooltip(null)) (BoardStack stack) ->
-            return new BleedingAilment(BuffTypeSet.BLEEDING, stack)
+    static function setup() returns StatusType
+        let statusType = new StatusType("Icons\\PASBloodSprinkle.blp", NAME, createTooltip(null))
+        statusType.setCreationListener()(BoardStack stack) ->
+            return new BleedingAilment(statusType, stack)
+
+        return statusType
 
     private static constant DamagePreview damagePreview = createDamagePreview()
     
@@ -51,8 +54,8 @@ public class BleedingAilment extends Buff
             avg *= 2.0
         damagePreview.dmg = realRange(avg * 0.8, avg * 1.2)
 
-    construct(BuffType bType, BoardStack stack)
-        super(bType, stack)
+    construct(StatusType statusType, BoardStack stack)
+        super(statusType, stack)
 
         moveListener = stack.getTriggers().addOnAnyCellLeave() (BoardStack target, Cell fromCell, Cell toCell, SequenzListener next) ->
             if stack == target
@@ -86,7 +89,7 @@ public class BleedingAilment extends Buff
         
         return tooltip
 
-    override protected function updateInner(BuffData data)
+    override protected function updateInner(StatusData data)
         stacks.add(data.duration, data.realValue)
 
     override function createCurrentTooltip() returns Tooltip

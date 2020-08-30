@@ -22,7 +22,7 @@ public class UIStackSplitDialog extends UIDialog
     private framehandle acceptButton
 
     construct()
-        super()
+        super(true)
 
         slider = new UISlider(pane)
         slider.getFrame().setPoint(FRAMEPOINT_TOP, pane, FRAMEPOINT_TOP, 0, -0.065)

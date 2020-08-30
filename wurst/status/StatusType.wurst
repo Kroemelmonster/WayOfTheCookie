@@ -1,0 +1,65 @@
+package StatusType
+
+import Status
+import WarcryBuff
+import BoardStack
+import UITooltip
+import BleedingAilment
+import PoisonAilment
+import DazedDebuff
+import SlowDebuff
+import HastedBuff
+
+interface StatusCreateListener
+    function create(BoardStack stack) returns Status
+
+public class StatusTypeSet
+    static StatusType WARCRY
+    static StatusType BLEEDING
+    static StatusType POISON
+    static StatusType DAZED
+    static StatusType SLOWED
+    static StatusType HASTED
+
+    static function setup()
+        WARCRY = WarcryBuff.setup()
+        BLEEDING = BleedingAilment.setup()
+        POISON = PoisonAilment.setup()
+        DAZED = DazedDebuff.setup()
+        SLOWED = SlowDebuff.setup()
+        HASTED = HastedBuff.setup()
+
+
+public class StatusType
+    protected string icon
+    protected string name
+    protected Tooltip tooltip
+    protected StatusCreateListener listener
+
+    construct(string icon, string name, Tooltip tooltip)
+        this.icon = icon
+        this.name = name
+        this.tooltip = tooltip
+
+    function setCreationListener(StatusCreateListener listener)
+        this.listener = listener
+
+    @inline
+    function createNew(BoardStack stack) returns Status
+        return listener.create(stack)
+
+    @inline
+    function getIcon() returns string
+        return icon
+    
+    @inline
+    function getName() returns string
+        return name
+
+    @inline
+    function getTooltip() returns Tooltip
+        return tooltip
+
+    @inline
+    function toString() returns string
+        return "StatusType '"+name+"'"
