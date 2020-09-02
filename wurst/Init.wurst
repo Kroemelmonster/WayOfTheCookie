@@ -54,30 +54,30 @@ function setupNext(LLIterator<SetupListener> itr)
 	
 
 function createWorld()
-	Log.info("Build World")
+	//Log.info("Build World")
 	World.generateArmies()
 	World.generateNPCs()
 
 function createTestBoard()
-	Log.info("Clear Battlefields")
+	//Log.info("Clear Battlefields")
 	World.generateBoards()
 	
 
 function setupSystems()
-	Log.info("Setup Systems")
+	//Log.info("Setup Systems")
 	Player.setup()
 	Mouse3DPositionSystem.setup()
 	BlzEnableSelections(true, false)
 	Tooltip.setup()
 
 function start()
-	Log.info("Start")
+	//Log.info("Start")
 	World.generateHeroes()
 	MainController.setup()
 	Scheduler.setup()
 
 function defineObjects()
-	Log.info("Flesh out some Units")
+	//Log.info("Flesh out some Units")
 	StatusTypeSet.setup()
 	Action.setup()
 	KItemTypeSet.setup()

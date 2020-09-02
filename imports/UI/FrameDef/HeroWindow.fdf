@@ -5,18 +5,17 @@ Frame "FRAME" "HeroTome" {
 	Height 0.03,
 
     Frame "BACKDROP" "Icon" {
-        SetPoint TOPLEFT, "HeroTome", TOPLEFT, 0.0, 0.0,
-        SetPoint BOTTOMLEFT, "HeroTome", BOTTOMLEFT, 0.0, 0.0,
-        Width 0.03,
+        SetPoint TOPLEFT, "HeroTome", TOPRIGHT, -0.03, 0.0,
+        SetPoint BOTTOMRIGHT, "HeroTome", BOTTOMRIGHT, 0.0, 0.0,
     }
 
     Frame "TEXT" "Text" INHERITS "EscMenuButtonTextTemplate" {
         UseActiveContext,
-        SetPoint TOPLEFT, "HeroTome", TOPLEFT, 0.035, 0.0,
-        SetPoint BOTTOMRIGHT, "HeroTome", BOTTOMRIGHT, 0.0, 0.0,
+        SetPoint TOPLEFT, "HeroTome", TOPLEFT, 0.0, 0.0,
+        SetPoint BOTTOMRIGHT, "HeroTome", BOTTOMRIGHT, -0.035, 0.0,
         FrameFont "MasterFont", 0.014, "",
         FontColor 1.0 1.0 1.0 1.0,
-        FontJustificationH JUSTIFYLEFT,
+        FontJustificationH JUSTIFYRIGHT,
     }
 }
 

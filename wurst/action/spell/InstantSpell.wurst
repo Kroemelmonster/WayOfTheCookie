@@ -10,8 +10,8 @@ import initlater BoardHero
 
 public abstract class InstantSpell extends Spell
 
-    construct(BoardHero hero, string name, string btn, int manacost, int cooldown)
-        super(hero, name, btn, manacost, cooldown)
+    construct(BoardHero hero, SpellType spellType)
+        super(hero, spellType)
         this.isInstant = true
 
     override function getPreviewResultForCell(Cell cell) returns CellResult

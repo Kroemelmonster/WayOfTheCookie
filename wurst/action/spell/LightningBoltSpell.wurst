@@ -1,0 +1,143 @@
+package LightningBoltSpell
+
+import LinkedList
+import Icons
+import Lightning
+import Doodads
+
+import PlayerData
+import KUtil
+import UITooltip
+import BoardController
+
+import Action
+import StackType
+
+import initlater Cell
+import initlater BoardStack
+import UIActionWindow
+import DelayAnimation
+import Damage
+import CastAnimation
+import BoardTrigger
+import Spell
+import BoardHero
+import BoardEntity
+import SkillTreeTempestarii
+import SkillTree
+import Globals
+
+public class LightningBoltSpell extends Spell
+    static SpellType TYPE
+    static function createType() returns SpellType
+        TYPE = new SpellType("Lightning Bolt", "Icons\\BTNLightningBolt.blp")
+        TYPE.addListener() boardHero -> 
+            return new LightningBoltSpell(boardHero)
+        return TYPE
+
+    private static constant int array[5] MANA_COST = [4, 5, 6, 7, 8]
+    private static constant int array[5] COOLDOWN = [0, 0, 0, 0, 0]
+    private static constant int array[5] DAMAGE = [60, 130, 210, 300, 500]
+
+    private static constant DamagePreview damagePreview = createDamagePreview()
+    
+    @inline
+    private static function createDamagePreview() returns DamagePreview
+        return new DamagePreview(realRange(0, 0), SourceType.SPELL, DamageType.MAGIC)
+
+    private static function calculateDamage(int power, int level)
+        var multi = 1.0
+        multi *= (1.0 + (power * DAMAGE_PER_SPELLPOWER / 100.0)) 
+
+        damagePreview.dmg = realRange(DAMAGE[level] * 0.5 * multi, DAMAGE[level] * 2 * multi)
+
+    static function createTooltip(int power, int level) returns Tooltip
+        calculateDamage(power, level)
+        let tt = Tooltip.create(TYPE.getName())
+        ..setCost(MANA_COST[level])
+        ..setCooldown(COOLDOWN[level])
+        ..addLine(Tooltip.stat("Target", "Enemy"))
+        ..addLine(Tooltip.stat("Damage", damagePreview))
+        ..addLine("")
+        ..addLine("Lightning strikes one Target")
+        return tt
+    
+    private LinkedList<Cell> area = new LinkedList<Cell>()
+
+    construct(BoardHero hero)
+        super(hero, TYPE)
+        let skillTree = hero.hero.getSkillTree(SkillTreeTypeSet.TEMPESTTARII) castTo SkillTreeTempestarii
+        setLevel(skillTree.lightningBoltLevel)
+        this.manacost = MANA_COST[this.level]
+        this.maxCooldown = COOLDOWN[this.level]
+
+    override function getHighlightResultForCell(Player p, Cell cell) returns CellResult
+        if area.has(cell)
+            return CellResult.NEGATIVE
+        return CellResult.NONE
+
+    override function recalculatePreview()
+        recalculatePossibleTargets()
+
+    override function recalculateHighlight(Player p)
+        if area.has(p.currentMousePosition.cell)
+            showPreview(p.currentMousePosition.cell)
+        else
+            hidePreview()
+
+    private function finishOrder(DamageInstance baseDamage)
+        destroy baseDamage
+        cast()
+        BoardController.finishOrder(entity, false)
+
+    override function sendTargetOrder(Cell cell) returns boolean
+        if area.has(cell)
+            CastAnimation.create(hero, cell) () ->
+                calculateDamage(hero.stats.getPower(), level)
+                let rolledBaseDamage = damagePreview.getRandomInstance()
+                let target = cell.getStack()
+                let e = addEffect(Doodads.lightningbolt, target.getPos3Real())
+                DelayAnimation.create(entity.getBoard(), 0.3) ->
+                    e.destr()
+                    BoardController.dealDamage(hero, rolledBaseDamage, target) -> 
+                        finishOrder(rolledBaseDamage)
+            return true
+        
+        return false
+
+    private function recalculatePossibleTargets()
+        area.clear()
+
+        entity.getBoard().forEachStack() (BoardStack t) ->
+            if t.getPlayer() != entity.getPlayer()
+                area.add(t.getCell())
+
+    @inline
+    private function showPreview(Cell fromCell)
+        let tt = createTooltip(hero.stats.getPower(), level)
+        if fromCell != null
+            calculateDamage(hero.stats.getPower(), level)
+            damagePreview.addSpecificToTooltip(stack, fromCell.getStack(), tt)
+            
+        tt.display(entity.getPlayer(), true)
+        UIActionWindow.updateActionPoints(entity, 99)
+                
+    @inline
+    private function hidePreview()
+        UITooltip.hide(entity.getPlayer())
+        UIActionWindow.updateActionPoints(entity, 0)
+
+    override function onUIMouseEnter()
+        showPreview(null)
+
+    override function onUIMouseLeave()
+        hidePreview()
+    
+    override function executeForKI(SequenzListenerStatus listener)
+        Log.trace("YOU NEED TO WRITE KI FOR LIGHTNING BOTL SPSPELL")
+        listener.continue(-1)
+
+    ondestroy
+        if area != null
+            destroy area
+        

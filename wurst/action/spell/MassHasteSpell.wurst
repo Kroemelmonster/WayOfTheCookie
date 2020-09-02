@@ -17,10 +17,16 @@ import Status
 import BoardController
 import DelayAnimation
 import UIController
+import Spell
+import SkillTree
 
 public class MassHasteSpell extends InstantSpell
-    static constant string NAME = "Mass Haste"
-    static constant string ICON = Icons.bTNScrollOfHaste
+    static SpellType TYPE
+    static function createType() returns SpellType
+        TYPE = new SpellType("Mass Haste", Icons.bTNScrollOfHaste)
+        TYPE.addListener() boardHero -> 
+            return new MassHasteSpell(boardHero)
+        return TYPE
 
     private static constant int MANA_COST = 5
 
@@ -28,10 +34,14 @@ public class MassHasteSpell extends InstantSpell
         return StatusTypeSet.HASTED
 
     construct(BoardHero hero)
-        super(hero, ICON, NAME, MANA_COST, 0)
+        super(hero, TYPE)
+        //let skillTree = hero.hero.getSkillTree(SkillTreeTypeSet.LIGHTNING) castTo SkillTreeLightning
+        //this.level = skillTree.chainLightningLevel
+        this.manacost = MANA_COST
+        this.maxCooldown = 0
 
     static function createTooltip(boolean isDefault, int power) returns Tooltip
-        let tt = Tooltip.create(NAME)
+        let tt = Tooltip.create(TYPE.getName())
         ..setCost(MANA_COST)
         ..addLine(Tooltip.stat("Target", "Instant"))
         ..addLine("")

@@ -10,6 +10,7 @@ import initlater SubTargetList
 import LinkedList
 import initlater Cell
 import BoardHero
+import Globals
 
 public class BoardHeroStats
     private HeroStats basis
@@ -25,7 +26,6 @@ public class BoardHeroStats
     StatsModifier initModi = new StatsModifier()
     StatsModifier actionPointModi = new StatsModifier()
     StatsModifier additionalManaModi = new StatsModifier()
-
 
     construct(BoardHero hero, HeroStats basis)
         this.basis = basis
@@ -63,7 +63,7 @@ public class BoardHeroStats
     function getMaxMana() returns int
         let wis = getWisdom()
         let additionalMana = additionalManaModi.get(basis.getAdditionalMana()).round()
-        return wis * 10 + additionalMana
+        return wis * MANA_PER_WISDOWM + additionalMana
 
     @inline
     function getDamage() returns realRange
@@ -71,7 +71,7 @@ public class BoardHeroStats
 
     @inline
     function getDamageType() returns DamageType
-        return basis.heroType.damageType
+        return basis.damageType
 
     @inline
     function getMana() returns int

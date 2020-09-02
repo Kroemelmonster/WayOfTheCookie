@@ -18,7 +18,8 @@ public class SkillTreeSpirit extends SkillTree
     construct(SkillTreeType skillTreeType)
         super(skillTreeType)
 
-        var skill = new Skill("AttackUpgrade", Icons.bTNPatrol, 0, 0)
+        /*
+        var skill = new Skill(this, "AttackUpgrade", Icons.bTNPatrol, 0, 0)
         skills.add(skill)
         let attackUprgade1 = skill.addLevel(2, 0, 0, null)
         ..addLine("Increases the Attack by "+Tooltip.coloredInt(Tooltip.COLOR_PRIMARY, 1))
@@ -31,7 +32,7 @@ public class SkillTreeSpirit extends SkillTree
 
         
 
-        skill = new Skill("DefenceUpgrade", Icons.bTNImpale, 0.3, 0.3)
+        skill = new Skill(this, "DefenceUpgrade", Icons.bTNImpale, 0.3, 0.3)
         skills.add(skill)
         let defenceUprgade1 = skill.addLevel(0, 2, 0, null)
         ..addLine("Increases the Defence by "+Tooltip.coloredInt(Tooltip.COLOR_PRIMARY, 1))
@@ -44,7 +45,7 @@ public class SkillTreeSpirit extends SkillTree
 
         
 
-        skill = new Skill("Very Strong", Icons.bTNMammoth, 0.5, 0.3)
+        skill = new Skill(this, "Very Strong", Icons.bTNMammoth, 0.5, 0.3)
         skills.add(skill)
         var requirements = new LinkedList<SkillLevel>()
         requirements.add(attackUprgade1)
@@ -62,7 +63,7 @@ public class SkillTreeSpirit extends SkillTree
             hero.stats.basicDefence += 2
 
 
-        skill = new Skill("Very Strong 2", Icons.bTNKoboldGeomancer, 0.5, 1.0)
+        skill = new Skill(this, "Very Strong 2", Icons.bTNKoboldGeomancer, 0.5, 1.0)
         skills.add(skill)
         requirements = new LinkedList<SkillLevel>()
         requirements.add(veryStrong1)
@@ -76,6 +77,6 @@ public class SkillTreeSpirit extends SkillTree
         ..addLine("wow")
             
             
-
+*/
 
 

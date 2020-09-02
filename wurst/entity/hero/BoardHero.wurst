@@ -17,9 +17,7 @@ import initlater BoardHeroStats
 import HeroType
 import ClosureEvents
 import UnitDefinition
-import initlater ChainLightningSpell
-import initlater MassSlowSpell
-import initlater MassHasteSpell
+import initlater Spell
 
 public class BoardHero extends BoardEntity
     Hero hero
@@ -49,12 +47,11 @@ public class BoardHero extends BoardEntity
         u.setColor(hero.getPlayer().blzPlayer.getColor())
         u.disableAbility(AbilityIds.attack, true, false)
         defaultAction = new HeroAttackAction(this)
-        actions.add(new HeroSkipAction(this))
         actions.add(new HeroOpenSpellBookAction(this))
+        actions.add(new HeroSkipAction(this))
 
-        actions.add(new ChainLightningSpell(this))
-        actions.add(new MassSlowSpell(this))
-        actions.add(new MassHasteSpell(this))
+        for SpellType spell in hero.spells
+            actions.add(spell.createNew(this))
 
         unitOnCastListener = EventListener.onCast(u, AbilityTypesIds.TARGET_SPELL) (unit caster) ->
             if castListener != null

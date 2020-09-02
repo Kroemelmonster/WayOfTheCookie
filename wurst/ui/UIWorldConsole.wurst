@@ -56,9 +56,9 @@ public class UIWorldConsole
 
         expBar = createSimpleFrame("MyBarEx", self, 0)
         ..setTexture("Replaceabletextures\\Teamcolor\\Teamcolor03.blp", 0, true)
-        ..setWidth(0.05)
+        ..setWidth(0.29)
         ..setVisible(false)
-        ..setPoint(FRAMEPOINT_BOTTOMLEFT, pane, FRAMEPOINT_BOTTOMLEFT, 0.13, -0.01)
+        ..setPoint(FRAMEPOINT_BOTTOMLEFT, pane, FRAMEPOINT_BOTTOMLEFT, 0.185, -0.01)
         expBarName = getFrame("MyBarExText")
 
         createFrame("WorldConsoleRessource", pane, 0, 0)

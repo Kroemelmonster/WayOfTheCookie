@@ -59,6 +59,7 @@ public class SkillTreeVenomancer extends SkillTree
         
         
 
+        /*
         addSkillTreeListener() (ArmyStack armyStack, boolean add) ->
             armyStack.stats.addUniqueTalent(talent)
 
@@ -67,22 +68,22 @@ public class SkillTreeVenomancer extends SkillTree
             stack.addPassive(passive)
             passive.triggerOnStackCreation(stack)
 
-        let venomousWeapon = new Skill("Venomous Weapon", Icons.bTNEnvenomedSpear, 0, 0)
+        let venomousWeapon = new Skill(this, "Venomous Weapon", Icons.bTNEnvenomedSpear, 0, 0)
         ..addDescription(Tooltip.DESCRIPTION_POISON)
         skills.add(venomousWeapon)
-        let venoWep1 = venomousWeapon.addLevel(1, 1, 0, null)
+        let venoWep1 = venomousWeapon.addLevel(1, 1, 0)
         ..addLine("Gives your units a chance of "+Tooltip.primaryPercent(0.2)+ " to inflict ")
         ..addLine(Tooltip.secondaryString("Poison") + " with physical attack damage")
         ..addLevelListener() (Hero hero) ->
             chanceToPoison += 0.2
 
-        venomousWeapon.addLevel(1, 2, 0, null)
+        venomousWeapon.addLevel(1, 2, 0)
         ..addLine("Gives your units a chance of "+Tooltip.primaryPercent(0.4)+ " to inflict ")
         ..addLine(Tooltip.secondaryString("Poison") + " with physical attack damage")
         ..addLevelListener() (Hero hero) ->
             chanceToPoison += 0.2
 
-        venomousWeapon.addLevel(1, 3, 0, null)
+        venomousWeapon.addLevel(1, 3, 0)
         ..addLine("Gives your units a chance of "+Tooltip.primaryPercent(0.6)+ " to inflict ")
         ..addLine(Tooltip.secondaryString("Poison") + " with physical attack damage")
         ..addLevelListener() (Hero hero) ->
@@ -100,7 +101,7 @@ public class SkillTreeVenomancer extends SkillTree
         ..addLevelListener() (Hero hero) ->
             chanceToPoison += 0.2
 
-        var skill = new Skill("Resist Poison", Icons.bTNResistMagic, 1, 0)
+        var skill = new Skill(this, "Resist Poison", Icons.bTNResistMagic, 1, 0)
         skills.add(skill)
         skill.addLevel(0, 2, 1, null)
         ..addLine("Increased all units "+Tooltip.coloredString(Tooltip.DAMAGE_COLOR_POISON, "poison") + " Resistance by "+Tooltip.primaryPercent(0.1))
@@ -120,7 +121,7 @@ public class SkillTreeVenomancer extends SkillTree
 
         var requirements = new LinkedList<SkillLevel>()
         requirements.add(venoWep1)
-        magicInfusion = new Skill("Magic Infusion", Icons.bTNCripple, 0.75, 0.2)
+        magicInfusion = new Skill(this, "Magic Infusion", Icons.bTNCripple, 0.75, 0.2)
         ..addDescription(Tooltip.DESCRIPTION_POISON)
         skills.add(magicInfusion)
         magicInfusion.addLevel(0, 3, 6, requirements)
@@ -132,7 +133,7 @@ public class SkillTreeVenomancer extends SkillTree
 
         requirements = new LinkedList<SkillLevel>()
         requirements.add(venoWep1)
-        skill = new Skill("[TODO] Vile Toxin", Icons.bTNShadowStrike, 0.25, 0.2)
+        skill = new Skill(this, "[TODO] Vile Toxin", Icons.bTNShadowStrike, 0.25, 0.2)
         ..addDescription(Tooltip.DESCRIPTION_POISON)
         skills.add(skill)
         skill.addLevel(3, 2, 0, requirements)
@@ -144,7 +145,7 @@ public class SkillTreeVenomancer extends SkillTree
 
         requirements = new LinkedList<SkillLevel>()
         requirements.add(venoWep5)
-        skill = new Skill("[TODO] Plague", Icons.bTNPlagueCloud, 0.5, 1.0)
+        skill = new Skill(this, "[TODO] Plague", Icons.bTNPlagueCloud, 0.5, 1.0)
         ..addDescription(Tooltip.DESCRIPTION_POISON)
         skills.add(skill)
         skill.addLevel(3, 8, 3, requirements)
@@ -152,8 +153,4 @@ public class SkillTreeVenomancer extends SkillTree
         ..addLine("damage based on " + Tooltip.coloredPercent(0.7) + " of the remaining potential damage the poison would deal")
 
 
-            
-            
-
-
-
+        */

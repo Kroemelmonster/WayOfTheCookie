@@ -4,12 +4,7 @@ import KUtil
 import BoardStack
 import UITooltip
 import BoardEntity
-
-
-public constant DAMAGECALC_ATTACK_VS_DEFENCE_POSITIVE = 5.0
-public constant DAMAGECALC_ATTACK_VS_DEFENCE_POSITIVE_MAX = 300.0
-public constant DAMAGECALC_ATTACK_VS_DEFENCE_NEGATIVE = -2.5
-public constant DAMAGECALC_ATTACK_VS_DEFENCE_NEGATIVE_MAX = -70.0
+import Globals
 
 public enum SourceType
     ATTACK

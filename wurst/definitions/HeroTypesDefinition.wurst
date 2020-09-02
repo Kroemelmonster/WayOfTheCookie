@@ -2,16 +2,12 @@ package HeroTypesDefinition
 
 import Icons
 
-import StackType
-import StackSoundSet
 import UnitDefinition
-import StackSoundTypesDefinition
 import KUtil
-import Talent
 import LinkedList
 import HeroType
 import SkillTree
-
+import Spell
 
 public class HeroTypes
     static HeroType FAR_SEER
@@ -26,6 +22,8 @@ class HeroTypesDefinition
 
     static function setup(LinkedList<SetupListener> setups)
         setups.add() ->
+            SpellSet.setup()
+        setups.add() ->
             SkillTreeTypeSet.setup()
             setupOne()
 
@@ -34,7 +32,7 @@ class HeroTypesDefinition
         ..setInitiative(7)
         ..setActionPoints(3)
         ..setDamage(intRange(5, 10))
-        ..setSkillTrees(SkillTreeTypeSet.CHIEFTAIN, SkillTreeTypeSet.LIGHTNING, SkillTreeTypeSet.SPIRIT)
+        ..setSkillTrees(SkillTreeTypeSet.CHIEFTAIN, SkillTreeTypeSet.TEMPESTTARII, SkillTreeTypeSet.SPIRIT)
 
         ..setAttack(1)
         ..setDefence(1)

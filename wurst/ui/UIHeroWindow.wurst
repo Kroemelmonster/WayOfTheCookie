@@ -10,6 +10,8 @@ import UIHeroSkillTree
 import UIStackInfo
 import UITooltip
 import Damage
+import Globals
+import KUtil
 
 public class UIHeroWindowInfo
     protected boolean visible = false
@@ -21,6 +23,8 @@ public class UIHeroWindow
     private static framehandle leftPanel
     private static framehandle rightPanel
 
+    private static framehandle headerText
+
     private static framehandle mightText
     private static framehandle mindText
     private static framehandle magicText
@@ -29,6 +33,7 @@ public class UIHeroWindow
     private static UIStackInfo defenceInfo
     private static UIStackInfo wisdomInfo
     private static UIStackInfo powerInfo
+    private static UIStackInfo damageInfo
 
     private static UIHeroInventory inventory
     private static UIHeroSkillTree skillTree
@@ -62,8 +67,13 @@ public class UIHeroWindow
         ..setPoint(FRAMEPOINT_TOPLEFT, leftPanel, FRAMEPOINT_BOTTOMLEFT, 0.0, 0.2)
         ..setPoint(FRAMEPOINT_BOTTOMRIGHT, leftPanel, FRAMEPOINT_BOTTOM)
 
+
+
+
         var t = Tooltip.create("Attack")
         ..addLine("Increases the attack of all your troops.")
+        ..addLine("Also increases your attackdamage by "
+        + Tooltip.coloredPercent(ATTACK_DAMAGE_PER_ATTACK / 100.0))
         ..addLine("")
         ..addLine("Each " + Tooltip.secondaryString("Attack") + " that your troops have more than your opponents " + Tooltip.secondaryString("Defence")
          + " will increase their damage dealt by "
@@ -91,6 +101,8 @@ public class UIHeroWindow
         t = Tooltip.create("Wisdom")
         ..addLine("Increases the maximum Mana you have.")
         ..addLine("")
+        ..addLine("Each " + Tooltip.secondaryString("Wisdom") + " increases your Mana Pool by "
+        + Tooltip.coloredModiInt(MANA_PER_WISDOWM))
         wisdomInfo = new UIStackInfo(infoBar)
         ..setPoint(FRAMEPOINT_TOPLEFT, attackInfo.self, FRAMEPOINT_BOTTOMLEFT, 0, -0.005)
         ..setPoint(FRAMEPOINT_TOPRIGHT, attackInfo.self, FRAMEPOINT_BOTTOMRIGHT, 0, -0.005)
@@ -100,10 +112,18 @@ public class UIHeroWindow
         t = Tooltip.create("Spellpower")
         ..addLine("Increases the potency of your Spells.")
         ..addLine("")
+        ..addLine("Each point increases the damage of your spells by " + Tooltip.coloredPercent(DAMAGE_PER_SPELLPOWER / 100.0))
         powerInfo = new UIStackInfo(infoBar)
         ..setPoint(FRAMEPOINT_TOPLEFT, defenceInfo.self, FRAMEPOINT_BOTTOMLEFT, 0, -0.005)
         ..setPoint(FRAMEPOINT_TOPRIGHT, defenceInfo.self, FRAMEPOINT_BOTTOMRIGHT, 0, -0.005)
         ..setIcon("UI/Textures/StackInfo/power.dds")
+        ..setTooltip(t, TooltipAnchor.BOTTOM_LEFT_UP)
+
+        t = Tooltip.create("Damage")
+        ..addLine("The amount of damage the hero does with basic attacks.")
+        damageInfo = new UIStackInfo(infoBar)
+        ..setPoint(FRAMEPOINT_TOPLEFT, wisdomInfo.self, FRAMEPOINT_BOTTOMLEFT, 0, -0.005)
+        ..setPoint(FRAMEPOINT_TOPRIGHT, wisdomInfo.self, FRAMEPOINT_BOTTOMRIGHT, 0, -0.005)
         ..setTooltip(t, TooltipAnchor.BOTTOM_LEFT_UP)
 
         /*ttackInfo = new UIStackInfo(pane)
@@ -117,20 +137,23 @@ public class UIHeroWindow
         getFrame("Icon").setTexture("UI/Textures/defence-borderless.dds", 0, true)
         defenceText = getFrame("Text")*/
 
-        inventory = new UIHeroInventory(leftPanel)
+        headerText = createFrame("HeaderText", self, 0, 0)
+        ..setPoint(FRAMEPOINT_TOPLEFT, self, FRAMEPOINT_TOPLEFT, 0.08, -0.014)
+        ..setPoint(FRAMEPOINT_BOTTOMRIGHT, self, FRAMEPOINT_TOPRIGHT, -0.41, -0.05)
 
+        inventory = new UIHeroInventory(leftPanel)
         createFrame("HeroTome", leftPanel, 0, 0)
-        ..setPoint(FRAMEPOINT_TOPRIGHT, leftPanel, FRAMEPOINT_BOTTOMRIGHT, -0.03, 0.15)
+        ..setPoint(FRAMEPOINT_TOPRIGHT, leftPanel, FRAMEPOINT_BOTTOMRIGHT, -0.005, 0.15)
         getFrame("Icon").setTexture("UI/Textures/might.dds", 0, true)
         mightText = getFrame("Text")
 
         createFrame("HeroTome", leftPanel, 0, 0)
-        ..setPoint(FRAMEPOINT_TOPRIGHT, leftPanel, FRAMEPOINT_BOTTOMRIGHT, -0.03, 0.1)
+        ..setPoint(FRAMEPOINT_TOPRIGHT, leftPanel, FRAMEPOINT_BOTTOMRIGHT, -0.005, 0.1)
         getFrame("Icon").setTexture("UI/Textures/mind.dds", 0, true)
         mindText = getFrame("Text")
 
         createFrame("HeroTome", leftPanel, 0, 0)
-        ..setPoint(FRAMEPOINT_TOPRIGHT, leftPanel, FRAMEPOINT_BOTTOMRIGHT, -0.03, 0.05)
+        ..setPoint(FRAMEPOINT_TOPRIGHT, leftPanel, FRAMEPOINT_BOTTOMRIGHT, -0.005, 0.05)
         getFrame("Icon").setTexture("UI/Textures/magic.dds", 0, true)
         magicText = getFrame("Text")
 
@@ -141,6 +164,7 @@ public class UIHeroWindow
         p.heroWindoInfo.visible = flag
         self.setVisible(flag)
         if flag
+            headerText.setText(p.hero.getType().name)
             inventory.firstOpen(p)
             skillTree.openSkillTree(p)
             update(p)
@@ -160,6 +184,10 @@ public class UIHeroWindow
             defenceInfo.setTextBasedOnStats(h.stats.basicDefence, h.stats.getDefence(), h.stats.defenceModi)
             wisdomInfo.setTextBasedOnStats(h.stats.basicWisdom, h.stats.getWisdom(), h.stats.wisdomModi)
             powerInfo.setTextBasedOnStats(h.stats.basicPower, h.stats.getPower(), h.stats.powerModi)
+            let basisDmg = h.stats.heroType.getDamage(h.getLevel())
+            let dmgDifference = h.stats.getDamage().avg() - basisDmg.avg()
+            damageInfo.setText(basisDmg.min.toString() + " - " + basisDmg.max.toString() + Tooltip.coloredModiReal(dmgDifference, 1))
+            damageInfo.setIcon(h.stats.damageType)
             
             mightText.setText(h.might.toString())
             mindText.setText(h.mind.toString())

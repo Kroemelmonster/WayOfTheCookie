@@ -19,6 +19,7 @@ import KUtil
 import StatsModifier
 import Talent
 import LinkedList
+import Globals
 
 public class UIEntityWindowInfo
     protected BoardEntity boardEntity

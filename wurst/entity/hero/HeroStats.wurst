@@ -5,6 +5,8 @@ import StatsModifier
 
 import initlater Hero
 import initlater HeroType
+import Globals
+import StackType
 
 public class HeroStats
     private Hero hero
@@ -17,12 +19,15 @@ public class HeroStats
     int basicPower
     int basicWisdom
 
+    DamageType damageType
+
     StatsModifier attackModi = new StatsModifier()
     StatsModifier defenceModi = new StatsModifier()
     StatsModifier powerModi = new StatsModifier()
     StatsModifier wisdomModi = new StatsModifier()
 
     StatsModifier damageModi = new StatsModifier()
+    protected StatsModifier realAttackModi = new StatsModifier()
     StatsModifier initModi = new StatsModifier()
     StatsModifier actionPointModi = new StatsModifier()
     StatsModifier additionalManaModi = new StatsModifier()
@@ -34,6 +39,7 @@ public class HeroStats
         basicDefence = heroType.defence
         basicPower = heroType.power
         basicWisdom = heroType.wisdom
+        damageType = heroType.damageType
         
         this.mana = getMaxMana()
 
@@ -67,11 +73,13 @@ public class HeroStats
     
     @inline
     function getMaxMana() returns int
-        return getWisdom() * 10 + getAdditionalMana()
+        return getWisdom() * MANA_PER_WISDOWM + getAdditionalMana()
 
-    @inline
     function getDamage() returns realRange
-        return damageModi.getRealRange(heroType.damage, (hero.getLevel() + 2))
+        realAttackModi.addBonus = damageModi.addBonus
+        realAttackModi.multi = damageModi.multi + (getAttack() * ATTACK_DAMAGE_PER_ATTACK).toInt()
+        return realAttackModi.getRealRange(heroType.getDamage(hero.getLevel()), 1)
+
 
     @inline
     function getMana() returns int

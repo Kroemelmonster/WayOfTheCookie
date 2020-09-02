@@ -17,10 +17,15 @@ import Status
 import BoardController
 import DelayAnimation
 import UIController
+import Spell
 
 public class MassSlowSpell extends InstantSpell
-    static constant string NAME = "Mass Slow"
-    static constant string ICON = Icons.bTNSlow
+    static SpellType TYPE
+    static function createType() returns SpellType
+        TYPE = new SpellType("Mass Slow", Icons.bTNSlow)
+        TYPE.addListener() boardHero -> 
+            return new MassSlowSpell(boardHero)
+        return TYPE
 
     private static constant int MANA_COST = 5
 
@@ -28,10 +33,14 @@ public class MassSlowSpell extends InstantSpell
         return StatusTypeSet.SLOWED
 
     construct(BoardHero hero)
-        super(hero, ICON, NAME, MANA_COST, 0)
+        super(hero, TYPE)
+        //let skillTree = hero.hero.getSkillTree(SkillTreeTypeSet.LIGHTNING) castTo SkillTreeLightning
+        //this.level = skillTree.chainLightningLevel
+        this.manacost = MANA_COST
+        this.maxCooldown = 0
 
     static function createTooltip(boolean isDefault, int power) returns Tooltip
-        let tt = Tooltip.create(NAME)
+        let tt = Tooltip.create(TYPE.getName())
         ..setCost(MANA_COST)
         ..addLine(Tooltip.stat("Target", "Instant"))
         ..addLine("")

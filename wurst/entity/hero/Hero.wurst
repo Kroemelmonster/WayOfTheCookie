@@ -44,10 +44,11 @@ public class Hero
     protected int attack = 0
     protected int defence = 0
 
-    int might = 3
-    int magic = 3
-    int mind = 4
+    int might = 10
+    int magic = 10
+    int mind = 10
 
+    LinkedList<SpellType> spells
     protected SkillTree array[3] skillTrees
 
     protected KItem array[8] items
@@ -66,6 +67,7 @@ public class Hero
         this.p = p
         this.heroType = heroType
         this.stats = new HeroStats(this, heroType)
+        spells = new LinkedList<SpellType>()
 
         u = createUnit(playerData[0].blzPlayer, heroType.armyUnitId, playerData[0].blzPlayer.getStartLocation(), angle(0))
         army = new Army(stats)
@@ -222,6 +224,17 @@ public class Hero
 
     function getSkillTree(int i) returns SkillTree
         return skillTrees[i]
+
+    function getSkillTree(SkillTreeType skillTreeType) returns SkillTree
+        SkillTree result = null
+        for int i = 0 to skillTrees.length - 1
+            if skillTrees[i].isSkillTreeType(skillTreeType)
+                result = skillTrees[i]
+
+        return result
+
+    function addSpell(SpellType spellType)
+        spells.add(spellType)
 
     function getActiveItemsLength() returns int
         return items.length

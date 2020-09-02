@@ -4,71 +4,78 @@ import LinkedList
 import Icons
 import Lightning
 import Abilities
-import AttachmentPoints
 
 import PlayerData
 import KUtil
 import UITooltip
 import BoardController
-import OrderSystem
 
 import Action
 import StackType
 
 import initlater Cell
 import initlater BoardStack
-import initlater StackTypesDefinition
 import UIActionWindow
-import Scheduler
 import DelayAnimation
 import Damage
 import CastAnimation
 import BoardTrigger
-import HashMap
-import ClosureTimers
-import Effect
 import Spell
 import BoardHero
 import BoardEntity
+import SkillTreeTempestarii
+import SkillTree
+import Globals
 
 public class ChainLightningSpell extends Spell
-    static constant string NAME = "Chain Lightning"
-    static constant string ICON = Icons.bTNChainLightning
+    static SpellType TYPE
+    static function createType() returns SpellType
+        TYPE = new SpellType("Chain Lightning", Icons.bTNChainLightning)
+        TYPE.addListener() boardHero -> 
+            return new ChainLightningSpell(boardHero)
+        return TYPE
 
-    private static constant int MANA_COST = 12
+    private static constant int array[3] MANA_COST = [7,12,20]
+    private static constant int array[3] COOLDOWN = [0, 0, 0]
+    private static constant int array[3] MAX_CHAINS = [1, 2, 3]
+    private static constant int array[3] DAMAGE = [40, 70, 100]
 
-    private static constant int MAX_CHAINS = 3
     private static constant int CHAIN_RANGE = 3
     private static constant real CHAIN_REDUCTION = 0.90
-    
-
     private static constant DamagePreview damagePreview = createDamagePreview()
     
     @inline
     private static function createDamagePreview() returns DamagePreview
         return new DamagePreview(realRange(0, 0), SourceType.SPELL, DamageType.MAGIC)
 
-    private static function calculateDamage(int power, int chain)
+    private static function calculateDamage(int power, int level, int amountOfChained)
         var multi = 1.0
-        for int i = 1 to chain
+        for int i = 1 to amountOfChained
             multi *= CHAIN_REDUCTION
-        multi *= power
-        damagePreview.dmg = realRange(42.0 * multi, 55.0 * multi)
+        multi *= (1.0 + ( power * DAMAGE_PER_SPELLPOWER / 100.0)) 
 
-    static function createTooltip(boolean isDefault, int power) returns Tooltip
-        calculateDamage(power, 0)
-        let tt = Tooltip.create(NAME)
+        damagePreview.dmg = realRange(DAMAGE[level] * 0.5 * multi, DAMAGE[level] * 2 * multi)
+
+    static function createTooltip(int power, int level) returns Tooltip
+        calculateDamage(power, level, 0)
+        let tt = Tooltip.create(TYPE.getName())
+        ..setCost(MANA_COST[level])
+        ..setCooldown(COOLDOWN[level])
         ..addLine(Tooltip.stat("Target", "Enemy"))
         ..addLine(Tooltip.stat("Damage", damagePreview))
-        ..setCost(MANA_COST)
         ..addLine("")
-        ..addLine("Lightning strikes from one target and chains to nearby other targets")
+        ..addLine("Lightning strikes from one target and chains up to "+Tooltip.primaryString(MAX_CHAINS[level].toString())+" times")
+        ..addLine("Each time the damage is descreased by "+Tooltip.primaryPercent(1 - CHAIN_REDUCTION))
         return tt
     
     private LinkedList<Cell> area = new LinkedList<Cell>()
 
     construct(BoardHero hero)
-        super(hero, ICON, NAME, MANA_COST, 0)
+        super(hero, TYPE)
+        let skillTree = hero.hero.getSkillTree(SkillTreeTypeSet.TEMPESTTARII) castTo SkillTreeTempestarii
+        setLevel(skillTree.chainLightningLevel)
+        this.manacost = MANA_COST[this.level]
+        this.maxCooldown = COOLDOWN[this.level]
 
     override function getHighlightResultForCell(Player p, Cell cell) returns CellResult
         if area.has(cell)
@@ -103,7 +110,7 @@ public class ChainLightningSpell extends Spell
             e.destr()
             let targetCell = target.getCell()
             BoardController.dealDamage(hero, baseDamage, target) -> 
-                if chains < MAX_CHAINS
+                if chains < MAX_CHAINS[level]
                     prevTargets.add(target)
                     baseDamage.dmg *= CHAIN_REDUCTION
 
@@ -124,7 +131,7 @@ public class ChainLightningSpell extends Spell
     override function sendTargetOrder(Cell cell) returns boolean
         if area.has(cell)
             CastAnimation.create(hero, cell) () ->
-                calculateDamage(hero.stats.getPower(), 0)
+                calculateDamage(hero.stats.getPower(), level, 0)
                 let rolledBaseDamage = damagePreview.getRandomInstance()
                 chainToNext(new LinkedList<BoardStack>(), entity, rolledBaseDamage, cell.getStack(), 0)
             return true
@@ -152,13 +159,13 @@ public class ChainLightningSpell extends Spell
 
     @inline
     private function showPreview(Cell fromCell)
-        let tt = createTooltip(false, hero.stats.getPower())
+        let tt = createTooltip(hero.stats.getPower(), level)
         if fromCell != null
             let list = new LinkedList<BoardStack>()
             list.add(fromCell.getStack())
             tt.addLine("")
             var i = 0
-            while i < MAX_CHAINS
+            while i < MAX_CHAINS[level]
                 i++
                 let nextTarget = getNextTarget(list, list.peek().getCell())
                 if nextTarget != null
@@ -168,7 +175,7 @@ public class ChainLightningSpell extends Spell
 
             var chain = 0
             for target in list
-                calculateDamage(hero.stats.getPower(), chain)
+                calculateDamage(hero.stats.getPower(), level, chain)
                 damagePreview.addSpecificToTooltip(stack, target, tt)
                 chain ++
             destroy list

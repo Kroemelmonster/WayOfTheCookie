@@ -10,9 +10,9 @@ Frame "TEXT" "CenteredText" {
     FontJustificationV JUSTIFYMIDDLE,
 }
 
-Frame "TEXT" "HeaderText" {
+Frame "TEXT" "HeaderText" INHERITS "EscMenuButtonTextTemplate" {
 	UseActiveContext,
-	FrameFont "MasterFont", 0.015,"",
+	FrameFont "MasterFontBold", 0.02, "",
 	FontColor 1.0 1.0 1.0 1.0,
     FontJustificationH JUSTIFYCENTER,
     FontJustificationV JUSTIFYMIDDLE,

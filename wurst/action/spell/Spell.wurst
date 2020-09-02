@@ -1,18 +1,63 @@
 package Spell
 import Action
-import BoardHero
+import initlater BoardHero
+import initlater ChainLightningSpell
+import initlater LightningBoltSpell
+
+interface SpellCreateListener
+    function create(BoardHero boardHero) returns Spell
+
+public class SpellSet
+    static SpellType CHAIN_LIGHTNING
+    static SpellType LIGHTNING_BOLT
+
+    static function setup()
+        CHAIN_LIGHTNING = ChainLightningSpell.createType()
+        LIGHTNING_BOLT = LightningBoltSpell.createType()
+
+public class SpellType
+    protected string icon
+    protected string name
+    protected SpellCreateListener listener
+
+    construct(string name, string icon)
+        this.icon = icon
+        this.name = name
+    
+    function addListener(SpellCreateListener listener)
+        this.listener = listener
+
+    @inline
+    function createNew(BoardHero boardHero) returns Spell
+        return listener.create(boardHero)
+
+    @inline
+    function getIcon() returns string
+        return icon
+    
+    @inline
+    function getName() returns string
+        return name
+
+    @inline
+    function toString() returns string
+        return "SpellType '"+name+"'"
 
 public abstract class Spell extends Action
     protected BoardHero hero
-    private int manacost = 0
-    private int maxCooldown
+    protected int manacost = 0
+    protected int maxCooldown
+    protected int level
 
-    construct(BoardHero hero, string name, string btn, int manacost, int cooldown)
-        super(hero, name, btn)
+    construct(BoardHero hero, SpellType spellType)
+        super(hero, spellType.icon, spellType.name)
         this.hero = hero
-        this.manacost = manacost
-        this.maxCooldown = cooldown
         this.isSpell = true
+
+    function setLevel(int i)
+        if i < 0
+            Log.error("Tried to create the Spell "+name+ " with a level of "+i.toString())
+        level = i
 
     protected function cast()
         hero.stats.addMana(-manacost)

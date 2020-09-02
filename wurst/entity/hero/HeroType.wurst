@@ -63,7 +63,11 @@ public class HeroType
     @inline
     function setWisdom(int value)
         wisdom = value
-    
+
+    @inline
+    function getDamage(int heroLevel) returns intRange
+        return damage * (1 + (2 * heroLevel))
+
     @inline
     function setDamageType(DamageType value)
         this.damageType = value

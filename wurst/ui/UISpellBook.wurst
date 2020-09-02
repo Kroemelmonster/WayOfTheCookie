@@ -128,9 +128,9 @@ public class UISpellBook
     private static function activate(Action action, Player p)
         if OrderSystem.canOrder(p) == false
             return
-
         if action.canActivate() == false
             return
+        hide(p)
         action.activate()
 
     private static function onMouseEnter(Action action, Player p)

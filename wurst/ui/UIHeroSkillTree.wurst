@@ -95,10 +95,6 @@ public class UIHeroSkillTree
         update(p)
 
     function openSkillTree(Player p)
-        let h = p.hero
-        for int i = 0 to skillTreeTabNames.length - 1
-            skillTreeTabNames[i].setText(h.getSkillTree(i).getName())
-
         changeTab(p, p.heroWindoInfo.skillTree.currentTree)
     
     function update(Player p)
@@ -106,6 +102,12 @@ public class UIHeroSkillTree
             return
         let h = p.hero
         let info = p.heroWindoInfo.skillTree
+        for int i = 0 to skillTreeTabNames.length - 1
+            let tree = h.getSkillTree(i)
+            var text = tree.getName()
+            if tree.getLevel() > 0
+                text += " ["+(tree.getLevel()).toString()+"]"
+            skillTreeTabNames[i].setText(text)
         let skillTree = h.getSkillTree(info.currentTree)
         let size = skillTree.skills.size()
         for int i = 0 to MAX_SKILLS - 1
