@@ -29,9 +29,9 @@ import SubTargetList
 import KISystem
 import ClosureTimers
 
-function subActionMoveEnd(Board board, BoardStack stack, int remainingActionPoints, SequenzListenerStatus next, int status)
+function subActionMoveEnd(Board board, BoardStack stack, int remainingMoveActionPoints, SequenzListenerStatus next, int status)
     if status == 0
-        stack.stats.setRemainingActionPoints(remainingActionPoints)
+        stack.stats.adjustRemainingActionPointsToRemainingMoveActionPoints(remainingMoveActionPoints)
     UIController.triggerOnAnyStackCellChange(board)
     next.continue(status)
 
@@ -41,26 +41,26 @@ function subActionMoveInner(StackPathFinding walkableCells, LinkedList<Cell> pat
     let currentCell = stack.getCell()
     let board = currentCell.getBoard()
     BoardController.onCellLeave(stack, currentCell, nextCell) ->
-        var remainingActionPoints = pCell.getRemainingActionPoints(stack)
+        var remainingMoveActionPoints = pCell.getRaminingMoveActionPoints(stack)
         if stack.isAlive() == false
-            subActionMoveEnd(board, stack, remainingActionPoints, next, 1)
-        else if remainingActionPoints < 0
-            subActionMoveEnd(board, stack, remainingActionPoints, next, 0)
+            subActionMoveEnd(board, stack, remainingMoveActionPoints, next, 1)
+        else if remainingMoveActionPoints < 0
+            subActionMoveEnd(board, stack, remainingMoveActionPoints, next, 0)
         else
             new MovePositionAnimation(stack, nextCell.getCoord()) () ->
                 stack.replaceCell(nextCell)
 
                 BoardController.onCellEnter(stack, currentCell, nextCell) ->
                     // maybe they changed ?
-                    remainingActionPoints = pCell.getRemainingActionPoints(stack)
+                    remainingMoveActionPoints = pCell.getRaminingMoveActionPoints(stack)
                     if stack.isAlive() == false
-                        subActionMoveEnd(board, stack, remainingActionPoints, next, 1)
-                    else if remainingActionPoints < 0
-                        subActionMoveEnd(board, stack, remainingActionPoints, next, 0)
+                        subActionMoveEnd(board, stack, remainingMoveActionPoints, next, 1)
+                    else if remainingMoveActionPoints < 0
+                        subActionMoveEnd(board, stack, remainingMoveActionPoints, next, 0)
                     else if (index + 1) < path.size()
                         subActionMoveInner(walkableCells, path, index + 1, stack, next)
                     else
-                        subActionMoveEnd(board, stack, remainingActionPoints, next, 0)
+                        subActionMoveEnd(board, stack, remainingMoveActionPoints, next, 0)
 
 public function subActionMove(StackPathFinding walkableCells, LinkedList<Cell> path, BoardStack stack, SequenzListenerStatus next)
     subActionMoveInner(walkableCells, path, 0, stack, next)
@@ -128,7 +128,7 @@ public class WalkAndAttackAction extends DefaultAction
     override function getPreviewResultForCell(Cell cell) returns CellResult
         if canAttackTargetThisTurn(cell.getStack())
             return CellResult.NEGATIVE
-        else if cell != stack.getCell() and getRemainingActionPointsFromCell(cell, stack.getRemainingActionPoints()) >= 0
+        else if cell != stack.getCell() and getRemainingMoveActionPointsFromCell(cell, stack.getRemainingMoveActionPoints()) >= 0
             return CellResult.DEFAULT
         return CellResult.NONE
 
@@ -158,9 +158,9 @@ public class WalkAndAttackAction extends DefaultAction
             if canAttackTargetThisTurn(cell.getStack())
                 showCost = 99
             else if cell != stack.getCell()
-                let remaining = getRemainingActionPointsFromCell(cell, stack.getRemainingActionPoints())
-                if remaining >= 0
-                    showCost = stack.getRemainingActionPoints() - remaining
+                let remainingActionPoints = getActionPointsAfterWalkToCell(cell)
+                if remainingActionPoints >= 0
+                    showCost = stack.getRemainingActionPoints() - remainingActionPoints
             
         UIActionWindow.updateActionPoints(entity, showCost)
 
@@ -189,7 +189,7 @@ public class WalkAndAttackAction extends DefaultAction
                             BoardController.finishOrder(entity, false)
         return orderIsBeeingExecuted
 
-    private function getRemainingActionPointsFromCell(Cell cell, int limitMovesPoint) returns int
+    private function getRemainingMoveActionPointsFromCell(Cell cell, int maxMoveActionPoints) returns int
         if cell == null
             return -1
         // you are there ??
@@ -197,7 +197,7 @@ public class WalkAndAttackAction extends DefaultAction
             return 999
         if walkableCells.has(cell)
             let path = walkableCells.get(cell)
-            return path.getRemainingActionPoints(limitMovesPoint)
+            return path.getRemainingMoveActionPoints(maxMoveActionPoints)
         return -1
 
     private function getCellToAttackFromWithCheck(BoardStack target) returns Cell
@@ -207,7 +207,7 @@ public class WalkAndAttackAction extends DefaultAction
 
     private function getCellToAttackFrom(BoardStack target, Cell preferedCell) returns Cell
         // first check the preferedCell ( This is used when the curser is over the enemy but closest to an other Cell )
-        if getRemainingActionPointsFromCell(preferedCell, 100) > 0
+        if getRemainingMoveActionPointsFromCell(preferedCell, 100) > 0
             return preferedCell
         
         // now go through every Cell that would be in range
@@ -217,19 +217,32 @@ public class WalkAndAttackAction extends DefaultAction
         let possibleCellsItr = target.getCell().eachCellInRangeIterator(stack.stats.getAttackRange())
         while possibleCellsItr.hasNext()
             let possibleCellToAttackFrom = possibleCellsItr.next()
-            let remainingPoints = getRemainingActionPointsFromCell(possibleCellToAttackFrom, 100)
+            let remainingPoints = getRemainingMoveActionPointsFromCell(possibleCellToAttackFrom, 100)
             if remainingPoints > currentHighestRemainingPoints
                 currentHighestRemainingPoints = remainingPoints
                 currentBest = possibleCellToAttackFrom
         destroy possibleCellsItr
         return currentBest
 
+    private function getActionPointsAfterWalkToCell(Cell target) returns int
+        let remainingMoveActionPoints = stack.getRemainingMoveActionPoints()
+        let remainingActionPoints = stack.getRemainingActionPoints()
+        let remainingMoveActionPointsFromCell = getRemainingMoveActionPointsFromCell(target, remainingMoveActionPoints)
+        
+        if remainingActionPoints <= remainingMoveActionPoints
+            if remainingMoveActionPointsFromCell < remainingActionPoints
+                return remainingMoveActionPointsFromCell
+            else
+                return remainingActionPoints
+        else
+            return remainingActionPoints - (remainingMoveActionPoints - remainingMoveActionPointsFromCell)
+
     override function getTargets(boolean shouldBeAbleToAttackThisTurn) returns LinkedList<BoardStack>
         let list = new LinkedList<BoardStack>()
         let itr = targets.iterator()
         while itr.hasNext()
             let target = itr.next()
-            if shouldBeAbleToAttackThisTurn == false or getRemainingActionPointsFromCell(target.getAttackFrom(), stack.getRemainingActionPoints()) > 0
+            if shouldBeAbleToAttackThisTurn == false or getActionPointsAfterWalkToCell(target.getAttackFrom()) > 0
                 list.add(target.getTarget())
 
 
@@ -238,7 +251,7 @@ public class WalkAndAttackAction extends DefaultAction
     
     private function canAttackTargetThisTurn(BoardStack enemy) returns boolean
         let target = targets.find(enemy)
-        return target != null and getRemainingActionPointsFromCell(target.getAttackFrom(), stack.getRemainingActionPoints()) > 0
+        return target != null and getActionPointsAfterWalkToCell(target.getAttackFrom()) > 0
 
     private function isInRange(Cell fromPosition, BoardStack otherStack) returns boolean
         if otherStack == null
@@ -285,10 +298,11 @@ public class WalkAndAttackAction extends DefaultAction
 
         while iter.hasNext()
             let pCell = iter.next()
-            let remaining = pCell.getRemainingActionPoints(stack)
+            let remaining = pCell.getRaminingMoveActionPoints(stack)
             if remaining >= 0
                 path.addtoStart(pCell.cell)
-                if remaining >= 1 and isInRange(pCell.cell, targetStack)
+                let remainingActionPoints = getActionPointsAfterWalkToCell(pCell.cell)
+                if remainingActionPoints >= 1 and isInRange(pCell.cell, targetStack)
                     couldAttack = true
             else
                 wasPathLimited = true
@@ -316,16 +330,20 @@ public class WalkAndAttackAction extends DefaultAction
         if enemy == null
             enemy = KISystem.getBestTarget(getTargets(false))
         
-        Log.trace("KI : target : "+enemy.toString())
+        //Log.trace("KI : targeting "+enemy.toString())
         nullTimer() ->
             if enemy == null
                 listener.continue(1)
             else
                 let order = caclulatePath(enemy.getCell(), null)
-                Log.trace("send action to : "+order.toString())
-                
-                sendTargetOrder(order)
-                listener.continue(0)
+                if order == null
+                    // ki cant reach
+                    // this happenz wenn the ki has no more move action points but still has action points
+                    listener.continue(1)
+                else
+                    //Log.trace("KI : action to cell "+order.toString())
+                    sendTargetOrder(order)
+                    listener.continue(0)
     
                 
     ondestroy

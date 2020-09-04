@@ -30,8 +30,7 @@ public class VenomousPassive extends PassiveAction
         stack.getTriggers().addOnDamageDealt() (BoardEntity source, BoardStack target, SpecificDamageInstance specificInstance, SequenzListener next) ->
             if skillTree.canApplyPoison(source, target, specificInstance)
                 PoisonAilment.flashEffect(target)
-                StatusController.add(getStatus(), target, new StatusData(skillTree.getPoisonDuration())
-                ..setRealValue(skillTree.getPoisonDamage(source, target, specificInstance)))
+                StatusController.add(getStatus(), target, StatusData.createDurationR(skillTree.getPoisonDuration(), skillTree.getPoisonDamage(source, target, specificInstance)))
                 DelayAnimation.create(stack.getBoard(), 0.2) ->
                     next.continue()
             else

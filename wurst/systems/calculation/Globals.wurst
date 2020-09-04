@@ -1,4 +1,5 @@
 package Globals
+import initlater StatusType
 
 public constant DAMAGECALC_ATTACK_VS_DEFENCE_POSITIVE = 5.0
 public constant DAMAGECALC_ATTACK_VS_DEFENCE_POSITIVE_MAX = 300.0

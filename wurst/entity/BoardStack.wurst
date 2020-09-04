@@ -169,6 +169,11 @@ public class BoardStack extends BoardEntity
         return stats.getRemainingActionPoints()
 
     @inline
+    // TODO mach daraus ein ovveride
+    function getRemainingMoveActionPoints() returns int
+        return stats.getRemainingMoveActionPoints()
+
+    @inline
     override function addActionPoints(integer amount)
         stats.addActionPoints(amount)
 

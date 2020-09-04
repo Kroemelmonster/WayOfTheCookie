@@ -21,6 +21,8 @@ public class StackStats
     StatsModifier initModi = new StatsModifier()
     StatsModifier hpModi = new StatsModifier()
     StatsModifier actionPointModi = new StatsModifier()
+    StatsModifier moveActionPointModi = new StatsModifier()
+    private StatsModifier resultingMoveActionPointModi = new StatsModifier()
 
     int phyisicalResistance = 0
     int magicResistance = 0
@@ -60,6 +62,12 @@ public class StackStats
     @inline
     function getMaxActionPoints() returns int
         return actionPointModi.get(stackType.actionPoints).round()
+
+    function getMaxMoveActionPoints() returns int
+        resultingMoveActionPointModi.addBonus = moveActionPointModi.addBonus + actionPointModi.addBonus
+        resultingMoveActionPointModi.multi = moveActionPointModi.multi + actionPointModi.multi - 100
+        // there are no stackTypes who inherintly have a different move action point... You should always use a passive for this
+        return resultingMoveActionPointModi.get(stackType.actionPoints).round()
 
     @inline
     function getMaxHp() returns int
@@ -118,4 +126,6 @@ public class StackStats
         destroy damageModi
         destroy initModi
         destroy actionPointModi
+        destroy moveActionPointModi
+        destroy resultingMoveActionPointModi
         destroy hpModi

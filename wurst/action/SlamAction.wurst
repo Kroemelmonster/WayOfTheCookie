@@ -27,6 +27,7 @@ import HashMap
 import Cell
 import ClosureTimers
 import Damage
+import Globals
 
 public class SlamAction extends InstantAction
     static constant string NAME = "Slam"
@@ -37,11 +38,8 @@ public class SlamAction extends InstantAction
     private static constant int MAXRANGE = 1
     private static constant string KEY = "S"
     private static constant string EFFECT = Abilities.thunderclapCaster
-    private static StatusType STATUS
 
-    private static constant int DAZZED_TIME = 400
-    private static constant int DAZZED_TIME_LVL_4 = 300
-    private static constant int DAZZED_TIME_LVL_5 = 200
+    private static constant int DAZZED_TIME = 200
     private static constant DamagePreview damagePreview = createDamagePreview()
     
     @inline
@@ -61,14 +59,11 @@ public class SlamAction extends InstantAction
         ..addLine(Tooltip.stat("Damage", damagePreview))
         ..addLine("")
         ..addLine("Slams the Ground around and dealing massive AoE Damage")
-        ..addLine("This Slam is so powerfull that enemys get "+Tooltip.secondaryString(STATUS.getName())+ " and placed back in the initaive by "+Tooltip.primaryString(DAZZED_TIME.toString())+ " "+Tooltip.secondaryString("timeunits"))
+        ..addLine("This Slam is so powerfull that enemys get "+Tooltip.secondaryString(StatusTypeSet.STUNNED.getName())+ " and placed back in the initaive by "+Tooltip.primaryString(DAZZED_TIME.toString())+ " "+Tooltip.secondaryString("timeunits"))
 
         if isDefault == false
             tt.addKey(KEY)
         return tt
-
-    static function setup()
-        STATUS = StatusTypeSet.DAZED
 
     construct(BoardStack stack)
         super(stack, ICON, NAME)
@@ -86,28 +81,23 @@ public class SlamAction extends InstantAction
         destroy area
         return targets
 
+    private function finish(LLIterator<BoardStack> itr, DamageInstance instance)
+        destroy itr
+        destroy instance
+        DelayAnimation.create(stack.getBoard(), 0.5) -> // this is the backswing for casting
+            cooldown = COOLDOWN + 1
+
+            stack.addActionPoints(-COST)
+            BoardController.finishOrder(entity, true)
+
     private function hit(LLIterator<BoardStack> itr, DamageInstance instance)
         if itr.hasNext()
             let target = itr.next()
             BoardController.dealDamage(stack, instance, target) -> 
-                if target.isAlive()
-                    let level = target.getStackType().level
-                    if level < 4
-                        BoardController.pushBoardStackInInitiative(target, DAZZED_TIME)
-                    else if level == 4
-                        BoardController.pushBoardStackInInitiative(target, DAZZED_TIME_LVL_4)
-                    else if level == 5
-                        BoardController.pushBoardStackInInitiative(target, DAZZED_TIME_LVL_5)
-                    StatusController.add(STATUS, target, new StatusData(1))
-                hit(itr, instance)
+                BoardController.stunEntity(stack, target, DAZZED_TIME) -> 
+                    hit(itr, instance)
         else
-            destroy itr
-            destroy instance
-            DelayAnimation.create(stack.getBoard(), 0.5) -> // this is the backswing for casting
-                cooldown = COOLDOWN + 1
-
-                stack.addActionPoints(-COST)
-                BoardController.finishOrder(entity, true)
+            finish(itr, instance)
 
     override function activate()
         let targets = getTargets()
@@ -152,7 +142,7 @@ public class SlamAction extends InstantAction
                         remaining = -1
                         let pCell = pathing.get(cell)
                         if pCell != null
-                            remaining = pCell.getRemainingActionPoints(stack)
+                            remaining = pCell.getRaminingMoveActionPoints(stack)
                     if remaining >= cost
                         var newWeight = weight
                         if weightCells.has(cell)

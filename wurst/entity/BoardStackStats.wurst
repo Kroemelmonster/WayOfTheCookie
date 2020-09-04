@@ -16,6 +16,7 @@ public class BoardStackStats
     int startAmount
     int amount
     int remainingActionPoints
+    int remainingMoveActionPoints
     int hp
 
     StatsModifier attackModi = new StatsModifier()
@@ -24,6 +25,8 @@ public class BoardStackStats
     StatsModifier initModi = new StatsModifier()
     StatsModifier hpModi = new StatsModifier()
     StatsModifier actionPointModi = new StatsModifier()
+    StatsModifier moveActionPointModi = new StatsModifier()
+    private StatsModifier resultingMoveActionPointModi = new StatsModifier()
 
     int moveCoefficient = 100
 
@@ -64,6 +67,12 @@ public class BoardStackStats
     @inline
     function getMaxActionPoints() returns int
         return actionPointModi.get(basis.getMaxActionPoints()).round()
+
+    @inline
+    function getMaxMoveActionPoints() returns int
+        resultingMoveActionPointModi.addBonus = moveActionPointModi.addBonus + actionPointModi.addBonus
+        resultingMoveActionPointModi.multi = moveActionPointModi.multi + actionPointModi.multi - 100
+        return resultingMoveActionPointModi.get(basis.getMaxMoveActionPoints()).round()
     
     @inline
     function getMaxHp() returns int
@@ -111,6 +120,10 @@ public class BoardStackStats
         return remainingActionPoints
 
     @inline
+    function getRemainingMoveActionPoints() returns integer
+        return remainingMoveActionPoints
+
+    @inline
     function getAmount() returns int
         return amount
     
@@ -136,10 +149,15 @@ public class BoardStackStats
     @inline
     function addActionPoints(integer amount)
         remainingActionPoints += amount
+        remainingMoveActionPoints += amount
 
-    @inline
-    function setRemainingActionPoints(integer amount)
-        remainingActionPoints = amount
+    function adjustRemainingActionPointsToRemainingMoveActionPoints(integer amount)
+        if remainingActionPoints <= remainingMoveActionPoints
+            if amount < remainingActionPoints
+                remainingActionPoints = amount
+        else
+            remainingActionPoints = remainingActionPoints - (remainingMoveActionPoints - amount)
+        remainingMoveActionPoints = amount
 
     @inline
     function addAmount(int i)
@@ -148,6 +166,7 @@ public class BoardStackStats
     @inline
     function resetActionPoints()
         remainingActionPoints = getMaxActionPoints()
+        remainingMoveActionPoints = getMaxMoveActionPoints()
 
     @inline
     function setSubAttackTarget(SubTargetList list)
@@ -165,6 +184,8 @@ public class BoardStackStats
         destroy damageModi
         destroy initModi
         destroy actionPointModi
+        destroy moveActionPointModi
+        destroy resultingMoveActionPointModi
         destroy hpModi
         if subAttackList != null
             destroy subAttackList

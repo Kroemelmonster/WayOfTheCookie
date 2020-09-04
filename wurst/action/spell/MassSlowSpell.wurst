@@ -46,7 +46,7 @@ public class MassSlowSpell extends InstantSpell
         ..addLine("")
         ..addLine("Makes all enemies slower")
         ..addLine("---")
-        ..addStatusType(getStatus())
+        ..addStatusType(getStatus(), StatusData.create())
         return tt
 
     override function activate()
@@ -54,7 +54,7 @@ public class MassSlowSpell extends InstantSpell
             let board = entity.getBoard()
             board.forEachStack() (BoardStack target) ->
                 if target.getPlayer() != entity.getPlayer()
-                    StatusController.add(getStatus(), target, new StatusData(2))
+                    StatusController.add(getStatus(), target, StatusData.createDuration(2))
 
             UIController.triggerOnAnyStackCellChange(board)
             DelayAnimation.create(board, 0.5) ->

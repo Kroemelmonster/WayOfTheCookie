@@ -30,9 +30,9 @@ init
 		globalSetups.add() ->
 			UIMain.load(i)
 	StackTypesDefinition.setup(globalSetups)
-	HeroTypesDefinition.setup(globalSetups)
 	globalSetups.add() ->
 		defineObjects()
+	HeroTypesDefinition.setup(globalSetups)
 	globalSetups.add() ->
 		createTestBoard()
 	globalSetups.add() ->

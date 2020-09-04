@@ -6,17 +6,28 @@ import UITooltip
 
 public class StatusData
     int duration
-    int intValue
-    real realValue
+    int firstIntValue
+    real firstRealValue
 
-    construct(int duration)
+    construct(int duration, int firstIntValue, real firstRealValue)
         this.duration = duration
-        
-    function setValue(int value)
-        this.intValue = value
+        this.firstIntValue = firstIntValue
+        this.firstRealValue = firstRealValue
 
-    function setRealValue(real value)
-        this.realValue = value
+    static function create() returns StatusData
+        return new StatusData(0,0,0)
+
+    static function createI(int firstValue) returns StatusData
+        return new StatusData(0, firstValue, 0)
+
+    static function createDuration(int duration) returns StatusData
+        return createDurationI(duration, 0)
+
+    static function createDurationI(int duration, int firstValue) returns StatusData
+        return new StatusData(duration, firstValue, 0)
+
+    static function createDurationR(int duration, real firstValue) returns StatusData
+        return new StatusData(duration, 0, firstValue)
 
 public abstract class Status
     protected StatusType statusType

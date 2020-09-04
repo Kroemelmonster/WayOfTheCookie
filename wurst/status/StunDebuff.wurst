@@ -1,4 +1,4 @@
-package DazedDebuff
+package StunDebuff
 
 import AttachmentPoints
 import Icons
@@ -11,17 +11,19 @@ import initlater BoardStack
 import initlater StatusType
 import BoardTrigger
 
-public class DazedDebuff extends Status
+public class StunDebuff extends Status
     private effect display
     
-    private static constant string NAME = "Dazed"
+    private static constant string NAME = "Stun"
 
     private BoardTrigger turnStartListener
 
     static function setup() returns StatusType
-        let statusType = new StatusType(Icons.bTNStun, NAME, createTooltip())
+        let statusType = new StatusType(Icons.bTNStun, NAME)
         statusType.setCreationListener()(BoardStack stack) ->
-            return new DazedDebuff(statusType, stack)
+            return new StunDebuff(statusType, stack)
+        statusType.setTooltipListener() (StatusData data) ->
+            return createTooltip(data)
 
         return statusType
 
@@ -33,15 +35,18 @@ public class DazedDebuff extends Status
             kill()
             next.continue()
 
-    private static function createTooltip() returns Tooltip
+    private static function createTooltip(StatusData data) returns Tooltip
         let tooltip = Tooltip.create(NAME)
-        tooltip.addLine("You are dazed!")
+        tooltip.addLine("You are stuned!")
+        // TODO do smth with data
+        if data != null
+            destroy data
         return tooltip
 
     override function updateInner(StatusData data)
 
     override function createCurrentTooltip() returns Tooltip
-        return createTooltip()
+        return createTooltip(null)
 
     override function hide()
         if display != null

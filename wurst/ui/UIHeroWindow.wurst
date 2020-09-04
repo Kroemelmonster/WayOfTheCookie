@@ -34,6 +34,7 @@ public class UIHeroWindow
     private static UIStackInfo wisdomInfo
     private static UIStackInfo powerInfo
     private static UIStackInfo damageInfo
+    private static UIStackInfo initInfo
 
     private static UIHeroInventory inventory
     private static UIHeroSkillTree skillTree
@@ -126,6 +127,14 @@ public class UIHeroWindow
         ..setPoint(FRAMEPOINT_TOPRIGHT, wisdomInfo.self, FRAMEPOINT_BOTTOMRIGHT, 0, -0.005)
         ..setTooltip(t, TooltipAnchor.BOTTOM_LEFT_UP)
 
+        t = Tooltip.create("Initiative")
+        ..addLine("The frequenzy when the hero can act.")
+        initInfo = new UIStackInfo(infoBar)
+        ..setPoint(FRAMEPOINT_TOPLEFT, powerInfo.self, FRAMEPOINT_BOTTOMLEFT, 0, -0.005)
+        ..setPoint(FRAMEPOINT_TOPRIGHT, powerInfo.self, FRAMEPOINT_BOTTOMRIGHT, 0, -0.005)
+        ..setIcon("UI/Textures/StackInfo/initiative.dds")
+        ..setTooltip(t, TooltipAnchor.BOTTOM_LEFT_UP)
+
         /*ttackInfo = new UIStackInfo(pane)
         let attack = createFrame("HeroWindowStat", pane, 0, 0)
         ..setPoint(FRAMEPOINT_BOTTOMLEFT, pane, FRAMEPOINT_BOTTOMLEFT, 0.015, 0.015)
@@ -188,6 +197,7 @@ public class UIHeroWindow
             let dmgDifference = h.stats.getDamage().avg() - basisDmg.avg()
             damageInfo.setText(basisDmg.min.toString() + " - " + basisDmg.max.toString() + Tooltip.coloredModiReal(dmgDifference, 1))
             damageInfo.setIcon(h.stats.damageType)
+            initInfo.setTextBasedOnStats(h.getType().initiative, h.stats.getInitiative(), h.stats.initModi)
             
             mightText.setText(h.might.toString())
             mindText.setText(h.mind.toString())

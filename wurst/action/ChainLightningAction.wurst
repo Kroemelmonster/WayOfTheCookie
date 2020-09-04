@@ -222,7 +222,7 @@ public class ChainLightningAction extends Action
                         remaining = -1
                         let pCell = pathing.get(cell)
                         if pCell != null
-                            remaining = pCell.getRemainingActionPoints(stack)
+                            remaining = pCell.getRaminingMoveActionPoints(stack)
                     if remaining >= cost
                         let newWeight = weight
                         weightCells.put(cell, newWeight)

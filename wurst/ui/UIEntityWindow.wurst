@@ -321,7 +321,7 @@ class UIEntityWindow
 
         stackInfoInitiative.setTextBasedOnStats(stackType.initiative, stackType.initiative, null)
         updateInitiativeTooltip(stackType.initiative)
-        stackInfoActionPoints.setTextBasedOnStats(stackType.actionPoints, stackType.actionPoints, null)
+        updateActionPoints(stackType.actionPoints, stackType.actionPoints, -1)
 
         stackInfoHp.setTextBasedOnStats(stackType.maxHp, stackType.maxHp, null)
         stackInfoHp.setIcon("UI/Textures/StackInfo/hp.dds")
@@ -331,6 +331,17 @@ class UIEntityWindow
         updateTalents(stackType.getAllVisibleTalents())
         for int i = 0 to buffs.length
             buffs[i].setVisible(false)
+
+    private static function updateActionPoints(int basisMaxActionPoints, int maxActionPoints, int maxMoveActionPoints)
+        var str = basisMaxActionPoints.toString() + Tooltip.coloredModiInt(basisMaxActionPoints - maxActionPoints)
+        if maxMoveActionPoints > 0 and maxMoveActionPoints != maxActionPoints
+            str += " | "
+            if maxMoveActionPoints > maxActionPoints
+                str += Tooltip.coloredString(Tooltip.COLOR_POSITIVE, " " + maxMoveActionPoints.toString())
+            else
+                str += Tooltip.coloredString(Tooltip.COLOR_NEGATIVE, " " + maxMoveActionPoints.toString())
+        
+        stackInfoActionPoints.setText(str)
 
     private static function updateForArmyStack(Player p, ArmyStack armyStack)
         let stackType = armyStack.getStackType()
@@ -354,7 +365,7 @@ class UIEntityWindow
 
         stackInfoInitiative.setTextBasedOnStats(stackType.initiative, armyStats.getInitiative(), armyStats.initModi)
         updateInitiativeTooltip(armyStats.getInitiative())
-        stackInfoActionPoints.setTextBasedOnStats(stackType.actionPoints, armyStats.getMaxActionPoints(), armyStats.actionPointModi)
+        updateActionPoints(stackType.actionPoints, armyStats.getMaxActionPoints(), armyStats.getMaxMoveActionPoints())
 
         stackInfoHp.setTextBasedOnStats(stackType.maxHp, armyStats.getMaxHp(), armyStats.hpModi)
         stackInfoHp.setIcon("UI/Textures/StackInfo/hp.dds")
@@ -389,7 +400,7 @@ class UIEntityWindow
 
         stackInfoInitiative.setTextBasedOnStats(armyStats.getInitiative(), boardStats.getInitiative(), boardStats.initModi)
         updateInitiativeTooltip(boardStats.getInitiative())
-        stackInfoActionPoints.setTextBasedOnStats(armyStats.getMaxActionPoints(), boardStats.getMaxActionPoints(), boardStats.actionPointModi)
+        updateActionPoints(armyStats.getMaxActionPoints(), boardStats.getMaxActionPoints(), boardStats.getMaxMoveActionPoints())
 
         // HP
         stackInfoHp.setText("")
@@ -440,7 +451,7 @@ class UIEntityWindow
 
         stackInfoInitiative.setTextBasedOnStats(heroStats.getInitiative(), boardHeroStats.getInitiative(), boardHeroStats.initModi)
         updateInitiativeTooltip(heroStats.getInitiative())
-        stackInfoActionPoints.setTextBasedOnStats(heroStats.getMaxActionPoints(), boardHeroStats.getMaxActionPoints(), boardHeroStats.actionPointModi)
+        updateActionPoints(heroStats.getMaxActionPoints(), boardHeroStats.getMaxActionPoints(), -1)
 
         stackInfoHp.setText("")
         stackInfoHp.setPoint(FRAMEPOINT_TOPRIGHT, stackInfoActionPoints.self, FRAMEPOINT_BOTTOMRIGHT, 0, -0.005)

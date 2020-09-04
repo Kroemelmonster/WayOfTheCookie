@@ -24,9 +24,11 @@ public class BleedingAilment extends Status
     private static constant string EFFECT = "Objects\\Spawnmodels\\Human\\HumanBlood\\HumanBloodLarge0.mdl"
 
     static function setup() returns StatusType
-        let statusType = new StatusType("Icons\\PASBloodSprinkle.blp", NAME, createTooltip(null))
+        let statusType = new StatusType("Icons\\PASBloodSprinkle.blp", NAME)
         statusType.setCreationListener()(BoardStack stack) ->
             return new BleedingAilment(statusType, stack)
+        statusType.setTooltipListener() (StatusData data) ->
+            return createTooltip(null, data)
 
         return statusType
 
@@ -73,7 +75,7 @@ public class BleedingAilment extends Status
                 kill()
             next.continue()
 
-    private static function createTooltip(BleedingAilment b) returns Tooltip
+    private static function createTooltip(BleedingAilment b, StatusData data) returns Tooltip
         let tooltip = Tooltip.create(NAME)
         if b == null
             tooltip.addLine("Bleeding makes you suffer damage each turn")
@@ -87,13 +89,20 @@ public class BleedingAilment extends Status
             b.calculateDamage(true)
             tooltip.addLine("As well as "+Tooltip.coloredRange(Tooltip.damageType2Color(damagePreview.damageType), damagePreview.dmg.round())+ " each time you attempt to move into another cell")
         
+        // TODO do smth with statusdata
+        if data != null
+            destroy data
         return tooltip
 
+    @inline
+    private static function getDamage(StatusData data) returns real
+        return data.firstRealValue
+
     override protected function updateInner(StatusData data)
-        stacks.add(data.duration, data.realValue)
+        stacks.add(data.duration, getDamage(data))
 
     override function createCurrentTooltip() returns Tooltip
-        return createTooltip(this)
+        return createTooltip(this, null)
 
     override function hide()
 

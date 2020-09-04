@@ -21,9 +21,11 @@ public class WarcryBuff extends Status
     private BoardTrigger turnEndListener
 
     static function setup() returns StatusType
-        let statusType = new StatusType(Icons.bTNBattleRoar, NAME, createTooltip(null))
+        let statusType = new StatusType(Icons.bTNBattleRoar, NAME)
         statusType.setCreationListener()(BoardStack stack) ->
             return new WarcryBuff(statusType, stack)
+        statusType.setTooltipListener() (StatusData data) ->
+            return createTooltip(null, data)
 
         return statusType
 
@@ -38,7 +40,7 @@ public class WarcryBuff extends Status
                 kill()
             next.continue()
 
-    private static function createTooltip(WarcryBuff b) returns Tooltip
+    private static function createTooltip(WarcryBuff b, StatusData data) returns Tooltip
         let tooltip = Tooltip.create(NAME)
         if b == null
             tooltip.addLine("Increases the damage dealt by "+Tooltip.coloredPercent(DAMAGE_MULTI / 100.0) +" per reamining duration")
@@ -47,6 +49,9 @@ public class WarcryBuff extends Status
             tooltip.addLine("")
             tooltip.addLine("Increases the damage dealt by "+Tooltip.coloredPercent((DAMAGE_MULTI * b.duration) / 100.0))
         
+        // TODO do smth with data
+        if data != null
+            destroy data
         return tooltip
 
     override protected function updateInner(StatusData data)
@@ -56,7 +61,7 @@ public class WarcryBuff extends Status
             updateInner(difference)
 
     override function createCurrentTooltip() returns Tooltip
-        return createTooltip(this)
+        return createTooltip(this, null)
 
     private function updateInner(int durationChange)
         stack.stats.damageModi.multi += (durationChange * DAMAGE_MULTI)

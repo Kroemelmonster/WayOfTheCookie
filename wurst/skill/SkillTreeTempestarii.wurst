@@ -21,6 +21,9 @@ public class SkillTreeTempestarii extends SkillTree
     int chainLightningLevel = -1
     int lightningBoltLevel = -1
 
+    int lightningBoltStunLevel = -1
+    int lightningBoltPurgeLevel = -1
+
 
     construct(SkillTreeType skillTreeType)
         super(skillTreeType)
@@ -28,24 +31,24 @@ public class SkillTreeTempestarii extends SkillTree
         let lightningBoltSkill = new Skill(this, LightningBoltSpell.TYPE.getName(), LightningBoltSpell.TYPE.getIcon(), 0.2, 0)
         skills.add(lightningBoltSkill)
         lightningBoltSkill.addLevel(0, 0, 3)
-        ..addSpellTooltip(LightningBoltSpell.createTooltip(0, 0))
+        ..addSpellTooltip(LightningBoltSpell.createTooltip(0))
         ..addLevelListener() (Hero hero) ->
             lightningBoltLevel ++
             hero.addSpell(LightningBoltSpell.TYPE)
         lightningBoltSkill.addLevel(0, 0, 3)
-        ..addSpellTooltip(LightningBoltSpell.createTooltip(0, 1))
+        ..addSpellTooltip(LightningBoltSpell.createTooltip(1))
         ..addLevelListener() (Hero hero) ->
             lightningBoltLevel ++
         lightningBoltSkill.addLevel(0, 0, 3)
-        ..addSpellTooltip(LightningBoltSpell.createTooltip(0, 2))
+        ..addSpellTooltip(LightningBoltSpell.createTooltip(2))
         ..addLevelListener() (Hero hero) ->
             lightningBoltLevel ++
         lightningBoltSkill.addLevel(0, 0, 3)
-        ..addSpellTooltip(LightningBoltSpell.createTooltip(0, 3))
+        ..addSpellTooltip(LightningBoltSpell.createTooltip(3))
         ..addLevelListener() (Hero hero) ->
             lightningBoltLevel ++
         lightningBoltSkill.addLevel(0, 0, 3)
-        ..addSpellTooltip(LightningBoltSpell.createTooltip(0, 4))
+        ..addSpellTooltip(LightningBoltSpell.createTooltip(4))
         ..addLevelListener() (Hero hero) ->
             lightningBoltLevel ++
 
@@ -58,23 +61,41 @@ public class SkillTreeTempestarii extends SkillTree
             hero.stats.initModi.addBonus += 10
             
         let boltStunSkill = new Skill(this, LightningBoltSpell.TYPE.getName()+ " Stun", "Icons\\BTNLightningBoltStun.dds", 0.0, 0.2)
-        let boltPurgeSKill = new Skill(this, LightningBoltSpell.TYPE.getName()+ " Purge", "Icons\\BTNLightningBoltPurge.dds", 0.4, 0.2)
+        let boltPurgeSkill = new Skill(this, LightningBoltSpell.TYPE.getName()+ " Purge", "Icons\\BTNLightningBoltPurge.dds", 0.4, 0.2)
         skills.add(boltStunSkill)
-        skills.add(boltPurgeSKill)
+        skills.add(boltPurgeSkill)
 
         boltStunSkill.addLevel(1, 0, 3)
         ..setSkillTreeLevelRequirement(2)
         ..addSkillRequirement(lightningBoltSkill, 0)
-        ..addBlockedBySkill(boltPurgeSKill)
-        ..addLine("TODO Makes the Bolt do Stun")
+        ..addBlockedBySkill(boltPurgeSkill)
+        ..addLine("Modifies the Bolt to also stuns the enemy for "+Tooltip.primaryString(LightningBoltSpell.STUN_DURATION[0].toString())+ " "+Tooltip.secondaryString("timeunits"))
         ..addLevelListener() (Hero hero) ->
+            lightningBoltStunLevel++
+        boltStunSkill.addLevel(1, 0, 3)
+        ..addLine("Modifies the Bolt to also stuns the enemy for "+Tooltip.primaryString(LightningBoltSpell.STUN_DURATION[1].toString())+ " "+Tooltip.secondaryString("timeunits"))
+        ..addLevelListener() (Hero hero) ->
+            lightningBoltStunLevel++
+        boltStunSkill.addLevel(1, 0, 3)
+        ..addLine("Modifies the Bolt to also stuns the enemy for "+Tooltip.primaryString(LightningBoltSpell.STUN_DURATION[1].toString())+ " "+Tooltip.secondaryString("timeunits"))
+        ..addLevelListener() (Hero hero) ->
+            lightningBoltStunLevel++
 
-        boltPurgeSKill.addLevel(0, 1, 3)
+        boltPurgeSkill.addLevel(0, 1, 3)
         ..setSkillTreeLevelRequirement(2)
         ..addSkillRequirement(lightningBoltSkill, 0)
         ..addBlockedBySkill(boltStunSkill)
-        ..addLine("TODO Makes the Bolt do Purge")
+        ..addLine("Modifies the Bolt to also pruge the enemy and todo")
         ..addLevelListener() (Hero hero) ->
+            lightningBoltPurgeLevel++
+        boltPurgeSkill.addLevel(0, 1, 3)
+        ..addLine("Modifies the Bolt to also pruge the enemy and todo")
+        ..addLevelListener() (Hero hero) ->
+            lightningBoltPurgeLevel++
+        boltPurgeSkill.addLevel(0, 1, 3)
+        ..addLine("Modifies the Bolt to also pruge the enemy and todo")
+        ..addLevelListener() (Hero hero) ->
+            lightningBoltPurgeLevel++
 
         skill = new Skill(this, "Haste", Icons.bTNWindWalkOn, 0.6, 0.2)
         skills.add(skill)

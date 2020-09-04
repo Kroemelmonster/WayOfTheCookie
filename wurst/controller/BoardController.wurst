@@ -16,16 +16,26 @@ import initlater OrderSystem
 import LinkedList
 import BoardTrigger
 import UITooltip
-import StackType
 import initlater MainController
 import BoardEntity
+import Globals
+import Status
+import StatusType
 
 constant TEXTTAG_COLOR_KILLS = colorA(250, 57, 57, 199).toColorString()
 
 public class BoardController
-    static function pushBoardStackInInitiative(BoardStack stack, int time)
-        stack.getBoard().getInitiative().pushEntity(stack, time)
 
+    static function stunEntity(BoardEntity _source, BoardEntity target, int time, SequenzListener next)
+        if target.isAlive() == false
+            next.continue()
+            return
+
+        let board = target.getBoard()
+        board.getInitiative().pushEntity(target, time)
+        if target.getType() == EntityType.STACK
+            StatusController.add(StatusTypeSet.STUNNED, target castTo BoardStack, StatusData.createDuration(1))
+        next.continue()
 
     /** Use this to summon / create a Stack mid Fight */
     static function placeStackOnBoard(BoardStack stack, Cell cell, boolean isSummoned, SequenzListener next)
@@ -48,7 +58,7 @@ public class BoardController
         if entity.isAlive()
             if isAllowedToContinue and entity.canStillAct()
                 entity.resetCurrentSelectedAction()
-                UIController.triggerOnActionPointChange(entity)
+                UIController.triggerOnActiveEntityActionPointChange(entity)
                 if entity.getPlayer().isConntrolledByKI
                     KISystem.executeTurn(entity)
             else

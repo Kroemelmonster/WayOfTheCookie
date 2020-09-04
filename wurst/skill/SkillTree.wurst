@@ -290,4 +290,4 @@ public abstract class SkillTree
         return level
 
     function isSkillTreeType(SkillTreeType skillTreeType) returns boolean
-        return skillTreeType == skillTreeType
+        return this.skillTreeType == skillTreeType

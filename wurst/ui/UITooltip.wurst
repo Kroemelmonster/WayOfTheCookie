@@ -9,6 +9,7 @@ import initlater StatusType
 import StatsModifier
 import initlater Damage
 import initlater StackType
+import initlater Status
 
 constant LINE_HEIGHT = 0.0122
 constant HEIGHT_OFFSET = 0.03
@@ -232,10 +233,9 @@ public class Tooltip
         if once
             destroy other
 
-    @inline
-    function addStatusType(StatusType statusType)
+    function addStatusType(StatusType statusType, StatusData data)
         addLine(statInner("Status", coloredString(COLOR_SECONDARY, statusType.getName())))
-        addTooltip(statusType.getTooltip(), false)
+        addTooltip(statusType.getTooltip(data), false)
 
     @inline
     function addSpecificDamagePreview(SpecificDamagePreview preview)

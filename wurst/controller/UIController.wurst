@@ -34,6 +34,10 @@ class UIController
         triggerOnAnyStackCellChange(board)
         // TODO this should be hannelded in initiative List
         UIInitiativeWindow.refresh(board.getInitiative())
+
+    static function triggerOnMaxActionPointChange(BoardEntity entity)
+        entity.resetActionPoints()
+        triggerOnAnyStackCellChange(entity.getBoard())
         
     static function triggerOnAnyStackCellChange(Board board)
         board.forEachStack() (BoardStack stack) ->
@@ -61,7 +65,7 @@ class UIController
         entity.setHighlight(true)
         entity.getPlayer().playingBoard.drawAll()
 
-    static function triggerOnActionPointChange(BoardEntity entity)
+    static function triggerOnActiveEntityActionPointChange(BoardEntity entity)
         UIActionWindow.update(entity.getPlayer())
         entity.getDefaultAction().onAnyStackCellChange()
         entity.getBoard().drawAll()

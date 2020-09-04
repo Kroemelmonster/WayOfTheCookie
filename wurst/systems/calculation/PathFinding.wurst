@@ -24,15 +24,18 @@ public class PathCell
         this.cost = cost
         this.prev = prev
 
-    function getRemainingActionPoints(BoardStack stack) returns int
-        return getRemainingActionPoints(stack.stats.getRemainingActionPoints())
+    function getRaminingMoveActionPoints(BoardStack stack) returns int
+        return getRemainingMoveActionPoints(stack.stats.getRemainingMoveActionPoints())
 
-    function getRemainingActionPoints(int ms) returns int
+    function getRemainingMoveActionPoints(int ms) returns int
+
+        /* OLD CODE TO PREVENT A UNIT NOT BEING ABLE TO WALK AT ALL WITH % REDUCED MS
         if cost > ms and cost < MAX_MOVE_COST
             if prev == null // you can always walk at least one field
                 return 0
             else if prev.cost < ms // you can also walk one field if you have more than one action püoint left at the start
                 return 0
+                */
         return ms - cost.floor()
 
     function iterator() returns PathIterator

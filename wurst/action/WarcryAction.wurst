@@ -48,7 +48,7 @@ public class WarcryAction extends InstantAction
         ..addLine("")
         ..addLine("Gives every enemy unit in range the "+Tooltip.secondaryString(BUFF.getName())+ " Buff effect for "+Tooltip.primaryString(BUFF_DURATION.toString())+ " rounds")
         ..addLine("-----")
-        ..addStatusType(BUFF)
+        ..addStatusType(BUFF, StatusData.create())
 
     private Tooltip tooltip
     construct(BoardStack stack)
@@ -80,7 +80,7 @@ public class WarcryAction extends InstantAction
         CastAnimation.create(stack) () ->
             flashEffect(EFFECT, stack.getCell().getCoord())
             for target in targets
-                StatusController.add(BUFF, target, new StatusData(BUFF_DURATION))
+                StatusController.add(BUFF, target, StatusData.createDuration(BUFF_DURATION))
             destroy targets
 
             DelayAnimation.create(board, 0.5) -> // this is the backswing for casting
@@ -125,7 +125,7 @@ public class WarcryAction extends InstantAction
                         remaining = -1
                         let pCell = pathing.get(cell)
                         if pCell != null
-                            remaining = pCell.getRemainingActionPoints(stack)
+                            remaining = pCell.getRaminingMoveActionPoints(stack)
                     if remaining >= cost
                         var newWeight = 100.0
                         if weightCells.has(cell)

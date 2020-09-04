@@ -41,8 +41,7 @@ public class PoisonousPassive extends PassiveAction
                 next.continue()
             else
                 PoisonAilment.flashEffect(target)
-                StatusController.add(getStatus(), target, new StatusData(DURATION)
-                ..setRealValue(getDamage(specificInstance.damageInstance.dmg)))
+                StatusController.add(getStatus(), target, StatusData.createDurationR(DURATION, getDamage(specificInstance.damageInstance.dmg)))
                 DelayAnimation.create(stack.getBoard(), 0.2) ->
                     next.continue()
 
@@ -55,6 +54,6 @@ public class PoisonousPassive extends PassiveAction
         ..addLine("Every time this unit deals damage it will inflict a Stack of "+Tooltip.secondaryString(getStatus().getName()))
         ..addLine("which deals "+Tooltip.primaryPercent(PERCENTAGE)+ " of the triggering base Damage")
         ..addLine("-----")
-        ..addStatusType(getStatus())
+        ..addStatusType(getStatus(), StatusData.create())
         return tooltip
         

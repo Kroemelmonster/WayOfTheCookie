@@ -6,43 +6,51 @@ import BoardStack
 import UITooltip
 import BleedingAilment
 import PoisonAilment
-import DazedDebuff
+import StunDebuff
 import SlowDebuff
 import HastedBuff
+import PurgedDebuff
 
 interface StatusCreateListener
     function create(BoardStack stack) returns Status
+
+interface StatusTypeTooltipListener
+    function getTooltip(StatusData data) returns Tooltip
 
 public class StatusTypeSet
     static StatusType WARCRY
     static StatusType BLEEDING
     static StatusType POISON
-    static StatusType DAZED
+    static StatusType STUNNED
     static StatusType SLOWED
+    static StatusType PURGED
     static StatusType HASTED
 
     static function setup()
         WARCRY = WarcryBuff.setup()
         BLEEDING = BleedingAilment.setup()
         POISON = PoisonAilment.setup()
-        DAZED = DazedDebuff.setup()
+        STUNNED = StunDebuff.setup()
         SLOWED = SlowDebuff.setup()
         HASTED = HastedBuff.setup()
+        PURGED = PurgedDebuff.setup()
 
 
 public class StatusType
     protected string icon
     protected string name
-    protected Tooltip tooltip
     protected StatusCreateListener listener
+    protected StatusTypeTooltipListener tooltipCreator
 
-    construct(string icon, string name, Tooltip tooltip)
+    construct(string icon, string name)
         this.icon = icon
         this.name = name
-        this.tooltip = tooltip
 
     function setCreationListener(StatusCreateListener listener)
         this.listener = listener
+
+    function setTooltipListener(StatusTypeTooltipListener listener)
+        this.tooltipCreator = listener
 
     @inline
     function createNew(BoardStack stack) returns Status
@@ -57,8 +65,8 @@ public class StatusType
         return name
 
     @inline
-    function getTooltip() returns Tooltip
-        return tooltip
+    function getTooltip(StatusData data) returns Tooltip
+        return tooltipCreator.getTooltip(data)
 
     @inline
     function toString() returns string
