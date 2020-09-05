@@ -12,7 +12,6 @@ import Action
 import UnitDefinition
 import DefaultAction
 import PassiveAction
-import Status
 
 import initlater Cell
 import initlater Board
@@ -28,7 +27,6 @@ public class BoardStack extends BoardEntity
     private Cell cell
     private Player p
 
-    private effect highlightEffect
     private texttag tt
 
     
@@ -37,16 +35,8 @@ public class BoardStack extends BoardEntity
     private integer currentSelectedAction = 0
     private LinkedList<PassiveAction> passiveActions
 
-    private LinkedList<Status> stati
-
     private EventListener damageTakenListener
-    private EventListener castListener
-
     private EventListener unitDamageTakenListener
-    private OnCastListener unitOnCastListener
-    private OnCastListener unitOnCastImmediateListener
-
-    private StackTrigger triggers
 
     BoardStackStats stats
 
@@ -60,9 +50,6 @@ public class BoardStack extends BoardEntity
 
         this.actions = new LinkedList<Action>
         this.passiveActions = new LinkedList<PassiveAction>
-
-        this.stati = new LinkedList<Status>
-        this.triggers = new StackTrigger()
 
         stack.stats.triggerOnCreation(this)
 
@@ -111,26 +98,6 @@ public class BoardStack extends BoardEntity
     @inline
     function actionIterator() returns LLIterator<Action>
         return actions.iterator()
-
-    @inline
-    function statusIterator() returns LLIterator<Status>
-        return stati.iterator()
-
-    @inline
-    function getStatus(int index) returns Status
-        return stati.get(index)
-        
-    @inline
-    function addStatus(Status status)
-        stati.add(status)
-
-    @inline
-    function removeStatus(Status status)
-        stati.remove(status)
-
-    @inline
-    function getTriggers() returns StackTrigger
-        return triggers
 
     @inline
     function passiveActionIterator() returns LLIterator<PassiveAction>
@@ -196,26 +163,7 @@ public class BoardStack extends BoardEntity
 
         this.cell = cell
         this.board = cell.getBoard()
-        u = createUnit(DUMMY_PLAYER, stackType.unitId, cell.getCoord(), angle(PI * playerIndex))
-        u.setColor(p.blzPlayer.getColor())
-        u.disableAbility(AbilityIds.attack, true, false)
-
-        unitDamageTakenListener = EventListener.add(u, EVENT_PLAYER_UNIT_DAMAGED) () ->
-            if damageTakenListener != null
-                damageTakenListener.onEvent()
-                destroy damageTakenListener
-                damageTakenListener = null
-            
-        unitOnCastListener = EventListener.onCast(u, AbilityTypesIds.TARGET_SPELL) (unit caster) ->
-            if castListener != null
-                castListener.onEvent()
-                destroy castListener
-                castListener = null
-        unitOnCastImmediateListener = EventListener.onCast(u, AbilityTypesIds.SELFCAST_SPELL) (unit caster) ->
-            if castListener != null
-                castListener.onEvent()
-                destroy castListener
-                castListener = null
+        createBLZUnit(playerIndex)
 
         if board.getInitiative().isFirstTurn() == false
             SetUnitAnimation(u, "birth")
@@ -223,6 +171,18 @@ public class BoardStack extends BoardEntity
         resetActionPoints()
 
         tt = createTTEx(getTextTagPos(), stats.getAmount().toString(), 10.0)
+
+
+    private function createBLZUnit(int playerIndex)
+        u = createUnit(DUMMY_PLAYER, stackType.unitId, cell.getCoord(), angle(PI * playerIndex))
+        u.setColor(p.blzPlayer.getColor())
+        u.disableAbility(AbilityIds.attack, true, false)
+        unitDamageTakenListener = EventListener.add(u, EVENT_PLAYER_UNIT_DAMAGED) () ->
+            if damageTakenListener != null
+                damageTakenListener.onEvent()
+                destroy damageTakenListener
+                damageTakenListener = null
+        placeEntity()
 
     function replaceCell(Cell cell)
         this.cell.removeStack()
@@ -241,7 +201,7 @@ public class BoardStack extends BoardEntity
 
     function kill()
         board.triggerOnStackKilled(this)
-        prepareToRemoveBlzUnit()
+        removeStackRelatedThingsFromBoard()
         u.kill()
 
     @inline
@@ -251,9 +211,6 @@ public class BoardStack extends BoardEntity
     function doOnNextDamageTaken(EventListener listener)
         damageTakenListener = listener
 
-    override function doOnNextCast(EventListener listener)
-        castListener = listener
-
     function getCurrentOrder() returns int
         return u.getCurrentOrder()
 
@@ -262,22 +219,6 @@ public class BoardStack extends BoardEntity
 
     function setVisualHp(real percent)
         u.setHP(percent * 1000)
-
-    function flashEffectOnPos(string sfx)
-        flashEffect(sfx, u.getPos())
-
-    function flashAttachEffect(string sfx, string attachment)
-        flashEffect(sfx, u, attachment)
-
-    function addAttachEffect(string sfx, string attachment) returns effect
-        return addEffect(sfx, u, attachment)
-
-    override function setHighlight(boolean flag)
-        if flag == false or highlightEffect != null
-            highlightEffect.destr()
-            highlightEffect = null
-        if flag
-            highlightEffect = addEffect(Abilities.aneuTarget, u, AttachmentPoints.overhead)
 
     function tick(real _delta)
         tt.setPos(getTextTagPos())
@@ -292,36 +233,20 @@ public class BoardStack extends BoardEntity
         pos.x += 33
         return pos
 
-    private function prepareToRemoveBlzUnit()
+    private function removeStackRelatedThingsFromBoard()
+        removeEntityRelatedThingsFromBoard()
+        // TODO this should remove the entiy not the stack
         if cell != null
             cell.removeStack()
             cell = null
-        if highlightEffect != null
-            highlightEffect.destr()
-            highlightEffect = null
 
-        if castListener != null
-            destroy castListener
-            castListener = null
-        if damageTakenListener != null
-            destroy damageTakenListener
-            damageTakenListener = null
-
-        if unitOnCastListener != null
-            destroy unitOnCastListener
-            unitOnCastListener = null
-        if unitDamageTakenListener != null
-            destroy unitDamageTakenListener
-            unitDamageTakenListener = null
-        if unitOnCastImmediateListener != null
-            destroy unitOnCastImmediateListener
-            unitOnCastImmediateListener = null
         if tt != null
             tt.destr()
             tt = null
     
     ondestroy
-        prepareToRemoveBlzUnit()
+        removeStackRelatedThingsFromBoard()
+        destroyEntity()
         if actions != null
             for action in actions
                 destroy action
@@ -330,16 +255,12 @@ public class BoardStack extends BoardEntity
             for action in passiveActions
                 destroy action
             destroy passiveActions
-        if stati != null
-            for status in stati
-                destroy status
-            destroy stati
         if defaultAction != null
             destroy defaultAction
 
         if armyStack.isSummoned()
             destroy armyStack
         destroy stats
-        destroy triggers
+        destroyTriggers()
     
         u.remove()

@@ -24,11 +24,11 @@ public class SpellType
         this.icon = icon
         this.name = name
     
-    function addListener(SpellCreateListener listener)
+    function onCreate(SpellCreateListener listener)
         this.listener = listener
 
     @inline
-    function createNew(BoardHero boardHero) returns Spell
+    function create(BoardHero boardHero) returns Spell
         return listener.create(boardHero)
 
     @inline
@@ -57,9 +57,9 @@ public abstract class Spell extends Action
     function setLevel(int i)
         if i < 0
             Log.error("Tried to create the Spell "+name+ " with a level of "+i.toString())
-        level = i
+        this.level = i
 
-    protected function cast()
+    protected function payCostAndStartCooldown()
         hero.stats.addMana(-manacost)
         cooldown = maxCooldown
 

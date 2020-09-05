@@ -1,8 +1,6 @@
 package StatusType
 
 import Status
-import WarcryBuff
-import BoardStack
 import UITooltip
 import BleedingAilment
 import PoisonAilment
@@ -10,15 +8,15 @@ import StunDebuff
 import SlowDebuff
 import HastedBuff
 import PurgedDebuff
+import BoardEntity
 
 interface StatusCreateListener
-    function create(BoardStack stack) returns Status
+    function create(BoardEntity entity) returns Status
 
 interface StatusTypeTooltipListener
     function getTooltip(StatusData data) returns Tooltip
 
 public class StatusTypeSet
-    static StatusType WARCRY
     static StatusType BLEEDING
     static StatusType POISON
     static StatusType STUNNED
@@ -27,13 +25,12 @@ public class StatusTypeSet
     static StatusType HASTED
 
     static function setup()
-        WARCRY = WarcryBuff.setup()
-        BLEEDING = BleedingAilment.setup()
-        POISON = PoisonAilment.setup()
-        STUNNED = StunDebuff.setup()
-        SLOWED = SlowDebuff.setup()
-        HASTED = HastedBuff.setup()
-        PURGED = PurgedDebuff.setup()
+        BLEEDING    = BleedingAilment.setup()
+        POISON      = PoisonAilment.setup()
+        STUNNED     = StunDebuff.setup()
+        SLOWED      = SlowDebuff.setup()
+        HASTED      = HastedBuff.setup()
+        PURGED      = PurgedDebuff.createType()
 
 
 public class StatusType
@@ -53,8 +50,8 @@ public class StatusType
         this.tooltipCreator = listener
 
     @inline
-    function createNew(BoardStack stack) returns Status
-        return listener.create(stack)
+    function createNew(BoardEntity entity) returns Status
+        return listener.create(entity)
 
     @inline
     function getIcon() returns string

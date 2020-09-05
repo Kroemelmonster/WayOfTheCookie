@@ -226,7 +226,7 @@ class UIEntityWindow
             ..setVisible(false)
             buffs[i].onMouseEnter() ->
                 let p = GetTriggerPlayerData()
-                let b = p.stackWindowInfo.boardEntity.toStack().getStatus(i)
+                let b = p.stackWindowInfo.boardEntity.getStatus(i)
                 b.createCurrentTooltip().display(p, true)
             buffs[i].onMouseLeave() ->
                 let p = GetTriggerPlayerData()
@@ -416,13 +416,16 @@ class UIEntityWindow
         stackInfoLeadership.setVisible(false)
 
         updateTalents(armyStats.getAllVisibleTalents())
-        let itr = boardStack.statusIterator()
+        updateStati(boardStack)
+
+    private static function updateStati(BoardEntity entity)
+        let itr = entity.statusIterator()
         for int i = 0 to buffs.length
             buffs[i].setVisible(itr.hasNext())
             if itr.hasNext()
                 let b = itr.next()
                 buffs[i].setIcon(b.getIcon())
-        
+
         destroy itr
 
     private static function updateForBoardHero(Player p, BoardHero boardHero)
@@ -468,8 +471,7 @@ class UIEntityWindow
         for int i = 0 to talents.length
             talents[i].setVisible(false)
         
-        for int i = 0 to buffs.length
-            buffs[i].setVisible(false)
+        updateStati(boardHero)
 
     @inline
     private static function upateStackInfoRange(UIStackInfo info, intRange basic, real difference, StatsModifier _modi)

@@ -4,7 +4,6 @@ import initlater BoardStack
 import initlater StackType
 import DefaultTalent
 import SummonLesserSkeletonTalent
-import WarcryTalent
 import CounterAttackTalent
 import UITooltip
 import ChainLightningTalent
@@ -23,7 +22,6 @@ interface StackTypeCreationListener
 public class TalentSet
     static Talent DEFAULT
     static Talent SUMMON_LESSER_SKELETON
-    static Talent WARCRY
     static Talent COUNTER_ATTACK
     static Talent CHAIN_LIGHTNING
     static Talent POPISONOUS
@@ -37,7 +35,6 @@ public class TalentSet
     static function setup()
         DEFAULT = DefaultTalent.setup()
         SUMMON_LESSER_SKELETON = SummonLesserSkeletonTalent.setup()
-        WARCRY = WarcryTalent.setup()
         COUNTER_ATTACK = CounterAttackTalent.setup()
         CHAIN_LIGHTNING = ChainLightningTalent.setup()
         POPISONOUS = PoisonousTalent.setup()

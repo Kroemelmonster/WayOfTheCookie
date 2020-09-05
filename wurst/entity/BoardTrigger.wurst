@@ -39,7 +39,7 @@ public abstract class BoardTriggerOnDamageTaken
 public abstract class BoardTrigger
     abstract function onEvent(SequenzListener next)
 
-public class StackTrigger
+public class EntityTrigger
     private LinkedList<BoardTriggerOnAnyCellEnter> onAnyCellEnter = new LinkedList<BoardTriggerOnAnyCellEnter>()
     private LinkedList<BoardTriggerOnAnyCellLeave> onAnyCellLeave = new LinkedList<BoardTriggerOnAnyCellLeave>()
     private LinkedList<BoardTrigger> onTurnStart = new LinkedList<BoardTrigger>()

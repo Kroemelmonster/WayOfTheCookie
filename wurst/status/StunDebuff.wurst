@@ -7,41 +7,42 @@ import Abilities
 import Status
 import UITooltip
 
-import initlater BoardStack
 import initlater StatusType
+import initlater BoardEntity
 import BoardTrigger
 
 public class StunDebuff extends Status
-    private effect display
-    
-    private static constant string NAME = "Stun"
-
-    private BoardTrigger turnStartListener
+    private static StatusType TYPE
 
     static function setup() returns StatusType
-        let statusType = new StatusType(Icons.bTNStun, NAME)
-        statusType.setCreationListener()(BoardStack stack) ->
-            return new StunDebuff(statusType, stack)
-        statusType.setTooltipListener() (StatusData data) ->
+        TYPE = new StatusType(Icons.bTNStun, "Stunned")
+        TYPE.setCreationListener()(BoardEntity entity) ->
+            return new StunDebuff(TYPE, entity)
+        TYPE.setTooltipListener() (StatusData data) ->
             return createTooltip(data)
 
-        return statusType
-
-    construct(StatusType statusType, BoardStack stack)
-        super(statusType, stack)
-        display = stack.addAttachEffect(Abilities.stasisTotemTarget, AttachmentPoints.overhead)
-
-        turnStartListener = stack.getTriggers().addTurnStart() (SequenzListener next) ->
-            kill()
-            next.continue()
+        return TYPE
 
     private static function createTooltip(StatusData data) returns Tooltip
-        let tooltip = Tooltip.create(NAME)
+        let tooltip = Tooltip.create(TYPE.getName())
         tooltip.addLine("You are stuned!")
         // TODO do smth with data
         if data != null
             destroy data
         return tooltip
+
+    /* -------------------------------------------------------------------------- */
+    
+    private effect display
+    private BoardTrigger turnStartListener
+
+    construct(StatusType statusType, BoardEntity entity)
+        super(statusType, entity)
+        display = entity.addAttachEffect(Abilities.thunderclapTarget, AttachmentPoints.overhead)
+
+        turnStartListener = entity.getTriggers().addTurnStart() (SequenzListener next) ->
+            kill()
+            next.continue()
 
     override function updateInner(StatusData data)
 
@@ -53,6 +54,6 @@ public class StunDebuff extends Status
             display.destr()
 
     ondestroy
-        stack.getTriggers().removeOnTurnStart(turnStartListener)
-        if display != null
-            display.destr()
+        if entity.isAlive()
+            entity.getTriggers().removeOnTurnStart(turnStartListener)
+        hide()

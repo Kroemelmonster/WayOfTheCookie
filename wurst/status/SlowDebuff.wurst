@@ -8,6 +8,7 @@ import Status
 import UITooltip
 
 import initlater BoardStack
+import initlater BoardEntity
 import initlater StatusType
 import BoardTrigger
 
@@ -18,18 +19,21 @@ public class SlowDebuff extends Status
 
     private BoardTrigger turnStartListener
     private int duration = 0
+    private BoardStack stack
 
     static function setup() returns StatusType
         let statusType = new StatusType(Icons.bTNSlow, NAME)
-        statusType.setCreationListener()(BoardStack stack) ->
-            return new SlowDebuff(statusType, stack)
+        statusType.setCreationListener()(BoardEntity entity) ->
+            return new SlowDebuff(statusType, entity)
         statusType.setTooltipListener() (StatusData data) ->
             return createTooltip(null, data)
 
         return statusType
 
-    construct(StatusType statusType, BoardStack stack)
-        super(statusType, stack)
+    construct(StatusType statusType, BoardEntity entity)
+        super(statusType, entity)
+        stack = entity.toStack()
+
         display = stack.addAttachEffect(Abilities.slowTarget, AttachmentPoints.foot)
 
         toggle(true)

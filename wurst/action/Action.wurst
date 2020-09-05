@@ -7,7 +7,6 @@ import initlater BoardEntity
 import initlater OrderSystem
 
 import initlater SummonLesserSkeletonAction
-import initlater WarcryAction
 import initlater SlamAction
 import initlater BoardStack
 import BoardTrigger
@@ -28,6 +27,7 @@ public abstract class Action
     protected boolean isInstant = false
     protected boolean isDefault = false
     protected boolean isSpell = false
+    protected boolean isWarcy = false
     protected int cooldown = 0
     protected int charge = -1
     protected int maxCharge = -1
@@ -40,7 +40,6 @@ public abstract class Action
     
     static function setup()
         SummonLesserSkeletonAction.setup()
-        WarcryAction.setup()
 
     function getPreviewResultForCell(Cell _cell) returns CellResult
         return CellResult.NONE

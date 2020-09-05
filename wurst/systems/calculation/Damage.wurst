@@ -48,6 +48,10 @@ public class DamagePreview extends Damage
         super(sourceType, damageType)
         this.dmg = dmg
 
+    @inline
+    static function create(SourceType sourceType, DamageType damageType) returns DamagePreview
+        return new DamagePreview(realRange(0, 0), sourceType, damageType)
+
     function copy() returns DamagePreview
         let copy = new DamagePreview(this.dmg, this.sourceType, this.damageType)
         this.copyTo(copy)

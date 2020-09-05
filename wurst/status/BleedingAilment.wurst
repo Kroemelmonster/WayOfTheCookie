@@ -15,9 +15,9 @@ import KUtil
 import StackType
 import Cell
 import BoardTrigger
-import LinkedList
 import initlater DelayAnimation
 import Ailment
+import BoardEntity
 
 public class BleedingAilment extends Status
     private static constant string NAME = "Bleeding"
@@ -25,8 +25,8 @@ public class BleedingAilment extends Status
 
     static function setup() returns StatusType
         let statusType = new StatusType("Icons\\PASBloodSprinkle.blp", NAME)
-        statusType.setCreationListener()(BoardStack stack) ->
-            return new BleedingAilment(statusType, stack)
+        statusType.setCreationListener()(BoardEntity entity) ->
+            return new BleedingAilment(statusType, entity)
         statusType.setTooltipListener() (StatusData data) ->
             return createTooltip(null, data)
 
@@ -34,7 +34,6 @@ public class BleedingAilment extends Status
 
     private static constant DamagePreview damagePreview = createDamagePreview()
     
-    @inline
     private static function createDamagePreview() returns DamagePreview
         let preview = new DamagePreview(realRange(0, 0), SourceType.UNSPECIFIC, DamageType.PHYISICAL)
         preview.isDot = true
@@ -49,6 +48,7 @@ public class BleedingAilment extends Status
     private BoardTriggerOnAnyCellLeave moveListener
 
     private AilmentStacks stacks = new AilmentStacks()
+    private BoardStack stack
 
     private function calculateDamage(boolean walking)
         var avg = stacks.getHighestDamage()
@@ -56,21 +56,24 @@ public class BleedingAilment extends Status
             avg *= 2.0
         damagePreview.dmg = realRange(avg * 0.8, avg * 1.2)
 
-    construct(StatusType statusType, BoardStack stack)
-        super(statusType, stack)
+    construct(StatusType statusType, BoardEntity entity)
+        super(statusType, entity)
+        stack = entity.toStack()
 
-        moveListener = stack.getTriggers().addOnAnyCellLeave() (BoardStack target, Cell fromCell, Cell toCell, SequenzListener next) ->
+        let triggers = stack.getTriggers()
+
+        moveListener = triggers.addOnAnyCellLeave() (BoardStack target, Cell fromCell, Cell toCell, SequenzListener next) ->
             if stack == target
                 dealDamage(true) ->
                     next.continue()
             else
                 next.continue()
 
-        turnStartListener = stack.getTriggers().addTurnStart() (SequenzListener next) ->
+        turnStartListener = triggers.addTurnStart() (SequenzListener next) ->
             dealDamage(false) ->
                 next.continue()
 
-        turnEndListener = stack.getTriggers().addTurnEnd() (SequenzListener next) ->
+        turnEndListener = triggers.addTurnEnd() (SequenzListener next) ->
             if stacks.removeOneDuration()
                 kill()
             next.continue()
@@ -107,18 +110,20 @@ public class BleedingAilment extends Status
     override function hide()
 
     private function dealDamage(boolean walking, SequenzListener next)
-        DelayAnimation.create(stack.getBoard(), 0.5) ->
+        let board = stack.getBoard()
+        DelayAnimation.create(board, 0.5) ->
             flashEffect(stack)
             calculateDamage(walking)
             let instance = damagePreview.getRandomInstance()
             BoardController.dealDamage(stack, instance, stack) ->
                 destroy instance
-                DelayAnimation.create(stack.getBoard(), 0.3) ->
+                DelayAnimation.create(board, 0.3) ->
                     next.continue()
         //stack.stats.setActionPoints(stack.stats.getRemainingActionPoints() - 1)
 
     ondestroy
-        stack.getTriggers().removeOnAnyCellLeave(moveListener)
-        stack.getTriggers().removeOnTurnEnd(turnEndListener)
-        stack.getTriggers().removeOnTurnStart(turnStartListener)
+        stack.getTriggers()
+            ..removeOnAnyCellLeave(moveListener)
+            ..removeOnTurnEnd(turnEndListener)
+            ..removeOnTurnStart(turnStartListener)
         destroy stacks

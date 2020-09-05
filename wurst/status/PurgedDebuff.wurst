@@ -8,38 +8,28 @@ import Status
 import UITooltip
 
 import initlater BoardStack
+import initlater BoardEntity
 import initlater StatusType
 import BoardTrigger
 
 public class PurgedDebuff extends Status
-    private static constant string NAME = "Purged"
+    private static StatusType TYPE
 
-    private effect display
-    private BoardTrigger turnStartListener
-    private int duration
-    private int slow = 0
-
-    static function setup() returns StatusType
-        let statusType = new StatusType(Icons.bTNPurge, NAME)
-        statusType.setCreationListener()(BoardStack stack) ->
-            return new PurgedDebuff(statusType, stack)
-        statusType.setTooltipListener() (StatusData data) ->
+    static function createType() returns StatusType
+        TYPE = new StatusType(Icons.bTNPurge, "Purged")
+        TYPE.setCreationListener()(BoardEntity entity) ->
+            return new PurgedDebuff(TYPE, entity)
+        TYPE.setTooltipListener() (StatusData data) ->
             return createTooltip(null, data)
 
-        return statusType
+        return TYPE
 
-    construct(StatusType statusType, BoardStack stack)
-        super(statusType, stack)
-        display = stack.addAttachEffect(Abilities.purgeBuffTarget, AttachmentPoints.chest)
-
-        turnStartListener = stack.getTriggers().addTurnStart() (SequenzListener next) ->
-            duration--
-            if duration <= 0
-                kill()
-            next.continue()
+    @inline
+    private static function getSlowValue(StatusData data) returns int
+        return data.firstIntValue
 
     private static function createTooltip(PurgedDebuff b, StatusData data) returns Tooltip
-        let tooltip = Tooltip.create(NAME)
+        let tooltip = Tooltip.create(TYPE.getName())
         int slowValue
         if b != null
             tooltip.addLine(Tooltip.stat("Duration", b.duration))
@@ -53,12 +43,25 @@ public class PurgedDebuff extends Status
         + Tooltip.coloredInt(Tooltip.COLOR_NEGATIVE, slowValue))
         return tooltip
 
-    @inline
-    private static function getSlowValue(StatusData data) returns int
-        return data.firstIntValue
+    /* -------------------------------------------------------------------------- */
+
+    private effect display
+    private BoardTrigger turnStartListener
+    private int duration
+    private int slow = 0
+
+    construct(StatusType statusType, BoardEntity entity)
+        super(statusType, entity)
+        display = entity.addAttachEffect(Abilities.purgeBuffTarget, AttachmentPoints.chest)
+
+        turnStartListener = entity.getTriggers().addTurnStart() (SequenzListener next) ->
+            duration--
+            if duration <= 0
+                kill()
+            next.continue()
 
     override function updateInner(StatusData data)
-        this.duration += data.duration
+        this.duration = data.duration
         toggle(false)
         this.slow = getSlowValue(data)
         toggle(true)
@@ -68,15 +71,16 @@ public class PurgedDebuff extends Status
 
     private function toggle(boolean flag)
         let multi = flag ? -1 : 1
-        stack.stats.moveActionPointModi.addBonus += slow * multi
+        let boardStack = entity.toStack()
+        boardStack.stats.moveActionPointModi.addBonus += slow * multi
 
     override function hide()
         if display != null
             display.destr()
 
     ondestroy
-        toggle(false)
+        if entity.isAlive()
+            toggle(false)
 
-        stack.getTriggers().removeOnTurnStart(turnStartListener)
-        if display != null
-            display.destr()
+            entity.getTriggers().removeOnTurnStart(turnStartListener)
+        hide()

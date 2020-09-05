@@ -1,6 +1,6 @@
 package Status
 
-import initlater BoardStack
+import initlater BoardEntity
 import initlater StatusType
 import UITooltip
 
@@ -31,11 +31,11 @@ public class StatusData
 
 public abstract class Status
     protected StatusType statusType
-    protected BoardStack stack
+    protected BoardEntity entity
 
-    construct(StatusType statusType, BoardStack stack)
+    construct(StatusType statusType, BoardEntity entity)
         this.statusType = statusType
-        this.stack = stack
+        this.entity = entity
 
     function getType() returns StatusType
         return statusType
@@ -59,6 +59,6 @@ public abstract class Status
     abstract function createCurrentTooltip() returns Tooltip
 
     protected function kill()
-        stack.removeStatus(this)
+        entity.removeStatus(this)
         destroy this
 

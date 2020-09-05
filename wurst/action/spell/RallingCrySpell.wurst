@@ -1,0 +1,121 @@
+package RallingCrySpell
+
+import LinkedList
+import Doodads
+
+import PlayerData
+import KUtil
+import UITooltip
+import BoardController
+
+import Action
+import StackType
+
+import initlater Cell
+import initlater BoardStack
+import UIActionWindow
+import DelayAnimation
+import Damage
+import CastAnimation
+import BoardTrigger
+import Spell
+import BoardHero
+import BoardEntity
+import SkillTreeTempestarii
+import SkillTree
+import Globals
+import StatusType
+import StatusController
+import Status
+import UIController
+import WarcrySpell
+import SkillTreeChieftain
+
+public class RallingCrySpell extends WarcrySpell
+    static SpellType TYPE
+    static function createType() returns SpellType
+        STATUS = StatusTypeSet.PURGED
+        TYPE = new SpellType("Ralling Cry", "Icons\\BTNAbilityWarriorWarCry.blp")
+        TYPE.onCreate() boardHero -> 
+            return new RallingCrySpell(boardHero)
+        return TYPE
+
+    private static constant int COOLDOWN = 3
+    static StatusType STATUS
+
+    @inline
+    private static function createStatusData() returns StatusData
+        return StatusData.createDuration(1)
+
+    static function createTooltip(int level) returns Tooltip
+        return createTooltip(0, level)
+
+    static function createTooltip(int power, int level) returns Tooltip
+        /*
+
+        calculateDamage(power, level)
+        let tt = Tooltip.create(TYPE.getName())
+        ..setCost(MANA_COST[level])
+        ..setCooldown(COOLDOWN[level])
+        ..addLine(Tooltip.stat("Target", "Enemy"))
+        ..addLine(Tooltip.stat("Damage", damagePreview))
+        ..addLine("")
+        var str = "Lightning strikes"
+        if stunLevel >= 0
+            str += " and stuns for "+Tooltip.primaryString(STUN_DURATION[stunLevel].toString())+ " "+Tooltip.secondaryString("timeunits")
+        if purgeLevel >= 0
+            str += " and purges"
+        str +=" one Enemy"
+        tt.addLine(str)
+        if purgeLevel >= 0
+            tt.addLine("---")
+            tt.addStatusType(PURGE_DEBUFF, createPurgeStatusData(purgeLevel))
+            
+
+        */
+        return Tooltip.create(TYPE.getName())
+    
+    /* -------------------------------------------------------------------------- */
+
+    private construct(BoardHero hero)
+        super(hero, TYPE)
+        let skillTree = hero.hero.getSkillTree(SkillTreeTypeSet.CHIEFTAIN) castTo SkillTreeChieftain
+        setLevel(skillTree.rallingCryLevel)
+        this.manacost = 0
+        this.maxCooldown = COOLDOWN
+
+    override function activate()
+        CastAnimation.create(entity) -> 
+            let board = entity.getBoard()
+            board.forEachStack() (BoardStack target) ->
+                if target.getPlayer() == entity.getPlayer()
+                    StatusController.add(STATUS, target, createStatusData())
+
+            UIController.triggerOnAnyStackCellChange(board)
+            DelayAnimation.create(board, 0.5) ->
+                payCostAndStartCooldown(maxCooldown)
+                BoardController.finishOrder(entity, true)
+
+
+    private function showPreview()
+        let tt = createTooltip(hero.stats.getPower(), level)
+        tt.display(entity.getPlayer(), true)
+        UIActionWindow.updateActionPoints(entity, 0)
+
+    private function hidePreview()
+        UITooltip.hide(entity.getPlayer())
+        UIActionWindow.updateActionPoints(entity, 0)
+
+    override function onUIMouseEnter()
+        showPreview()
+
+    override function onUIMouseLeave()
+        hidePreview()
+
+    ondestroy
+
+    /* ----------------------------------- KI ----------------------------------- */
+    
+    override function executeForKI(SequenzListenerStatus listener)
+        Log.trace("YOU NEED TO WRITE KI FOR RALLING CRY SPELL")
+        listener.continue(-1)

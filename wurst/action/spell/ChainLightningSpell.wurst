@@ -31,7 +31,7 @@ public class ChainLightningSpell extends Spell
     static SpellType TYPE
     static function createType() returns SpellType
         TYPE = new SpellType("Chain Lightning", Icons.bTNChainLightning)
-        TYPE.addListener() boardHero -> 
+        TYPE.onCreate() boardHero -> 
             return new ChainLightningSpell(boardHero)
         return TYPE
 
@@ -68,6 +68,8 @@ public class ChainLightningSpell extends Spell
         ..addLine("Each time the damage is descreased by "+Tooltip.primaryPercent(1 - CHAIN_REDUCTION))
         return tt
     
+    /* -------------------------------------------------------------------------- */
+    
     private LinkedList<Cell> area = new LinkedList<Cell>()
 
     construct(BoardHero hero)
@@ -94,7 +96,7 @@ public class ChainLightningSpell extends Spell
     private function finishOrder(LinkedList<BoardStack> prevTargets, DamageInstance baseDamage)
         destroy prevTargets
         destroy baseDamage
-        cast()
+        payCostAndStartCooldown()
         BoardController.finishOrder(entity, false)
 
     private function chainToNext(LinkedList<BoardStack> prevTargets, BoardEntity prev, DamageInstance baseDamage, BoardStack target, int chains)

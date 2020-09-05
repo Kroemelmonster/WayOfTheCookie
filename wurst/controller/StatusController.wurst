@@ -4,15 +4,16 @@ import StatusType
 
 import initlater Status
 import initlater BoardStack
+import BoardEntity
 
 public class StatusController 
 
-    static function has(StatusType statusType, BoardStack stack) returns boolean
-        return get(statusType, stack) != null
+    static function has(StatusType statusType, BoardEntity entity) returns boolean
+        return get(statusType, entity) != null
 
-    static function get(StatusType statusType, BoardStack stack) returns Status
+    static function get(StatusType statusType, BoardEntity entity) returns Status
         Status result = null
-        let itr = stack.statusIterator()
+        let itr = entity.statusIterator()
         while itr.hasNext() and result == null
             let b = itr.next()
             if b.getType() == statusType
@@ -20,11 +21,11 @@ public class StatusController
         destroy itr
         return result
 
-    static function add(StatusType statusType, BoardStack stack, StatusData data)
-        var b = get(statusType, stack)
+    static function add(StatusType statusType, BoardEntity entity, StatusData data)
+        var b = get(statusType, entity)
         if b == null
-            b = statusType.createNew(stack)
-            stack.addStatus(b)
+            b = statusType.createNew(entity)
+            entity.addStatus(b)
         b.update(data)
 
     static function hideAll(BoardStack stack)

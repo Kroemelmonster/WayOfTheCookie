@@ -15,8 +15,6 @@ import initlater HeroOpenSpellBookAction
 import AbilityIds
 import initlater BoardHeroStats
 import HeroType
-import ClosureEvents
-import UnitDefinition
 import initlater Spell
 
 public class BoardHero extends BoardEntity
@@ -28,13 +26,6 @@ public class BoardHero extends BoardEntity
     private LinkedList<Action> actions
     private DefaultAction defaultAction
     private integer currentSelectedAction = -1
-
-    private EventListener castListener
-    
-    private OnCastListener unitOnCastListener
-    private OnCastListener unitOnCastImmediateListener
-
-    private effect highlightEffect = null
     
     construct(Hero hero, vec2 coord, Board board, int side)
         super(EntityType.HERO, board)
@@ -42,29 +33,24 @@ public class BoardHero extends BoardEntity
         this.stats = new BoardHeroStats(this, hero.stats)
         this.heroType = hero.getType()
 
-        u = createUnit(DUMMY_PLAYER, heroType.unitId, coord , angle(PI * side))
+        createBLZUnit(coord, side)
+
         actions = new LinkedList<Action>()
-        u.setColor(hero.getPlayer().blzPlayer.getColor())
-        u.disableAbility(AbilityIds.attack, true, false)
         defaultAction = new HeroAttackAction(this)
         actions.add(new HeroOpenSpellBookAction(this))
         actions.add(new HeroSkipAction(this))
 
         for SpellType spell in hero.spells
-            actions.add(spell.createNew(this))
-
-        unitOnCastListener = EventListener.onCast(u, AbilityTypesIds.TARGET_SPELL) (unit caster) ->
-            if castListener != null
-                castListener.onEvent()
-                destroy castListener
-                castListener = null
-        unitOnCastImmediateListener = EventListener.onCast(u, AbilityTypesIds.SELFCAST_SPELL) (unit caster) ->
-            if castListener != null
-                castListener.onEvent()
-                destroy castListener
-                castListener = null
+            actions.add(spell.create(this))
 
         resetActionPoints()
+
+    private function createBLZUnit(vec2 coord, int side)
+        u = createUnit(DUMMY_PLAYER, heroType.unitId, coord , angle(PI * side))
+        u.setColor(hero.getPlayer().blzPlayer.getColor())
+        u.disableAbility(AbilityIds.attack, true, false)
+
+        placeEntity()
 
     @inline
     override function getCell() returns Cell
@@ -96,16 +82,6 @@ public class BoardHero extends BoardEntity
     @inline
     override function getDefaultAction() returns DefaultAction
         return defaultAction
-
-    override function setHighlight(boolean flag)
-        if flag == false or highlightEffect != null
-            highlightEffect.destr()
-            highlightEffect = null
-        if flag
-            highlightEffect = addEffect(Abilities.aneuTarget, u, AttachmentPoints.overhead)
-
-    override function doOnNextCast(EventListener listener)
-        castListener = listener
 
     @inline
     override function getInitiative() returns int
@@ -141,19 +117,13 @@ public class BoardHero extends BoardEntity
         return true
 
     ondestroy
-        if castListener != null
-            destroy castListener
-            castListener = null
-
-        if unitOnCastListener != null
-            destroy unitOnCastListener
-            unitOnCastListener = null
-        if unitOnCastImmediateListener != null
-            destroy unitOnCastImmediateListener
-            unitOnCastImmediateListener = null
+        destroyEntity()
+        removeEntityRelatedThingsFromBoard()
             
         if actions != null
             for action in actions
                 destroy action
             destroy actions
+            
+        destroyTriggers()
         u.remove()

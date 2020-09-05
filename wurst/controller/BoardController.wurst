@@ -132,10 +132,7 @@ public class BoardController
                 action.tickCooldown()
             destroy actionItr
 
-            if entity.getType() == EntityType.STACK
-                entity.toStack().getTriggers().triggerOnTurnEnd() ->
-                    next.continue()
-            else
+            entity.getTriggers().triggerOnTurnEnd() ->
                 next.continue()
         else
             next.continue()
@@ -169,18 +166,14 @@ public class BoardController
             let board = entity.getBoard()
             let side = getWonnedSide(board)
             if side == -1
-                if entity.getType() == EntityType.STACK
-                    let stack = entity.toStack()
-                    if wasWaiting
-                        turnStartContinue(entity)
-                    else
-                        stack.getTriggers().triggerOnTurnStart() ->
-                            if stack.isAlive() and stack.canStillAct()
-                                turnStartContinue(entity)
-                            else
-                                board.getInitiative().next()
-                else
+                if wasWaiting
                     turnStartContinue(entity)
+                else
+                    entity.getTriggers().triggerOnTurnStart() ->
+                        if entity.isAlive() and entity.canStillAct()
+                            turnStartContinue(entity)
+                        else
+                            board.getInitiative().next()
             else
                 MainController.endFight(board, side)
                     

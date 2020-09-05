@@ -23,8 +23,8 @@ public class PoisonAilment extends Status
 
     static function setup() returns StatusType
         let statusType = new StatusType(Icons.bTNOrbOfVenom, NAME)
-        statusType.setCreationListener()(BoardStack stack) ->
-            return new PoisonAilment(statusType, stack)
+        statusType.setCreationListener()(BoardEntity entity) ->
+            return new PoisonAilment(statusType, entity)
         statusType.setTooltipListener() (StatusData data) ->
             return createTooltip(null, data)
 
@@ -47,13 +47,15 @@ public class PoisonAilment extends Status
     private BoardTriggerOnDamageTaken damageTakenListener
 
     private AilmentStacks stacks = new AilmentStacks()
+    private BoardStack stack
 
     private function calculateDamage()
         let avg = stacks.getCombinedDamage()
         damagePreview.dmg = realRange(avg * 0.8, avg * 1.2)
 
-    construct(StatusType statusType, BoardStack stack)
-        super(statusType, stack)
+    construct(StatusType statusType, BoardEntity entity)
+        super(statusType, entity)
+        stack = entity.toStack()
 
         damageTakenListener = stack.getTriggers().addOnDamageTaken() (BoardEntity source, BoardStack target, SpecificDamageInstance specificInstance, SequenzListener next) ->
             if specificInstance.damageInstance.isDot == false

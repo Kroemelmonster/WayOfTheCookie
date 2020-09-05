@@ -24,7 +24,7 @@ public class MassHasteSpell extends InstantSpell
     static SpellType TYPE
     static function createType() returns SpellType
         TYPE = new SpellType("Mass Haste", Icons.bTNScrollOfHaste)
-        TYPE.addListener() boardHero -> 
+        TYPE.onCreate() boardHero -> 
             return new MassHasteSpell(boardHero)
         return TYPE
 
@@ -59,7 +59,7 @@ public class MassHasteSpell extends InstantSpell
 
             UIController.triggerOnAnyStackCellChange(board)
             DelayAnimation.create(board, 0.5) ->
-                cast()
+                payCostAndStartCooldown()
                 BoardController.finishOrder(entity, false)
 
 

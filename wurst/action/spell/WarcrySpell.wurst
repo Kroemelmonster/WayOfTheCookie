@@ -1,0 +1,41 @@
+package WarcrySpell
+
+import PlayerData
+import Action
+
+import Spell
+
+import initlater Cell
+import initlater BoardHero
+
+public abstract class WarcrySpell extends Spell
+
+    construct(BoardHero hero, SpellType spellType)
+        super(hero, spellType)
+        this.isInstant = true
+        this.isWarcy = true
+
+    override function getPreviewResultForCell(Cell cell) returns CellResult
+        return CellResult.NONE
+
+    override function getHighlightResultForCell(Player p, Cell cell) returns CellResult
+        return CellResult.NONE
+
+    override function recalculatePreview()
+        return
+
+    override function recalculateHighlight(Player p)
+        return
+
+    override function sendTargetOrder(Cell cell) returns boolean
+        return false
+
+    function payCostAndStartCooldown(int cooldown)
+        hero.stats.addMana(-manacost)
+        for Action action in hero.getActions()
+            if action.isWarcy
+                let otherWarcy = action castTo WarcrySpell
+                otherWarcy.cooldown = cooldown
+
+    abstract override function activate()
+        

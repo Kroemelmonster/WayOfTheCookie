@@ -7,6 +7,11 @@ import initlater BoardStack
 import initlater Cell
 import initlater BoardHero
 import ClosureEvents
+import Status
+import UnitDefinition
+import Abilities
+import AttachmentPoints
+import BoardTrigger
 
 public enum EntityType
     STACK
@@ -15,11 +20,22 @@ public enum EntityType
 public abstract class BoardEntity
     protected Board board
     protected unit u
+    private effect highlightEffect
     private EntityType entityType
+    private LinkedList<Status> stati
+
+    private EventListener castListener
+
+    private OnCastListener unitOnCastListener
+    private OnCastListener unitOnCastImmediateListener
+
+    private EntityTrigger triggers
 
     construct(EntityType entityType, Board board)
         this.entityType = entityType
         this.board = board
+        this.stati = new LinkedList<Status>
+        this.triggers = new EntityTrigger()
 
     @inline
     function getBoard() returns Board
@@ -49,8 +65,6 @@ public abstract class BoardEntity
 
     abstract function getMaxActionPoints() returns int
 
-    abstract function doOnNextCast(EventListener listener)
-
     abstract function getRemainingActionPoints() returns int
 
     abstract function addActionPoints(int amount)
@@ -60,13 +74,31 @@ public abstract class BoardEntity
     function canStillAct() returns boolean
         return getRemainingActionPoints() > 0
 
-    abstract function setHighlight(boolean flag)
-
     abstract function isAlive() returns boolean
 
     abstract function toString() returns string
 
     abstract function getInitiative() returns int
+
+    @inline
+    function getTriggers() returns EntityTrigger
+        return triggers
+
+    @inline
+    function statusIterator() returns LLIterator<Status>
+        return stati.iterator()
+
+    @inline
+    function getStatus(int index) returns Status
+        return stati.get(index)
+        
+    @inline
+    function addStatus(Status status)
+        stati.add(status)
+
+    @inline
+    function removeStatus(Status status)
+        stati.remove(status)
 
     @inline
     function getPos3Real() returns vec3
@@ -92,6 +124,38 @@ public abstract class BoardEntity
     function enableAbility(int id, boolean flag)
         u.disableAbility(id, flag == false, false)
 
+    @inline
+    function doOnNextCast(EventListener listener)
+        castListener = listener
+
+    function setHighlight(boolean flag)
+        if flag == false or highlightEffect != null
+            highlightEffect.destr()
+            highlightEffect = null
+        if flag
+            highlightEffect = addEffect(Abilities.aneuTarget, u, AttachmentPoints.overhead)
+
+    function flashEffectOnPos(string sfx)
+        flashEffect(sfx, u.getPos())
+
+    function flashAttachEffect(string sfx, string attachment)
+        flashEffect(sfx, u, attachment)
+
+    function addAttachEffect(string sfx, string attachment) returns effect
+        return addEffect(sfx, u, attachment)
+
+    protected function placeEntity()
+        unitOnCastListener = EventListener.onCast(u, AbilityTypesIds.TARGET_SPELL) (unit caster) ->
+            if castListener != null
+                castListener.onEvent()
+                destroy castListener
+                castListener = null
+        unitOnCastImmediateListener = EventListener.onCast(u, AbilityTypesIds.SELFCAST_SPELL) (unit caster) ->
+            if castListener != null
+                castListener.onEvent()
+                destroy castListener
+                castListener = null
+
     function toStack() returns BoardStack
         if entityType == STACK
             return this castTo BoardStack
@@ -101,3 +165,29 @@ public abstract class BoardEntity
         if entityType == HERO
             return this castTo BoardHero
         return null
+
+    protected function removeEntityRelatedThingsFromBoard()
+        if highlightEffect != null
+            highlightEffect.destr()
+            highlightEffect = null
+
+    protected function destroyEntity()
+        if stati != null
+            for status in stati
+                destroy status
+            destroy stati
+            stati = null
+        if castListener != null
+            destroy castListener
+            castListener = null
+        if unitOnCastListener != null
+            destroy unitOnCastListener
+            unitOnCastListener = null
+        if unitOnCastImmediateListener != null
+            destroy unitOnCastImmediateListener
+            unitOnCastImmediateListener = null
+
+    protected function destroyTriggers()
+        destroy triggers
+
+    ondestroy

@@ -7,6 +7,7 @@ import Abilities
 import Status
 import UITooltip
 
+import initlater BoardEntity
 import initlater BoardStack
 import initlater StatusType
 import BoardTrigger
@@ -21,20 +22,22 @@ public class HastedBuff extends Status
 
     static function setup() returns StatusType
         let statusType = new StatusType(Icons.bTNScrollOfHaste, NAME)
-        statusType.setCreationListener()(BoardStack stack) ->
-            return new HastedBuff(statusType, stack)
+        statusType.setCreationListener()(BoardEntity entity) ->
+            return new HastedBuff(statusType, entity)
         statusType.setTooltipListener() (StatusData data) ->
             return createTooltip(null, data)
 
         return statusType
 
-    construct(StatusType statusType, BoardStack stack)
-        super(statusType, stack)
-        display = stack.addAttachEffect(Abilities.speedTarget, AttachmentPoints.overhead)
+    private BoardStack stack
 
+    construct(StatusType statusType, BoardEntity entity)
+        super(statusType, entity)
+        stack = entity.toStack()
+
+        display = stack.addAttachEffect(Abilities.speedTarget, AttachmentPoints.overhead)
         toggle(true)
         
-
         turnStartListener = stack.getTriggers().addTurnStart() (SequenzListener next) ->
             duration--
             if duration <= 0
