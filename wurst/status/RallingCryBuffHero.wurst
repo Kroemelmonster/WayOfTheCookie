@@ -1,44 +1,41 @@
-package PurgedDebuff
+package RallingCryBuffHero
 
 import AttachmentPoints
-import Icons
 import Abilities
 
 import Status
 import UITooltip
 
-import initlater BoardStack
 import initlater BoardEntity
 import initlater StatusType
 import BoardTrigger
 
-public class PurgedDebuff extends Status
+public class RallingCryBuffHero extends Status
     static StatusType TYPE
 
     static function setup()
-        TYPE = new StatusType("Purged", Icons.bTNPurge)
+        TYPE = new StatusType("Ralling Cry", "Icons\\BTNAbilityWarriorWarCry.blp")
         TYPE.setCreationListener()(BoardEntity entity) ->
-            return new PurgedDebuff(TYPE, entity)
+            return new RallingCryBuffHero(TYPE, entity)
         TYPE.setTooltipListener() (StatusData data) ->
             return createTooltip(null, data)
 
     @inline
-    private static function getSlowValue(StatusData data) returns int
+    private static function getAttackValue(StatusData data) returns int
         return data.firstIntValue
 
-    private static function createTooltip(PurgedDebuff b, StatusData data) returns Tooltip
+    private static function createTooltip(RallingCryBuffHero b, StatusData data) returns Tooltip
         let tooltip = Tooltip.create(TYPE.getName())
-        int slowValue
+        int attackValue
         if b != null
             tooltip.addLine(Tooltip.stat("Duration", b.duration))
             tooltip.addLine("")
-            slowValue = b.slow
+            attackValue = b.attack
         else
-            slowValue = getSlowValue(data)
+            attackValue = getAttackValue(data)
             destroy data
             
-        tooltip.addLine("Reduces the available ActionPoints for moving by "
-        + Tooltip.coloredInt(Tooltip.COLOR_NEGATIVE, slowValue))
+        tooltip.addLine("Increases the Attack by "+Tooltip.coloredInt(Tooltip.COLOR_POSITIVE, attackValue))
         return tooltip
 
     /* -------------------------------------------------------------------------- */
@@ -46,31 +43,35 @@ public class PurgedDebuff extends Status
     private effect display
     private BoardTrigger turnStartListener
     private int duration
-    private int slow = 0
+    private int attack = 0
 
     construct(StatusType statusType, BoardEntity entity)
         super(statusType, entity)
-        display = entity.addAttachEffect(Abilities.purgeBuffTarget, AttachmentPoints.chest)
+        display = entity.addAttachEffect(Abilities.drumsCasterHeal, AttachmentPoints.origin)
 
         turnStartListener = entity.getTriggers().addTurnStart() (SequenzListener next) ->
             duration--
             if duration <= 0
                 kill()
-            next.continue()
+                    
+            else
+                next.continue()
 
     override function updateInner(StatusData data)
         this.duration = data.duration
+        Log.trace((onEndListener castTo int).toString())
         toggle(false)
-        this.slow = getSlowValue(data)
+        this.attack = getAttackValue(data)
         toggle(true)
+
 
     override function createCurrentTooltip() returns Tooltip
         return createTooltip(this, null)
 
     private function toggle(boolean flag)
-        let multi = flag ? -1 : 1
-        let boardStack = entity.toStack()
-        boardStack.stats.moveActionPointModi.addBonus += slow * multi
+        let multi = flag ? 1 : -1
+        let heroStack = entity.toHero()
+        heroStack.stats.attackModi.addBonus += attack * multi
 
     override function hide()
         if display != null
@@ -81,3 +82,6 @@ public class PurgedDebuff extends Status
             toggle(false)
             entity.getTriggers().removeOnTurnStart(turnStartListener)
         hide()
+
+        if onEndListener != null
+            destroy onEndListener

@@ -1,0 +1,65 @@
+package RallingCryBuffStack
+
+import AttachmentPoints
+import Abilities
+
+import Status
+import UITooltip
+
+import initlater BoardEntity
+import initlater StatusType
+
+public class RallingCryBuffStack extends Status
+    static StatusType TYPE
+
+    static function setup()
+        TYPE = new StatusType("Ralling Cry", "Icons\\BTNAbilityWarriorWarCry.blp")
+        TYPE.setCreationListener()(BoardEntity entity) ->
+            return new RallingCryBuffStack(TYPE, entity)
+        TYPE.setTooltipListener() (StatusData data) ->
+            return createTooltip(null, data)
+
+    @inline
+    private static function getAttackValue(StatusData data) returns int
+        return data.firstIntValue
+
+    private static function createTooltip(RallingCryBuffStack b, StatusData data) returns Tooltip
+        let tooltip = Tooltip.create(TYPE.getName())
+        int attackValue
+        if b != null
+            tooltip.addLine("")
+            attackValue = b.attack
+        else
+            attackValue = getAttackValue(data)
+            destroy data
+            
+        tooltip.addLine("Increases the Attack by "+Tooltip.coloredInt(Tooltip.COLOR_POSITIVE, attackValue))
+        return tooltip
+
+    /* -------------------------------------------------------------------------- */
+
+    private int attack = 0
+
+    construct(StatusType statusType, BoardEntity entity)
+        super(statusType, entity)
+
+    override function updateInner(StatusData data)
+        toggle(false)
+        this.attack = getAttackValue(data)
+        toggle(true)
+
+
+    override function createCurrentTooltip() returns Tooltip
+        return createTooltip(this, null)
+
+    private function toggle(boolean flag)
+        let multi = flag ? 1 : -1
+        let stack = entity.toStack()
+        stack.stats.attackModi.addBonus += attack * multi
+
+    override function hide()
+
+    ondestroy
+        if entity.isAlive()
+            toggle(false)
+        hide()

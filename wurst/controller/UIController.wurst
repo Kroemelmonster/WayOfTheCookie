@@ -15,6 +15,9 @@ import initlater OrderSystem
 import initlater InitiativeList
 import initlater MouseContext
 import initlater BoardEntity
+import BoardTrigger
+import ClosureTimers
+import LinkedList
 
 class UIController
 
@@ -30,20 +33,32 @@ class UIController
         board.draw(currentPlayer)
         UIActionWindow.update(currentPlayer)
 
-    static function triggerOnStackCreationOrDeathChange(Board board)
-        triggerOnAnyStackCellChange(board)
-        // TODO this should be hannelded in initiative List
-        UIInitiativeWindow.refresh(board.getInitiative())
+    static function triggerOnStackCreationOrDeathChange(Board board, SequenzListener next)
+        triggerOnAnyStackCellChange(board) -> 
+            // TODO this should be hannelded in initiative List
+            UIInitiativeWindow.refresh(board.getInitiative())
+            next.continue()
 
-    static function triggerOnMaxActionPointChange(BoardEntity entity)
+    static function triggerOnMaxActionPointChange(BoardEntity entity, SequenzListener next)
         entity.resetActionPoints()
-        triggerOnAnyStackCellChange(entity.getBoard())
+        triggerOnAnyStackCellChange(entity.getBoard(), next)
         
-    static function triggerOnAnyStackCellChange(Board board)
-        board.forEachStack() (BoardStack stack) ->
-            stack.getDefaultAction().onAnyStackCellChange()
+    static function triggerOnAnyStackCellChange(Board board, SequenzListener next)
+        let allstacks = board.getAllStacks()
+        let itr = allstacks.iterator()
+        triggerOnAnyStackCellChangeInner(itr) -> 
+            destroy itr
+            destroy allstacks
+            board.drawAll()
+            next.continue()
 
-        board.drawAll()
+    private static function triggerOnAnyStackCellChangeInner(LLIterator<BoardStack> itr, SequenzListener next)
+        nullTimer() -> 
+            if itr.hasNext()
+                itr.next().getDefaultAction().onAnyStackCellChange()
+                triggerOnAnyStackCellChangeInner(itr, next)
+            else
+                next.continue()
 
     static function triggerOnPlayerCellHighlight(Player p)
         if OrderSystem.canOrder(p)

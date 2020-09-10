@@ -36,13 +36,14 @@ class Mouse3DPositionSystem
                 p.mouseOverButton.triggerOnMouseUp()
             else if x != 0.0 and y != 0.0
                 onMouseEvent(vec2(x, y), p, true)
-
+        
         EventListener.add(EVENT_PLAYER_MOUSE_MOVE)  ->
             let x = BlzGetTriggerPlayerMouseX()
             let y = BlzGetTriggerPlayerMouseY()
 
             if x != 0.0 and y != 0.0
                 onMouseEvent(vec2(x, y), GetTriggerPlayerData(), false)
+                
 
     private static function canPlayerInteract(Player p) returns boolean
         return p.playingBoard != null and p.mouse3DEnabled and currentlyProcessing == false
@@ -55,9 +56,11 @@ class Mouse3DPositionSystem
         let cell = p.playingBoard.getCellBasedOnCoords(coord)
         Cell nearby = null
 
+        
         if cell != null
             let angle = (cell.getCoord().angleTo(coord).degrees() + 390.0) % 360
             nearby = cell.getNeighbour((angle / 60.0).floor())
+        
 
         if isClickEvent
             onMouseClick(mousePosition(cell, nearby), p, BlzGetTriggerPlayerMouseButton())

@@ -27,6 +27,8 @@ public class KISystem
             if currentWeight >= weightedRandom
                 result = target
 
+        destroy itr
+
         return result
 
 

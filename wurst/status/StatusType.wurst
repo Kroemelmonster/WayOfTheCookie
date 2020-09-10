@@ -5,10 +5,10 @@ import UITooltip
 import BleedingAilment
 import PoisonAilment
 import StunDebuff
-import SlowDebuff
-import HastedBuff
 import PurgedDebuff
 import BoardEntity
+import RallingCryBuffHero
+import RallingCryBuffStack
 
 interface StatusCreateListener
     function create(BoardEntity entity) returns Status
@@ -16,32 +16,23 @@ interface StatusCreateListener
 interface StatusTypeTooltipListener
     function getTooltip(StatusData data) returns Tooltip
 
-public class StatusTypeSet
-    static StatusType BLEEDING
-    static StatusType POISON
-    static StatusType STUNNED
-    static StatusType SLOWED
-    static StatusType PURGED
-    static StatusType HASTED
-
-    static function setup()
-        BLEEDING    = BleedingAilment.setup()
-        POISON      = PoisonAilment.setup()
-        STUNNED     = StunDebuff.setup()
-        SLOWED      = SlowDebuff.setup()
-        HASTED      = HastedBuff.setup()
-        PURGED      = PurgedDebuff.createType()
-
-
 public class StatusType
-    protected string icon
     protected string name
+    protected string icon
     protected StatusCreateListener listener
     protected StatusTypeTooltipListener tooltipCreator
 
-    construct(string icon, string name)
+    construct(string name, string icon)
         this.icon = icon
         this.name = name
+
+    static function setup()
+        BleedingAilment.setup()
+        PoisonAilment.setup()
+        StunDebuff.setup()
+        PurgedDebuff.setup()
+        RallingCryBuffHero.setup()
+        RallingCryBuffStack.setup()
 
     function setCreationListener(StatusCreateListener listener)
         this.listener = listener

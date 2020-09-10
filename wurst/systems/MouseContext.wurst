@@ -36,8 +36,8 @@ class MouseContext
             */
         if mP.cell == p.currentMousePosition.cell
             return
+        
         resetHighlight(p)
-
         if mP.cell != null
             let stack = mP.cell.getStack()
             if stack != null

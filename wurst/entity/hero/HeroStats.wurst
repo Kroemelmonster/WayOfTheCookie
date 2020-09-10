@@ -75,11 +75,13 @@ public class HeroStats
     function getMaxMana() returns int
         return getWisdom() * MANA_PER_WISDOWM + getAdditionalMana()
 
-    function getDamage() returns realRange
-        realAttackModi.addBonus = damageModi.addBonus
-        realAttackModi.multi = damageModi.multi + (getAttack() * ATTACK_DAMAGE_PER_ATTACK).toInt()
-        return realAttackModi.getRealRange(heroType.getDamage(hero.getLevel()), 1)
+    function getDamage() returns realRange        
+        return damageModi.getRealRange(getRawDamage(), 1)
 
+    function getRawDamage() returns realRange
+        realAttackModi.addBonus = 0
+        realAttackModi.multi = 100 + (getAttack() * ATTACK_DAMAGE_PER_ATTACK).toInt()
+        return realAttackModi.getRealRange(heroType.getDamage(hero.getLevel()), 1)
 
     @inline
     function getMana() returns int

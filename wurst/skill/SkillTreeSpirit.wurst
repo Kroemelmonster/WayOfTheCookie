@@ -7,16 +7,15 @@ import LinkedList
 import UITooltip
 
 public class SkillTreeSpirit extends SkillTree
-    private static constant string NAME = "Spirit"
+    static SkillTreeType TYPE
 
-    static function setup() returns SkillTreeType
-        let skillTreeType = new SkillTreeType(NAME)
-        skillTreeType.addListener() -> 
-            return new SkillTreeSpirit(skillTreeType)
-        return skillTreeType
+    static function setup()
+        TYPE = new SkillTreeType("Spirit")
+        TYPE.addListener() -> 
+            return new SkillTreeSpirit()
 
-    construct(SkillTreeType skillTreeType)
-        super(skillTreeType)
+    construct()
+        super(TYPE)
 
         /*
         var skill = new Skill(this, "AttackUpgrade", Icons.bTNPatrol, 0, 0)

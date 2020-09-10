@@ -28,6 +28,7 @@ import Cell
 import ClosureTimers
 import Damage
 import Globals
+import StunDebuff
 
 public class SlamAction extends InstantAction
     static constant string NAME = "Slam"
@@ -59,7 +60,7 @@ public class SlamAction extends InstantAction
         ..addLine(Tooltip.stat("Damage", damagePreview))
         ..addLine("")
         ..addLine("Slams the Ground around and dealing massive AoE Damage")
-        ..addLine("This Slam is so powerfull that enemys get "+Tooltip.secondaryString(StatusTypeSet.STUNNED.getName())+ " and placed back in the initaive by "+Tooltip.primaryString(DAZZED_TIME.toString())+ " "+Tooltip.secondaryString("timeunits"))
+        ..addLine("This Slam is so powerfull that enemys get "+Tooltip.secondaryString(StunDebuff.TYPE.getName())+ " and placed back in the initaive by "+Tooltip.primaryString(DAZZED_TIME.toString())+ " "+Tooltip.secondaryString("timeunits"))
 
         if isDefault == false
             tt.addKey(KEY)

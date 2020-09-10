@@ -26,7 +26,7 @@ public class DeepCuttingPassive extends PassiveAction
 
     @inline
     private static function getStatus() returns StatusType
-        return StatusTypeSet.BLEEDING
+        return BleedingAilment.TYPE
 
     private static function getDamage(real damage) returns real
         return damage * PERCENTAGE

@@ -21,12 +21,18 @@ public class StatusController
         destroy itr
         return result
 
-    static function add(StatusType statusType, BoardEntity entity, StatusData data)
+    static function add(StatusType statusType, BoardEntity entity, StatusData data) returns Status
         var b = get(statusType, entity)
         if b == null
             b = statusType.createNew(entity)
             entity.addStatus(b)
         b.update(data)
+        return b
+
+    static function remove(StatusType statusType, BoardEntity entity)
+        let b = get(statusType, entity)
+        if b != null
+            b.kill()
 
     static function hideAll(BoardStack stack)
         let itr = stack.statusIterator()

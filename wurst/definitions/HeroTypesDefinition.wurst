@@ -8,6 +8,9 @@ import LinkedList
 import HeroType
 import SkillTree
 import Spell
+import SkillTreeChieftain
+import SkillTreeTempestarii
+import SkillTreeSpirit
 
 public class HeroTypes
     static HeroType FAR_SEER
@@ -22,9 +25,9 @@ class HeroTypesDefinition
 
     static function setup(LinkedList<SetupListener> setups)
         setups.add() ->
-            SpellSet.setup()
+            SpellType.setup()
         setups.add() ->
-            SkillTreeTypeSet.setup()
+            SkillTreeType.setup()
             setupOne()
 
     private static function setupOne()
@@ -32,7 +35,7 @@ class HeroTypesDefinition
         ..setInitiative(7)
         ..setActionPoints(3)
         ..setDamage(intRange(5, 10))
-        ..setSkillTrees(SkillTreeTypeSet.CHIEFTAIN, SkillTreeTypeSet.TEMPESTTARII, SkillTreeTypeSet.SPIRIT)
+        ..setSkillTrees(SkillTreeChieftain.TYPE, SkillTreeTempestarii.TYPE, SkillTreeSpirit.TYPE)
 
         ..setAttack(1)
         ..setDefence(1)

@@ -12,21 +12,18 @@ import initlater BoardEntity
 import BoardTrigger
 
 public class StunDebuff extends Status
-    private static StatusType TYPE
+    static StatusType TYPE
 
-    static function setup() returns StatusType
-        TYPE = new StatusType(Icons.bTNStun, "Stunned")
+    static function setup()
+        TYPE = new StatusType("Stunned", Icons.bTNStun)
         TYPE.setCreationListener()(BoardEntity entity) ->
             return new StunDebuff(TYPE, entity)
         TYPE.setTooltipListener() (StatusData data) ->
             return createTooltip(data)
 
-        return TYPE
-
     private static function createTooltip(StatusData data) returns Tooltip
         let tooltip = Tooltip.create(TYPE.getName())
         tooltip.addLine("You are stuned!")
-        // TODO do smth with data
         if data != null
             destroy data
         return tooltip

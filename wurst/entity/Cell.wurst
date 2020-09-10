@@ -115,6 +115,7 @@ public class Cell
         var innerColor = INNER_DEFAULT_COLOR
         var alpha = 20
 
+        
         if action != null
             var cellResult = CellResult.NONE
             if canGiveOrders
@@ -139,6 +140,7 @@ public class Cell
                     innerColor = INNER_INTERACTABLE_NEUTRAL_COLOR
                     alpha = 100
                 default
+        
         
         if this == p.currentMousePosition.cell or this == currentSelectedCell
             alpha += 50

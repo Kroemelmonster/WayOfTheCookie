@@ -447,8 +447,8 @@ class UIEntityWindow
         stackInfoDefence.setTooltipLine(6, "")
         stackInfoDefence.setTooltipLine(7, "")
 
-        let dmgDifference = boardHeroStats.getDamage().avg() - heroStats.getDamage().avg()
-        upateStackInfoRange(stackInfoDamage, heroStats.getDamage().round(), dmgDifference, boardHeroStats.damageModi)
+        let dmgDifference = boardHeroStats.getRawDamage().avg() - boardHeroStats.getDamage().avg()
+        upateStackInfoRange(stackInfoDamage, boardHeroStats.getDamage().round(), dmgDifference, boardHeroStats.damageModi)
         stackInfoDamage.setIcon(boardHeroStats.getDamageType())
         stackInfoRange.setText("-")
 

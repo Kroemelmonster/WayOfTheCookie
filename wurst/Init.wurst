@@ -78,6 +78,6 @@ function start()
 
 function defineObjects()
 	//Log.info("Flesh out some Units")
-	StatusTypeSet.setup()
+	StatusType.setup()
 	Action.setup()
 	KItemTypeSet.setup()

@@ -50,7 +50,23 @@ public class DamagePreview extends Damage
 
     @inline
     static function create(SourceType sourceType, DamageType damageType) returns DamagePreview
-        return new DamagePreview(realRange(0, 0), sourceType, damageType)
+        return create(sourceType, damageType, false)
+
+    static function create(SourceType sourceType, DamageType damageType, boolean triggered) returns DamagePreview
+        let preview = new DamagePreview(realRange(0, 0), sourceType, damageType)
+        preview.isTriggered = triggered
+        return preview
+
+    @inline
+    static function createDot(SourceType sourceType, DamageType damageType) returns DamagePreview
+        return createDot(sourceType, damageType, false)
+
+    @inline
+    static function createDot(SourceType sourceType, DamageType damageType, boolean triggered) returns DamagePreview
+        let preview = new DamagePreview(realRange(0, 0), sourceType, damageType)
+        preview.isTriggered = triggered
+        preview.isDot = true
+        return preview
 
     function copy() returns DamagePreview
         let copy = new DamagePreview(this.dmg, this.sourceType, this.damageType)

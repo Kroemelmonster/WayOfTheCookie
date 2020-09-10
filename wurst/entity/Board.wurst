@@ -112,18 +112,15 @@ public class Board
 
         
         initiative.update()
-
-
-        // TODO clear old visibilityModi.. and such
-        visibleModiPlayer1 = createVision(p1.blzPlayer, visibleArea, false)
-            ..start()
-        visibleModiPlayer2 = createVision(p2.blzPlayer, visibleArea, false)
-            ..start()
             
-        p1.blzPlayer.setCameraTargetControllerNoZ(dummyCam, vec2(0.0, 0.0), false)
-        p2.blzPlayer.setCameraTargetControllerNoZ(dummyCam, vec2(0.0, 0.0), false)
-            
-        UIController.triggerOnAnyStackCellChange(this)
+        UIController.triggerOnAnyStackCellChange(this) -> 
+            // TODO clear old visibilityModi.. and such
+            visibleModiPlayer1 = createVision(p1.blzPlayer, visibleArea, false)
+            ..start()
+            visibleModiPlayer2 = createVision(p2.blzPlayer, visibleArea, false)
+            ..start()
+            p1.blzPlayer.setCameraTargetControllerNoZ(dummyCam, vec2(0.0, 0.0), false)
+            p2.blzPlayer.setCameraTargetControllerNoZ(dummyCam, vec2(0.0, 0.0), false)
 
     function endFight()
         initiative.reset()

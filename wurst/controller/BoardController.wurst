@@ -21,6 +21,7 @@ import BoardEntity
 import Globals
 import Status
 import StatusType
+import StunDebuff
 
 constant TEXTTAG_COLOR_KILLS = colorA(250, 57, 57, 199).toColorString()
 
@@ -34,7 +35,7 @@ public class BoardController
         let board = target.getBoard()
         board.getInitiative().pushEntity(target, time)
         if target.getType() == EntityType.STACK
-            StatusController.add(StatusTypeSet.STUNNED, target castTo BoardStack, StatusData.createDuration(1))
+            StatusController.add(StunDebuff.TYPE, target castTo BoardStack, StatusData.createDuration(1))
         next.continue()
 
     /** Use this to summon / create a Stack mid Fight */
@@ -49,8 +50,8 @@ public class BoardController
         nullTimer() ->  
             StatusController.hideAll(stack)
             stack.kill()
-            UIController.triggerOnStackCreationOrDeathChange(board)
-            next.continue()
+            UIController.triggerOnStackCreationOrDeathChange(board) -> 
+                next.continue()
 
     static function finishOrder(BoardEntity entity, boolean isAllowedToContinue)
         let board = entity.getBoard()

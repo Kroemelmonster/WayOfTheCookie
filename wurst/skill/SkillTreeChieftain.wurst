@@ -5,20 +5,44 @@ import initlater Hero
 import Icons
 import LinkedList
 import UITooltip
+import initlater RallingCrySpell
 
 public class SkillTreeChieftain extends SkillTree
-    private static constant string NAME = "Chieftain"
+    static SkillTreeType TYPE
 
-    static function setup() returns SkillTreeType
-        let skillTreeType = new SkillTreeType(NAME)
-        skillTreeType.addListener() -> 
-            return new SkillTreeChieftain(skillTreeType)
-        return skillTreeType
+    static function setup()
+        TYPE = new SkillTreeType("Chieftain")
+        TYPE.addListener() -> 
+            return new SkillTreeChieftain()
 
     int rallingCryLevel = -1
 
-    construct(SkillTreeType skillTreeType)
-        super(skillTreeType)
+    construct()
+        super(TYPE)
+
+        var skill = new Skill(this, RallingCrySpell.TYPE.getName(), RallingCrySpell.TYPE.getIcon(), 0.2, 0)
+        skills.add(skill)
+        skill.addLevel(2, 0, 0)
+        ..addSpellTooltip(RallingCrySpell.createTooltip(0))
+        ..addLevelListener() (Hero hero) ->
+            rallingCryLevel ++
+            hero.addSpell(RallingCrySpell.TYPE)
+        skill.addLevel(3, 0, 0)
+        ..addSpellTooltip(RallingCrySpell.createTooltip(1))
+        ..addLevelListener() (Hero hero) ->
+            rallingCryLevel ++
+        skill.addLevel(3, 0, 0)
+        ..addSpellTooltip(RallingCrySpell.createTooltip(2))
+        ..addLevelListener() (Hero hero) ->
+            rallingCryLevel ++
+        skill.addLevel(3, 0, 0)
+        ..addSpellTooltip(RallingCrySpell.createTooltip(3))
+        ..addLevelListener() (Hero hero) ->
+            rallingCryLevel ++
+        skill.addLevel(3, 0, 0)
+        ..addSpellTooltip(RallingCrySpell.createTooltip(4))
+        ..addLevelListener() (Hero hero) ->
+            rallingCryLevel ++
 
         /*
         var skill = new Skill(this, "AttackUpgrade", Icons.bTNIllidanPrisonWagon, 0, 0)

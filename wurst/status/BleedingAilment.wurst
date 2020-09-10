@@ -20,25 +20,17 @@ import Ailment
 import BoardEntity
 
 public class BleedingAilment extends Status
-    private static constant string NAME = "Bleeding"
-    private static constant string EFFECT = "Objects\\Spawnmodels\\Human\\HumanBlood\\HumanBloodLarge0.mdl"
+    static StatusType TYPE
 
-    static function setup() returns StatusType
-        let statusType = new StatusType("Icons\\PASBloodSprinkle.blp", NAME)
-        statusType.setCreationListener()(BoardEntity entity) ->
-            return new BleedingAilment(statusType, entity)
-        statusType.setTooltipListener() (StatusData data) ->
+    static function setup()
+        TYPE = new StatusType("Bleeding", "Icons\\PASBloodSprinkle.blp")
+        TYPE.setCreationListener()(BoardEntity entity) ->
+            return new BleedingAilment(TYPE, entity)
+        TYPE.setTooltipListener() (StatusData data) ->
             return createTooltip(null, data)
 
-        return statusType
-
-    private static constant DamagePreview damagePreview = createDamagePreview()
-    
-    private static function createDamagePreview() returns DamagePreview
-        let preview = new DamagePreview(realRange(0, 0), SourceType.UNSPECIFIC, DamageType.PHYISICAL)
-        preview.isDot = true
-        preview.isTriggered = true
-        return preview
+    private static constant string EFFECT = "Objects\\Spawnmodels\\Human\\HumanBlood\\HumanBloodLarge0.mdl"
+    private static constant DamagePreview damagePreview = DamagePreview.createDot(SourceType.UNSPECIFIC, DamageType.PHYISICAL, true)
 
     static function flashEffect(BoardStack target)
         target.flashAttachEffect(EFFECT, AttachmentPoints.chest)
@@ -79,7 +71,7 @@ public class BleedingAilment extends Status
             next.continue()
 
     private static function createTooltip(BleedingAilment b, StatusData data) returns Tooltip
-        let tooltip = Tooltip.create(NAME)
+        let tooltip = Tooltip.create(TYPE.getName())
         if b == null
             tooltip.addLine("Bleeding makes you suffer damage each turn")
             tooltip.addLine("Each cell you move or get moved will trigger this damage again with an even greater value")

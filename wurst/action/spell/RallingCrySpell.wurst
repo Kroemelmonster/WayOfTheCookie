@@ -1,104 +1,84 @@
 package RallingCrySpell
 
-import LinkedList
-import Doodads
-
 import PlayerData
-import KUtil
 import UITooltip
 import BoardController
 
-import Action
-import StackType
 
-import initlater Cell
-import initlater BoardStack
 import UIActionWindow
-import DelayAnimation
-import Damage
 import CastAnimation
 import BoardTrigger
 import Spell
 import BoardHero
 import BoardEntity
-import SkillTreeTempestarii
 import SkillTree
-import Globals
 import StatusType
 import StatusController
 import Status
-import UIController
 import WarcrySpell
 import SkillTreeChieftain
+import RallingCryBuffHero
+import LinkedList
+import BoardStack
+import RallingCryBuffStack
 
 public class RallingCrySpell extends WarcrySpell
     static SpellType TYPE
-    static function createType() returns SpellType
-        STATUS = StatusTypeSet.PURGED
+    static function setup()
+        STATUS = RallingCryBuffHero.TYPE
+        STATUS_STACKS = RallingCryBuffStack.TYPE
         TYPE = new SpellType("Ralling Cry", "Icons\\BTNAbilityWarriorWarCry.blp")
         TYPE.onCreate() boardHero -> 
             return new RallingCrySpell(boardHero)
-        return TYPE
 
     private static constant int COOLDOWN = 3
+    private static constant int array[5] ATTACK_BONUS = [3, 5, 7, 9, 11]
     static StatusType STATUS
+    static StatusType STATUS_STACKS
 
     @inline
-    private static function createStatusData() returns StatusData
-        return StatusData.createDuration(1)
+    private static function createStatusData(int level) returns StatusData
+        return StatusData.createDurationI(1, ATTACK_BONUS[level])
 
     static function createTooltip(int level) returns Tooltip
-        return createTooltip(0, level)
-
-    static function createTooltip(int power, int level) returns Tooltip
-        /*
-
-        calculateDamage(power, level)
         let tt = Tooltip.create(TYPE.getName())
-        ..setCost(MANA_COST[level])
-        ..setCooldown(COOLDOWN[level])
-        ..addLine(Tooltip.stat("Target", "Enemy"))
-        ..addLine(Tooltip.stat("Damage", damagePreview))
+        ..setCooldown(COOLDOWN)
+        ..addLine(Tooltip.stat("Target", "Allies/Self"))
         ..addLine("")
-        var str = "Lightning strikes"
-        if stunLevel >= 0
-            str += " and stuns for "+Tooltip.primaryString(STUN_DURATION[stunLevel].toString())+ " "+Tooltip.secondaryString("timeunits")
-        if purgeLevel >= 0
-            str += " and purges"
-        str +=" one Enemy"
-        tt.addLine(str)
-        if purgeLevel >= 0
-            tt.addLine("---")
-            tt.addStatusType(PURGE_DEBUFF, createPurgeStatusData(purgeLevel))
-            
-
-        */
-        return Tooltip.create(TYPE.getName())
+        ..addLine("Gives your self and all your troops a temporary Attack Bonus")
+        ..addStatusType(STATUS, createStatusData(level))
+        return tt
     
     /* -------------------------------------------------------------------------- */
 
+    private LinkedList<BoardStack> affectedAllies = new LinkedList<BoardStack>()
+
     private construct(BoardHero hero)
         super(hero, TYPE)
-        let skillTree = hero.hero.getSkillTree(SkillTreeTypeSet.CHIEFTAIN) castTo SkillTreeChieftain
+        let skillTree = hero.hero.getSkillTree(SkillTreeChieftain.TYPE) castTo SkillTreeChieftain
         setLevel(skillTree.rallingCryLevel)
         this.manacost = 0
         this.maxCooldown = COOLDOWN
 
     override function activate()
         CastAnimation.create(entity) -> 
-            let board = entity.getBoard()
-            board.forEachStack() (BoardStack target) ->
-                if target.getPlayer() == entity.getPlayer()
-                    StatusController.add(STATUS, target, createStatusData())
+            StatusController.add(STATUS, entity, createStatusData(level))
+            ..addOnEndListener() (SequenzListener next) ->
+                affectedAllies.forEach() (BoardStack ally) ->
+                    if ally.isAlive()
+                        StatusController.remove(STATUS_STACKS, ally)
+                next.continue()
 
-            UIController.triggerOnAnyStackCellChange(board)
-            DelayAnimation.create(board, 0.5) ->
-                payCostAndStartCooldown(maxCooldown)
-                BoardController.finishOrder(entity, true)
-
+            entity.getBoard().forEachStack() (BoardStack ally) ->
+                if ally.getPlayer() == entity.getPlayer()
+                    affectedAllies.add(ally)
+                    StatusController.add(STATUS_STACKS, ally, createStatusData(level))
+                    
+            payCostAndStartCooldown(maxCooldown)
+            BoardController.finishOrder(entity, true)
 
     private function showPreview()
-        let tt = createTooltip(hero.stats.getPower(), level)
+        let tt = createTooltip(level)
         tt.display(entity.getPlayer(), true)
         UIActionWindow.updateActionPoints(entity, 0)
 

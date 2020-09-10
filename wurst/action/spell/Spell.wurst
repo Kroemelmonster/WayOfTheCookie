@@ -3,17 +3,10 @@ import Action
 import initlater BoardHero
 import initlater ChainLightningSpell
 import initlater LightningBoltSpell
+import initlater RallingCrySpell
 
 interface SpellCreateListener
     function create(BoardHero boardHero) returns Spell
-
-public class SpellSet
-    static SpellType CHAIN_LIGHTNING
-    static SpellType LIGHTNING_BOLT
-
-    static function setup()
-        CHAIN_LIGHTNING = ChainLightningSpell.createType()
-        LIGHTNING_BOLT = LightningBoltSpell.createType()
 
 public class SpellType
     protected string icon
@@ -42,6 +35,11 @@ public class SpellType
     @inline
     function toString() returns string
         return "SpellType '"+name+"'"
+
+    static function setup()
+        ChainLightningSpell.setup()
+        LightningBoltSpell.setup()
+        RallingCrySpell.setup()
 
 public abstract class Spell extends Action
     protected BoardHero hero

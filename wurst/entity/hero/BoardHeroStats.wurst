@@ -15,6 +15,8 @@ public class BoardHeroStats
     int remainingActionPoints
     int mana
 
+    StatsModifier attackModi = new StatsModifier()
+    protected StatsModifier realAttackModi = new StatsModifier()
     StatsModifier powerModi = new StatsModifier()
     StatsModifier wisdomModi = new StatsModifier()
 
@@ -41,7 +43,7 @@ public class BoardHeroStats
 
     @inline
     function getAttack() returns int
-        return basis.getAttack()
+        return attackModi.get(basis.getAttack()).round()
 
     @inline
     function getDefence() returns int
@@ -63,7 +65,13 @@ public class BoardHeroStats
 
     @inline
     function getDamage() returns realRange
-        return damageModi.getRealRange(basis.getDamage(), 1)
+        return damageModi.getRealRange(getRawDamage(), 1)
+
+    
+    function getRawDamage() returns realRange
+        realAttackModi.addBonus = 0
+        realAttackModi.multi = 100 + (getAttack() * ATTACK_DAMAGE_PER_ATTACK).toInt()
+        return realAttackModi.getRealRange(basis.heroType.getDamage(hero.hero.getLevel()), 1)
 
     @inline
     function getDamageType() returns DamageType
@@ -95,6 +103,8 @@ public class BoardHeroStats
 
 
     ondestroy
+        destroy attackModi
+        destroy realAttackModi
         destroy powerModi
         destroy wisdomModi
 

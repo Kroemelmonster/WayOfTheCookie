@@ -9,13 +9,12 @@ import LinkedList
 import UITooltip
 
 public class SkillTreeTempestarii extends SkillTree
-    private static constant string NAME = "Tempestarii"
+    static SkillTreeType TYPE
 
-    static function setup() returns SkillTreeType
-        let skillTreeType = new SkillTreeType(NAME)
-        skillTreeType.addListener() -> 
-            return new SkillTreeTempestarii(skillTreeType)
-        return skillTreeType
+    static function setup()
+        TYPE = new SkillTreeType("Tempestarii")
+        TYPE.addListener() -> 
+            return new SkillTreeTempestarii()
 
         
     int chainLightningLevel = -1
@@ -25,8 +24,8 @@ public class SkillTreeTempestarii extends SkillTree
     int lightningBoltPurgeLevel = -1
 
 
-    construct(SkillTreeType skillTreeType)
-        super(skillTreeType)
+    construct()
+        super(TYPE)
 
         let lightningBoltSkill = new Skill(this, LightningBoltSpell.TYPE.getName(), LightningBoltSpell.TYPE.getIcon(), 0.2, 0)
         skills.add(lightningBoltSkill)

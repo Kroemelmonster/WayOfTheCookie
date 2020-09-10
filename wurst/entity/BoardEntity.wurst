@@ -28,6 +28,8 @@ public abstract class BoardEntity
 
     private OnCastListener unitOnCastListener
     private OnCastListener unitOnCastImmediateListener
+    private EventListener damageTakenListener
+    private EventListener unitDamageTakenListener
 
     private EntityTrigger triggers
 
@@ -128,6 +130,9 @@ public abstract class BoardEntity
     function doOnNextCast(EventListener listener)
         castListener = listener
 
+    function doOnNextDamageTaken(EventListener listener)
+        damageTakenListener = listener
+
     function setHighlight(boolean flag)
         if flag == false or highlightEffect != null
             highlightEffect.destr()
@@ -155,6 +160,11 @@ public abstract class BoardEntity
                 castListener.onEvent()
                 destroy castListener
                 castListener = null
+        unitDamageTakenListener = EventListener.add(u, EVENT_PLAYER_UNIT_DAMAGED) () ->
+            if damageTakenListener != null
+                damageTakenListener.onEvent()
+                destroy damageTakenListener
+                damageTakenListener = null
 
     function toStack() returns BoardStack
         if entityType == STACK
@@ -186,6 +196,13 @@ public abstract class BoardEntity
         if unitOnCastImmediateListener != null
             destroy unitOnCastImmediateListener
             unitOnCastImmediateListener = null
+        if damageTakenListener != null
+            destroy damageTakenListener
+            damageTakenListener = null
+        if unitDamageTakenListener != null
+            destroy unitDamageTakenListener
+            unitDamageTakenListener = null
+            
 
     protected function destroyTriggers()
         destroy triggers

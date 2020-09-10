@@ -17,26 +17,20 @@ function getCellMoveCost(Cell c, real moveCoefficient) returns real
 public class PathCell
     Cell cell
     real cost
+    int costI
     PathCell prev
 
     construct(Cell cell, real cost, PathCell prev)
         this.cell = cell
         this.cost = cost
         this.prev = prev
+        this.costI = cost.floor()
 
     function getRaminingMoveActionPoints(BoardStack stack) returns int
         return getRemainingMoveActionPoints(stack.stats.getRemainingMoveActionPoints())
 
     function getRemainingMoveActionPoints(int ms) returns int
-
-        /* OLD CODE TO PREVENT A UNIT NOT BEING ABLE TO WALK AT ALL WITH % REDUCED MS
-        if cost > ms and cost < MAX_MOVE_COST
-            if prev == null // you can always walk at least one field
-                return 0
-            else if prev.cost < ms // you can also walk one field if you have more than one action püoint left at the start
-                return 0
-                */
-        return ms - cost.floor()
+        return ms - costI
 
     function iterator() returns PathIterator
         return new PathIterator(this)
@@ -130,6 +124,7 @@ public class StackPathFinding
                 let newCost = current.cost + cost
                 if newCost < neighbour.cost
                     neighbour.cost = newCost
+                    neighbour.costI = newCost.floor()
                     if current != startPCell
                         neighbour.prev = current
                     paths.put(neighbourCell, neighbour)

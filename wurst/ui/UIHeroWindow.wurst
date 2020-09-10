@@ -193,9 +193,9 @@ public class UIHeroWindow
             defenceInfo.setTextBasedOnStats(h.stats.basicDefence, h.stats.getDefence(), h.stats.defenceModi)
             wisdomInfo.setTextBasedOnStats(h.stats.basicWisdom, h.stats.getWisdom(), h.stats.wisdomModi)
             powerInfo.setTextBasedOnStats(h.stats.basicPower, h.stats.getPower(), h.stats.powerModi)
-            let basisDmg = h.stats.heroType.getDamage(h.getLevel())
+            let basisDmg = h.stats.getRawDamage()
             let dmgDifference = h.stats.getDamage().avg() - basisDmg.avg()
-            damageInfo.setText(basisDmg.min.toString() + " - " + basisDmg.max.toString() + Tooltip.coloredModiReal(dmgDifference, 1))
+            damageInfo.setText(basisDmg.round().min.toString() + " - " + basisDmg.round().max.toString() + Tooltip.coloredModiReal(dmgDifference, 1))
             damageInfo.setIcon(h.stats.damageType)
             initInfo.setTextBasedOnStats(h.getType().initiative, h.stats.getInitiative(), h.stats.initModi)
             

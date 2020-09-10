@@ -4,7 +4,6 @@ import LinkedList
 import SkillTreeChieftain
 import SkillTreeTempestarii
 import SkillTreeSpirit
-import SkillTreeVenomancer
 import initlater Hero
 import UITooltip
 
@@ -16,18 +15,6 @@ interface SkillHeroUpdateListener
 
 interface SkillTreeCreateListener
     function create() returns SkillTree
-
-public class SkillTreeTypeSet
-    static SkillTreeType CHIEFTAIN
-    static SkillTreeType TEMPESTTARII
-    static SkillTreeType SPIRIT
-    static SkillTreeType VENOMANCER
-
-    static function setup()
-        CHIEFTAIN = SkillTreeChieftain.setup()
-        TEMPESTTARII = SkillTreeTempestarii.setup()
-        SPIRIT = SkillTreeSpirit.setup()
-        VENOMANCER = SkillTreeVenomancer.setup()
 
 public class SkillLevel
     int costMight
@@ -264,6 +251,11 @@ public class SkillTreeType
     @inline
     function createNew() returns SkillTree
         return listener.create()
+
+    static function setup()
+        SkillTreeChieftain.setup()
+        SkillTreeTempestarii.setup()
+        SkillTreeSpirit.setup()
     
 
 public abstract class SkillTree

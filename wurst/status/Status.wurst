@@ -3,6 +3,7 @@ package Status
 import initlater BoardEntity
 import initlater StatusType
 import UITooltip
+import BoardTrigger
 
 public class StatusData
     int duration
@@ -32,10 +33,14 @@ public class StatusData
 public abstract class Status
     protected StatusType statusType
     protected BoardEntity entity
+    protected BoardTrigger onEndListener
 
     construct(StatusType statusType, BoardEntity entity)
         this.statusType = statusType
         this.entity = entity
+
+    function addOnEndListener(BoardTrigger listener)
+        this.onEndListener = listener
 
     function getType() returns StatusType
         return statusType
@@ -48,7 +53,7 @@ public abstract class Status
         destroy data
 
     /** call this only ONCE when you want to purge a buff from a unit that is no longer alive 
-        This will ONLY remove ANY visuals this buff might have it does not unregister any events
+        This will ONLY remove ANY visuals this buff might have, it does not unregister any events
 
         But since you should only call this on a dead stack, it wont trigger anything anyway **/
     abstract function hide()
@@ -58,7 +63,15 @@ public abstract class Status
     /** Always use this tooltip instantly with intend to destroy it **/
     abstract function createCurrentTooltip() returns Tooltip
 
-    protected function kill()
+    function kill()
+        let me = this
         entity.removeStatus(this)
-        destroy this
+        if onEndListener != null
+            onEndListener.onEvent() -> 
+                destroy onEndListener
+                onEndListener = null
+                destroy me
+            
+        else
+            destroy me
 

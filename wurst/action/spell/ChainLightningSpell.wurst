@@ -29,11 +29,10 @@ import Globals
 
 public class ChainLightningSpell extends Spell
     static SpellType TYPE
-    static function createType() returns SpellType
+    static function setup()
         TYPE = new SpellType("Chain Lightning", Icons.bTNChainLightning)
         TYPE.onCreate() boardHero -> 
             return new ChainLightningSpell(boardHero)
-        return TYPE
 
     private static constant int array[3] MANA_COST = [7,12,20]
     private static constant int array[3] COOLDOWN = [0, 0, 0]
@@ -74,7 +73,7 @@ public class ChainLightningSpell extends Spell
 
     construct(BoardHero hero)
         super(hero, TYPE)
-        let skillTree = hero.hero.getSkillTree(SkillTreeTypeSet.TEMPESTTARII) castTo SkillTreeTempestarii
+        let skillTree = hero.hero.getSkillTree(SkillTreeTempestarii.TYPE) castTo SkillTreeTempestarii
         setLevel(skillTree.chainLightningLevel)
         this.manacost = MANA_COST[this.level]
         this.maxCooldown = COOLDOWN[this.level]

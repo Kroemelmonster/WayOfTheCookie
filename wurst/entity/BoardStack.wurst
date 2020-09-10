@@ -35,9 +35,6 @@ public class BoardStack extends BoardEntity
     private integer currentSelectedAction = 0
     private LinkedList<PassiveAction> passiveActions
 
-    private EventListener damageTakenListener
-    private EventListener unitDamageTakenListener
-
     BoardStackStats stats
 
     construct(Player p, ArmyStack stack)
@@ -177,11 +174,6 @@ public class BoardStack extends BoardEntity
         u = createUnit(DUMMY_PLAYER, stackType.unitId, cell.getCoord(), angle(PI * playerIndex))
         u.setColor(p.blzPlayer.getColor())
         u.disableAbility(AbilityIds.attack, true, false)
-        unitDamageTakenListener = EventListener.add(u, EVENT_PLAYER_UNIT_DAMAGED) () ->
-            if damageTakenListener != null
-                damageTakenListener.onEvent()
-                destroy damageTakenListener
-                damageTakenListener = null
         placeEntity()
 
     function replaceCell(Cell cell)
@@ -207,9 +199,6 @@ public class BoardStack extends BoardEntity
     @inline
     function isSelectByOwnPlayer() returns boolean
         return p.currentSelectedEntity == this
-    
-    function doOnNextDamageTaken(EventListener listener)
-        damageTakenListener = listener
 
     function getCurrentOrder() returns int
         return u.getCurrentOrder()
@@ -247,6 +236,7 @@ public class BoardStack extends BoardEntity
     ondestroy
         removeStackRelatedThingsFromBoard()
         destroyEntity()
+
         if actions != null
             for action in actions
                 destroy action

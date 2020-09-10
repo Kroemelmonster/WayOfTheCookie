@@ -15,10 +15,6 @@ import initlater SkillTreeVenomancer
 import DelayAnimation
 
 public class VenomousPassive extends PassiveAction
-    @inline
-    private static function getStatus() returns StatusType
-        return StatusTypeSet.POISON
-
     private SkillTreeVenomancer skillTree
 
     construct(BoardStack stack, SkillTreeVenomancer skillTree)
@@ -30,7 +26,7 @@ public class VenomousPassive extends PassiveAction
         stack.getTriggers().addOnDamageDealt() (BoardEntity source, BoardStack target, SpecificDamageInstance specificInstance, SequenzListener next) ->
             if skillTree.canApplyPoison(source, target, specificInstance)
                 PoisonAilment.flashEffect(target)
-                StatusController.add(getStatus(), target, StatusData.createDurationR(skillTree.getPoisonDuration(), skillTree.getPoisonDamage(source, target, specificInstance)))
+                StatusController.add(PoisonAilment.TYPE, target, StatusData.createDurationR(skillTree.getPoisonDuration(), skillTree.getPoisonDamage(source, target, specificInstance)))
                 DelayAnimation.create(stack.getBoard(), 0.2) ->
                     next.continue()
             else

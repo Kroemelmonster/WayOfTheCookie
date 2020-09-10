@@ -18,29 +18,19 @@ import Ailment
 import initlater BoardEntity
 
 public class PoisonAilment extends Status
-    private static constant string NAME = "Poison"
-    private static constant string EFFECT = "Abilities\\Weapons\\PoisonArrow\\PoisonArrowMissile.mdl"
+    static StatusType TYPE
 
-    static function setup() returns StatusType
-        let statusType = new StatusType(Icons.bTNOrbOfVenom, NAME)
-        statusType.setCreationListener()(BoardEntity entity) ->
-            return new PoisonAilment(statusType, entity)
-        statusType.setTooltipListener() (StatusData data) ->
+    static function setup()
+        TYPE = new StatusType("Poison", Icons.bTNOrbOfVenom)
+        TYPE.setCreationListener()(BoardEntity entity) ->
+            return new PoisonAilment(TYPE, entity)
+        TYPE.setTooltipListener() (StatusData data) ->
             return createTooltip(null, data)
-
-        return statusType
-
-    private static constant DamagePreview damagePreview = createDamagePreview()
+        
+    private static constant DamagePreview damagePreview = DamagePreview.createDot(SourceType.UNSPECIFIC, DamageType.POISON, true)
     
-    @inline
-    private static function createDamagePreview() returns DamagePreview
-        let preview = new DamagePreview(realRange(0, 0), SourceType.UNSPECIFIC, DamageType.POISON)
-        preview.isDot = true
-        preview.isTriggered = true
-        return preview
-
     static function flashEffect(BoardStack target)
-        target.flashEffectOnPos(EFFECT)
+        target.flashEffectOnPos("Abilities\\Weapons\\PoisonArrow\\PoisonArrowMissile.mdl")
 
     private BoardTrigger turnStartListener
     private BoardTrigger turnEndListener
@@ -72,7 +62,7 @@ public class PoisonAilment extends Status
             next.continue()
 
     private static function createTooltip(PoisonAilment b, StatusData data) returns Tooltip
-        let tooltip = Tooltip.create(NAME)
+        let tooltip = Tooltip.create(TYPE.getName())
         if b == null
             tooltip.addLine("Poisoned makes you suffer damage each turn")
             tooltip.addLine("Each time you take non-dot damage you also suffer this damage as well")
