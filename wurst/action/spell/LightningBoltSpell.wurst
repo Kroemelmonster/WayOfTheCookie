@@ -142,7 +142,7 @@ public class LightningBoltSpell extends Spell
                 finishOrder()
         else if purgeLevel >= 0
             StatusController.add(PURGE_DEBUFF, target, createPurgeStatusData(purgeLevel))
-            UIController.triggerOnMaxActionPointChange(entity) -> 
+            UIController.triggerOnMaxActionPointChange(target) -> 
                 finishOrder()
 
     private function finishOrder()

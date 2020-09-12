@@ -48,7 +48,6 @@ public class BoardHero extends BoardEntity
     private function createBLZUnit(vec2 coord, int side)
         u = createUnit(DUMMY_PLAYER, heroType.unitId, coord , angle(PI * side))
         u.setColor(hero.getPlayer().blzPlayer.getColor())
-        u.disableAbility(AbilityIds.attack, true, false)
 
         placeEntity()
 

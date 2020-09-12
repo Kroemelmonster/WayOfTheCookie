@@ -45,7 +45,7 @@ public class ArmyStack extends Stack
         return "ArmyStack [" + stackType.name + ", " + amount.toString() + "]"
 
 public class Army
-    static constant MAX_SIZE = 8
+    static constant MAX_SIZE = 5
     protected ArmyStack array[MAX_SIZE] stacks
     protected HeroStats heroStats
 

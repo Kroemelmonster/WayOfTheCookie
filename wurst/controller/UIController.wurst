@@ -78,7 +78,7 @@ class UIController
     static function onTurnStart(BoardEntity entity)
         MouseContext.forcePlayerSelect(entity.getPlayer(), entity.getCell())
         entity.setHighlight(true)
-        entity.getPlayer().playingBoard.drawAll()
+        entity.getBoard().drawAll()
 
     static function triggerOnActiveEntityActionPointChange(BoardEntity entity)
         UIActionWindow.update(entity.getPlayer())

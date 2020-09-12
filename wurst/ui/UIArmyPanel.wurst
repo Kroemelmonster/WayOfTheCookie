@@ -149,7 +149,7 @@ public class UIArmyPanel
             else if info.dragEnd > 0
                 btn.setTextVisible(false)
                 btn.setEnabled(false)
-                btn.setIcon(Textures.dISorc_inventory_slotfiller)
+                btn.setIcon("Icons\\BTNDotted.dds")
         else if info.dragEnd == position
             // zeige das was auf dragStart ist an außer das sind wir selber
             if info.stackDragStart != info.stackDragEnd
@@ -164,4 +164,4 @@ public class UIArmyPanel
             // there is nothing sooo ?
             btn.setTextVisible(false)
             btn.setEnabled(false)
-            btn.setIcon(Textures.dISorc_inventory_slotfiller)
+            btn.setIcon("Icons\\BTNDotted.dds")

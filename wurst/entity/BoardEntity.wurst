@@ -12,6 +12,7 @@ import UnitDefinition
 import Abilities
 import AttachmentPoints
 import BoardTrigger
+import AbilityIds
 
 public enum EntityType
     STACK
@@ -150,6 +151,9 @@ public abstract class BoardEntity
         return addEffect(sfx, u, attachment)
 
     protected function placeEntity()
+        u.disableAbility(AbilityIds.attack, true, false)
+        u.setPathing(false)
+
         unitOnCastListener = EventListener.onCast(u, AbilityTypesIds.TARGET_SPELL) (unit caster) ->
             if castListener != null
                 castListener.onEvent()
@@ -180,13 +184,6 @@ public abstract class BoardEntity
         if highlightEffect != null
             highlightEffect.destr()
             highlightEffect = null
-
-    protected function destroyEntity()
-        if stati != null
-            for status in stati
-                destroy status
-            destroy stati
-            stati = null
         if castListener != null
             destroy castListener
             castListener = null
@@ -202,6 +199,14 @@ public abstract class BoardEntity
         if unitDamageTakenListener != null
             destroy unitDamageTakenListener
             unitDamageTakenListener = null
+
+    protected function destroyEntity()
+        if stati != null
+            for status in stati
+                destroy status
+            destroy stati
+            stati = null
+        
             
 
     protected function destroyTriggers()

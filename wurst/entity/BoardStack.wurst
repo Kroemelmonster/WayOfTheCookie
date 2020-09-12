@@ -173,7 +173,6 @@ public class BoardStack extends BoardEntity
     private function createBLZUnit(int playerIndex)
         u = createUnit(DUMMY_PLAYER, stackType.unitId, cell.getCoord(), angle(PI * playerIndex))
         u.setColor(p.blzPlayer.getColor())
-        u.disableAbility(AbilityIds.attack, true, false)
         placeEntity()
 
     function replaceCell(Cell cell)

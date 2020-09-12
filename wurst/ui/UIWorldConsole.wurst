@@ -32,7 +32,7 @@ public class UIWorldConsole
 
     static function setup()
         self = createFrame("MetalBorderBottomlessWindow", GAME_UI, 0, 0)
-        ..setSize(0.5, 0.065)
+        ..setSize(0.39, 0.065)
         ..setVisible(false)
         ..setLevel(-1)
         ..setPoint(FRAMEPOINT_BOTTOMLEFT, GAME_UI, FRAMEPOINT_BOTTOMLEFT, 0.0, 0.0)
@@ -56,7 +56,7 @@ public class UIWorldConsole
 
         expBar = createSimpleFrame("MyBarEx", self, 0)
         ..setTexture("Replaceabletextures\\Teamcolor\\Teamcolor03.blp", 0, true)
-        ..setWidth(0.29)
+        ..setWidth(0.18)
         ..setVisible(false)
         ..setPoint(FRAMEPOINT_BOTTOMLEFT, pane, FRAMEPOINT_BOTTOMLEFT, 0.185, -0.01)
         expBarName = getFrame("MyBarExText")

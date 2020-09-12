@@ -23,8 +23,6 @@ import Status
 import StatusType
 import StunDebuff
 
-constant TEXTTAG_COLOR_KILLS = colorA(250, 57, 57, 199).toColorString()
-
 public class BoardController
 
     static function stunEntity(BoardEntity _source, BoardEntity target, int time, SequenzListener next)
@@ -35,7 +33,7 @@ public class BoardController
         let board = target.getBoard()
         board.getInitiative().pushEntity(target, time)
         if target.getType() == EntityType.STACK
-            StatusController.add(StunDebuff.TYPE, target castTo BoardStack, StatusData.createDuration(1))
+            StatusController.add(StunDebuff.TYPE, target, StatusData.createDuration(1))
         next.continue()
 
     /** Use this to summon / create a Stack mid Fight */
@@ -43,7 +41,9 @@ public class BoardController
         let board = cell.getBoard()
         nullTimer() ->  
             board.placeStack(stack, cell, isSummoned)
-            onCellEnter(stack, cell, cell, next)
+            onCellEnter(stack, cell, cell) -> 
+                UIController.triggerOnStackCreationOrDeathChange(board) -> 
+                    next.continue()
 
     static function killStack(BoardStack stack, SequenzListener next)
         let board = stack.getBoard()
