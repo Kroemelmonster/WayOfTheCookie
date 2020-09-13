@@ -108,7 +108,12 @@ class UIInitiativeWindow
 
     private static function refreshButton(InitiativeCommandButton btn, BoardEntity entity)
         btn.setIcon(entity.getIcon())
-        btn.setBorder(entity.getPlayer().borderColor)
+        let player1 = entity.getBoard().getPlayer(0)
+        if player1.isLocal()
+            btn.setBorderBasedOnPlayerRelationship(player1.getRelationshipStatusTo(entity.getPlayer()))
+        let player2 = entity.getBoard().getPlayer(1)
+        if player2.isLocal()
+            btn.setBorderBasedOnPlayerRelationship(player2.getRelationshipStatusTo(entity.getPlayer()))
 
         switch(entity.getType())
             case STACK

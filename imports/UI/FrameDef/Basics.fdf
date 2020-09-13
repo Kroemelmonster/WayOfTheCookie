@@ -41,13 +41,13 @@ Frame "GLUEBUTTON" "ArrowButtonTopRight" {
 
     ControlBackdrop "CancelButtonIcon",
     Frame "BACKDROP" "CancelButtonIcon" {
-        BackdropBackground "UI\Textures\Button\btn-arrow-tr.dds",
+        BackdropBackground "UI\Textures\Button\ArrowBTNTR.dds",
         BackdropBlendAll,
     }
 
     ControlPushedBackdrop "CancelButtonIconPushed",
     Frame "BACKDROP" "CancelButtonIconPushed" {
-        BackdropBackground "UI\Textures\Button\btn-arrow-tr-pushed.dds",
+        BackdropBackground "UI\Textures\Button\ArrowBTNTRPushed.dds",
         BackdropBlendAll,
     }
 
@@ -66,13 +66,13 @@ Frame "GLUEBUTTON" "ArrowButtonBottomLeft" {
 
     ControlBackdrop "CancelButtonIcon",
     Frame "BACKDROP" "CancelButtonIcon" {
-        BackdropBackground "UI\Textures\Button\btn-arrow-bl.dds",
+        BackdropBackground "UI\Textures\Button\ArrowBTNBL.dds",
         BackdropBlendAll,
     }
 
     ControlPushedBackdrop "CancelButtonIconPushed",
     Frame "BACKDROP" "CancelButtonIconPushed" {
-        BackdropBackground "UI\Textures\Button\btn-arrow-bl-pushed.dds",
+        BackdropBackground "UI\Textures\Button\ArrowBTNBLPushed.dds",
         BackdropBlendAll,
     }
 

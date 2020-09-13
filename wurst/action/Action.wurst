@@ -26,6 +26,7 @@ public abstract class Action
     protected string name
     protected boolean isInstant = false
     protected boolean isDefault = false
+    protected boolean isPrimary = true
     protected boolean isSpell = false
     protected boolean isWarcy = false
     protected int cooldown = 0
@@ -80,11 +81,16 @@ public abstract class Action
     function isInstant() returns boolean
         return isInstant
 
-    function showInActionBar() returns boolean
-        if isDefault
+    function showAsPrimary() returns boolean
+        if isSpell
             return false
-        return isSpell == false
-    
+        return isPrimary
+
+    function showAsSecondary() returns boolean
+        if isSpell
+            return false
+        return isPrimary == false
+
     function isDefault() returns boolean
         return isDefault
 
@@ -96,6 +102,9 @@ public abstract class Action
 
     function hasEnoughCharges() returns boolean
         return charge > 0 or maxCharge < 0
+
+    function hasEnoughMana() returns boolean
+        return true
         
     function getCharge() returns int
         return charge

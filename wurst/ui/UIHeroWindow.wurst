@@ -135,17 +135,6 @@ public class UIHeroWindow
         ..setIcon("UI/Textures/StackInfo/initiative.dds")
         ..setTooltip(t, TooltipAnchor.BOTTOM_LEFT_UP)
 
-        /*ttackInfo = new UIStackInfo(pane)
-        let attack = createFrame("HeroWindowStat", pane, 0, 0)
-        ..setPoint(FRAMEPOINT_BOTTOMLEFT, pane, FRAMEPOINT_BOTTOMLEFT, 0.015, 0.015)
-        getFrame("Icon").setTexture("UI/Textures/attack-borderless.dds", 0, true)
-        attackText = getFrame("Text")*/
-
-        /*createFrame("HeroWindowStat", pane, 0, 0)
-        ..setPoint(FRAMEPOINT_TOPLEFT, attackInfo.self, FRAMEPOINT_TOPRIGHT, 0.01, 0)
-        getFrame("Icon").setTexture("UI/Textures/defence-borderless.dds", 0, true)
-        defenceText = getFrame("Text")*/
-
         headerText = createFrame("HeaderText", self, 0, 0)
         ..setPoint(FRAMEPOINT_TOPLEFT, self, FRAMEPOINT_TOPLEFT, 0.08, -0.014)
         ..setPoint(FRAMEPOINT_BOTTOMRIGHT, self, FRAMEPOINT_TOPRIGHT, -0.41, -0.05)

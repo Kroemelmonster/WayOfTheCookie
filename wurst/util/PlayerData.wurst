@@ -24,6 +24,13 @@ public tuple mousePosition(Cell cell, Cell nearbyCell)
 public Player array playerData
 constant LinkedList<Player> activePlayers = new LinkedList<Player>
 
+public enum PlayerRelationship
+    SELF
+    ALLY
+    ENEMY
+    NEUTRAL
+
+
 public class Player
     boolean mousePressed = false
     int mousePressedIndex = 0
@@ -45,7 +52,6 @@ public class Player
     Hero hero
     boolean mouse3DEnabled = true
     boolean isConntrolledByKI
-    BorderColor borderColor
     color c
 
     LinkedList<KeyPressListener> keyPressListener = new LinkedList<KeyPressListener>()
@@ -53,14 +59,19 @@ public class Player
     player blzPlayer
 
     static Player NEUTRAL_AGGRESIVE
+    static Player NEUTRAL_PASSIVE
 
-    private construct(player p, int i, BorderColor color)
+    private construct(player p)
         blzPlayer = p
         isConntrolledByKI = p.isIngame() == false
         
-        let playerColor = i <= 2 ? i.toPlayerColor() : PLAYER_COLOR_PEANUT
+        var playerColor = PLAYER_COLOR_RED
+        if p == players[PLAYER_NEUTRAL_PASSIVE]
+            playerColor = PLAYER_COLOR_SNOW
+        if this.isLocal()
+            playerColor = PLAYER_COLOR_GREEN
+            
         this.c = playerColor.toColor()
-        this.borderColor = color
         blzPlayer.setColor(playerColor)
 
         if isConntrolledByKI == false
@@ -76,12 +87,28 @@ public class Player
     function onAnyKeyPress(KeyPressListener listener)
         keyPressListener.add(listener)
 
+    function getRelationshipStatusTo(Player other) returns PlayerRelationship
+        if this == other
+            return PlayerRelationship.SELF
+        else if this == NEUTRAL_PASSIVE
+            return PlayerRelationship.NEUTRAL
+        return PlayerRelationship.ENEMY
+
+    function isEnemyTo(Player other) returns boolean
+        return getRelationshipStatusTo(other) == PlayerRelationship.ENEMY
+
+    function isAllyTo(Player other) returns boolean
+        let status = getRelationshipStatusTo(other)
+        return status == PlayerRelationship.SELF or status == PlayerRelationship.ALLY
+
     static function setup()
-        playerData[players[0].getId()] = new Player(players[0], 0, BorderColor.RED)
-        playerData[players[1].getId()] = new Player(players[1], 1, BorderColor.BLUE)
-        playerData[players[PLAYER_NEUTRAL_AGGRESSIVE].getId()] = new Player(players[PLAYER_NEUTRAL_AGGRESSIVE], PLAYER_NEUTRAL_AGGRESSIVE, BorderColor.BLACK)
+        playerData[players[0].getId()] = new Player(players[0])
+        playerData[players[1].getId()] = new Player(players[1])
+        NEUTRAL_AGGRESIVE = new Player(players[PLAYER_NEUTRAL_AGGRESSIVE])
+        NEUTRAL_PASSIVE = new Player(players[PLAYER_NEUTRAL_PASSIVE])
         
-        NEUTRAL_AGGRESIVE = playerData[players[PLAYER_NEUTRAL_AGGRESSIVE].getId()]
+        playerData[players[PLAYER_NEUTRAL_AGGRESSIVE].getId()] = NEUTRAL_AGGRESIVE
+        playerData[players[PLAYER_NEUTRAL_PASSIVE].getId()] = NEUTRAL_PASSIVE
 
     static function forEachActive(LLItrClosure<Player> itr)
         activePlayers.forEach(itr)

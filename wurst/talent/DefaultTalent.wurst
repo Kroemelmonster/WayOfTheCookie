@@ -13,5 +13,5 @@ public class DefaultTalent extends Talent
         return new DefaultTalent()
         ..addGenerateListener() stack ->
             stack.addAction(new WalkAndAttackAction(stack))
-            stack.addAction(new WaitAction(stack))       
             stack.addAction(new DefendAction(stack)) 
+            stack.addAction(new WaitAction(stack))

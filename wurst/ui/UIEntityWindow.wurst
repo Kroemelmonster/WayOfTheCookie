@@ -383,7 +383,7 @@ class UIEntityWindow
         let boardStats = boardStack.stats
     
         updateSpecifcForStackType(stackType)
-        iconBorder.setBorder(boardStack.getPlayer().borderColor)
+        iconBorder.setBorderBasedOnPlayerRelationship(p.getRelationshipStatusTo(boardStack.getPlayer()))
         subHeader.setText(boardStats.getAmount().toString() + " / " + boardStats.getStartAmount().toString())
 
         stackInfoAttack.setTextBasedOnStats(armyStats.getAttack(), boardStats.getAttack(), boardStats.attackModi)
@@ -437,7 +437,7 @@ class UIEntityWindow
         header.setText(heroType.name)
         iconCharge.setText(hero.getExp().toString())
 
-        iconBorder.setBorder(hero.getPlayer().borderColor)
+        iconBorder.setBorderBasedOnPlayerRelationship(p.getRelationshipStatusTo(hero.getPlayer()))
         subHeader.setText("")
 
         stackInfoAttack.setTextBasedOnStats(heroStats.getAttack(), boardHeroStats.getAttack(), null)

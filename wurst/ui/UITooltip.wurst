@@ -75,6 +75,7 @@ public class Tooltip
     protected LinkedList<TooltipLine> lines = new LinkedList<TooltipLine>
     protected int cost = -1
     protected int cooldown = -1
+    protected int mana = -1
 
     static function copy(Tooltip other) returns Tooltip
         let tooltip = new Tooltip()
@@ -259,6 +260,10 @@ public class Tooltip
     function setCooldown(int value)
         cooldown = value
 
+    @inline
+    function setManaCost(int value)
+        mana = value
+
     protected function convert() returns string
         var str = ""
         for TooltipLine ttLine in lines
@@ -286,14 +291,42 @@ public class Tooltip
     ondestroy
         destroy lines
 
+class UITooltipIcon
+    private framehandle iconFrame
+    private framehandle textFrame
+
+    construct(framehandle parent, int counter)
+        textFrame = createFrame(FramehandleTypeNames.text, "", parent, "", 0)
+            ..setSize(0.007, 0.013)
+            ..setTextAlignment(TEXT_JUSTIFY_MIDDLE, TEXT_JUSTIFY_CENTER)
+            ..setPoint(FRAMEPOINT_TOPRIGHT, parent, FRAMEPOINT_TOPRIGHT, 0.0, -0.0 - (counter * 0.013))
+            ..setText("2")
+            ..setVisible(false)
+
+        iconFrame = createFrame(FramehandleTypeNames.backdrop, "", parent, "", 0)
+            ..setSize(0.013, 0.013)
+            ..setPoint(FRAMEPOINT_TOPRIGHT, parent, FRAMEPOINT_TOPRIGHT, -0.008, - (counter * 0.013))
+            ..setTexture("UI/Textures/Icons/TooltipAddonManaIcon.dds", 0, true)
+            ..setVisible(false)
+
+    function update(string text, string icon)
+        textFrame.setVisible(true)
+        iconFrame.setVisible(true)
+        textFrame.setText(text)
+        iconFrame.setTexture(icon, 0, true)
+
+    function hide()
+        textFrame.setVisible(false)
+        iconFrame.setVisible(false)
+
+
+
 class UITooltip
     private static framehandle self
     private static framehandle text
     private static framehandle headerText
 
-    private static framehandle array costPoints
-    private static framehandle cooldownIcon
-    private static framehandle cooldownText
+    private static UITooltipIcon array[3] icons
 
     static function setup()
         self = createFrame("BoxedText", GAME_UI, 0, 0)
@@ -310,24 +343,8 @@ class UITooltip
 
         //self.setPoint(FRAMEPOINT_BOTTOMRIGHT, UIActionWindow.self(), FRAMEPOINT_TOPRIGHT)
 
-        for int i = 0 to 3
-            costPoints[i] = createFrame(FramehandleTypeNames.backdrop, "", header, "", 0)
-                ..setSize(0.013, 0.013)
-                ..setPoint(FRAMEPOINT_TOPRIGHT, header, FRAMEPOINT_TOPRIGHT, -0.013 * i, 0)
-                ..setTexture("full.blp", 0, true)
-                ..setVisible(false)
-
-        cooldownText = createFrame(FramehandleTypeNames.text, "", header, "", 0)
-            ..setSize(0.007, 0.013)
-            ..setPoint(FRAMEPOINT_TOPRIGHT, header, FRAMEPOINT_TOPRIGHT, 0.0, -0.017)
-            ..setText("2")
-            ..setVisible(false)
-    
-        cooldownIcon = createFrame(FramehandleTypeNames.backdrop, "", header, "", 0)
-            ..setSize(0.013, 0.013)
-            ..setPoint(FRAMEPOINT_TOPRIGHT, header, FRAMEPOINT_TOPRIGHT, -0.008, -0.015)
-            ..setTexture("cooldown.blp", 0, true)
-            ..setVisible(false)
+        for int i = 0 to icons.length
+            icons[i] = new UITooltipIcon(header, i)
 
     static protected function setTooltip(Player p, Tooltip tt, TooltipAnchor anchor, framehandle reference)
         if p.isLocal() == false
@@ -366,13 +383,19 @@ class UITooltip
             self.setHeight(MIN_HEIGHT + HEIGHT_OFFSET)
         self.setVisible(true)
 
-        for int i = 0 to 3
-            costPoints[i].setVisible(i < tt.cost)
+        for int i = 0 to icons.length
+            icons[i].hide()
 
-
-        cooldownText.setVisible(tt.cooldown > 0)
-        cooldownText.setText(tt.cooldown.toString())
-        cooldownIcon.setVisible(tt.cooldown > 0)
+        var curIcon = 0
+        if tt.cost > 0
+            icons[curIcon].update(tt.cost.toString(), "UI/Textures/Icons/TooltipAddonAPIcon.dds")
+            curIcon++
+        if tt.mana > 0
+            icons[curIcon].update(tt.mana.toString(), "UI/Textures/Icons/TooltipAddonManaIcon.dds")
+            curIcon++
+        if tt.cooldown > 0
+            icons[curIcon].update(tt.cooldown.toString(), "UI/Textures/Icons/TooltipAddonCooldownIcon.dds")
+            //curIcon++
 
         headerText.setText(tt.header)
 

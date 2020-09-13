@@ -10,9 +10,8 @@ import initlater Action
 
 public enum BorderColor
     RED
-    BLUE
+    GREEN
     BLACK
-    PRIMARY
     NONE
 
 public class ButtonBorder
@@ -24,6 +23,14 @@ public class ButtonBorder
         ..setPoint(FRAMEPOINT_BOTTOMRIGHT, ref, FRAMEPOINT_BOTTOMRIGHT)
         ..setAlpha(125)
 
+    function setBorderBasedOnPlayerRelationship(PlayerRelationship relationship)
+        if relationship == PlayerRelationship.ENEMY
+            setBorder(BorderColor.RED)
+        else if relationship == PlayerRelationship.NEUTRAL
+            setBorder(BorderColor.NONE)
+        else
+            setBorder(BorderColor.GREEN)
+
     function setVisible(boolean flag)
         self.setVisible(flag)
 
@@ -31,16 +38,13 @@ public class ButtonBorder
         switch(color)
             case BorderColor.RED
                 self.setAlpha(125)
-                self.setTexture("UI/Textures/Button/border-red.blp", 0, true)
-            case BorderColor.BLUE
+                self.setTexture("UI/Textures/Button/BTNExtensionBorderRed.dds", 0, true)
+            case BorderColor.GREEN
                 self.setAlpha(125)
-                self.setTexture("UI/Textures/Button/border-blue.blp", 0, true)
+                self.setTexture("UI/Textures/Button/BTNExtensionBorderGreen.dds", 0, true)
             case BorderColor.BLACK
                 self.setAlpha(200)
-                self.setTexture("UI/Textures/Button/border-black.blp", 0, true)
-            case BorderColor.PRIMARY
-                self.setAlpha(125)
-                self.setTexture("UI/Textures/Button/border-primary.blp", 0, true)
+                self.setTexture("UI/Textures/Button/BTNExtensionBorderBlack.dds", 0, true)
             default
                 self.setAlpha(0)
 
@@ -75,6 +79,9 @@ public abstract class UIButton
 
     function setPoint(framepointtype point, framehandle relative, framepointtype relativePoint, real x, real y)
         self.setPoint(point, relative, relativePoint, x, y)
+
+    function setScale(real scale)
+        self.setScale(scale)
 
     function setIcon(string str)
         icon.setTexture(str, 0, true)
@@ -114,15 +121,6 @@ public abstract class UIButton
 
     ondestroy
         Log.error("Tried to destroy a button... That is currently not implemented...")
-        // TODO 
-        /*
-        if onClickListener != null
-            destroy onClickListener
-        if onMouseEnterListener != null
-            destroy onMouseEnterListener
-        if onMouseLeaveListener != null
-            destroy onMouseLeaveListener
-            */
     
 public class UIIconCharge
     private framehandle backdrop
@@ -151,6 +149,7 @@ public class ActionButton extends UIButton
     private UIIconCharge charge
 
     Action action
+    private boolean isEmpty = false
 
     override function setIcon(string str)
         icon.setTexture(str, 0, true)
@@ -160,11 +159,11 @@ public class ActionButton extends UIButton
         self = createFrame("Button", parent, 0, 0)
         icon = getFrame("ButtonIcon")
 
-        glow = createFrame("SPRITE", "ButtonGlow", self, "", 0)
+        glow = createFrame("SPRITE", "ButtonGlow", icon, "", 0)
         ..setAllPoints(icon)
         ..setModel(UI.heroLevel, 0)
 
-        block = createFrame("BACKDROP", "ButtoBlock", self, "", 0)
+        block = createFrame("BACKDROP", "ButtoBlock", icon, "", 0)
         ..setAllPoints(icon)
         ..setVisible(false)
 
@@ -175,6 +174,7 @@ public class ActionButton extends UIButton
         
     function setAction(Action action, Action currentAction)
         this.action = action
+        this.isEmpty = false
         setVisible(true)
         setIcon(action.getButton())
 
@@ -187,11 +187,22 @@ public class ActionButton extends UIButton
             if action.canActivate()
                 enable()
             else
-                let cooldown = action.getCooldown()
-                if cooldown > 0 and action.hasEnoughCharges()
-                    disable("BtnBlockCooldown"+cooldown.toString()+".blp")
+                if action.hasEnoughCharges() == false
+                    disable("UI/Textures/Button/BTNExtensionOverlayDisabled.dds")
+                else if action.hasEnoughMana() == false
+                    disable("UI/Textures/Button/BTNExtensionOverlayDisabledMana.dds")
                 else
-                    disable("BtnBlockDisabled.blp")
+                    let cooldown = action.getCooldown()
+                    if cooldown > 0
+                        disable("UI/Textures/Button/BTNExtensionOverlapCooldown"+cooldown.toString()+".dds")
+
+    function setEmpty()
+        this.isEmpty = true
+        setVisible(true)
+        self.setEnabled(false)
+        block.setVisible(false)
+        setGlowVisible(false)
+        setIcon("Icons/BTNDotted.dds")
 
     function setGlowVisible(boolean flag)
         glow.setVisible(flag)
@@ -208,6 +219,9 @@ public class ActionButton extends UIButton
     function setLevel(int value)
         charge.setVisible(true)
         charge.setText(value.toString())
+
+    function isEmpty() returns boolean
+        return isEmpty
 
     function enable()
         self.setEnabled(true)
@@ -230,8 +244,11 @@ public class CommandButton extends UIButton
         else
             self = createFrame("CommandButtonWithHighlight", pane, 0, 0)
             icon = getFrame("Icon")
-
+        
         setup()
+
+    function setBorderBasedOnPlayerRelationship(PlayerRelationship relationship)
+        border.setBorderBasedOnPlayerRelationship(relationship)
 
     function setBorder(BorderColor color)
         border.setBorder(color)
@@ -253,9 +270,6 @@ public class CommandButton extends UIButton
 
     function addBorder()
         border = new ButtonBorder(self)
-
-    function setScale(real scale)
-        self.setScale(scale)
 
     function addText(boolean withGold)
         text = createFrame("CommandButtonText", self, 0, 0)

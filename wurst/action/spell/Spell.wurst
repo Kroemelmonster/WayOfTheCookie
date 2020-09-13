@@ -64,10 +64,13 @@ public abstract class Spell extends Action
     function getManaCost() returns int
         return manacost
 
+    override function hasEnoughMana() returns boolean
+        return manacost <= hero.stats.getMana()
+
     override function canBeActivatedByKey(string key) returns boolean
         return false
 
     override function canActivate() returns boolean
-        if manacost <= hero.stats.getMana()
+        if hasEnoughMana()
             return cooldown <= 0
         return false

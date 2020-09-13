@@ -26,7 +26,8 @@ class UISpell
         costText = getFrame("SpellCostText")
 
         btn = new ActionButton(self)
-        btn.setPoint(FRAMEPOINT_TOPLEFT, self, FRAMEPOINT_TOPLEFT, 0, 0)
+        ..setScale(0.95)
+        ..setPoint(FRAMEPOINT_TOPLEFT, self, FRAMEPOINT_TOPLEFT, 0, 0)
 
     function setPoint(framepointtype point, framehandle relative, framepointtype relativePoint, real x, real y)
         self.setPoint(point, relative, relativePoint, x, y)
@@ -60,12 +61,20 @@ public class UISpellBook
     private static UISpell array[MAX_SPELLS] spells
 
     static function setup()
-        self = createFrame("BasicBorderWindow", GAME_UI, 0, 0)
+
+        self = createFrame("BACKDROP", "ActionWindow", GAME_UI, "", 0)
+        ..setSize(0.5, 0.3)
+        ..setTexture("UI/Textures/SpellBook.dds", 0, true)
         ..setPoint(FRAMEPOINT_TOPLEFT, GAME_UI, FRAMEPOINT_TOPLEFT)
-        ..setSize(0.3, 0.3)
         ..setVisible(false)
-        
-        pane = getFrame("WindowPane")
+
+        pane = createFrame("FRAME", "ActionWindowFrame", self, "", 0)
+        ..setPoint(FRAMEPOINT_TOPLEFT, self, FRAMEPOINT_TOPLEFT, 0.048, -0.035)
+        ..setPoint(FRAMEPOINT_BOTTOMRIGHT, self, FRAMEPOINT_BOTTOM, -0.013, 0.007)
+
+        createFrame("BACKDROP", "", self, "", 0)
+        ..setAllPoints(self)
+        ..setTexture("UI/Textures/SpellBookRipped.dds", 0, true)
 
         let half = (MAX_SPELLS / 2).round()
         for int i = 0 to half - 1
@@ -81,8 +90,8 @@ public class UISpellBook
                 spells[index].setPoint(FRAMEPOINT_TOPLEFT, pane, FRAMEPOINT_TOPLEFT, 0, 0)
                 spells[index].setPoint(FRAMEPOINT_TOPRIGHT, pane, FRAMEPOINT_TOP, 0, 0)
             else
-                spells[index].setPoint(FRAMEPOINT_TOPLEFT, spells[index - 2].self, FRAMEPOINT_BOTTOMLEFT, 0, -0.005)
-                spells[index].setPoint(FRAMEPOINT_TOPRIGHT, spells[index - 2].self, FRAMEPOINT_BOTTOMRIGHT, 0, -0.005)
+                spells[index].setPoint(FRAMEPOINT_TOPLEFT, spells[index - 2].self, FRAMEPOINT_BOTTOMLEFT, 0, -0.018)
+                spells[index].setPoint(FRAMEPOINT_TOPRIGHT, spells[index - 2].self, FRAMEPOINT_BOTTOMRIGHT, 0, -0.018)
                 
 
         for int i = 0 to half - 1
@@ -98,8 +107,8 @@ public class UISpellBook
                 spells[index].setPoint(FRAMEPOINT_TOPLEFT, pane, FRAMEPOINT_TOP, 0, 0)
                 spells[index].setPoint(FRAMEPOINT_TOPRIGHT, pane, FRAMEPOINT_TOPRIGHT, 0, 0)
             else
-                spells[index].setPoint(FRAMEPOINT_TOPLEFT, spells[index - 2].self, FRAMEPOINT_BOTTOMLEFT, 0, -0.005)
-                spells[index].setPoint(FRAMEPOINT_TOPRIGHT, spells[index - 2].self, FRAMEPOINT_BOTTOMRIGHT, 0, -0.005)
+                spells[index].setPoint(FRAMEPOINT_TOPLEFT, spells[index - 2].self, FRAMEPOINT_BOTTOMLEFT, 0, -0.018)
+                spells[index].setPoint(FRAMEPOINT_TOPRIGHT, spells[index - 2].self, FRAMEPOINT_BOTTOMRIGHT, 0, -0.018)
 
     static function update(Player p)
         if p.isLocal() == false or p.isConntrolledByKI or p.spellBookInfo.visible == false
@@ -122,8 +131,16 @@ public class UISpellBook
             let action = actionItr.next()
             if action.isSpell()
                 let spell = action castTo Spell
-                spells[index].setSpell(spell, currentAction)
-                index ++
+                spells[0].setSpell(spell, currentAction)
+                spells[1].setSpell(spell, currentAction)
+                spells[2].setSpell(spell, currentAction)
+                spells[3].setSpell(spell, currentAction)
+                spells[4].setSpell(spell, currentAction)
+                spells[5].setSpell(spell, currentAction)
+                spells[6].setSpell(spell, currentAction)
+                spells[7].setSpell(spell, currentAction)
+
+        destroy actionItr
         
     private static function activate(Action action, Player p)
         if OrderSystem.canOrder(p) == false

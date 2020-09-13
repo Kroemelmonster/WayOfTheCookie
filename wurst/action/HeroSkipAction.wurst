@@ -24,6 +24,7 @@ public class HeroSkipAction extends InstantAction
         super(entity, Icons.bTNCancel, "Skip")
         tt = Tooltip.create(name, KEY)
         tt.addLine("Skips your turn")
+        isPrimary = false
         
     override function canActivate() returns boolean
         return true

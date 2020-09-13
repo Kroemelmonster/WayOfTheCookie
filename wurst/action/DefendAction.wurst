@@ -24,6 +24,7 @@ public class DefendAction extends InstantAction
         super(stack, Icons.bTNStop, "Defend")
         tt = Tooltip.create(name, KEY)
         tt.addLine("Skips your turn ( thats it for now )")
+        isPrimary = false
         
     override function canActivate() returns boolean
         return true

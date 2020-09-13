@@ -21,6 +21,7 @@ public class WaitAction extends InstantAction
         super(stack, Icons.bTNPatrol, "Wait")
         tt = Tooltip.create(name, KEY)
         ..addLine("Postpone this turn")
+        isPrimary = false
 
         
     override function canActivate() returns boolean

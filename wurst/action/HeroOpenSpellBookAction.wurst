@@ -25,6 +25,7 @@ public class HeroOpenSpellBookAction extends InstantAction
         super(entity, Icons.bTNBookOfSummoning, "Open Spellbook")
         tt = Tooltip.create(name, KEY)
         tt.addLine("Opens your vastly filled Skillbook")
+        isPrimary = false
         
     override function canActivate() returns boolean
         return true
