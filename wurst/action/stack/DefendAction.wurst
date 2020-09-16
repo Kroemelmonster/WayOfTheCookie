@@ -4,8 +4,9 @@ package DefendAction
 import Icons
 
 import Action
-import InstantAction
+import InstantStackAction
 import Abilities
+import ActionCost
 
 import OrderSystem
 import BoardController
@@ -15,31 +16,27 @@ import UIActionWindow
 import initlater BoardStack
 import BoardTrigger
 
-public class DefendAction extends InstantAction
+public class DefendAction extends InstantStackAction
     private constant static string KEY = "D"
 
     private Tooltip tt
 
     construct(BoardStack stack)
-        super(stack, Icons.bTNStop, "Defend")
+        super(stack, Icons.bTNStop, "Defend", ActionCostPreset.create(1, true))
         tt = Tooltip.create(name, KEY)
         tt.addLine("Skips your turn ( thats it for now )")
-        isPrimary = false
         
-    override function canActivate() returns boolean
-        return true
-
     override function activate()
         stack.flashEffectOnPos(Abilities.defendCaster)
-        BoardController.finishOrder(entity, false)
+        BoardController.finishOrder(entity, cost)
         
     override function onUIMouseEnter()
         tt.display(stack.getPlayer(), false)
-        UIActionWindow.updateActionPoints(entity, 99)
+        UIActionWindow.updateActionPoints(entity, cost)
 
     override function onUIMouseLeave()
         UITooltip.hide(stack.getPlayer())
-        UIActionWindow.updateActionPoints(entity, 0)
+        UIActionWindow.updateActionPoints(entity)
 
     override function canBeActivatedByKey(string key) returns boolean
         return key == KEY

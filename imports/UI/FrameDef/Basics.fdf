@@ -10,10 +10,18 @@ Frame "TEXT" "CenteredText" {
     FontJustificationV JUSTIFYMIDDLE,
 }
 
-Frame "TEXT" "HeaderText" INHERITS "EscMenuButtonTextTemplate" {
+Frame "TEXT" "HeaderText" {
 	UseActiveContext,
-	FrameFont "MasterFontBold", 0.02, "",
+	FrameFont "Fonts\BLQ85Web.ttf", 0.02, "",
 	FontColor 1.0 1.0 1.0 1.0,
+    FontJustificationH JUSTIFYCENTER,
+    FontJustificationV JUSTIFYMIDDLE,
+}
+
+Frame "TEXT" "BookText" {
+	UseActiveContext,
+	FrameFont "Fonts\ulei00m.ttf", 0.013, "",
+	FontColor .0 .0 .0 1.0,
     FontJustificationH JUSTIFYCENTER,
     FontJustificationV JUSTIFYMIDDLE,
 }
@@ -84,10 +92,13 @@ Frame "GLUEBUTTON" "ArrowButtonBottomLeft" {
     }
 }
 
-Frame "BACKDROP" "BackdropWithoutEvents" {
+Frame "BACKDROP" "BACKDROP_IGNORE_EVENTS" {
 	LayerStyle "IGNORETRACKEVENTS",
 }
 
-Frame "TEXT" "TextWithoutEvents" {
+Frame "TEXT" "TEXT_IGNORE_EVENTS" {
     LayerStyle "IGNORETRACKEVENTS",
 }
+
+
+//Fonts\BLQ55Web.ttf

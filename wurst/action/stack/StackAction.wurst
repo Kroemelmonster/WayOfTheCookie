@@ -1,0 +1,9 @@
+package StackAction
+import Action
+import BoardStack
+import ActionCost
+
+public abstract class StackAction extends Action
+    construct(BoardStack stack, string icon, string name, ActionCostPreset cost)
+        super(stack, icon, name, cost)
+        this.stack = stack

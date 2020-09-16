@@ -14,7 +14,7 @@ import initlater UIDialog
 import initlater UIHeroWindow
 import initlater KeyPressSystem
 import initlater BoardEntity
-import initlater UISpellBook
+import initlater UIWindowSpellBook
 
 public abstract class KeyPressListener
     abstract function onEvent(Player p, string key)
@@ -88,6 +88,8 @@ public class Player
         keyPressListener.add(listener)
 
     function getRelationshipStatusTo(Player other) returns PlayerRelationship
+        if other == null
+            return PlayerRelationship.NEUTRAL
         if this == other
             return PlayerRelationship.SELF
         else if this == NEUTRAL_PASSIVE

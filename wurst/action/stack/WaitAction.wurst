@@ -1,7 +1,7 @@
 package WaitAction
 
 import Action
-import InstantAction
+import InstantStackAction
 import Icons
 
 import OrderSystem
@@ -10,18 +10,17 @@ import UITooltip
 import initlater BoardStack
 import BoardTrigger
 import InitiativeList
+import ActionCost
 
-public class WaitAction extends InstantAction
-
+public class WaitAction extends InstantStackAction
     private constant static string KEY = "W"
 
-
     private Tooltip tt
+
     construct(BoardStack stack)
-        super(stack, Icons.bTNPatrol, "Wait")
+        super(stack, Icons.bTNPatrol, "Wait", ActionCostPreset.create(0, false))
         tt = Tooltip.create(name, KEY)
         ..addLine("Postpone this turn")
-        isPrimary = false
 
         
     override function canActivate() returns boolean

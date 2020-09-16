@@ -11,6 +11,7 @@ import BoardController
 import OrderSystem
 
 import Action
+import StackAction
 import StackType
 
 import initlater Cell
@@ -22,13 +23,13 @@ import DelayAnimation
 import CastAnimation
 import BoardTrigger
 import ClosureTimers
+import ActionCost
 
-public class SummonLesserSkeletonAction extends Action
+public class SummonLesserSkeletonAction extends StackAction
     static constant string NAME = "Summon Skeleton"
     static constant string ICON = Icons.bTNRaiseDead
 
-    private static constant int COST = 2
-    private static constant int COOLDOWN = 3
+    private static constant ActionCostPreset COST = ActionCostPreset.create(2, true, 3)
     private static constant int MAXRANGE = 1
     private static constant string EFFECT = Abilities.raiseSkeleton
     private static constant string KEY = "S"
@@ -38,7 +39,6 @@ public class SummonLesserSkeletonAction extends Action
     static function setup()
         SUMMONED_TYPE = StackTypes.LESSER_SKELETON
         BASE_TOOLTIP = Tooltip.create(NAME)
-        ..setCooldown(COOLDOWN)
         ..setCost(COST)
         
         ..addLine(Tooltip.stat("Target", "Empty Cell"))
@@ -62,7 +62,8 @@ public class SummonLesserSkeletonAction extends Action
     private intRange summonAmount  
 
     construct(BoardStack stack)
-        super(stack, ICON, NAME)
+        super(stack, ICON, NAME, COST)
+        presetOption(ActionOption.PRIMARY)
         tooltip = Tooltip.copy(BASE_TOOLTIP)
         ..addKey(KEY)
 
@@ -90,8 +91,7 @@ public class SummonLesserSkeletonAction extends Action
                 BoardController.placeStackOnBoard(summon, cell, true) ->
                     let delayTime = Scheduler.getTimeIn(0.5) // this is the backswing for casting
                     DelayAnimation.create(cell.getBoard(), delayTime) ->
-                        cooldown = COOLDOWN + 1
-                        BoardController.finishOrder(entity, false)
+                        BoardController.finishOrder(entity, cost)
             
             return true
         
@@ -114,18 +114,15 @@ public class SummonLesserSkeletonAction extends Action
             if cell.getStack() == null
                 area.add(cell)
 
-    override function canActivate() returns boolean
-        return stack.stats.getRemainingActionPoints() >= COST and cooldown <= 0
-
     @inline
     private function showPreview()
         tooltip.display(stack.getPlayer(), false)
-        UIActionWindow.updateActionPoints(entity, 99)
+        UIActionWindow.updateActionPoints(entity, cost)
                 
     @inline
     private function hidePreview()
         UITooltip.hide(stack.getPlayer())
-        UIActionWindow.updateActionPoints(entity, 0)
+        UIActionWindow.updateActionPoints(entity)
 
     override function onUIMouseEnter()
         recalcSummonAmount()

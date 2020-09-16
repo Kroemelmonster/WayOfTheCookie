@@ -4,17 +4,14 @@ package HeroOpenSpellBookAction
 import Icons
 
 import Action
-import InstantAction
-import Abilities
 
-import OrderSystem
-import BoardController
 import UITooltip
-import UIActionWindow
 
 import initlater BoardEntity
 import BoardTrigger
-import UISpellBook
+import ActionCost
+import InstantAction
+import UIWindowSpellBook
 
 public class HeroOpenSpellBookAction extends InstantAction
     private constant static string KEY = "O"
@@ -22,18 +19,15 @@ public class HeroOpenSpellBookAction extends InstantAction
     private Tooltip tt
 
     construct(BoardEntity entity)
-        super(entity, Icons.bTNBookOfSummoning, "Open Spellbook")
+        super(entity, Icons.bTNBookOfSummoning, "Open Spellbook", ActionCostPreset.create(0, false))
         tt = Tooltip.create(name, KEY)
         tt.addLine("Opens your vastly filled Skillbook")
-        isPrimary = false
         
     override function canActivate() returns boolean
         return true
 
     override function activate()
-        //BoardController.finishOrder(entity, true)
-        UISpellBook.toggle(entity.getPlayer())
-
+        UIWindowSpellBook.toggle(entity.getPlayer())
         
     override function onUIMouseEnter()
         tt.display(entity.getPlayer(), false)

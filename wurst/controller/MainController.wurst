@@ -33,7 +33,7 @@ public class MainController
 
 
     static function startFight(Hero hero, HostileArmy enemy, Board board)
-        // Log.trace("HIER BEGINNT DER KAMPF ZWISCHEN "+hero.toString()+ " vs "+enemy.toString())
+        // TODO CombarLog ("HIER BEGINNT DER KAMPF ZWISCHEN "+hero.toString()+ " vs "+enemy.toString())
         hero.enable(false)
         enemy.enable(false)
 

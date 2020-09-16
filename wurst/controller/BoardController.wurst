@@ -22,6 +22,7 @@ import Globals
 import Status
 import StatusType
 import StunDebuff
+import ActionCost
 
 public class BoardController
 
@@ -53,11 +54,12 @@ public class BoardController
             UIController.triggerOnStackCreationOrDeathChange(board) -> 
                 next.continue()
 
-    static function finishOrder(BoardEntity entity, boolean isAllowedToContinue)
+    static function finishOrder(BoardEntity entity, ActionCost cost)
         let board = entity.getBoard()
         OrderSystem.endOrder(board)
         if entity.isAlive()
-            if isAllowedToContinue and entity.canStillAct()
+            cost.pay()
+            if entity.canStillAct()
                 entity.resetCurrentSelectedAction()
                 UIController.triggerOnActiveEntityActionPointChange(entity)
                 if entity.getPlayer().isConntrolledByKI

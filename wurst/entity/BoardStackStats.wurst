@@ -147,9 +147,13 @@ public class BoardStackStats
         stack.setVisualHp(hp / getMaxHp())
 
     @inline
-    function addActionPoints(integer amount)
-        remainingActionPoints += amount
-        remainingMoveActionPoints += amount
+    function removeAP(integer amount)
+        remainingActionPoints -= amount
+        if remainingActionPoints < 0
+            remainingActionPoints = 0
+        remainingMoveActionPoints -= amount
+        if remainingMoveActionPoints < 0
+            remainingMoveActionPoints = 0
 
     function adjustRemainingActionPointsToRemainingMoveActionPoints(integer amount)
         if remainingActionPoints <= remainingMoveActionPoints

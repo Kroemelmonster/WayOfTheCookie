@@ -11,5 +11,6 @@ UI\FrameDef\DialogButtons.fdf
 UI\FrameDef\StackWindow.fdf
 UI\FrameDef\HeroWindow.fdf
 UI\FrameDef\CommandButtons.fdf
+UI\FrameDef\SpellBook.fdf
 UI\Window.fdf
 UI\Window.fdf

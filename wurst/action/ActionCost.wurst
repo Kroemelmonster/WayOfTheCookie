@@ -1,0 +1,121 @@
+package ActionCost
+import initlater BoardEntity
+
+public class ActionCostPreset
+    protected int ap
+    protected boolean apFill
+    protected int maxCooldown
+    protected int maxCharges
+    protected int mana
+
+    private construct(int ap, boolean apFill, int maxCooldown, int maxCharges, int mana)
+        this.ap = ap
+        this.apFill = apFill
+        this.maxCooldown = maxCooldown
+        this.maxCharges = maxCharges
+        this.mana = mana
+
+    static function create(int ap, boolean apFill) returns ActionCostPreset
+        return new ActionCostPreset(ap, apFill, -1, -1, -1)
+
+    static function create(int ap, boolean apFill, int maxCooldown) returns ActionCostPreset
+        return new ActionCostPreset(ap, apFill, maxCooldown, -1, -1)
+
+    static function createWithMana(int ap, boolean apFill, int mana) returns ActionCostPreset
+        return new ActionCostPreset(ap, apFill, -1, -1, mana)
+
+    function adjustBaseManaCost(int mana)
+        this.mana = mana
+
+    function getAP() returns int
+        return ap
+
+    function getAPAsText() returns string
+        if apFill
+            return ap.toString() + "+"
+        return ap.toString()
+
+    function isApFill() returns boolean
+        return apFill
+    
+    function getMaxCooldown() returns int
+        return maxCooldown
+    
+    function getMana() returns int
+        return mana
+
+    function hasMana() returns boolean
+        return mana >= 0
+    
+    function hasCooldown() returns boolean
+        return maxCooldown > 0
+
+public class ActionCost extends ActionCostPreset
+    private static ActionCost TEMP = new ActionCost(null, -1, false, -1, -1, -1)
+
+    static function create(BoardEntity entity, ActionCostPreset preset) returns ActionCost
+        return new ActionCost(entity, preset.ap, preset.apFill, preset.maxCooldown, preset.maxCharges, preset.mana)
+
+    static function getTempCost(int ap, boolean apFill) returns ActionCost
+        return getTempCost(null, ap, apFill)
+
+    static function getTempCost(BoardEntity entity, int ap, boolean apFill) returns ActionCost
+        TEMP.entity = entity
+        TEMP.ap = ap
+        TEMP.apFill = apFill
+        return TEMP
+
+    private BoardEntity entity
+    private int cooldown
+    private int charges
+
+    private construct(BoardEntity entity, int ap, boolean apFill, int maxCooldown, int maxCharges, int mana)
+        super(ap, apFill, maxCooldown, maxCharges, mana)
+        this.entity = entity
+        this.cooldown = -1
+        this.charges = maxCharges
+        if mana > 0 and entity.getType() != EntityType.HERO
+            Log.error("Tried to create a Action with mana that is owned by a hero")
+
+    function canUse() returns boolean
+        if ap > entity.getRemainingActionPoints()
+            return false
+        if hasCooldown() and cooldown >= 0
+            return false
+        if hasEnoughCharges() == false
+            return false
+        if hasEnoughMana() == false
+            return false
+        return true
+
+    function pay()
+        if apFill
+            entity.removeAP(1000)
+        else
+            entity.removeAP(ap)
+        if cooldown >= 0
+            cooldown = maxCooldown + 1
+        if maxCharges > 0
+            charges--
+        if mana >= 0
+            entity.toHero().payMana(mana)
+
+    function setAPFill(boolean flag)
+        this.apFill = flag
+
+    function tickCooldown()
+        if cooldown > 0
+            cooldown -= 1
+
+    function getCurrentCharges() returns int
+        return charges
+
+    function getCurrentCooldown() returns int
+        return cooldown
+
+    function hasEnoughCharges() returns boolean
+        return maxCharges < 0 or charges > 0
+
+    function hasEnoughMana() returns boolean
+        return mana < 0 or entity.toHero().getMana() >= mana
+        

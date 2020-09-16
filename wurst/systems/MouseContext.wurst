@@ -27,7 +27,7 @@ class MouseContext
     /** is used when any userinput should be interpreted as a Highlight of a cell / stack **/
     static function onMouseEnter(Player p, mousePosition mP)
         // dont have to do anything if it is the same cell ( even if both are null )
-        /* TODO
+        /*
             We currently do not care if you change the nearbyCell for vector targeting
             this is due to lag problems. IF you want to enable it again make sure that 
             only used spells actually get an update and not every single action..

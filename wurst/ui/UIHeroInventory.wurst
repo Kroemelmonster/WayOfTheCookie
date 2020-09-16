@@ -73,7 +73,7 @@ public class UIHeroInventory
                 let p = GetTriggerPlayerData()
                 let kItem = p.heroWindoInfo.inventory.hero.getActiveItem(i)
                 if kItem != null
-                    Log.trace("item klick "+kItem.toString())
+                    Log.info("item klick "+kItem.toString())
 
             activeBtns[i].onMouseDown() -> 
                 let mouseBtn = BlzGetTriggerPlayerMouseButton()
@@ -115,7 +115,7 @@ public class UIHeroInventory
                 let p = GetTriggerPlayerData()
                 let kItem = p.heroWindoInfo.inventory.hero.getBackPackItem(i)
                 if kItem != null
-                    Log.trace("item klick backpack "+kItem.toString())
+                    Log.info("item klick backpack "+kItem.toString())
 
             backPackBtns[i].onMouseDown() -> 
                 let mouseBtn = BlzGetTriggerPlayerMouseButton()

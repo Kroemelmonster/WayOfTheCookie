@@ -26,6 +26,7 @@ import BoardEntity
 import SkillTreeTempestarii
 import SkillTree
 import Globals
+import ActionCost
 
 public class ChainLightningSpell extends Spell
     static SpellType TYPE
@@ -34,8 +35,8 @@ public class ChainLightningSpell extends Spell
         TYPE.onCreate() boardHero -> 
             return new ChainLightningSpell(boardHero)
 
-    private static constant int array[3] MANA_COST = [7,12,20]
-    private static constant int array[3] COOLDOWN = [0, 0, 0]
+    private static constant ActionCostPreset BASE_COST = ActionCostPreset.create(1, true, 0)
+    private static constant int array[3] MANA_COST = [7, 12, 20]
     private static constant int array[3] MAX_CHAINS = [1, 2, 3]
     private static constant int array[3] DAMAGE = [40, 70, 100]
 
@@ -55,28 +56,34 @@ public class ChainLightningSpell extends Spell
 
         damagePreview.dmg = realRange(DAMAGE[level] * 0.5 * multi, DAMAGE[level] * 2 * multi)
 
+    private static function adjustCost(ActionCostPreset cost, int level)
+        cost.adjustBaseManaCost(MANA_COST[level])
+    
     static function createTooltip(int power, int level) returns Tooltip
+        adjustCost(BASE_COST, level)
+        return createTooltip(power, level, BASE_COST)
+    
+    private static function createTooltip(int power, int level, ActionCostPreset cost) returns Tooltip
         calculateDamage(power, level, 0)
         let tt = Tooltip.create(TYPE.getName())
-        ..setCost(MANA_COST[level])
-        ..setCooldown(COOLDOWN[level])
+        ..setCost(cost)
         ..addLine(Tooltip.stat("Target", "Enemy"))
         ..addLine(Tooltip.stat("Damage", damagePreview))
         ..addLine("")
         ..addLine("Lightning strikes from one target and chains up to "+Tooltip.primaryString(MAX_CHAINS[level].toString())+" times")
         ..addLine("Each time the damage is descreased by "+Tooltip.primaryPercent(1 - CHAIN_REDUCTION))
         return tt
-    
+        
+
     /* -------------------------------------------------------------------------- */
     
     private LinkedList<Cell> area = new LinkedList<Cell>()
 
     construct(BoardHero hero)
-        super(hero, TYPE)
+        super(hero, TYPE, BASE_COST)
         let skillTree = hero.hero.getSkillTree(SkillTreeTempestarii.TYPE) castTo SkillTreeTempestarii
         setLevel(skillTree.chainLightningLevel)
-        this.manacost = MANA_COST[this.level]
-        this.maxCooldown = COOLDOWN[this.level]
+        adjustCost(cost, level)
 
     override function getHighlightResultForCell(Player p, Cell cell) returns CellResult
         if area.has(cell)
@@ -95,8 +102,7 @@ public class ChainLightningSpell extends Spell
     private function finishOrder(LinkedList<BoardStack> prevTargets, DamageInstance baseDamage)
         destroy prevTargets
         destroy baseDamage
-        payCostAndStartCooldown()
-        BoardController.finishOrder(entity, false)
+        BoardController.finishOrder(entity, cost)
 
     private function chainToNext(LinkedList<BoardStack> prevTargets, BoardEntity prev, DamageInstance baseDamage, BoardStack target, int chains)
         let targetPos = target.getPos3Real()
@@ -160,7 +166,7 @@ public class ChainLightningSpell extends Spell
 
     @inline
     private function showPreview(Cell fromCell)
-        let tt = createTooltip(hero.stats.getPower(), level)
+        let tt = createTooltip(hero.stats.getPower(), level, cost)
         if fromCell != null
             let list = new LinkedList<BoardStack>()
             list.add(fromCell.getStack())
@@ -182,12 +188,12 @@ public class ChainLightningSpell extends Spell
             destroy list
             
         tt.display(entity.getPlayer(), true)
-        UIActionWindow.updateActionPoints(entity, 99)
+        UIActionWindow.updateActionPoints(entity, cost)
                 
     @inline
     private function hidePreview()
         UITooltip.hide(entity.getPlayer())
-        UIActionWindow.updateActionPoints(entity, 0)
+        UIActionWindow.updateActionPoints(entity)
 
     override function onUIMouseEnter()
         showPreview(null)
@@ -196,7 +202,7 @@ public class ChainLightningSpell extends Spell
         hidePreview()
     
     override function executeForKI(SequenzListenerStatus listener)
-        Log.trace("YOU NEED TO WRITE KI FOR CHAIN LIGHTNING SPELL")
+        Log.error("YOU NEED TO WRITE KI FOR CHAIN LIGHTNING SPELL")
         listener.continue(-1)
 
     ondestroy

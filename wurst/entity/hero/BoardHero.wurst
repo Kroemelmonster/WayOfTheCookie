@@ -95,8 +95,16 @@ public class BoardHero extends BoardEntity
         return stats.getRemainingActionPoints()
 
     @inline
-    override function addActionPoints(integer amount)
-        stats.addActionPoints(amount)
+    override function removeAP(integer amount)
+        stats.removeAP(amount)
+
+    @inline
+    function getMana() returns int
+        return stats.mana
+
+    @inline
+    function payMana(int amount)
+        stats.payMana(amount)
 
     @inline
     override function resetActionPoints()

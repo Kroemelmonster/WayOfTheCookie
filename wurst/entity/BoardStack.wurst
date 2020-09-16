@@ -114,7 +114,7 @@ public class BoardStack extends BoardEntity
         return getAction(currentSelectedAction)
 
     function addAction(Action action)
-        if action.isDefault()
+        if action.hasOption(ActionOption.DEFAULT)
             if defaultAction != null
                 Log.error("Tried to add an Default Action to "+getName()+" while it allready has one -> opverwriting it")
             defaultAction = action castTo DefaultAction
@@ -138,8 +138,8 @@ public class BoardStack extends BoardEntity
         return stats.getRemainingMoveActionPoints()
 
     @inline
-    override function addActionPoints(integer amount)
-        stats.addActionPoints(amount)
+    override function removeAP(integer amount)
+        stats.removeAP(amount)
 
     @inline
     override function resetActionPoints()
@@ -223,7 +223,6 @@ public class BoardStack extends BoardEntity
 
     private function removeStackRelatedThingsFromBoard()
         removeEntityRelatedThingsFromBoard()
-        // TODO this should remove the entiy not the stack
         if cell != null
             cell.removeStack()
             cell = null

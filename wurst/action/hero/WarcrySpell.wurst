@@ -7,13 +7,14 @@ import Spell
 
 import initlater Cell
 import initlater BoardHero
+import InstantSpell
+import ActionCost
 
-public abstract class WarcrySpell extends Spell
+public abstract class WarcrySpell extends InstantSpell
 
-    construct(BoardHero hero, SpellType spellType)
-        super(hero, spellType)
-        this.isInstant = true
-        this.isWarcy = true
+    construct(BoardHero hero, SpellType spellType, ActionCostPreset cost)
+        super(hero, spellType, cost)
+        presetOption(ActionOption.WARCRY)
 
     override function getPreviewResultForCell(Cell cell) returns CellResult
         return CellResult.NONE
@@ -30,12 +31,15 @@ public abstract class WarcrySpell extends Spell
     override function sendTargetOrder(Cell cell) returns boolean
         return false
 
+        // TODO all other warcry start cd
+        /*
     function payCostAndStartCooldown(int cooldown)
         hero.stats.addMana(-manacost)
         for Action action in hero.getActions()
             if action.isWarcy
                 let otherWarcy = action castTo WarcrySpell
                 otherWarcy.cooldown = cooldown
+                */
 
     abstract override function activate()
         

@@ -10,7 +10,7 @@ import UIController
 import PlayerData
 import AttackAnimation
 import Damage
-import DefaultAction
+import DefaultStackAction
 import UITooltip
 import BoardController
 import TargetList
@@ -26,6 +26,7 @@ import BoardTrigger
 import SubTargetList
 import KISystem
 import ClosureTimers
+import ActionCost
 
 function subActionMoveEnd(Board board, BoardStack stack, int remainingMoveActionPoints, SequenzListenerStatus next, int status)
     if status == 0
@@ -65,7 +66,7 @@ public function subActionMove(StackPathFinding walkableCells, LinkedList<Cell> p
 
 function subActionAttackEnd(int cost, BoardStack attacker, SequenzListenerStatus next, int status)
     if cost > 0
-        attacker.addActionPoints(-cost)
+        attacker.removeAP(cost)
     next.continue(status)
 
 function subActionAttackBackSwing(int cost, Board board, BoardStack attacker, BoardStack defender, boolean triggerOnAttack, SequenzListenerStatus next)
@@ -110,7 +111,7 @@ public function subActionAttack(int cost, BoardStack attacker, BoardStack defend
                 subActionAttackBackSwing(cost, board, attacker, defender, triggerOnAttack, next)
            
 
-public class WalkAndAttackAction extends DefaultAction
+public class WalkAndAttackAction extends DefaultStackAction
     private StackPathFinding walkableCells
     private LinkedList<Cell> path
     private boolean wasPathLimited
@@ -119,7 +120,8 @@ public class WalkAndAttackAction extends DefaultAction
     private LinkedList<BoardStack> possibleTargets = new LinkedList<BoardStack>()
 
     construct(BoardStack stack)
-        super(stack, "Attack")
+        // TODO cost should be the attack cost!
+        super(stack, "Attack", ActionCostPreset.create(0, true))
         walkableCells = new StackPathFinding(stack, 1.0)
         path = new LinkedList<Cell>()
         targets = new TargetList(stack) (BoardStack possibleStack) -> 
@@ -128,7 +130,7 @@ public class WalkAndAttackAction extends DefaultAction
     override function getPreviewResultForCell(Cell cell) returns CellResult
         if canAttackTargetThisTurn(cell.getStack())
             return CellResult.NEGATIVE
-        else if cell != stack.getCell() and getRemainingMoveActionPointsFromCellSave(cell, stack.getRemainingMoveActionPoints()) >= 0
+        else if cell != entity.getCell() and getRemainingMoveActionPointsFromCellSave(cell, stack.getRemainingMoveActionPoints()) >= 0
             return CellResult.DEFAULT
         return CellResult.NONE
 
@@ -165,22 +167,26 @@ public class WalkAndAttackAction extends DefaultAction
             destroy preview
             tt.display(stack.getPlayer(), true)
         
-        var showCost = 0
+        var showCost = ActionCost.getTempCost(0, false)
         if cell != null
             if canAttackTargetThisTurn(cell.getStack())
-                showCost = 99
+                showCost = ActionCost.getTempCost(0, true)
             else if cell != stack.getCell()
                 let remainingActionPoints = getActionPointsAfterWalkToCell(cell)
                 if remainingActionPoints >= 0
-                    showCost = stack.getRemainingActionPoints() - remainingActionPoints
+                    showCost = ActionCost.getTempCost(stack.getRemainingActionPoints() - remainingActionPoints, false)
         UIActionWindow.updateActionPoints(entity, showCost)
+
+    private function finish(boolean endTurn)
+        BoardController.finishOrder(entity, ActionCost.getTempCost(stack, 0, endTurn))
+                    
 
     override function sendTargetOrder(Cell cell) returns boolean
         var orderIsBeeingExecuted = false
         if path.has(cell)
             orderIsBeeingExecuted = true
             subActionMove(walkableCells, path, stack) (status) ->
-                BoardController.finishOrder(entity, true)
+                finish(false)
         else
             let enemy = cell.getStack()
             if canAttackTargetThisTurn(enemy)
@@ -188,16 +194,16 @@ public class WalkAndAttackAction extends DefaultAction
                 // do we need to walk there ?
                 if path.isEmpty()
                     subActionAttack(1, stack, enemy, true) (attackStatus) ->
-                        BoardController.finishOrder(entity, false)
+                        finish(true)
                 else
                     subActionMove(walkableCells, path, stack) (status) ->
                         if status == 0
                             subActionAttack(1, stack, enemy, true) (attackStatus) ->
-                                BoardController.finishOrder(entity, false)
+                                finish(true)
                         else
                             // welp here you COULD theoretically act again but that is only a bug in subActionMove --> so we dont care
                             // if you ordered to attack someone and somthing does not work your turn is donso
-                            BoardController.finishOrder(entity, false)
+                            finish(true)
         return orderIsBeeingExecuted
 
     @inline
@@ -338,7 +344,6 @@ public class WalkAndAttackAction extends DefaultAction
         if enemy == null
             enemy = KISystem.getBestTarget(getTargets(false))
         
-        //Log.trace("KI : targeting "+enemy.toString())
         nullTimer() ->
             if enemy == null
                 listener.continue(1)
@@ -349,7 +354,6 @@ public class WalkAndAttackAction extends DefaultAction
                     // this happenz wenn the ki has no more move action points but still has action points
                     listener.continue(1)
                 else
-                    //Log.trace("KI : action to cell "+order.toString())
                     sendTargetOrder(order)
                     listener.continue(0)
     

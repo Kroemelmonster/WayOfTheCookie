@@ -149,7 +149,6 @@ public class InitiativeList
         update(0, true)
 
     private function update(int elapsedTime, boolean updateUI)
-        //Log.trace("update with "+elapsedTime.toString())
         for entry in entries
             destroy entry
         entries.clear()
@@ -158,22 +157,15 @@ public class InitiativeList
             entity.expiredTime += elapsedTime
             entity.update()
             insertEntities(entity)
-
-        //Log.trace("result : ")
-        //for entry in entries
-            //Log.trace(entry.toString())
         if updateUI
             UIInitiativeWindow.refresh(this)
         
         
     private function insertEntities(InitiativeEntity entity)
         var entryTime = 0 - entity.expiredTime
-        //Log.trace("we want to add an entity : "+entity.toString())
-        //Log.trace("at : "+entryTime.toString()+ " with an init of "+entity.initiative.toString())
         
         while entryTime < MAX_TIME
             entryTime += entity.initiative
-            //Log.trace("put one entry at : "+entryTime.toString())
             
             let entry = new InitiativeEntry(entity, time + entryTime)
             // insert at sorted Place
@@ -230,7 +222,6 @@ public class InitiativeList
             update()
     
     private function endTurn(boolean wait)
-        //Log.trace("end Turn "+wait.toString())
         if current != null
             if wait
                 current.expiredTime = (current.initiative * 0.5).round()
@@ -238,7 +229,6 @@ public class InitiativeList
             else
                 current.didWait = false
             if current.boardEntity != null
-                //Log.trace("trigger Turn end: "+current.boardEntity.toString())
                 BoardController.onTurnEnd(current.boardEntity, wait) ->
                     advanceTurn()
             else
@@ -251,20 +241,17 @@ public class InitiativeList
         var elapsedTime = next.time - time
         if elapsedTime < 0
             elapsedTime = 0
-        //Log.trace("we figured that the next dude is "+next.toString()+" so we advance time by "+elapsedTime.toString())
         update(elapsedTime, false)
 
       
 
         let currentEntry = entries.getFirst()
-        //Log.trace("now current is : "+currentEntry.toString())
         entries.remove(currentEntry)
         current = currentEntry.entity
         current.expiredTime = 0
         destroy currentEntry
 
         if current.boardEntity != null
-            //Log.trace("trigger turn start : "+current.boardEntity.toString())
             BoardController.onTurnStart(current.boardEntity, current.isWaiting())
 
         UIInitiativeWindow.refresh(this)

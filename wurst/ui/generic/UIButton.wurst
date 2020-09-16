@@ -7,6 +7,7 @@ import PlayerData
 
 import initlater MouseContext
 import initlater Action
+import UIFrame
 
 public enum BorderColor
     RED
@@ -18,7 +19,7 @@ public class ButtonBorder
     private framehandle self
 
     construct(framehandle ref)
-        self = createFrame("BACKDROP", "ButtonBorder", ref, "", 0)
+        self = createFrame("BACKDROP", "", ref, "", 0)
         ..setPoint(FRAMEPOINT_TOPLEFT, ref, FRAMEPOINT_TOPLEFT)
         ..setPoint(FRAMEPOINT_BOTTOMRIGHT, ref, FRAMEPOINT_BOTTOMRIGHT)
         ..setAlpha(125)
@@ -127,12 +128,12 @@ public class UIIconCharge
     private framehandle text
 
     construct(framehandle icon)
-        backdrop = createFrame("BackdropWithoutEvents", icon, 0, 0)
+        backdrop = createUIFrame("BACKDROP", icon, true)
         ..setPoint(FRAMEPOINT_TOPLEFT, icon, FRAMEPOINT_CENTER, vec2(0.005, -0.005))
         ..setPoint(FRAMEPOINT_BOTTOMRIGHT, icon, FRAMEPOINT_BOTTOMRIGHT)
-        ..setTexture("UI\\Widgets\\Console\\Human\\human-transport-slot.blp", 0, true)
+        ..setTexture("UI/Widgets/Console/Human/human-transport-slot.blp", 0, true)
 
-        text = createFrame("TextWithoutEvents", backdrop, 0, 0)
+        text = createUIFrame("TEXT", backdrop)
         ..setAllPoints(backdrop)
         ..setTextAlignment(TEXT_JUSTIFY_MIDDLE, TEXT_JUSTIFY_CENTER)
 
@@ -182,17 +183,18 @@ public class ActionButton extends UIButton
             enable()
             setGlowVisible(true)
         else
+            let cost = action.getCost()
             setGlowVisible(false)
-            setCharge(action.getCharge())
+            setCharge(cost.getCurrentCharges())
             if action.canActivate()
                 enable()
             else
-                if action.hasEnoughCharges() == false
+                if cost.hasEnoughCharges() == false
                     disable("UI/Textures/Button/BTNExtensionOverlayDisabled.dds")
-                else if action.hasEnoughMana() == false
+                else if cost.hasEnoughMana() == false
                     disable("UI/Textures/Button/BTNExtensionOverlayDisabledMana.dds")
-                else
-                    let cooldown = action.getCooldown()
+                else if cost.hasCooldown()
+                    let cooldown = cost.getCurrentCooldown()
                     if cooldown > 0
                         disable("UI/Textures/Button/BTNExtensionOverlapCooldown"+cooldown.toString()+".dds")
 

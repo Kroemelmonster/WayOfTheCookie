@@ -27,13 +27,14 @@ import BoardTrigger
 import HashMap
 import ClosureTimers
 import Effect
+import StackAction
+import ActionCost
 
-public class ChainLightningAction extends Action
+public class ChainLightningAction extends StackAction
     static constant string NAME = "Chain Lightning"
     static constant string ICON = Icons.bTNChainLightning
 
-    private static constant int COST = 1
-    private static constant int COOLDOWN = 3
+    private static constant ActionCostPreset COST = ActionCostPreset.create(1, true, 3)
     private static constant int MAXRANGE = 4
     private static constant string KEY = "C"
     private static constant int MAX_CHAINS = 3
@@ -57,7 +58,7 @@ public class ChainLightningAction extends Action
     static function createTooltip(boolean isDefault, int amount) returns Tooltip
         calculateDamage(amount, 0)
         let tt = Tooltip.create(NAME)
-        ..setCooldown(COOLDOWN)
+        // TODO use the real cost in the real example
         ..setCost(COST)
         ..addLine(Tooltip.stat("Target", "Enemy"))
         ..addLine(Tooltip.stat("Range", MAXRANGE))
@@ -71,7 +72,8 @@ public class ChainLightningAction extends Action
     private LinkedList<Cell> area = new LinkedList<Cell>()
 
     construct(BoardStack stack)
-        super(stack, ICON, NAME)
+        super(stack, ICON, NAME, COST)
+        presetOption(ActionOption.PRIMARY)
 
     override function getHighlightResultForCell(Player p, Cell cell) returns CellResult
         if area.has(cell)
@@ -90,8 +92,7 @@ public class ChainLightningAction extends Action
     private function finishOrder(LinkedList<BoardStack> prevTargets, DamageInstance baseDamage)
         destroy prevTargets
         destroy baseDamage
-        cooldown = COOLDOWN + 1
-        BoardController.finishOrder(entity, false)
+        BoardController.finishOrder(entity, cost)
 
     private function chainToNext(LinkedList<BoardStack> prevTargets, BoardStack prev, Cell prevCell, DamageInstance baseDamage, BoardStack target, int chains)
         let targetPos = target.getPos3Real()
@@ -154,9 +155,6 @@ public class ChainLightningAction extends Action
             if possibleTarget != null and possibleTarget.isEnemy(stack)
                 area.add(cell)
 
-    override function canActivate() returns boolean
-        return stack.stats.getRemainingActionPoints() >= COST and cooldown <= 0
-
     @inline
     private function showPreview(Cell fromCell)
         let tt = createTooltip(false, stack.stats.amount)
@@ -181,12 +179,12 @@ public class ChainLightningAction extends Action
             destroy list
             
         tt.display(stack.getPlayer(), true)
-        UIActionWindow.updateActionPoints(entity, 99)
+        UIActionWindow.updateActionPoints(entity, cost)
                 
     @inline
     private function hidePreview()
         UITooltip.hide(stack.getPlayer())
-        UIActionWindow.updateActionPoints(entity, 0)
+        UIActionWindow.updateActionPoints(entity)
 
     override function onUIMouseEnter()
         showPreview(null)
@@ -201,9 +199,9 @@ public class ChainLightningAction extends Action
         let defaultAction = stack.getDefaultAction()
         let pathing = defaultAction.getPathing()
         let weightCells = new HashMap<Cell, real>()
-        var cost = COST
-        if cost == 0
-            cost = 1 // after you moved all points you cant even use a spell that cost nothing
+        var apCost = cost.getAP()
+        if apCost == 0
+            apCost = 1 // after you moved all points you cant even use a spell that cost nothing
         Cell bestCell = null
         BoardStack bestTarget = null
         var highestWeightSoFar = 0.0
@@ -223,7 +221,7 @@ public class ChainLightningAction extends Action
                         let pCell = pathing.get(cell)
                         if pCell != null
                             remaining = pCell.getRaminingMoveActionPoints(stack)
-                    if remaining >= cost
+                    if remaining >= apCost
                         let newWeight = weight
                         weightCells.put(cell, newWeight)
                         if newWeight > highestWeightSoFar

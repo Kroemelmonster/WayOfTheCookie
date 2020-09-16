@@ -10,7 +10,7 @@ import UIInitiativeWindow
 import UIWorldConsole
 import UINPCWindow
 import UIHeroWindow
-import UISpellBook
+import UIWindowSpellBook
 
 public function framehandle.toString() returns string
 	var str = "FrameHandle "
@@ -54,7 +54,7 @@ class UIMain
 			UITooltip.setup()
 		else if part == 1
 			UIInitiativeWindow.setup()
-			UISpellBook.setup()
+			UIWindowSpellBook.setup()
 		else if part == 2
 			UIWorldConsole.setup()
 			UINPCWindow.setup()

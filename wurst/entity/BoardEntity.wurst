@@ -70,7 +70,7 @@ public abstract class BoardEntity
 
     abstract function getRemainingActionPoints() returns int
 
-    abstract function addActionPoints(int amount)
+    abstract function removeAP(int amount)
 
     abstract function resetActionPoints()
 

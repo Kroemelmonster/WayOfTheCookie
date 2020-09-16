@@ -1,0 +1,12 @@
+package UIFrame
+
+public function createUIFrame(string frameType, framehandle parent) returns framehandle
+    return createUIFrame(frameType, parent, false)
+
+public function createUIFrame(string frameType, framehandle parent, boolean ignoreEvents) returns framehandle
+    if ignoreEvents
+        return createFrame(frameType +  "_IGNORE_EVENTS", parent, 0, 0)
+    return createFrame(frameType, "", parent, "", 0)
+
+public function createUINamedFrame(string name, framehandle parent) returns framehandle
+    return createFrame(name, parent, 0, 0)

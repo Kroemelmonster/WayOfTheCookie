@@ -31,7 +31,6 @@ public class PoisonousPassive extends PassiveAction
         super(stack, "Poisonous")
 
     override function triggerOnStackCreation(BoardStack stack)
-        // TODO can this be destroyed ? yes -> you need to delete stuff
         stack.getTriggers().addOnDamageDealt() (BoardEntity source, BoardStack target, SpecificDamageInstance specificInstance, SequenzListener next) ->
             if specificInstance.damageInstance.isDot 
                 next.continue()

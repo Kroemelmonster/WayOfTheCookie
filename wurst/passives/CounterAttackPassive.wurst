@@ -22,7 +22,6 @@ public class CounterAttackPassive extends PassiveAction
         super(stack, "Attack")
 
     override function triggerOnStackCreation(BoardStack stack)
-        // TODO can a talent be destroyed ? yes -> you need to delete stuff
         stack.getTriggers().addTurnEnd() (SequenzListener next) ->
             counter = MAX_COUNTER
             next.continue()

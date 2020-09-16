@@ -11,6 +11,9 @@ import initlater SlamAction
 import initlater BoardStack
 import BoardTrigger
 import UIController
+import ActionCost
+import BitSet
+import initlater BoardHero
 
 public enum CellResult
     DEFAULT
@@ -19,25 +22,30 @@ public enum CellResult
     NEUTRAL
     NONE
 
+public enum ActionOption
+    INSTANT
+    DEFAULT
+    PRIMARY
+    SPELL
+    WARCRY
+
 public abstract class Action
     protected BoardEntity entity
+
     protected BoardStack stack
+    protected BoardHero hero
+
     protected string btn
     protected string name
-    protected boolean isInstant = false
-    protected boolean isDefault = false
-    protected boolean isPrimary = true
-    protected boolean isSpell = false
-    protected boolean isWarcy = false
-    protected int cooldown = 0
-    protected int charge = -1
-    protected int maxCharge = -1
+    protected ActionCost cost
 
-    construct(BoardEntity entity, string btn, string name)
+    private bitset optionSet = bitset(0)
+
+    construct(BoardEntity entity, string btn, string name, ActionCostPreset cost)
         this.entity = entity
-        this.stack = entity.toStack()
         this.btn = btn
         this.name = name
+        this.cost = ActionCost.create(entity, cost)
     
     static function setup()
         SummonLesserSkeletonAction.setup()
@@ -61,57 +69,56 @@ public abstract class Action
     abstract function recalculateHighlight(Player p)
 
     abstract function sendTargetOrder(Cell cell) returns boolean
+    abstract function executeForKI(SequenzListenerStatus listener)
 
-    function getCooldown() returns int
-        return cooldown
+    abstract function canBeActivatedByKey(string key) returns boolean
 
+    @inline
+    function getCost() returns ActionCost
+        return cost
+
+    @inline
     function tickCooldown()
-        if cooldown > 0
-            cooldown -= 1
+        cost.tickCooldown()
 
-    abstract function canActivate() returns boolean
+    function canActivate() returns boolean
+        if cost.canUse()
+            return canActivateExtraCondition()
+        return false
+
+    @inline
+    protected function canActivateExtraCondition() returns boolean
+        return true
 
     function activate()
-        if isInstant
+        if hasOption(ActionOption.INSTANT)
             return
 
         entity.setCurrentAction(this)
         UIController.triggerOnActionChange(entity.getPlayer().playingBoard)
 
-    function isInstant() returns boolean
-        return isInstant
+    @inline
+    protected function presetOption(ActionOption opt)
+        optionSet = optionSet.set(opt castTo int)
+
+
+    @inline
+    function hasOption(ActionOption option) returns boolean
+        return optionSet.get(option castTo int)
 
     function showAsPrimary() returns boolean
-        if isSpell
+        if hasOption(ActionOption.SPELL)
             return false
-        return isPrimary
+        return hasOption(ActionOption.PRIMARY)
 
     function showAsSecondary() returns boolean
-        if isSpell
+        if hasOption(ActionOption.SPELL)
             return false
-        return isPrimary == false
+        return not hasOption(ActionOption.PRIMARY)
 
-    function isDefault() returns boolean
-        return isDefault
-
-    function isSpell() returns boolean
-        return isSpell
-
+    @inline
     function getButton() returns string
         return btn
-
-    function hasEnoughCharges() returns boolean
-        return charge > 0 or maxCharge < 0
-
-    function hasEnoughMana() returns boolean
-        return true
-        
-    function getCharge() returns int
-        return charge
-
-    abstract function executeForKI(SequenzListenerStatus listener)
-
-    abstract function canBeActivatedByKey(string key) returns boolean
 
     @inline
     function getName() returns string

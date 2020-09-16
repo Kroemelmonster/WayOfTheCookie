@@ -21,6 +21,7 @@ import RallingCryBuffHero
 import LinkedList
 import BoardStack
 import RallingCryBuffStack
+import ActionCost
 
 public class RallingCrySpell extends WarcrySpell
     static SpellType TYPE
@@ -31,7 +32,7 @@ public class RallingCrySpell extends WarcrySpell
         TYPE.onCreate() boardHero -> 
             return new RallingCrySpell(boardHero)
 
-    private static constant int COOLDOWN = 3
+    private static constant ActionCostPreset BASE_COST = ActionCostPreset.create(0, false, 3)
     private static constant int array[5] ATTACK_BONUS = [3, 5, 7, 9, 11]
     static StatusType STATUS
     static StatusType STATUS_STACKS
@@ -42,7 +43,7 @@ public class RallingCrySpell extends WarcrySpell
 
     static function createTooltip(int level) returns Tooltip
         let tt = Tooltip.create(TYPE.getName())
-        ..setCooldown(COOLDOWN)
+        ..setCost(BASE_COST)
         ..addLine(Tooltip.stat("Target", "Allies/Self"))
         ..addLine("")
         ..addLine("Gives your self and all your troops a temporary Attack Bonus")
@@ -54,11 +55,9 @@ public class RallingCrySpell extends WarcrySpell
     private LinkedList<BoardStack> affectedAllies = new LinkedList<BoardStack>()
 
     private construct(BoardHero hero)
-        super(hero, TYPE)
+        super(hero, TYPE, BASE_COST)
         let skillTree = hero.hero.getSkillTree(SkillTreeChieftain.TYPE) castTo SkillTreeChieftain
         setLevel(skillTree.rallingCryLevel)
-        this.manacost = 0
-        this.maxCooldown = COOLDOWN
 
     override function activate()
         CastAnimation.create(entity) -> 
@@ -73,18 +72,16 @@ public class RallingCrySpell extends WarcrySpell
                 if ally.getPlayer() == entity.getPlayer()
                     affectedAllies.add(ally)
                     StatusController.add(STATUS_STACKS, ally, createStatusData(level))
-                    
-            payCostAndStartCooldown(maxCooldown)
-            BoardController.finishOrder(entity, true)
+            BoardController.finishOrder(entity, cost)
 
     private function showPreview()
         let tt = createTooltip(level)
         tt.display(entity.getPlayer(), true)
-        UIActionWindow.updateActionPoints(entity, 0)
+        UIActionWindow.updateActionPoints(entity, cost)
 
     private function hidePreview()
         UITooltip.hide(entity.getPlayer())
-        UIActionWindow.updateActionPoints(entity, 0)
+        UIActionWindow.updateActionPoints(entity)
 
     override function onUIMouseEnter()
         showPreview()
@@ -97,5 +94,5 @@ public class RallingCrySpell extends WarcrySpell
     /* ----------------------------------- KI ----------------------------------- */
     
     override function executeForKI(SequenzListenerStatus listener)
-        Log.trace("YOU NEED TO WRITE KI FOR RALLING CRY SPELL")
+        Log.error("YOU NEED TO WRITE KI FOR RALLING CRY SPELL")
         listener.continue(-1)

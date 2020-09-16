@@ -1,0 +1,17 @@
+package DefaultStackAction
+
+import PlayerData
+import Action
+
+import initlater Cell
+import ActionCost
+import StackAction
+import BoardStack
+import DefaultAction
+
+public abstract class DefaultStackAction extends DefaultAction
+
+    construct(BoardStack stack, string name, ActionCostPreset cost)
+        super(stack, name, cost)
+        this.stack = stack
+        

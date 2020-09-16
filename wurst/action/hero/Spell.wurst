@@ -4,6 +4,7 @@ import initlater BoardHero
 import initlater ChainLightningSpell
 import initlater LightningBoltSpell
 import initlater RallingCrySpell
+import ActionCost
 
 interface SpellCreateListener
     function create(BoardHero boardHero) returns Spell
@@ -43,34 +44,17 @@ public class SpellType
 
 public abstract class Spell extends Action
     protected BoardHero hero
-    protected int manacost = 0
-    protected int maxCooldown
     protected int level
 
-    construct(BoardHero hero, SpellType spellType)
-        super(hero, spellType.icon, spellType.name)
+    construct(BoardHero hero, SpellType spellType, ActionCostPreset cost)
+        super(hero, spellType.icon, spellType.name, cost)
         this.hero = hero
-        this.isSpell = true
+        presetOption(ActionOption.SPELL)
 
     function setLevel(int i)
         if i < 0
             Log.error("Tried to create the Spell "+name+ " with a level of "+i.toString())
         this.level = i
 
-    protected function payCostAndStartCooldown()
-        hero.stats.addMana(-manacost)
-        cooldown = maxCooldown
-
-    function getManaCost() returns int
-        return manacost
-
-    override function hasEnoughMana() returns boolean
-        return manacost <= hero.stats.getMana()
-
     override function canBeActivatedByKey(string key) returns boolean
-        return false
-
-    override function canActivate() returns boolean
-        if hasEnoughMana()
-            return cooldown <= 0
         return false

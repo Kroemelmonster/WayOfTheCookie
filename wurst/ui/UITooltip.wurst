@@ -10,6 +10,7 @@ import StatsModifier
 import initlater Damage
 import initlater StackType
 import initlater Status
+import ActionCost
 
 constant LINE_HEIGHT = 0.0122
 constant HEIGHT_OFFSET = 0.03
@@ -73,14 +74,14 @@ public class Tooltip
 
     protected string header = ""
     protected LinkedList<TooltipLine> lines = new LinkedList<TooltipLine>
-    protected int cost = -1
+    protected string apCost = ""
     protected int cooldown = -1
     protected int mana = -1
 
     static function copy(Tooltip other) returns Tooltip
         let tooltip = new Tooltip()
         tooltip.header = other.header
-        tooltip.cost = other.cost
+        tooltip.apCost = other.apCost
         tooltip.cooldown = other.cooldown
         for TooltipLine line in other.lines
             tooltip.lines.add(TooltipLine.copy(line))
@@ -253,12 +254,16 @@ public class Tooltip
         return lines.get(index).str
 
     @inline
-    function setCost(int value)
-        cost = value
-
-    @inline
-    function setCooldown(int value)
-        cooldown = value
+    function setCost(ActionCostPreset cost)
+        this.apCost = cost.getAPAsText()
+        if cost.hasCooldown()
+            cooldown = cost.getMaxCooldown()
+        else
+            cooldown = -1
+        if cost.hasMana()
+            mana = cost.getMana()
+        else
+            mana = -1
 
     @inline
     function setManaCost(int value)
@@ -387,8 +392,8 @@ class UITooltip
             icons[i].hide()
 
         var curIcon = 0
-        if tt.cost > 0
-            icons[curIcon].update(tt.cost.toString(), "UI/Textures/Icons/TooltipAddonAPIcon.dds")
+        if tt.apCost != ""
+            icons[curIcon].update(tt.apCost, "UI/Textures/Icons/TooltipAddonAPIcon.dds")
             curIcon++
         if tt.mana > 0
             icons[curIcon].update(tt.mana.toString(), "UI/Textures/Icons/TooltipAddonManaIcon.dds")

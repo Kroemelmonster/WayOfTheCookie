@@ -59,7 +59,6 @@ public class RallingCryBuffHero extends Status
 
     override function updateInner(StatusData data)
         this.duration = data.duration
-        Log.trace((onEndListener castTo int).toString())
         toggle(false)
         this.attack = getAttackValue(data)
         toggle(true)

@@ -1,0 +1,114 @@
+package UIWindowSpellBook
+
+import UIElementSpell
+import PlayerData
+import Spell
+import OrderSystem
+import Action
+import UIFrame
+
+public class UISpellBookInfo
+    protected boolean visible = false
+
+public class UIWindowSpellBook
+    private static framehandle backgroundHandle
+    private static UIElementSpell array[10] spells
+
+    static function setup()
+        backgroundHandle = createUIFrame("BACKDROP", GAME_UI)
+        ..setPoint(FRAMEPOINT_TOPLEFT, GAME_UI, FRAMEPOINT_TOPLEFT)
+        ..setSize(0.5, 0.3)
+        ..setTexture("UI/Textures/SpellBook.dds", 0, true)
+        ..setVisible(false)
+
+        let leftSideFrameHandle = createUIFrame("FRAME", backgroundHandle)
+        ..setPoint(FRAMEPOINT_TOPLEFT, backgroundHandle, FRAMEPOINT_TOPLEFT, 0.043, -0.032)
+        ..setPoint(FRAMEPOINT_BOTTOMRIGHT, backgroundHandle, FRAMEPOINT_BOTTOM, -0.016, 0)
+
+        createUIFrame("BACKDROP", backgroundHandle)
+        ..setAllPoints(backgroundHandle)
+        ..setTexture("UI/Textures/SpellBookRipped.dds", 0, true)
+
+        spells[0] = new UIElementSpell(leftSideFrameHandle)
+        ..setPoint(FRAMEPOINT_TOPLEFT, leftSideFrameHandle, FRAMEPOINT_TOPLEFT, 0, 0)
+        ..setPoint(FRAMEPOINT_TOPRIGHT, leftSideFrameHandle, FRAMEPOINT_TOP, 0, 0)
+
+        spells[1] = new UIElementSpell(leftSideFrameHandle)
+        ..setPoint(FRAMEPOINT_TOPLEFT, leftSideFrameHandle, FRAMEPOINT_TOP, 0, 0)
+        ..setPoint(FRAMEPOINT_TOPRIGHT, leftSideFrameHandle, FRAMEPOINT_TOPRIGHT, 0, 0)
+
+        for int index = 2 to spells.length - 1
+            spells[index] = new UIElementSpell(leftSideFrameHandle)
+            spells[index].setPoint(FRAMEPOINT_TOPLEFT, spells[index - 2].getMainHandle(), FRAMEPOINT_BOTTOMLEFT, 0, 0)
+            spells[index].setPoint(FRAMEPOINT_TOPRIGHT, spells[index - 2].getMainHandle(), FRAMEPOINT_BOTTOMRIGHT, 0, 0)
+
+        for int index = 0 to spells.length - 1
+            spells[index].onClick() () -> 
+                click(spells[index].getSpell(), GetTriggerPlayerData())
+            spells[index].onMouseEnter() -> 
+                onMouseEnter(spells[index].getSpell(), GetTriggerPlayerData())
+            spells[index].onMouseLeave() -> 
+                onMouseLeave(spells[index].getSpell(), GetTriggerPlayerData())
+
+    static function hide(Player p)
+        let info = p.spellBookInfo
+        info.visible = false
+        if p.isLocal()
+            setVisibleLocal(false)
+
+    static function show(Player p)
+        let info = p.spellBookInfo
+        info.visible = true
+        if p.isLocal()
+            setVisibleLocal(true)
+            updateLocal(p)
+
+    static function toggle(Player p)
+        let info = p.spellBookInfo
+        if info.visible
+            hide(p)
+        else
+            show(p)
+
+    static function update(Player p)
+        if not p.spellBookInfo.visible
+            return
+        if not OrderSystem.couldOrderIFInteractable(p)
+            hide(p)
+            return
+        if p.isConntrolledByKI
+            return
+        if p.isLocal()
+            updateLocal(p)
+
+    private static function click(Spell spell, Player p)
+        Log.trace("test click")
+
+    private static function onMouseEnter(Action action, Player p)
+        action.onUIMouseEnter()
+
+    private static function onMouseLeave(Action action, Player p)
+        if action != null
+            action.onUIMouseLeave()
+
+    private static function updateLocal(Player p)
+        let entity = p.currentSelectedEntity
+
+        let actionItr = entity.getActions().iterator()
+
+        for int i = 0 to spells.length - 1
+            spells[i].setVisible(false)
+
+        var index = 0
+        while actionItr.hasNext()
+            let action = actionItr.next()
+            if action.hasOption(ActionOption.SPELL)
+                let spell = action castTo Spell
+                spells[index].setSpell(spell)
+                index++
+
+        destroy actionItr
+
+    private static function setVisibleLocal(boolean flag)
+        backgroundHandle.setVisible(flag)
+

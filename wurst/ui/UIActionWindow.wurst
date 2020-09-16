@@ -9,7 +9,8 @@ import UIButton
 import initlater OrderSystem
 import initlater Action
 import initlater BoardEntity
-import initlater UISpellBook
+import initlater UIWindowSpellBook
+import ActionCost
 
 constant framepointtype array[6] points = [FRAMEPOINT_TOPLEFT, FRAMEPOINT_TOP, FRAMEPOINT_TOPRIGHT, FRAMEPOINT_BOTTOMLEFT, FRAMEPOINT_BOTTOM, FRAMEPOINT_BOTTOMRIGHT]
 
@@ -85,7 +86,7 @@ class UIActionWindow
         while itr.hasNext() and continue
             let action = itr.next()
 
-            if action.isDefault() == false and action.canBeActivatedByKey(key)
+            if action.hasOption(ActionOption.DEFAULT) == false and action.canBeActivatedByKey(key)
                 activate(action, p)
                 // only trigger one action
                 continue = false
@@ -109,14 +110,19 @@ class UIActionWindow
                 else
                     actionPoints[i].setTexture("UI/Textures/Icons/ActionPointActiveIcon.dds", 0, true)
 
-                
-            
-    static function updateActionPoints(BoardEntity entity, int previewLoosingPoints)
+    static function updateActionPoints(BoardEntity entity)
+        if entity.getBoard().isLocalPlayer()
+            updateActionPointsLocal(entity, 0)
+
+    static function updateActionPoints(BoardEntity entity, ActionCostPreset cost)
         // we just change it for the current active player
         // even if that player might have selected some other unit, the whole frame would not be visible so it does not matter
         // the other player who is currently not ordering also cant have this action frame --> does not matter
-        if entity.getPlayer().playingBoard.isLocalPlayer()
-            updateActionPointsLocal(entity, previewLoosingPoints)
+        if entity.getBoard().isLocalPlayer()
+            var ap = cost.getAP()
+            if cost.isApFill()
+                ap = 100
+            updateActionPointsLocal(entity, ap)
     
     static function update(Player p)
         if p.isLocal() == false or p.isConntrolledByKI
@@ -153,9 +159,6 @@ class UIActionWindow
 
         self.setVisible(true)
         updateActionPointsLocal(entity, 0)
-
-        if entity.getType() == EntityType.HERO
-            UISpellBook.update(p)
         
     private static function activate(Action action, Player p)
         if OrderSystem.canOrder(p) == false
@@ -173,7 +176,7 @@ class UIActionWindow
             action.onUIMouseLeave()
 
     static function hide(Player p)
-        UISpellBook.hide(p)
+        UIWindowSpellBook.hide(p)
         if p.isLocal()
             hide()
 

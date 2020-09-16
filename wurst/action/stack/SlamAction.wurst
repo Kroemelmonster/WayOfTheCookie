@@ -4,7 +4,7 @@ import Icons
 import Abilities
 
 import Action
-import InstantAction
+import InstantStackAction
 
 import OrderSystem
 import BoardController
@@ -29,13 +29,13 @@ import ClosureTimers
 import Damage
 import Globals
 import StunDebuff
+import ActionCost
 
-public class SlamAction extends InstantAction
+public class SlamAction extends InstantStackAction
     static constant string NAME = "Slam"
     static constant string ICON = Icons.bTNGolemThunderClap
 
-    private static constant int COST = 0
-    private static constant int COOLDOWN = 2
+    private static constant ActionCostPreset COST = ActionCostPreset.create(1, false, 2)
     private static constant int MAXRANGE = 1
     private static constant string KEY = "S"
     private static constant string EFFECT = Abilities.thunderclapCaster
@@ -53,7 +53,6 @@ public class SlamAction extends InstantAction
     static function createTooltip(boolean isDefault, int amount) returns Tooltip
         calculateDamage(amount)
         let tt = Tooltip.create(NAME)
-        ..setCooldown(COOLDOWN)
         ..setCost(COST)
         ..addLine(Tooltip.stat("Target", "Self"))
         ..addLine(Tooltip.stat("Range", MAXRANGE))
@@ -67,10 +66,8 @@ public class SlamAction extends InstantAction
         return tt
 
     construct(BoardStack stack)
-        super(stack, ICON, NAME)
-        
-    override function canActivate() returns boolean
-        return cooldown <= 0
+        super(stack, ICON, NAME, COST)
+        presetOption(ActionOption.PRIMARY)
 
     private function getTargets() returns LinkedList<BoardStack>
         let area = stack.getCell().getAllCellsInRange(intRange(0, MAXRANGE))
@@ -86,10 +83,7 @@ public class SlamAction extends InstantAction
         destroy itr
         destroy instance
         DelayAnimation.create(stack.getBoard(), 0.5) -> // this is the backswing for casting
-            cooldown = COOLDOWN + 1
-
-            stack.addActionPoints(-COST)
-            BoardController.finishOrder(entity, true)
+            BoardController.finishOrder(entity, cost)
 
     private function hit(LLIterator<BoardStack> itr, DamageInstance instance)
         if itr.hasNext()
@@ -111,11 +105,11 @@ public class SlamAction extends InstantAction
 
     override function onUIMouseEnter()
         createTooltip(false, stack.stats.amount).display(stack.getPlayer(), true)
-        UIActionWindow.updateActionPoints(entity, COST)
+        UIActionWindow.updateActionPoints(entity, cost)
             
     override function onUIMouseLeave()
         UITooltip.hide(stack.getPlayer())
-        UIActionWindow.updateActionPoints(entity, 0)
+        UIActionWindow.updateActionPoints(entity)
 
     override function canBeActivatedByKey(string key) returns boolean
         return key == KEY
@@ -124,9 +118,9 @@ public class SlamAction extends InstantAction
         let defaultAction = stack.getDefaultAction()
         let pathing = defaultAction.getPathing()
         let weightCells = new HashMap<Cell, real>()
-        var cost = COST
-        if cost == 0
-            cost = 1 // after you moved all points you cant even use a spell that cost nothing
+        var apCost = cost.getAP()
+        if apCost == 0
+            apCost = 1 // after you moved all points you cant even use a spell that cost nothing
         Cell bestCell = null
         var highestWeightSoFar = 0.0
         var highestRemainingActionPoints = 0
@@ -144,7 +138,7 @@ public class SlamAction extends InstantAction
                         let pCell = pathing.get(cell)
                         if pCell != null
                             remaining = pCell.getRaminingMoveActionPoints(stack)
-                    if remaining >= cost
+                    if remaining >= apCost
                         var newWeight = weight
                         if weightCells.has(cell)
                             newWeight += weightCells.get(cell)

@@ -81,14 +81,19 @@ public class BoardHeroStats
     function getMana() returns int
         return mana
 
+    function payMana(int amount)
+        this.mana -= amount
+
     @inline
     function getRemainingActionPoints() returns integer
         return remainingActionPoints
     
     /** setters  **/
     @inline
-    function addActionPoints(integer amount)
-        remainingActionPoints += amount
+    function removeAP(integer amount)
+        remainingActionPoints -= amount
+        if remainingActionPoints < 0
+            remainingActionPoints = 0
 
     @inline
     function resetActionPoints()

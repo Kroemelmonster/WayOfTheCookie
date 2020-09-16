@@ -7,12 +7,13 @@ import Spell
 
 import initlater Cell
 import initlater BoardHero
+import ActionCost
 
 public abstract class InstantSpell extends Spell
 
-    construct(BoardHero hero, SpellType spellType)
-        super(hero, spellType)
-        this.isInstant = true
+    construct(BoardHero hero, SpellType spellType, ActionCostPreset cost)
+        super(hero, spellType, cost)
+        presetOption(ActionOption.INSTANT)
 
     override function getPreviewResultForCell(Cell cell) returns CellResult
         return CellResult.NONE

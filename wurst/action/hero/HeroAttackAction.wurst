@@ -23,12 +23,13 @@ import ClosureTimers
 import initlater BoardHero
 import HeroAttackAnimation
 import StackType
+import ActionCost
 
 public class HeroAttackAction extends DefaultAction
     private BoardHero hero
 
     construct(BoardHero hero)
-        super(hero, "Attack")
+        super(hero, "Attack", ActionCostPreset.create(1, true))
         this.hero = hero
 
     override function getPreviewResultForCell(Cell cell) returns CellResult
@@ -51,10 +52,10 @@ public class HeroAttackAction extends DefaultAction
             preview.addSpecificToTooltip(entity, cell.getStack(), tt)
             destroy preview
             tt.display(entity.getPlayer(), true)
-            UIActionWindow.updateActionPoints(entity, 99)
+            UIActionWindow.updateActionPoints(entity, cost)
         else
             UITooltip.hide(entity.getPlayer())
-            UIActionWindow.updateActionPoints(entity, 0)
+            UIActionWindow.updateActionPoints(entity)
         /*
         let cell = p.currentMousePosition.cell
         caclulatePath(cell, p.currentMousePosition.nearbyCell)
@@ -87,7 +88,7 @@ public class HeroAttackAction extends DefaultAction
                 let instance = preview.getRandomInstance()
                 destroy preview
                 BoardController.dealDamage(hero, instance, defender) ->
-                    BoardController.finishOrder(entity, false)
+                    BoardController.finishOrder(entity, cost)
             return true
         return false
 
@@ -95,7 +96,7 @@ public class HeroAttackAction extends DefaultAction
         if cell == null
             return false
         let target = cell.getStack()
-        return target != null and target.getPlayer() != entity.getPlayer()
+        return target != null and entity.getPlayer().isEnemyTo(target.getPlayer())
 
 
     override function getTargets(boolean shouldBeAbleToAttackThisTurn) returns LinkedList<BoardStack>

@@ -1,0 +1,12 @@
+
+Frame "TEXT" "ElementSpellText" {
+    LayerStyle "IGNORETRACKEVENTS",
+	UseActiveContext,
+	FrameFont "Fonts\ulei00m.ttf", 0.011, "",
+}
+
+Frame "TEXT" "ElementSpellCostText" {
+    LayerStyle "IGNORETRACKEVENTS",
+	UseActiveContext,
+	FrameFont "Fonts\ulei00m.ttf", 0.011, "",
+}

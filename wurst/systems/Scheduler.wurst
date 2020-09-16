@@ -10,6 +10,7 @@ import UINPCWindow
 import UIHeroWindow
 
 import initlater Board
+import UIWindowSpellBook
 
 class Scheduler
     private static timer realTime
@@ -39,6 +40,7 @@ class Scheduler
             doPeriodically(0.2) cb ->
                 UINPCWindow.update(p)
                 UIHeroWindow.update(p)
+                UIWindowSpellBook.update(p)
 
                 
                 

@@ -1,0 +1,26 @@
+package UIElementSpellCost
+import UIFrame
+
+public class UIElementSpellCost
+    private framehandle iconHandle
+    private framehandle textHandle
+
+    construct(framehandle parent, int counter)
+        iconHandle = createUIFrame("BACKDROP", parent, true)
+        ..setPoint(FRAMEPOINT_TOPRIGHT, parent, FRAMEPOINT_TOPRIGHT, -0.027, -0.006 - (counter * 0.011))
+        ..setSize(0.011, 0.011)
+        ..setVisible(false)
+    
+        textHandle = createUINamedFrame("ElementSpellCostText", iconHandle)
+        ..setPoint(FRAMEPOINT_TOPLEFT, iconHandle, FRAMEPOINT_TOPRIGHT, 0.003, 0.002)
+        ..setSize(0.007, 0.013)
+        ..setTextAlignment(TEXT_JUSTIFY_MIDDLE, TEXT_JUSTIFY_LEFT)
+        ..setTextColor(colorA(0, 0, 0, 255))
+
+    function update(string text, string icon)
+        iconHandle.setVisible(true)
+        iconHandle.setTexture(icon, 0, true)
+        textHandle.setText(text)
+
+    function hide()
+        iconHandle.setVisible(false)

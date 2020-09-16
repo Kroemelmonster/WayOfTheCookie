@@ -1,0 +1,50 @@
+package UIElementInteractbale
+
+import ClosureFrames
+import PlayerData
+import initlater MouseContext
+
+public class UIElementInteractbale
+    static function create(framehandle parent) returns UIElementInteractbale
+        return new UIElementInteractbale(parent)
+
+    protected framehandle frameHandle
+    
+    private construct(framehandle parent)
+        frameHandle = createFrame("MENU", "", parent, "", 0)
+
+    function getHandle() returns framehandle
+        return frameHandle
+
+    function setPoint(framepointtype point, framehandle relative, framepointtype relativePoint, real x, real y)
+        frameHandle.setPoint(point, relative, relativePoint, x, y)
+
+    function setSize(real width, real height)
+        frameHandle.setSize(width, height)
+
+    function setHeight(real height)
+        frameHandle.setHeight(height)
+
+    function onMouseEnter(FrameHandleListener listener)
+        frameHandle.onMouseEnter() () ->
+            let p = GetTriggerPlayerData()
+            MouseContext.enableMouseMovement(p, false)
+            listener.onEvent()
+
+    function onMouseLeave(FrameHandleListener listener)
+        frameHandle.onMouseLeave() () ->
+            let p = GetTriggerPlayerData()
+            MouseContext.enableMouseMovement(p, true)
+            listener.onEvent()
+
+    function onClick(FrameHandleListener listener)
+        frameHandle.onMouseUp(listener)
+    
+    function setVisible(boolean flag)
+        frameHandle.setVisible(flag)
+
+    function setAlpha(int alpha)
+        frameHandle.setAlpha(alpha)
+
+    ondestroy
+        Log.error("DONT DESTROY SUCH A THING WTF ?")
