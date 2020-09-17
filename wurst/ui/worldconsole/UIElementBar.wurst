@@ -1,0 +1,34 @@
+package UIElementBar
+import UIWindow
+import UIFrame
+
+public class UIElementBar
+    static function create(string bar, UIMenu parent) returns UIElementBar
+        return new UIElementBar(bar, parent)
+
+    private framehandle element
+    private framehandle textHandle
+
+    construct(string bar, UIMenu parent)
+        element = createSimpleFrame(bar, parent.getHandle(), 0)
+        parent.addSimpleFrame(element)
+
+        textHandle = createUIFrame("TEXT", parent.getHandle(), true)
+        ..setAllPoints(element)
+        ..setTextAlignment(TEXT_JUSTIFY_MIDDLE, TEXT_JUSTIFY_CENTER)
+
+    function setPoint(framepointtype point, framehandle relative, framepointtype relativePoint)
+        element.setPoint(point, relative, relativePoint)
+
+    function setPoint(framepointtype point, framehandle relative, framepointtype relativePoint, real x, real y)
+        element.setPoint(point, relative, relativePoint, x, y)
+
+    function setSize(real width, real height)
+        element.setSize(width, height)
+    
+    function setValue(int current, int max)
+        element.setMinMax(0, max.toReal())
+        element.setValue(current.toReal())
+
+    function setText(string text)
+        textHandle.setText(text)

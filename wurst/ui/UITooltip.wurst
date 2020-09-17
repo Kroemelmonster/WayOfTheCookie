@@ -73,6 +73,7 @@ public class Tooltip
         
 
     protected string header = ""
+    protected string key = ""
     protected LinkedList<TooltipLine> lines = new LinkedList<TooltipLine>
     protected string apCost = ""
     protected int cooldown = -1
@@ -81,6 +82,7 @@ public class Tooltip
     static function copy(Tooltip other) returns Tooltip
         let tooltip = new Tooltip()
         tooltip.header = other.header
+        tooltip.key = other.key
         tooltip.apCost = other.apCost
         tooltip.cooldown = other.cooldown
         for TooltipLine line in other.lines
@@ -91,12 +93,6 @@ public class Tooltip
     static function insert(LinkedList<string> list, Tooltip tt)
         for TooltipLine line in tt.lines
             list.add(line.str)
-
-    static function create(string header, string key) returns Tooltip
-        let tooltip = new Tooltip()
-        tooltip.header = header
-        tooltip.addKey(key)
-        return tooltip
 
     static function create(string header) returns Tooltip
         let tooltip = new Tooltip()
@@ -223,9 +219,8 @@ public class Tooltip
     function addLine(string str)
         lines.add(new TooltipLine(str))
 
-    @inline
-    function addKey(string key)
-        header += " [" +coloredString(COLOR_PRIMARY, key)+ "]"
+    function setKey(string key)
+        this.key = key
 
     @inline
     function addTooltip(Tooltip other, boolean once)
@@ -274,6 +269,12 @@ public class Tooltip
         for TooltipLine ttLine in lines
             if ttLine != null
                 str += ttLine.str + "|n"
+        return str
+
+    protected function convertHeader() returns string
+        var str = header
+        if key != ""
+            str += " [" +coloredString(COLOR_PRIMARY, key)+ "]"
         return str
 
     protected function getLineCount() returns int
@@ -379,6 +380,7 @@ class UITooltip
         setTooltipInner(tt)
 
     private static function setTooltipInner(Tooltip tt)
+        headerText.setText(tt.convertHeader())
         text.setText(tt.convert())
         let lineNumbers = tt.getLineCount()
         let height = lineNumbers * LINE_HEIGHT
@@ -401,8 +403,6 @@ class UITooltip
         if tt.cooldown > 0
             icons[curIcon].update(tt.cooldown.toString(), "UI/Textures/Icons/TooltipAddonCooldownIcon.dds")
             //curIcon++
-
-        headerText.setText(tt.header)
 
     static function hide(Player p)
         if p.isLocal()

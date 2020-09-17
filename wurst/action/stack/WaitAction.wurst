@@ -13,13 +13,11 @@ import InitiativeList
 import ActionCost
 
 public class WaitAction extends InstantStackAction
-    private constant static string KEY = "W"
-
     private Tooltip tt
 
     construct(BoardStack stack)
         super(stack, Icons.bTNPatrol, "Wait", ActionCostPreset.create(0, false))
-        tt = Tooltip.create(name, KEY)
+        tt = Tooltip.create(name)
         ..addLine("Postpone this turn")
 
         
@@ -46,10 +44,8 @@ public class WaitAction extends InstantStackAction
             tt.setLine(0, "Postpone the turn by "+str)
         else
             tt.setLine(0, "You cant postpone again")
+        tt.setKey(key)
         tt.display(stack.getPlayer(), false)
-
-    override function canBeActivatedByKey(string key) returns boolean
-        return key == KEY
 
     override function executeForKI(SequenzListenerStatus listener)
         activate()

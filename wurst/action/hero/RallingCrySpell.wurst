@@ -76,6 +76,7 @@ public class RallingCrySpell extends WarcrySpell
 
     private function showPreview()
         let tt = createTooltip(level)
+        tt.setKey(key)
         tt.display(entity.getPlayer(), true)
         UIActionWindow.updateActionPoints(entity, cost)
 

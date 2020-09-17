@@ -17,13 +17,11 @@ import BoardTrigger
 import ActionCost
 
 public class HeroSkipAction extends InstantAction
-    private constant static string KEY = "S"
-
     private Tooltip tt
 
     construct(BoardEntity entity)
         super(entity, Icons.bTNCancel, "Skip", ActionCostPreset.create(0, true))
-        tt = Tooltip.create(name, KEY)
+        tt = Tooltip.create(name)
         tt.addLine("Skips your turn")
         
     override function canActivate() returns boolean
@@ -33,15 +31,13 @@ public class HeroSkipAction extends InstantAction
         BoardController.finishOrder(entity, cost)
         
     override function onUIMouseEnter()
+        tt.setKey(key)
         tt.display(entity.getPlayer(), false)
         UIActionWindow.updateActionPoints(entity, cost)
 
     override function onUIMouseLeave()
         UITooltip.hide(entity.getPlayer())
         UIActionWindow.updateActionPoints(entity)
-
-    override function canBeActivatedByKey(string key) returns boolean
-        return key == KEY
 
     override function executeForKI(SequenzListenerStatus listener)
         activate()

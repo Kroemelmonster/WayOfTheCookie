@@ -15,9 +15,13 @@ import initlater UIHeroWindow
 import initlater KeyPressSystem
 import initlater BoardEntity
 import initlater UIWindowSpellBook
+import initlater UIWindow
 
 public abstract class KeyPressListener
     abstract function onEvent(Player p, string key)
+
+public abstract class PlayerListener
+    abstract function onEvent(Player p)
 
 public tuple mousePosition(Cell cell, Cell nearbyCell)
 
@@ -55,6 +59,7 @@ public class Player
     color c
 
     LinkedList<KeyPressListener> keyPressListener = new LinkedList<KeyPressListener>()
+    LinkedList<UIWindow> currentOpenWindows = new LinkedList<UIWindow>()
 
     player blzPlayer
 
@@ -102,6 +107,10 @@ public class Player
     function isAllyTo(Player other) returns boolean
         let status = getRelationshipStatusTo(other)
         return status == PlayerRelationship.SELF or status == PlayerRelationship.ALLY
+
+    @inline
+    function hasBoard() returns boolean
+        return playingBoard != null
 
     static function setup()
         playerData[players[0].getId()] = new Player(players[0])

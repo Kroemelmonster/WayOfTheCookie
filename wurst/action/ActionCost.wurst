@@ -80,11 +80,11 @@ public class ActionCost extends ActionCostPreset
     function canUse() returns boolean
         if ap > entity.getRemainingActionPoints()
             return false
-        if hasCooldown() and cooldown >= 0
+        if isOnCooldown()
             return false
-        if hasEnoughCharges() == false
+        if not hasEnoughCharges()
             return false
-        if hasEnoughMana() == false
+        if not hasEnoughMana()
             return false
         return true
 
@@ -93,8 +93,7 @@ public class ActionCost extends ActionCostPreset
             entity.removeAP(1000)
         else
             entity.removeAP(ap)
-        if cooldown >= 0
-            cooldown = maxCooldown + 1
+        cooldown = maxCooldown + 1
         if maxCharges > 0
             charges--
         if mana >= 0
@@ -104,7 +103,7 @@ public class ActionCost extends ActionCostPreset
         this.apFill = flag
 
     function tickCooldown()
-        if cooldown > 0
+        if isOnCooldown()
             cooldown -= 1
 
     function getCurrentCharges() returns int
@@ -118,4 +117,7 @@ public class ActionCost extends ActionCostPreset
 
     function hasEnoughMana() returns boolean
         return mana < 0 or entity.toHero().getMana() >= mana
+
+    function isOnCooldown() returns boolean
+        return cooldown >= 0
         

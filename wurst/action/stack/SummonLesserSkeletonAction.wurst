@@ -32,7 +32,6 @@ public class SummonLesserSkeletonAction extends StackAction
     private static constant ActionCostPreset COST = ActionCostPreset.create(2, true, 3)
     private static constant int MAXRANGE = 1
     private static constant string EFFECT = Abilities.raiseSkeleton
-    private static constant string KEY = "S"
     private static StackType SUMMONED_TYPE
     private static Tooltip BASE_TOOLTIP
 
@@ -65,7 +64,6 @@ public class SummonLesserSkeletonAction extends StackAction
         super(stack, ICON, NAME, COST)
         presetOption(ActionOption.PRIMARY)
         tooltip = Tooltip.copy(BASE_TOOLTIP)
-        ..addKey(KEY)
 
     override function getHighlightResultForCell(Player p, Cell cell) returns CellResult
         if area.has(cell)
@@ -116,6 +114,7 @@ public class SummonLesserSkeletonAction extends StackAction
 
     @inline
     private function showPreview()
+        tooltip.setKey(key)
         tooltip.display(stack.getPlayer(), false)
         UIActionWindow.updateActionPoints(entity, cost)
                 
@@ -130,9 +129,6 @@ public class SummonLesserSkeletonAction extends StackAction
 
     override function onUIMouseLeave()
         hidePreview()
-
-    override function canBeActivatedByKey(string key) returns boolean
-        return key == KEY
 
     override function executeForKI(SequenzListenerStatus listener)
         // just someone it when there is a place

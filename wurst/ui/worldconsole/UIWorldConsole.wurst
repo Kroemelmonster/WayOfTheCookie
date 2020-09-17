@@ -1,0 +1,110 @@
+package UIWorldConsole
+
+import ClosureFrames
+
+import PlayerData
+import UIArmyPanel
+
+import initlater Hero
+import initlater MainController
+import UIFightResultDialog
+import initlater Board
+import BoardTrigger
+import FightResult
+import UIWindow
+import UIFrame
+import UIElementBar
+
+public class UIWorldConsoleInfo
+    protected boolean visible = false
+    ArmyPanelInfo armyPanel = new ArmyPanelInfo()
+
+public class UIWorldConsole
+    protected static UIMenu menu
+
+    protected static framehandle portrait
+    protected static UIElementBar expBar
+    protected static UIElementBar manaBar
+
+    protected static UIFightResultDialog fightResultDialog
+
+    protected static UIArmyPanel armyPanel
+
+    static function setup()
+        menu = UIMenu.create()
+        ..setPoint(FRAMEPOINT_BOTTOMLEFT, FRAMEPOINT_BOTTOMLEFT, 0.02, 0)
+        ..setSize(0.145, 0.177)
+
+        let menuHandle = menu.getHandle()
+
+        let armyExtension = UIMouseBlockElement.create(menu)
+        ..setPoint(FRAMEPOINT_BOTTOMLEFT, menuHandle, FRAMEPOINT_BOTTOMRIGHT)
+        ..setSize(0.265, 0.08)
+        let armyExtensionHandle = armyExtension.getHandle()
+
+        createUIFrame("BACKDROP", menuHandle, true)
+        ..setPoint(FRAMEPOINT_TOPLEFT, menuHandle, FRAMEPOINT_TOPLEFT, -0.02, 0.033)
+        ..setPoint(FRAMEPOINT_BOTTOMRIGHT, armyExtensionHandle, FRAMEPOINT_BOTTOMRIGHT)
+        ..setTexture("UI/Textures/HeroMenu/HeroMenu.dds")
+        
+        portrait = getOriginFrame(ORIGIN_FRAME_PORTRAIT, 0)
+        ..clearAllPoints()
+        ..setPoint(FRAMEPOINT_BOTTOMLEFT, GAME_UI, FRAMEPOINT_BOTTOMLEFT)
+        ..setHeight(0.103)
+        menu.addSimpleFrame(portrait)
+
+        expBar = UIElementBar.create("HeroMenuExpBar", menu)
+        ..setSize(0.09, 0.013)
+        ..setPoint(FRAMEPOINT_BOTTOMLEFT, menuHandle, FRAMEPOINT_BOTTOMLEFT, 0.033, 0.023)
+
+        manaBar = UIElementBar.create("HeroMenuManaBar", menu)
+        ..setSize(0.09, 0.013)
+        ..setPoint(FRAMEPOINT_BOTTOMLEFT, menuHandle, FRAMEPOINT_BOTTOMLEFT, 0.033, 0.005)
+        
+        armyPanel = new UIArmyPanel(armyExtensionHandle)
+        fightResultDialog = new UIFightResultDialog()
+
+    static function setupHero(Hero h)
+        armyPanel.setupHero(h)
+        show(h.getPlayer())
+
+    static function update(Player p)
+        if p.worldConsoleInfo.visible == false
+            return
+
+        if p.isLocal()
+            let realWith  = BlzGetLocalClientWidth()
+            let fourToThreeWidth = BlzGetLocalClientHeight() * 4 / 3
+            let offsetX = ((realWith - fourToThreeWidth) / 2) / realWith * 0.8
+            let multiX = fourToThreeWidth / realWith
+
+            portrait.setAbsPoint(FRAMEPOINT_BOTTOMLEFT, offsetX + multiX  * 0.052, 0.04)
+            portrait.setWidth(0.092 * multiX)
+
+            let hero = p.hero
+            let lvl = hero.getLevel()
+            expBar.setValue(hero.getExp(), Hero.LEVELS[lvl])
+            expBar.setText("Level "+(lvl + 1).toString())
+
+            let mana = hero.stats.getMana()
+            let maxMana = hero.stats.getMaxMana()
+            manaBar.setValue(mana, maxMana)
+            manaBar.setText(mana.toString() + " / "+ maxMana.toString())
+
+        armyPanel.update(p)
+
+    static function hide(Player p)
+        setVisible(p, false)
+        armyPanel.hide(p)
+
+    static function show(Player p)
+        setVisible(p, true)
+        update(p)
+
+    private static function setVisible(Player p, boolean flag)
+        p.worldConsoleInfo.visible = flag
+        if p.isLocal()
+            menu.setVisible(flag)
+
+    static function showFightResult(Player p, FightResult result, SequenzListener listener)
+        fightResultDialog.show(p, result, listener)

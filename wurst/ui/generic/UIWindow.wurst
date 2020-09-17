@@ -1,0 +1,97 @@
+package UIWindow
+import UIFrame
+
+import ClosureFrames
+import initlater MouseContext
+import PlayerData
+import LinkedList
+
+public class UIMouseBlockElement
+    static function create(UIMenu parent) returns UIMouseBlockElement
+        return new UIMouseBlockElement(parent.self)
+
+    protected framehandle self
+
+    private LinkedList<framehandle> simpleFrames
+
+    private construct(framehandle parent)
+        self = createUIFrame("MENU", parent)
+        self.onMouseEnter() () ->
+            MouseContext.enableMouseMovement(GetTriggerPlayerData(), false)
+        self.onMouseLeave() -> 
+            MouseContext.enableMouseMovement(GetTriggerPlayerData(), true)
+
+    function setPoint(framepointtype point, framepointtype relativePoint)
+        self.setPoint(point, GAME_UI, relativePoint)
+
+    function setPoint(framepointtype point, framepointtype relativePoint, real x, real y)
+        self.setPoint(point, GAME_UI, relativePoint, x, y)
+
+    function setPoint(framepointtype point, framehandle relative, framepointtype relativePoint)
+        self.setPoint(point, relative, relativePoint)
+
+    function setPoint(framepointtype point, framehandle relative, framepointtype relativePoint, real x, real y)
+        self.setPoint(point, relative, relativePoint, x, y)
+
+    function setSize(real width, real height)
+        self.setSize(width, height)
+
+    function setVisible(boolean flag)
+        self.setVisible(flag)
+        if simpleFrames != null
+            for simpleFrame in simpleFrames
+                simpleFrame.setVisible(flag)
+
+    function addSimpleFrame(framehandle simple)
+        if simpleFrames == null
+            simpleFrames = new LinkedList<framehandle>()
+        simpleFrames.add(simple)
+        simple.setVisible(false)
+
+    function getHandle() returns framehandle
+        return self
+
+public class UIMenu extends UIMouseBlockElement
+    static function create() returns UIMenu
+        return new UIMenu()
+
+    private construct()
+        super(GAME_UI)
+        self.setVisible(false)
+
+public class UIWindow extends UIMenu
+    static function create() returns UIWindow
+        return new UIWindow()
+
+    static function closeCurrent(Player p)
+        let lastWindow = p.currentOpenWindows.peek()
+        if lastWindow != null
+            lastWindow.close(p)
+
+    private PlayerListener onCloseListener
+    private PlayerListener onOpenListener
+    
+    function open(Player p)
+        if not p.currentOpenWindows.has(this)
+            p.currentOpenWindows.add(this)
+            onOpenListener.onEvent(p)
+        if p.isLocal()
+            super.setVisible(true)
+
+    function close(Player p)
+        if p.currentOpenWindows.has(this)
+            p.currentOpenWindows.remove(this)
+            onCloseListener.onEvent(p)
+
+        if p.isLocal()
+            super.setVisible(false)
+    
+    override function setVisible(boolean flag)
+        super.setVisible(flag)
+        Log.trace("PLEASE dont use set Visible on a Window, use close / open instead")
+
+    function onClose(PlayerListener listener)
+        onCloseListener = listener
+    
+    function onOpen(PlayerListener listener)
+        onOpenListener = listener

@@ -14,13 +14,11 @@ import InstantAction
 import UIWindowSpellBook
 
 public class HeroOpenSpellBookAction extends InstantAction
-    private constant static string KEY = "O"
-
     private Tooltip tt
 
     construct(BoardEntity entity)
         super(entity, Icons.bTNBookOfSummoning, "Open Spellbook", ActionCostPreset.create(0, false))
-        tt = Tooltip.create(name, KEY)
+        tt = Tooltip.create(name)
         tt.addLine("Opens your vastly filled Skillbook")
         
     override function canActivate() returns boolean
@@ -30,13 +28,11 @@ public class HeroOpenSpellBookAction extends InstantAction
         UIWindowSpellBook.toggle(entity.getPlayer())
         
     override function onUIMouseEnter()
+        tt.setKey(key)
         tt.display(entity.getPlayer(), false)
 
     override function onUIMouseLeave()
         UITooltip.hide(entity.getPlayer())
-
-    override function canBeActivatedByKey(string key) returns boolean
-        return key == KEY
 
     override function executeForKI(SequenzListenerStatus listener)
         activate()

@@ -37,7 +37,6 @@ public class SlamAction extends InstantStackAction
 
     private static constant ActionCostPreset COST = ActionCostPreset.create(1, false, 2)
     private static constant int MAXRANGE = 1
-    private static constant string KEY = "S"
     private static constant string EFFECT = Abilities.thunderclapCaster
 
     private static constant int DAZZED_TIME = 200
@@ -60,9 +59,6 @@ public class SlamAction extends InstantStackAction
         ..addLine("")
         ..addLine("Slams the Ground around and dealing massive AoE Damage")
         ..addLine("This Slam is so powerfull that enemys get "+Tooltip.secondaryString(StunDebuff.TYPE.getName())+ " and placed back in the initaive by "+Tooltip.primaryString(DAZZED_TIME.toString())+ " "+Tooltip.secondaryString("timeunits"))
-
-        if isDefault == false
-            tt.addKey(KEY)
         return tt
 
     construct(BoardStack stack)
@@ -101,18 +97,16 @@ public class SlamAction extends InstantStackAction
             flashEffect(EFFECT, stack.getCell().getCoord())
             calculateDamage(stack.stats.amount)
             hit(targets.iterator(), damagePreview.getRandomInstance())
-            
 
     override function onUIMouseEnter()
-        createTooltip(false, stack.stats.amount).display(stack.getPlayer(), true)
+        createTooltip(false, stack.stats.amount)
+        ..setKey(key)
+        ..display(stack.getPlayer(), true)
         UIActionWindow.updateActionPoints(entity, cost)
             
     override function onUIMouseLeave()
         UITooltip.hide(stack.getPlayer())
         UIActionWindow.updateActionPoints(entity)
-
-    override function canBeActivatedByKey(string key) returns boolean
-        return key == KEY
             
     override function executeForKI(SequenzListenerStatus listener)
         let defaultAction = stack.getDefaultAction()

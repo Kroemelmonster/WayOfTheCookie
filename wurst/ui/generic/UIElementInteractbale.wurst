@@ -27,14 +27,12 @@ public class UIElementInteractbale
 
     function onMouseEnter(FrameHandleListener listener)
         frameHandle.onMouseEnter() () ->
-            let p = GetTriggerPlayerData()
-            MouseContext.enableMouseMovement(p, false)
+            MouseContext.enableMouseMovement(GetTriggerPlayerData(), false)
             listener.onEvent()
 
     function onMouseLeave(FrameHandleListener listener)
         frameHandle.onMouseLeave() () ->
-            let p = GetTriggerPlayerData()
-            MouseContext.enableMouseMovement(p, true)
+            MouseContext.enableMouseMovement(GetTriggerPlayerData(), true)
             listener.onEvent()
 
     function onClick(FrameHandleListener listener)

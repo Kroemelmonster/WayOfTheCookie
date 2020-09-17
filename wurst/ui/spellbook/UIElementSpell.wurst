@@ -5,16 +5,21 @@ import Spell
 import ClosureFrames
 import UIElementInteractbale
 import UIFrame
+import Action
 
 public class UIElementSpell
+    static function create(framehandle parent) returns UIElementSpell
+        return new UIElementSpell(parent)
+
     protected UIElementInteractbale element
     protected framehandle iconHandle
+    protected framehandle imgSelectedHandle
     protected framehandle textHandle
     protected UIElementSpellCost array[3] costElements
 
     protected Spell spell
     
-    construct(framehandle parent)
+    private construct(framehandle parent)
         element = UIElementInteractbale.create(parent)
         ..setHeight(0.0585)
         ..setVisible(false)
@@ -24,22 +29,21 @@ public class UIElementSpell
         iconHandle = createUIFrame("BACKDROP", mainHandle, true)
         ..setPoint(FRAMEPOINT_TOPLEFT, mainHandle, FRAMEPOINT_TOPLEFT, 0.01, -0.008)
         ..setSize(0.036, 0.0335)
-        ..setTexture("Icons/BTNLightningBolt.blp", 0, true)
 
         textHandle = createUINamedFrame("ElementSpellText", mainHandle)
         ..setTextColor(colorA(0, 0, 0, 255))
         ..setPoint(FRAMEPOINT_BOTTOMLEFT, mainHandle, FRAMEPOINT_BOTTOMLEFT, 0.01, 0.007)
         ..setPoint(FRAMEPOINT_BOTTOMRIGHT, mainHandle, FRAMEPOINT_BOTTOMRIGHT, -0.01, 0.007)
         ..setTextAlignment(TEXT_JUSTIFY_BOTTOM, TEXT_JUSTIFY_LEFT)
-        ..setText("Name Spell")
 
-        createUIFrame("BACKDROP", mainHandle, true)
+        imgSelectedHandle = createUIFrame("BACKDROP", mainHandle, true)
         ..setAllPoints(mainHandle)
         ..setAlpha(150)
-        ..setTexture("UI/Textures/SelectedSpell.dds", 0, true)
+        ..setTexture("UI/Textures/SelectedSpell.dds")
+        ..setVisible(false)
 
         for int i = 0 to costElements.length - 1
-            costElements[i] = new UIElementSpellCost(mainHandle, i)
+            costElements[i] = UIElementSpellCost.create(mainHandle, i)
 
     function getMainHandle() returns framehandle
         return element.getHandle()
@@ -57,13 +61,14 @@ public class UIElementSpell
         this.spell = spell
         element.setVisible(true)
         textHandle.setText(spell.getName())
+        iconHandle.setTexture(spell.getIcon())
+        imgSelectedHandle.setVisible(spell.hasOption(ActionOption.PRIMARY))
 
+        // adjust costs
         let cost = spell.getCost()
         costElements[0].update(cost.getAPAsText(), "UI/Textures/Icons/TooltipAddonAPIcon.dds")
-
         for int i = 1 to costElements.length - 1
             costElements[i].hide()
-
         var curIcon = 1
         if cost.hasMana()
             costElements[curIcon].update(cost.getMana().toString(), "UI/Textures/Icons/TooltipAddonManaIcon.dds")

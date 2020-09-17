@@ -164,7 +164,6 @@ public class ChainLightningSpell extends Spell
             if t.getPlayer() != entity.getPlayer()
                 area.add(t.getCell())
 
-    @inline
     private function showPreview(Cell fromCell)
         let tt = createTooltip(hero.stats.getPower(), level, cost)
         if fromCell != null
@@ -186,7 +185,8 @@ public class ChainLightningSpell extends Spell
                 damagePreview.addSpecificToTooltip(stack, target, tt)
                 chain ++
             destroy list
-            
+        
+        tt.setKey(key)
         tt.display(entity.getPlayer(), true)
         UIActionWindow.updateActionPoints(entity, cost)
                 

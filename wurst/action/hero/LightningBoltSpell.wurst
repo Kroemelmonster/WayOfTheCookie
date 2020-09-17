@@ -164,7 +164,9 @@ public class LightningBoltSpell extends Spell
         if fromCell != null
             calculateDamage(power, level)
             damagePreview.addSpecificToTooltip(stack, fromCell.getStack(), tt)
-            
+        
+        //TODO all actions do setKEy ?? pls do better
+        tt.setKey(key)
         tt.display(entity.getPlayer(), true)
         UIActionWindow.updateActionPoints(entity, cost)
     

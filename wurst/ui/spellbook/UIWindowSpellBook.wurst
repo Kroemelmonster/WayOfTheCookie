@@ -6,39 +6,50 @@ import Spell
 import OrderSystem
 import Action
 import UIFrame
+import UIActionWindow
+import ClosureFrames
+import UIWindow
 
 public class UISpellBookInfo
-    protected boolean visible = false
+    protected boolean isOpen = false
 
 public class UIWindowSpellBook
-    private static framehandle backgroundHandle
+    private static UIWindow window
     private static UIElementSpell array[10] spells
 
     static function setup()
-        backgroundHandle = createUIFrame("BACKDROP", GAME_UI)
-        ..setPoint(FRAMEPOINT_TOPLEFT, GAME_UI, FRAMEPOINT_TOPLEFT)
+        window = UIWindow.create()
+        ..setPoint(FRAMEPOINT_TOPLEFT, FRAMEPOINT_TOPLEFT)
         ..setSize(0.5, 0.3)
-        ..setTexture("UI/Textures/SpellBook.dds", 0, true)
-        ..setVisible(false)
+        window.onClose() (Player p) ->
+            closeInner(p)
+        window.onOpen() (Player p) ->
+            openInner(p)
 
-        let leftSideFrameHandle = createUIFrame("FRAME", backgroundHandle)
-        ..setPoint(FRAMEPOINT_TOPLEFT, backgroundHandle, FRAMEPOINT_TOPLEFT, 0.043, -0.032)
-        ..setPoint(FRAMEPOINT_BOTTOMRIGHT, backgroundHandle, FRAMEPOINT_BOTTOM, -0.016, 0)
+        let windowHandle = window.getHandle()
 
-        createUIFrame("BACKDROP", backgroundHandle)
-        ..setAllPoints(backgroundHandle)
-        ..setTexture("UI/Textures/SpellBookRipped.dds", 0, true)
+        createUIFrame("BACKDROP", windowHandle)
+        ..setAllPoints(windowHandle)
+        ..setTexture("UI/Textures/SpellBook.dds")
 
-        spells[0] = new UIElementSpell(leftSideFrameHandle)
+        let leftSideFrameHandle = createUIFrame("FRAME", windowHandle, true)
+        ..setPoint(FRAMEPOINT_TOPLEFT, windowHandle, FRAMEPOINT_TOPLEFT, 0.043, -0.032)
+        ..setPoint(FRAMEPOINT_BOTTOMRIGHT, windowHandle, FRAMEPOINT_BOTTOM, -0.016, 0)
+
+        createUIFrame("BACKDROP", windowHandle)
+        ..setAllPoints(windowHandle)
+        ..setTexture("UI/Textures/SpellBookRipped.dds")
+
+        spells[0] = UIElementSpell.create(leftSideFrameHandle)
         ..setPoint(FRAMEPOINT_TOPLEFT, leftSideFrameHandle, FRAMEPOINT_TOPLEFT, 0, 0)
         ..setPoint(FRAMEPOINT_TOPRIGHT, leftSideFrameHandle, FRAMEPOINT_TOP, 0, 0)
 
-        spells[1] = new UIElementSpell(leftSideFrameHandle)
+        spells[1] = UIElementSpell.create(leftSideFrameHandle)
         ..setPoint(FRAMEPOINT_TOPLEFT, leftSideFrameHandle, FRAMEPOINT_TOP, 0, 0)
         ..setPoint(FRAMEPOINT_TOPRIGHT, leftSideFrameHandle, FRAMEPOINT_TOPRIGHT, 0, 0)
 
         for int index = 2 to spells.length - 1
-            spells[index] = new UIElementSpell(leftSideFrameHandle)
+            spells[index] = UIElementSpell.create(leftSideFrameHandle)
             spells[index].setPoint(FRAMEPOINT_TOPLEFT, spells[index - 2].getMainHandle(), FRAMEPOINT_BOTTOMLEFT, 0, 0)
             spells[index].setPoint(FRAMEPOINT_TOPRIGHT, spells[index - 2].getMainHandle(), FRAMEPOINT_BOTTOMRIGHT, 0, 0)
 
@@ -50,46 +61,54 @@ public class UIWindowSpellBook
             spells[index].onMouseLeave() -> 
                 onMouseLeave(spells[index].getSpell(), GetTriggerPlayerData())
 
-    static function hide(Player p)
-        let info = p.spellBookInfo
-        info.visible = false
-        if p.isLocal()
-            setVisibleLocal(false)
+    static function close(Player p)
+        window.close(p)
 
-    static function show(Player p)
-        let info = p.spellBookInfo
-        info.visible = true
-        if p.isLocal()
-            setVisibleLocal(true)
-            updateLocal(p)
+    static function open(Player p)
+        window.open(p)
 
     static function toggle(Player p)
         let info = p.spellBookInfo
-        if info.visible
-            hide(p)
+        if info.isOpen
+            close(p)
         else
-            show(p)
+            open(p)
 
     static function update(Player p)
-        if not p.spellBookInfo.visible
+        if not p.spellBookInfo.isOpen
             return
         if not OrderSystem.couldOrderIFInteractable(p)
-            hide(p)
+            close(p)
             return
         if p.isConntrolledByKI
             return
         if p.isLocal()
             updateLocal(p)
+    
+    private static function closeInner(Player p)
+        let info = p.spellBookInfo
+        info.isOpen = false
+        window.close(p)
+
+    private static function openInner(Player p)
+        let info = p.spellBookInfo
+        info.isOpen = true
+            
+        if p.isLocal()
+            updateLocal(p)
 
     private static function click(Spell spell, Player p)
-        Log.trace("test click")
+        spell.toggleQuickcast()
+        UIActionWindow.update(p)
+        update(p)
 
     private static function onMouseEnter(Action action, Player p)
         action.onUIMouseEnter()
 
     private static function onMouseLeave(Action action, Player p)
-        if action != null
-            action.onUIMouseLeave()
+        if action == null
+            return
+        action.onUIMouseLeave()
 
     private static function updateLocal(Player p)
         let entity = p.currentSelectedEntity
@@ -110,5 +129,5 @@ public class UIWindowSpellBook
         destroy actionItr
 
     private static function setVisibleLocal(boolean flag)
-        backgroundHandle.setVisible(flag)
+        window.setVisible(flag)
 

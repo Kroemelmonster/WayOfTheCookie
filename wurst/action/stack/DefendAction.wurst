@@ -17,13 +17,12 @@ import initlater BoardStack
 import BoardTrigger
 
 public class DefendAction extends InstantStackAction
-    private constant static string KEY = "D"
 
     private Tooltip tt
 
     construct(BoardStack stack)
         super(stack, Icons.bTNStop, "Defend", ActionCostPreset.create(1, true))
-        tt = Tooltip.create(name, KEY)
+        tt = Tooltip.create(name)
         tt.addLine("Skips your turn ( thats it for now )")
         
     override function activate()
@@ -31,15 +30,13 @@ public class DefendAction extends InstantStackAction
         BoardController.finishOrder(entity, cost)
         
     override function onUIMouseEnter()
+        tt.setKey(key)
         tt.display(stack.getPlayer(), false)
         UIActionWindow.updateActionPoints(entity, cost)
 
     override function onUIMouseLeave()
         UITooltip.hide(stack.getPlayer())
         UIActionWindow.updateActionPoints(entity)
-
-    override function canBeActivatedByKey(string key) returns boolean
-        return key == KEY
 
     override function executeForKI(SequenzListenerStatus listener)
         activate()

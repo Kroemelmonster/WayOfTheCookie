@@ -50,11 +50,19 @@ public abstract class Spell extends Action
         super(hero, spellType.icon, spellType.name, cost)
         this.hero = hero
         presetOption(ActionOption.SPELL)
+        activateQuickcast(true)
 
     function setLevel(int i)
         if i < 0
             Log.error("Tried to create the Spell "+name+ " with a level of "+i.toString())
         this.level = i
 
-    override function canBeActivatedByKey(string key) returns boolean
-        return false
+    function toggleQuickcast()
+        activateQuickcast(not hasOption(ActionOption.PRIMARY))
+
+    function activateQuickcast(boolean flag)
+        if flag
+            hero.updateQuickcast()
+            presetOption(ActionOption.PRIMARY)
+        else
+            removeOption(ActionOption.PRIMARY)

@@ -150,7 +150,6 @@ public class ActionButton extends UIButton
     private UIIconCharge charge
 
     Action action
-    private boolean isEmpty = false
 
     override function setIcon(string str)
         icon.setTexture(str, 0, true)
@@ -162,7 +161,12 @@ public class ActionButton extends UIButton
 
         glow = createFrame("SPRITE", "ButtonGlow", icon, "", 0)
         ..setAllPoints(icon)
-        ..setModel(UI.heroLevel, 0)
+        ..setModel("ui/feedback/commandbutton/ui-commandbuttonhighlight.mdx", 0) 
+
+        // GLOW : "UI\\Buttons\\HeroLevel\\HeroLevel.mdx"
+        // AUTOCAST : ui/feedback/autocast/ui-modalbuttonon.mdx 
+        // BLUE AUTOCAST : "ui/feedback/commandbutton/ui-commandbuttonhighlight.mdx"
+        // 
 
         block = createFrame("BACKDROP", "ButtoBlock", icon, "", 0)
         ..setAllPoints(icon)
@@ -173,33 +177,36 @@ public class ActionButton extends UIButton
 
         setup()
         
-    function setAction(Action action, Action currentAction)
+    function setAction(Action action, Action currentAction, string key)
         this.action = action
-        this.isEmpty = false
         setVisible(true)
-        setIcon(action.getButton())
+        setIcon(action.getIcon())
+        action.setKey(key)
+
+        let cost = action.getCost()
+        setCharge(cost.getCurrentCharges())
 
         if action == currentAction
             enable()
             setGlowVisible(true)
         else
-            let cost = action.getCost()
             setGlowVisible(false)
-            setCharge(cost.getCurrentCharges())
             if action.canActivate()
                 enable()
             else
-                if cost.hasEnoughCharges() == false
-                    disable("UI/Textures/Button/BTNExtensionOverlayDisabled.dds")
-                else if cost.hasEnoughMana() == false
+                if not cost.hasEnoughMana()
                     disable("UI/Textures/Button/BTNExtensionOverlayDisabledMana.dds")
-                else if cost.hasCooldown()
+                else if cost.isOnCooldown()
                     let cooldown = cost.getCurrentCooldown()
                     if cooldown > 0
                         disable("UI/Textures/Button/BTNExtensionOverlapCooldown"+cooldown.toString()+".dds")
+                    else // a cooldown of 0 means the entity just used it and is not allowed to us it this turn again
+                        disable("UI/Textures/Button/BTNExtensionOverlayDisabled.dds")
+                else
+                    disable("UI/Textures/Button/BTNExtensionOverlayDisabled.dds")
 
     function setEmpty()
-        this.isEmpty = true
+        action = null
         setVisible(true)
         self.setEnabled(false)
         block.setVisible(false)
@@ -223,7 +230,7 @@ public class ActionButton extends UIButton
         charge.setText(value.toString())
 
     function isEmpty() returns boolean
-        return isEmpty
+        return action == null
 
     function enable()
         self.setEnabled(true)

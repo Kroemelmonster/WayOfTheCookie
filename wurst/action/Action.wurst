@@ -35,15 +35,16 @@ public abstract class Action
     protected BoardStack stack
     protected BoardHero hero
 
-    protected string btn
+    protected string icon
     protected string name
+    protected string key = ""
     protected ActionCost cost
 
     private bitset optionSet = bitset(0)
 
-    construct(BoardEntity entity, string btn, string name, ActionCostPreset cost)
+    construct(BoardEntity entity, string icon, string name, ActionCostPreset cost)
         this.entity = entity
-        this.btn = btn
+        this.icon = icon
         this.name = name
         this.cost = ActionCost.create(entity, cost)
     
@@ -71,7 +72,8 @@ public abstract class Action
     abstract function sendTargetOrder(Cell cell) returns boolean
     abstract function executeForKI(SequenzListenerStatus listener)
 
-    abstract function canBeActivatedByKey(string key) returns boolean
+    function canBeActivatedByKey(string key) returns boolean
+        return key == this.key
 
     @inline
     function getCost() returns ActionCost
@@ -101,24 +103,28 @@ public abstract class Action
     protected function presetOption(ActionOption opt)
         optionSet = optionSet.set(opt castTo int)
 
+    @inline
+    protected function removeOption(ActionOption opt)
+        optionSet = optionSet.reset(opt castTo int)
 
     @inline
     function hasOption(ActionOption option) returns boolean
         return optionSet.get(option castTo int)
 
     function showAsPrimary() returns boolean
-        if hasOption(ActionOption.SPELL)
-            return false
         return hasOption(ActionOption.PRIMARY)
 
     function showAsSecondary() returns boolean
         if hasOption(ActionOption.SPELL)
             return false
         return not hasOption(ActionOption.PRIMARY)
+    
+    function setKey(string key)
+        this.key = key
 
     @inline
-    function getButton() returns string
-        return btn
+    function getIcon() returns string
+        return icon
 
     @inline
     function getName() returns string

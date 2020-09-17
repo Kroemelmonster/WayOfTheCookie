@@ -12,16 +12,16 @@ import initlater BoardEntity
 import initlater UIWindowSpellBook
 import ActionCost
 
-constant framepointtype array[6] points = [FRAMEPOINT_TOPLEFT, FRAMEPOINT_TOP, FRAMEPOINT_TOPRIGHT, FRAMEPOINT_BOTTOMLEFT, FRAMEPOINT_BOTTOM, FRAMEPOINT_BOTTOMRIGHT]
-
 class UIActionWindow
     private static framehandle self
     private static framehandle pane
 
-    private static ActionButton array[3] primaryBtns
-    private static ActionButton array[3] secondaryBtns
+    private static ActionButton array[4] primaryBtns
+    private static ActionButton array[4] secondaryBtns
     private static framehandle array[10] actionPoints
 
+    private static constant string array[4] PRIMARY_KEYS = ["Q", "W", "E", "R"]
+    private static constant string array[4] SECONDARY_KEYS = ["F", "D", "S", "A"] //its reverse !
 
     static function setup()
         self = createFrame("BACKDROP", "ActionWindow", GAME_UI, "", 0)
@@ -33,7 +33,7 @@ class UIActionWindow
         ..setPoint(FRAMEPOINT_TOPLEFT, self, FRAMEPOINT_TOPLEFT, 0.006, -0.0274)
         ..setPoint(FRAMEPOINT_BOTTOMRIGHT, self, FRAMEPOINT_BOTTOMRIGHT, -0.0046, 0.007)
 
-        for int i = 0 to primaryBtns.length
+        for int i = 0 to primaryBtns.length - 1
             primaryBtns[i] = new ActionButton(self)
             if i == 0
                 primaryBtns[i].setPoint(FRAMEPOINT_TOPLEFT, pane, FRAMEPOINT_TOPLEFT, 0, 0)
@@ -49,7 +49,7 @@ class UIActionWindow
                 if primaryBtns[i].isEmpty() == false
                     onMouseLeave(primaryBtns[i].action, GetTriggerPlayerData())
 
-        for int i = 0 to secondaryBtns.length
+        for int i = 0 to secondaryBtns.length - 1
             secondaryBtns[i] = new ActionButton(self)
             if i == 0
                 secondaryBtns[i].setPoint(FRAMEPOINT_BOTTOMRIGHT, pane, FRAMEPOINT_BOTTOMRIGHT, 0, 0)
@@ -62,7 +62,7 @@ class UIActionWindow
             secondaryBtns[i].onMouseLeave() -> 
                 onMouseLeave(secondaryBtns[i].action, GetTriggerPlayerData())
 
-        for int i = 0 to actionPoints.length
+        for int i = 0 to actionPoints.length - 1
             actionPoints[i] = createFrame("BACKDROP", "", self, "", 0)
                 ..setSize(0.025, 0.013)
                 ..setPoint(FRAMEPOINT_TOPLEFT, self, FRAMEPOINT_TOPLEFT, 0.007 + (0.016 * i), -0.008)
@@ -100,7 +100,7 @@ class UIActionWindow
         let maxActionPoints = entity.getMaxActionPoints()
         let maxRemainingPoints = entity.getRemainingActionPoints()
         let startPreview = maxRemainingPoints - previewLoosingPoints
-        for int i = 0 to actionPoints.length
+        for int i = 0 to actionPoints.length - 1
             actionPoints[i].setVisible(i < maxActionPoints)
             if i < maxActionPoints
                 if i >= maxRemainingPoints
@@ -135,10 +135,10 @@ class UIActionWindow
 
         let currentAction = entity.getCurrentAction()
 
-        for int i = 0 to primaryBtns.length
+        for int i = 0 to primaryBtns.length - 1
             primaryBtns[i].setEmpty()
 
-        for int i = 0 to secondaryBtns.length
+        for int i = 0 to secondaryBtns.length - 1
             secondaryBtns[i].setVisible(false)
 
             
@@ -149,10 +149,10 @@ class UIActionWindow
         while actionItr.hasNext()
             let action = actionItr.next()
             if action.showAsPrimary()
-                primaryBtns[primaryIndex].setAction(action, currentAction)
+                primaryBtns[primaryIndex].setAction(action, currentAction, PRIMARY_KEYS[primaryIndex])
                 primaryIndex ++
             if action.showAsSecondary()
-                secondaryBtns[secondaryIndex].setAction(action, currentAction)
+                secondaryBtns[secondaryIndex].setAction(action, currentAction, SECONDARY_KEYS[secondaryIndex])
                 secondaryIndex ++
             
         destroy actionItr
@@ -176,7 +176,7 @@ class UIActionWindow
             action.onUIMouseLeave()
 
     static function hide(Player p)
-        UIWindowSpellBook.hide(p)
+        UIWindowSpellBook.close(p)
         if p.isLocal()
             hide()
 

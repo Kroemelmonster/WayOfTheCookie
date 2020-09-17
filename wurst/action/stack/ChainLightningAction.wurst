@@ -36,7 +36,6 @@ public class ChainLightningAction extends StackAction
 
     private static constant ActionCostPreset COST = ActionCostPreset.create(1, true, 3)
     private static constant int MAXRANGE = 4
-    private static constant string KEY = "C"
     private static constant int MAX_CHAINS = 3
     private static constant int CHAIN_RANGE = 3
     private static constant real CHAIN_REDUCTION = 0.90
@@ -65,8 +64,6 @@ public class ChainLightningAction extends StackAction
         ..addLine(Tooltip.stat("Damage", damagePreview))
         ..addLine("")
         ..addLine("Lightning strikes from one target and chains to nearby other targets")
-        if isDefault == false
-            tt.addKey(KEY)
         return tt
     
     private LinkedList<Cell> area = new LinkedList<Cell>()
@@ -158,6 +155,7 @@ public class ChainLightningAction extends StackAction
     @inline
     private function showPreview(Cell fromCell)
         let tt = createTooltip(false, stack.stats.amount)
+        tt.setKey(key)
         if fromCell != null
             let list = new LinkedList<BoardStack>()
             list.add(fromCell.getStack())
@@ -191,9 +189,6 @@ public class ChainLightningAction extends StackAction
 
     override function onUIMouseLeave()
         hidePreview()
-
-    override function canBeActivatedByKey(string key) returns boolean
-        return key == KEY
 
     override function executeForKI(SequenzListenerStatus listener)
         let defaultAction = stack.getDefaultAction()

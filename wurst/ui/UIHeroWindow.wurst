@@ -48,7 +48,7 @@ public class UIHeroWindow
 
         self = createFrame("FRAME", "", GAME_UI, "", 0)
         ..setPoint(FRAMEPOINT_TOPRIGHT, GAME_UI, FRAMEPOINT_TOPRIGHT, -0.04, 0.0)
-        ..setPoint(FRAMEPOINT_BOTTOMLEFT, UIWorldConsole.self, FRAMEPOINT_TOPLEFT)
+        ..setPoint(FRAMEPOINT_BOTTOMLEFT, GAME_UI, FRAMEPOINT_TOPLEFT, 0, 0.1)
         ..setVisible(false)
 
         createFrame("BACKDROP", "", self, "", 0)

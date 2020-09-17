@@ -40,15 +40,16 @@ public class UIArmyPanel
     protected UIStackSplitDialog stackSplitDialog
 
     construct(framehandle reference)
-        reference.setWidth(Army.MAX_SIZE * (0.035 + 0.002))
+        //reference.setWidth(Army.MAX_SIZE * (0.035 + 0.002))
 
         for int i = 0 to Army.MAX_SIZE - 1
             btns[i] = new CommandButton(reference, false)
             ..addText(false)
+            ..setScale(1.18)
             if i == 0
-                btns[i].setPoint(FRAMEPOINT_TOPLEFT, reference, FRAMEPOINT_TOPLEFT, 0, 0)
+                btns[i].setPoint(FRAMEPOINT_BOTTOMLEFT, reference, FRAMEPOINT_BOTTOMLEFT, 0.004, 0.007)
             else
-                btns[i].setPoint(FRAMEPOINT_TOPLEFT, btns[i - 1].self, FRAMEPOINT_TOPRIGHT, 0.002, 0)
+                btns[i].setPoint(FRAMEPOINT_LEFT, btns[i - 1].self, FRAMEPOINT_RIGHT, 0.002, 0)
             btns[i].onClick() ->
                 let p = GetTriggerPlayerData()
                 let stack = p.worldConsoleInfo.armyPanel.army.getStack(i)

@@ -8,7 +8,7 @@ import initlater MouseContext
 
 public class UIInteractableIcon
     protected framehandle self
-    protected framehandle icon
+    protected framehandle iconHandle
 
     private FrameHandleListener onMouseEnterListener
     private FrameHandleListener onMouseLeaveListener
@@ -16,7 +16,7 @@ public class UIInteractableIcon
     construct(framehandle parent, real width, real height)
         self = createFrame("MENU", "", parent, "", 0)
         ..setSize(width, height)
-        icon = createFrame("BACKDROP", "", self, "", 0)
+        iconHandle = createFrame("BACKDROP", "", self, "", 0)
         ..setSize(width, height)
         ..setPoint(FRAMEPOINT_TOPLEFT, self, FRAMEPOINT_TOPLEFT)
 
@@ -35,7 +35,7 @@ public class UIInteractableIcon
         self.setPoint(point, relative, relativePoint, x, y)
 
     function setIcon(string str)
-        icon.setTexture(str, 0, true)
+        iconHandle.setTexture(str, 0, true)
 
     function onMouseEnter(FrameHandleListener listener)
         onMouseEnterListener = listener

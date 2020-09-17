@@ -100,5 +100,9 @@ Frame "TEXT" "TEXT_IGNORE_EVENTS" {
     LayerStyle "IGNORETRACKEVENTS",
 }
 
+Frame "FRAME" "FRAME_IGNORE_EVENTS" {
+    LayerStyle "IGNORETRACKEVENTS",
+}
+
 
 //Fonts\BLQ55Web.ttf
