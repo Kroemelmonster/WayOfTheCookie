@@ -3,7 +3,6 @@ package UIExtensionArmyPanel
 import UIWindow
 import Stack
 import UIButton
-import UIStackSplitDialog
 import PlayerData
 import initlater Hero
 import UIHandle

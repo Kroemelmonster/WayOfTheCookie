@@ -5,7 +5,6 @@ import Textures
 import UIButton
 
 import Stack
-import UIStackSplitDialog
 
 import initlater PlayerData
 import initlater Hero
