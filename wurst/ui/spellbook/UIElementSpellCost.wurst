@@ -1,29 +1,25 @@
 package UIElementSpellCost
-import UIFrame
+import UIHandle
 
-public class UIElementSpellCost
+public class UIElementSpellCost extends UIHandle
     static function create(framehandle parent, int counter) returns UIElementSpellCost
         return new UIElementSpellCost(parent, counter)
 
-    private framehandle iconHandle
     private framehandle textHandle
 
     private construct(framehandle parent, int counter)
-        iconHandle = createUIFrame("BACKDROP", parent, true)
-        ..setPoint(FRAMEPOINT_TOPRIGHT, parent, FRAMEPOINT_TOPRIGHT, -0.027, -0.006 - (counter * 0.011))
-        ..setSize(0.011, 0.011)
-        ..setVisible(false)
+        super(createUIFrame("BACKDROP", parent))
+        setPoint(FRAMEPOINT_TOPRIGHT, parent, FRAMEPOINT_TOPRIGHT, -0.027, -0.006 - (counter * 0.011))
+        setSize(0.011, 0.011)
+        setVisible(false)
     
-        textHandle = createUINamedFrame("ElementSpellCostText", iconHandle)
-        ..setPoint(FRAMEPOINT_TOPLEFT, iconHandle, FRAMEPOINT_TOPRIGHT, 0.003, 0.002)
+        textHandle = createUIFrameByName("ElementSpellCostText", self, false)
+        ..setPoint(FRAMEPOINT_TOPLEFT, self, FRAMEPOINT_TOPRIGHT, 0.003, 0.002)
         ..setSize(0.007, 0.013)
         ..setTextAlignment(TEXT_JUSTIFY_MIDDLE, TEXT_JUSTIFY_LEFT)
         ..setTextColor(colorA(0, 0, 0, 255))
 
     function update(string text, string icon)
-        iconHandle.setVisible(true)
-        iconHandle.setTexture(icon, 0, true)
+        setVisible(true)
+        setTexture(icon)
         textHandle.setText(text)
-
-    function hide()
-        iconHandle.setVisible(false)

@@ -5,8 +5,8 @@ import PlayerData
 import Spell
 import OrderSystem
 import Action
-import UIFrame
-import UIActionWindow
+import UIHandle
+import UIBoardActionMenu
 import ClosureFrames
 import UIWindow
 
@@ -17,27 +17,25 @@ public class UIWindowSpellBook
     private static UIWindow window
     private static UIElementSpell array[10] spells
 
-    static function setup()
+    static function create()
         window = UIWindow.create()
-        ..setPoint(FRAMEPOINT_TOPLEFT, FRAMEPOINT_TOPLEFT)
+        ..setPointToGameUI(FRAMEPOINT_TOPLEFT, FRAMEPOINT_TOPLEFT)
         ..setSize(0.5, 0.3)
         window.onClose() (Player p) ->
             closeInner(p)
         window.onOpen() (Player p) ->
             openInner(p)
 
-        let windowHandle = window.getHandle()
-
-        createUIFrame("BACKDROP", windowHandle)
-        ..setAllPoints(windowHandle)
+        createUIFrame("BACKDROP", window)
+        ..setAllPoints(window)
         ..setTexture("UI/Textures/SpellBook.dds")
 
-        let leftSideFrameHandle = createUIFrame("FRAME", windowHandle, true)
-        ..setPoint(FRAMEPOINT_TOPLEFT, windowHandle, FRAMEPOINT_TOPLEFT, 0.043, -0.032)
-        ..setPoint(FRAMEPOINT_BOTTOMRIGHT, windowHandle, FRAMEPOINT_BOTTOM, -0.016, 0)
+        let leftSideFrameHandle = createUIFrame("FRAME", window)
+        ..setPoint(FRAMEPOINT_TOPLEFT, window, FRAMEPOINT_TOPLEFT, 0.043, -0.032)
+        ..setPoint(FRAMEPOINT_BOTTOMRIGHT, window, FRAMEPOINT_BOTTOM, -0.016, 0)
 
-        createUIFrame("BACKDROP", windowHandle)
-        ..setAllPoints(windowHandle)
+        createUIFrame("BACKDROP", window)
+        ..setAllPoints(window)
         ..setTexture("UI/Textures/SpellBookRipped.dds")
 
         spells[0] = UIElementSpell.create(leftSideFrameHandle)
@@ -99,7 +97,7 @@ public class UIWindowSpellBook
 
     private static function click(Spell spell, Player p)
         spell.toggleQuickcast()
-        UIActionWindow.update(p)
+        UIBoardActionMenu.update(p)
         update(p)
 
     private static function onMouseEnter(Action action, Player p)

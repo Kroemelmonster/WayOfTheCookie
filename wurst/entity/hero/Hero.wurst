@@ -10,7 +10,7 @@ import ClosureEvents
 import World
 import Orders
 import NPC
-import UIWorldConsole
+import UIMenuWorldConsole
 import KItem
 import SkillTree
 import FightResult
@@ -19,6 +19,7 @@ import HeroType
 import HeroStats
 import LinkedList
 import initlater Spell
+import UIHeroWindow
 
 constant HashMap<unit, Hero> map = new HashMap<unit, Hero>
 
@@ -94,7 +95,7 @@ public class Hero
         leadership = 4000
 
         p.hero = this
-        UIWorldConsole.setupHero(this)
+        UIMenuWorldConsole.setupHero(this)
         select()
 
     function getType() returns HeroType

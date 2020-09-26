@@ -9,23 +9,32 @@ import initlater InitiativeList
 import initlater BoardStack
 import initlater MouseContext
 import initlater BoardEntity
+import UIButtonIcon
+import UIHandle
 
 constant MAX_ENTRYS = 14
 
-class InitiativeCommandButton extends CommandButton
-    protected framehandle time
+class InitiativeCommandButton extends UIButtonIcon
+    protected framehandle timeHandle
+    protected framehandle textHandle
 
     construct(framehandle pane, boolean withTime)
-        super(pane, true)
-        addBorder()
-        addText(false)
+        super(pane, false, true, false)
+        setSize(0.035, 0.035)
+
+        textHandle = createUIFrame("TEXT", self)
+        ..setPoint(FRAMEPOINT_TOPLEFT, self, FRAMEPOINT_BOTTOMLEFT)
+        ..setPoint(FRAMEPOINT_BOTTOMRIGHT, self, FRAMEPOINT_BOTTOMRIGHT, -0.002, 0.009)
 
         if withTime
-            time = createFrame("TEXT", "", self, "", 0)
+            timeHandle = createUIFrame("TEXT", self)
             ..setPoint(FRAMEPOINT_BOTTOMLEFT, self, FRAMEPOINT_TOPLEFT)
             ..setPoint(FRAMEPOINT_BOTTOMRIGHT, self, FRAMEPOINT_TOPRIGHT)
             ..setHeight(0.009)
             ..setTextAlignment(TEXT_JUSTIFY_MIDDLE, TEXT_JUSTIFY_CENTER)
+
+    protected function setText(string text)
+        textHandle.setText(text)
 
 
 class UIInitiativeWindow
@@ -102,7 +111,7 @@ class UIInitiativeWindow
         destroy iterator
 
     private static function refreshButton(InitiativeCommandButton btn, InitiativeEntry entry)
-        btn.time.setText(entry.getTime().toString())
+        btn.timeHandle.setText(entry.getTime().toString())
 
         refreshButton(btn, entry.getEnitity().getBoardEntity())
 
@@ -130,7 +139,7 @@ class UIInitiativeWindow
         for int i = 0 to MAX_ENTRYS
             if iterator.hasNext()
                 let stack = iterator.next().getEnitity().getBoardEntity()
-                btns[i].setHighlight(highlightEntit == stack)
+                btns[i].showHighlight(highlightEntit == stack)
 
         destroy iterator
 
@@ -143,4 +152,4 @@ class UIInitiativeWindow
             return
 
         for int i = 0 to MAX_ENTRYS
-            btns[i].setHighlight(false)
+            btns[i].showHighlight(false)

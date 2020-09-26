@@ -1,43 +1,40 @@
 package UIWindow
-import UIFrame
+import UIHandle
 
 import ClosureFrames
 import initlater MouseContext
 import PlayerData
 import LinkedList
 
-public class UIMouseBlockElement
+public framehandle CONSOLE_UI
+
+public class UIMouseBlockElement extends UIHandle
     static function create(UIMenu parent) returns UIMouseBlockElement
         return new UIMouseBlockElement(parent.self)
-
-    protected framehandle self
 
     private LinkedList<framehandle> simpleFrames
 
     private construct(framehandle parent)
-        self = createUIFrame("MENU", parent)
+        super(createUIFrame("MENU", parent, true))
         self.onMouseEnter() () ->
             MouseContext.enableMouseMovement(GetTriggerPlayerData(), false)
         self.onMouseLeave() -> 
             MouseContext.enableMouseMovement(GetTriggerPlayerData(), true)
 
-    function setPoint(framepointtype point, framepointtype relativePoint)
-        self.setPoint(point, GAME_UI, relativePoint)
+    function setPointToGameUI(framepointtype point, framepointtype relativePoint)
+        setPoint(point, GAME_UI, relativePoint)
 
-    function setPoint(framepointtype point, framepointtype relativePoint, real x, real y)
-        self.setPoint(point, GAME_UI, relativePoint, x, y)
+    function setPointToGameUI(framepointtype point, framepointtype relativePoint, real x, real y)
+        setPoint(point, GAME_UI, relativePoint, x, y)
 
-    function setPoint(framepointtype point, framehandle relative, framepointtype relativePoint)
-        self.setPoint(point, relative, relativePoint)
+    function setPointToConsoleUI(framepointtype point, framepointtype relativePoint)
+        setPoint(point, CONSOLE_UI, relativePoint)
 
-    function setPoint(framepointtype point, framehandle relative, framepointtype relativePoint, real x, real y)
-        self.setPoint(point, relative, relativePoint, x, y)
+    function setPointToConsoleUI(framepointtype point, framepointtype relativePoint, real x, real y)
+        setPoint(point, CONSOLE_UI, relativePoint, x, y)
 
-    function setSize(real width, real height)
-        self.setSize(width, height)
-
-    function setVisible(boolean flag)
-        self.setVisible(flag)
+    override function setVisible(boolean flag)
+        super.setVisible(flag)
         if simpleFrames != null
             for simpleFrame in simpleFrames
                 simpleFrame.setVisible(flag)
@@ -47,9 +44,6 @@ public class UIMouseBlockElement
             simpleFrames = new LinkedList<framehandle>()
         simpleFrames.add(simple)
         simple.setVisible(false)
-
-    function getHandle() returns framehandle
-        return self
 
 public class UIMenu extends UIMouseBlockElement
     static function create() returns UIMenu
@@ -68,23 +62,47 @@ public class UIWindow extends UIMenu
         if lastWindow != null
             lastWindow.close(p)
 
+    static function closeAll(Player p)
+        let backItr = p.currentOpenWindows.staticBackItr()
+        while backItr.hasNext()
+            let window = backItr.next()
+            window.close(p)
+        destroy backItr
+
     private PlayerListener onCloseListener
     private PlayerListener onOpenListener
-    
+
+    private function isOpen(Player p) returns boolean
+        return p.currentOpenWindows.has(this)
+
     function open(Player p)
-        if not p.currentOpenWindows.has(this)
+        if not isOpen(p)
             p.currentOpenWindows.add(this)
-            onOpenListener.onEvent(p)
+            if onOpenListener != null
+                onOpenListener.onEvent(p)
         if p.isLocal()
             super.setVisible(true)
 
     function close(Player p)
-        if p.currentOpenWindows.has(this)
+        if isOpen(p)
             p.currentOpenWindows.remove(this)
-            onCloseListener.onEvent(p)
-
+            if onCloseListener != null
+                onCloseListener.onEvent(p)
         if p.isLocal()
             super.setVisible(false)
+
+    protected function closeWithoutTrigger(Player p)
+        if isOpen(p)
+            p.currentOpenWindows.remove(this)
+        if p.isLocal()
+            super.setVisible(false)
+
+    function toggle(Player p)
+        if isOpen(p)
+            close(p)
+        else
+            open(p)
+
     
     override function setVisible(boolean flag)
         super.setVisible(flag)
@@ -95,3 +113,44 @@ public class UIWindow extends UIMenu
     
     function onOpen(PlayerListener listener)
         onOpenListener = listener
+
+public class UIWindowBasic extends UIWindow
+    static function create(boolean small) returns UIWindowBasic
+        return new UIWindowBasic(small)
+
+    protected framehandle innerFrame
+
+    private construct(boolean small)
+        super()
+        var frameName = "WindowBasic"
+        var padding = 0.03
+        if small
+            frameName += "Small"
+            padding = 0.015
+        createUIFrameByName(frameName, self, false)
+        ..setAllPoints(self)
+
+        innerFrame = createUIFrame("FRAME", self)
+        ..setPoint(FRAMEPOINT_TOPLEFT, self, FRAMEPOINT_TOPLEFT, padding, -padding)
+        ..setPoint(FRAMEPOINT_BOTTOMRIGHT, self, FRAMEPOINT_BOTTOMRIGHT, -padding, padding)
+
+
+        /*
+        window = UIWindow.create()
+        ..setPointToConsoleUI(FRAMEPOINT_TOPLEFT, FRAMEPOINT_TOPLEFT)
+        ..setSize(0.5, 0.3)
+        createUIFrameByName("WindowBasic", window, false)
+        ..setAllPoints(window)
+        */
+
+public function framehandle.setInnerPoint(framepointtype point, UIWindowBasic relative, framepointtype relativePoint)
+    this.setPoint(point, relative.innerFrame, relativePoint)
+
+public function framehandle.setInnerPoint(framepointtype point, UIWindowBasic relative, framepointtype relativePoint, real x, real y)
+    this.setPoint(point, relative.innerFrame, relativePoint, x, y)
+
+public function UIHandle.setInnerPoint(framepointtype point, UIWindowBasic relative, framepointtype relativePoint)
+    this.setPoint(point, relative.innerFrame, relativePoint)
+
+public function UIHandle.setInnerPoint(framepointtype point, UIWindowBasic relative, framepointtype relativePoint, real x, real y)
+    this.setPoint(point, relative.innerFrame, relativePoint, x, y)

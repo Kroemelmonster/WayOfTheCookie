@@ -4,11 +4,12 @@ import ClosureFrames
 
 import PlayerData
 
-import UIDialog
 import UISlider
 
 import initlater MainController
 import initlater Stack
+
+/*
 
 public class StackSellDialogInfo
     protected Stack stack
@@ -18,7 +19,7 @@ public class StackSellDialogInfo
     protected int maxAmountGold
     protected int maxAmountLeaderShip
 
-public class UIStackSellDialog extends UIDialog
+public class UIStackSellDialog extends UIDialogOld
     private UISlider slider
     private framehandle editBox
     private framehandle totalGoldPrice
@@ -158,4 +159,4 @@ public class UIStackSellDialog extends UIDialog
 
         update(p)
 
-        
+        */

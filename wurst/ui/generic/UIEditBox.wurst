@@ -1,0 +1,26 @@
+package UIEditBox
+
+import ClosureFrames
+import UIHandle
+import UIInteractable
+import PlayerData
+
+public class UIEditBox extends UIInteractable
+    static function create(UIHandle parent) returns UIEditBox
+        return new UIEditBox(parent.self)
+        
+    private construct(framehandle parent)
+        super(createUIFrameByName("EditBoxBasic", parent, false))
+
+    function onValueChange(FrameHandleListener listener)
+        self.onEditboxEnter() -> 
+            listener.onEvent()
+
+    function setValue(string text)
+        self.setText(text)
+
+    function setValue(int value)
+        setValue(value.toString())
+
+    function getValue() returns string
+        return self.getText()

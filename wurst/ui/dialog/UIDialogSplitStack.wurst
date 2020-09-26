@@ -1,0 +1,94 @@
+package UIDialogSplitStack
+
+import ClosureFrames
+
+import PlayerData
+import UISlider
+
+import initlater MainController
+import initlater Stack
+import UIDialog
+import UIHandle
+import UIWindow
+import UIEditBox
+
+public class DialogInfoSplitStack
+    protected Stack stack
+    protected int amount
+    protected int maxAmount
+
+public class UIDialogSplitStack
+    private static UIDialog dia
+    private static UISlider slider
+    private static UIEditBox editBoxLeft
+    private static UIEditBox editBoxRight
+
+    private static framehandle handleIconLeft
+    private static framehandle handleIconRight
+
+    static function create()
+        dia = UIDialog.create()
+        ..onAccept() -> 
+            let p = GetTriggerPlayerData()
+            let info = p.dialogInfo.splitInfo
+            MainController.splitStack(p.hero, info.stack, info.amount)
+
+        let paddingH = 0.035
+        slider = UISlider.create(dia)
+        ..setInnerPoint(FRAMEPOINT_BOTTOM, dia, FRAMEPOINT_BOTTOM, 0, paddingH + 0.005)
+        ..onValueChange() -> 
+            setStackValues(GetTriggerPlayerData(), slider.getValue())
+
+        editBoxLeft = UIEditBox.create(dia)
+        ..setInnerPoint(FRAMEPOINT_BOTTOMLEFT, dia, FRAMEPOINT_BOTTOMLEFT, 0, paddingH)
+        ..onValueChange() -> 
+            let p = GetTriggerPlayerData()
+            setStackValues(p, p.dialogInfo.splitInfo.maxAmount - editBoxLeft.getValue().toInt())
+
+        handleIconLeft = createUIFrame("BACKDROP", dia)
+        ..setPoint(FRAMEPOINT_BOTTOM, editBoxLeft, FRAMEPOINT_TOP)
+        ..setSize(0.04, 0.04)
+
+        editBoxRight = UIEditBox.create(dia)
+        ..setInnerPoint(FRAMEPOINT_BOTTOMRIGHT, dia, FRAMEPOINT_BOTTOMRIGHT, 0, paddingH)
+        ..onValueChange() -> 
+            setStackValues(GetTriggerPlayerData(), editBoxRight.getValue().toInt())
+
+        handleIconRight = createUIFrame("BACKDROP", dia)
+        ..setPoint(FRAMEPOINT_BOTTOM, editBoxRight, FRAMEPOINT_TOP)
+        ..setSize(0.04, 0.04)
+    
+    static function open(Player p, Stack stack)
+        let info = p.dialogInfo.splitInfo
+        let startAmount = stack.getAmount()
+        if startAmount < 2
+            return // TODO this is an error give info to player maybe
+
+        info.stack = stack
+        info.amount = (startAmount / 2).round()
+        info.maxAmount = startAmount - 1
+    
+        if p.isLocal()
+            slider.setMinMax(1, info.maxAmount)
+            handleIconLeft.setTexture(info.stack.getStackType().icon)
+            handleIconRight.setTexture(info.stack.getStackType().icon)
+            
+        dia.open(p)
+        update(p)
+
+    private static function setStackValues(Player p, int amount)
+        let info = p.dialogInfo.splitInfo
+        info.amount = amount
+        if amount > info.maxAmount
+            info.amount = info.stack.getAmount()
+        if amount < 1
+            info.amount = 1
+
+        update(p)
+
+    private static function update(Player p)
+        let info = p.dialogInfo.splitInfo
+        if p.isLocal()
+            slider.setValue(info.amount)
+            editBoxLeft.setValue(info.maxAmount + 1 - info.amount)
+            editBoxRight.setValue(info.amount)

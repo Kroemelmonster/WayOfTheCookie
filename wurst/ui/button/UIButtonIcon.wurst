@@ -1,0 +1,100 @@
+package UIButtonIcon
+import UIButton
+import UIHandle
+import PlayerData
+
+public enum BorderColor
+    RED
+    GREEN
+    BLACK
+    NONE
+
+public class UIButtonIcon extends UIButton
+    static function create(framehandle parent, boolean automaticHighlight, boolean hasBorder, boolean hasCounter) returns UIButton
+        return new UIButtonIcon(parent, automaticHighlight, hasBorder, hasCounter)
+
+    private framehandle counterFrame
+    private framehandle counterTextFrame
+    private framehandle blockFrame
+    private framehandle borderFrame
+    private framehandle highlightFrame
+    private framehandle glowFrame
+
+    construct(framehandle parent, boolean automaticHighlight, boolean hasBorder, boolean hasCounter)
+        super(createBasicButtonFrame(automaticHighlight, parent))
+
+        if hasCounter
+            counterFrame = createUIFrame("BACKDROP", self)
+            ..setPoint(FRAMEPOINT_TOPLEFT, self, FRAMEPOINT_CENTER, 0.005, -0.005)
+            ..setPoint(FRAMEPOINT_BOTTOMRIGHT, self, FRAMEPOINT_BOTTOMRIGHT)
+            ..setTexture("UI/Widgets/Console/Human/human-transport-slot.blp")
+            ..setVisible(false)
+
+            counterTextFrame = createUIFrame("TEXT", counterFrame)
+            ..setAllPoints(counterFrame)
+            ..setTextAlignment(TEXT_JUSTIFY_MIDDLE, TEXT_JUSTIFY_CENTER)
+
+        blockFrame = createUIFrame("BACKDROP", self)
+        ..setAllPoints(self)
+        ..setVisible(false)
+
+        if hasBorder
+            borderFrame = createUIFrame("BACKDROP", self)
+            ..setAllPoints(self)
+            setBorder(BorderColor.NONE)
+
+        if not automaticHighlight
+            highlightFrame = createUIFrameByName("ButtonHighlight", self, false)
+            ..setAllPoints(self)
+            ..setAlpha(200)
+            ..setVisible(false)
+
+        glowFrame = createUIFrame("SPRITE", self)
+        ..setAllPoints(self)
+        ..setModel("ui/feedback/commandbutton/ui-commandbuttonhighlight.mdx", 0)
+        ..setVisible(false)
+
+    function setCounter(int amount)
+        counterFrame.setVisible(amount > 0)
+        counterTextFrame.setText(amount.toString())
+
+    function enable()
+        self.setEnabled(true)
+        blockFrame.setVisible(false)
+
+    function disable(string blockingTexture)
+        disable()
+        blockFrame.setTexture(blockingTexture)
+        blockFrame.setVisible(true)
+
+    function disable()
+        self.setEnabled(false)
+        blockFrame.setVisible(false)
+
+    function setBorder(BorderColor color)
+        switch(color)
+            case BorderColor.RED
+                borderFrame.setAlpha(125)
+                borderFrame.setTexture("UI/Button/BTNExtensionBorderRed.dds")
+            case BorderColor.GREEN
+                borderFrame.setAlpha(125)
+                borderFrame.setTexture("UI/Button/BTNExtensionBorderGreen.dds")
+            case BorderColor.BLACK
+                borderFrame.setAlpha(200)
+                borderFrame.setTexture("UI/Button/BTNExtensionBorderBlack.dds")
+            default
+                borderFrame.setAlpha(0)
+
+    function setBorderBasedOnPlayerRelationship(PlayerRelationship relationship)
+        if relationship == PlayerRelationship.ENEMY
+            setBorder(BorderColor.RED)
+        else if relationship == PlayerRelationship.NEUTRAL
+            setBorder(BorderColor.NONE)
+        else
+            setBorder(BorderColor.GREEN)
+
+    function showHighlight(boolean flag)
+        highlightFrame.setVisible(flag)
+
+    function setGlowVisible(boolean flag)
+        glowFrame.setVisible(flag)

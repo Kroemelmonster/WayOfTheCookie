@@ -1,0 +1,89 @@
+package UIHandle
+
+public function createUIFrame(string frameType, framehandle parent) returns framehandle
+    return createUIFrame(frameType, parent, false)
+
+public function createUIFrame(string frameType, framehandle parent, boolean registerEvents) returns framehandle
+    if not registerEvents
+        return createFrame(frameType +  "_IGNORE_EVENTS", parent, 0, 0)
+    return createFrame(frameType, "", parent, "", 0)
+
+public function createUIFrameByName(string name, framehandle parent, boolean isSimple) returns framehandle
+    if isSimple
+        return createSimpleFrame(name, parent, 0)
+    return createFrame(name, parent, 0, 0)
+
+public function createUIFrame(string frameType, UIHandle parent) returns framehandle
+    return createUIFrame(frameType, parent.self, false)
+
+public function createUIFrame(string frameType, UIHandle parent, boolean dontIgnorEvents) returns framehandle
+    return createUIFrame(frameType, parent.self, dontIgnorEvents)
+
+public function createUIFrameByName(string name, UIHandle parent, boolean isSimple) returns framehandle
+    return createUIFrameByName(name, parent.self, isSimple)
+
+public function createUIHandle(string frameType, UIHandle parent) returns UIHandle
+    return createUIHandle(frameType, parent, false)
+
+public function createUIHandle(string frameType, UIHandle parent, boolean dontIgnorEvents) returns UIHandle
+    return new UIHandle(createUIFrame(frameType, parent, dontIgnorEvents))
+
+public function createUIHandleByName(string name, UIHandle parent, boolean isSimple) returns UIHandle
+    return new UIHandle(createUIFrameByName(name, parent, isSimple))
+
+public class UIHandle
+    protected framehandle self
+
+    construct(framehandle self)
+        this.self = self
+
+    function setPoint(framepointtype point, framehandle relative, framepointtype relativePoint)
+        self.setPoint(point, relative, relativePoint)
+    
+    function setPoint(framepointtype point, framehandle relative, framepointtype relativePoint, real x, real y)
+        self.setPoint(point, relative, relativePoint, x, y)
+
+    function setPoint(framepointtype point, UIHandle relative, framepointtype relativePoint)
+        self.setPoint(point, relative.self, relativePoint)
+    
+    function setPoint(framepointtype point, UIHandle relative, framepointtype relativePoint, real x, real y)
+        self.setPoint(point, relative.self, relativePoint, x, y)
+
+    function setScale(real scale)
+        self.setScale(scale)
+
+    function setSize(real width, real height)
+        self.setSize(width, height)
+
+    function setVisible(boolean flag)
+        self.setVisible(flag)
+
+    function setAlpha(int alpha)
+        self.setAlpha(alpha)
+
+    function setTexture(string texFile)
+        self.setTexture(texFile)
+
+    function setHeight(real height)
+        self.setHeight(height) 
+        
+    function setWidth(real width)
+        self.setWidth(width)
+
+    function isVisible() returns boolean
+        return self.isVisible()
+
+    ondestroy
+        Log.error("DONT DESTROY SUCH A THING WTF ?")
+
+public function framehandle.setTexture(string texFile)
+    this.setTexture(texFile, 0, true)
+
+public function framehandle.setPoint(framepointtype point, UIHandle relative, framepointtype relativePoint)
+    this.setPoint(point, relative.self, relativePoint)
+
+public function framehandle.setPoint(framepointtype point, UIHandle relative, framepointtype relativePoint, real x, real y)
+    this.setPoint(point, relative.self, relativePoint, x, y)
+
+public function framehandle.setAllPoints(UIHandle relative)
+    this.setAllPoints(relative.self)

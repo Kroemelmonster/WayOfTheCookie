@@ -10,7 +10,7 @@ import Abilities
 import OrderSystem
 import BoardController
 import UITooltip
-import UIActionWindow
+import UIBoardActionMenu
 
 import initlater BoardEntity
 import BoardTrigger
@@ -33,11 +33,11 @@ public class HeroSkipAction extends InstantAction
     override function onUIMouseEnter()
         tt.setKey(key)
         tt.display(entity.getPlayer(), false)
-        UIActionWindow.updateActionPoints(entity, cost)
+        UIBoardActionMenu.updateActionPoints(entity, cost)
 
     override function onUIMouseLeave()
         UITooltip.hide(entity.getPlayer())
-        UIActionWindow.updateActionPoints(entity)
+        UIBoardActionMenu.updateActionPoints(entity)
 
     override function executeForKI(SequenzListenerStatus listener)
         activate()

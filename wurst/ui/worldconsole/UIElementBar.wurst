@@ -1,34 +1,24 @@
 package UIElementBar
 import UIWindow
-import UIFrame
+import UIHandle
 
-public class UIElementBar
+public class UIElementBar extends UIHandle
     static function create(string bar, UIMenu parent) returns UIElementBar
         return new UIElementBar(bar, parent)
 
-    private framehandle element
     private framehandle textHandle
 
     construct(string bar, UIMenu parent)
-        element = createSimpleFrame(bar, parent.getHandle(), 0)
-        parent.addSimpleFrame(element)
+        super(createUIFrameByName(bar, parent, true))
+        parent.addSimpleFrame(self)
 
-        textHandle = createUIFrame("TEXT", parent.getHandle(), true)
-        ..setAllPoints(element)
+        textHandle = createUIFrame("TEXT", parent)
+        ..setAllPoints(self)
         ..setTextAlignment(TEXT_JUSTIFY_MIDDLE, TEXT_JUSTIFY_CENTER)
-
-    function setPoint(framepointtype point, framehandle relative, framepointtype relativePoint)
-        element.setPoint(point, relative, relativePoint)
-
-    function setPoint(framepointtype point, framehandle relative, framepointtype relativePoint, real x, real y)
-        element.setPoint(point, relative, relativePoint, x, y)
-
-    function setSize(real width, real height)
-        element.setSize(width, height)
     
     function setValue(int current, int max)
-        element.setMinMax(0, max.toReal())
-        element.setValue(current.toReal())
+        self.setMinMax(0, max.toReal())
+        self.setValue(current.toReal())
 
     function setText(string text)
         textHandle.setText(text)

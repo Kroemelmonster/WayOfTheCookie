@@ -1,0 +1,64 @@
+Frame "HIGHLIGHT" "ButtonHighlight" {
+    HighlightType "FILETEXTURE",
+    HighlightAlphaFile "UI\Glues\ScoreScreen\scorescreen-tab-hilight.blp",
+    HighlightAlphaMode "ADD",
+}
+
+Frame "BUTTON" "Button" {
+    ControlBackdrop "Texture",
+    Frame "BACKDROP" "Texture" {
+    }
+}
+
+Frame "GLUEBUTTON" "ButtonWithHighlight" {
+    ControlStyle "HIGHLIGHTONMOUSEOVER",
+
+    ControlBackdrop "Texture",
+    Frame "BACKDROP" "Texture" {
+    }
+
+    ControlMouseOverHighlight "Highlight",
+    Frame "HIGHLIGHT" "Highlight" INHERITS "ButtonHighlight" {
+    }
+}
+
+Frame "GLUETEXTBUTTON" "MenuBTN" {
+    Width 0.16,
+    Height 0.033,
+    ControlStyle "AUTOTRACK|HIGHLIGHTONMOUSEOVER",
+    ButtonPushedTextOffset -0.002 -0.002,
+
+    ControlBackdrop "MenuBTNIcon",
+    Frame "BACKDROP" "MenuBTNIcon" {
+        BackdropBackground "UI\Button\MenuBTN.dds",
+        BackdropBlendAll,
+    }
+
+    ControlPushedBackdrop "MenuBTNIconPushed",
+    Frame "BACKDROP" "MenuBTNIconPushed" {
+        BackdropBackground "UI\Button\MenuBTNPushed.dds",
+        BackdropBlendAll,
+    }
+
+    ControlDisabledBackdrop "MenuBTNIconDisabled",
+    Frame "BACKDROP" "MenuBTNIconDisabled" {
+        BackdropBackground "UI\Button\MenuBTNDisabled.dds",
+        BackdropBlendAll,
+    }
+
+    ControlMouseOverHighlight "MenuBTNHighlight",
+    Frame "HIGHLIGHT" "MenuBTNHighlight" {
+        HighlightType "FILETEXTURE",
+        HighlightAlphaFile "UI\Button\MenuBTNHighlight.dds",
+        HighlightAlphaMode "ADD",
+    }
+
+    ButtonText "MenuBTNText",
+    Frame "TEXT" "MenuBTNText" {
+        FrameFont "Fonts\ghei00b_t.ttf", 0.013, "",
+        FontColor 1.0 1.0 1.0 1.0,
+        FontJustificationH JUSTIFYCENTER,
+        FontJustificationV JUSTIFYMIDDLE,
+        FontJustificationOffset 0.0 0.0,
+    }
+}

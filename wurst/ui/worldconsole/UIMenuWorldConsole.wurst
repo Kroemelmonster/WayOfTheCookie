@@ -1,51 +1,40 @@
-package UIWorldConsole
-
-import ClosureFrames
+package UIMenuWorldConsole
 
 import PlayerData
-import UIArmyPanel
 
 import initlater Hero
-import initlater MainController
 import UIFightResultDialog
-import initlater Board
 import BoardTrigger
 import FightResult
 import UIWindow
-import UIFrame
+import UIHandle
 import UIElementBar
+import UIExtensionArmyPanel
 
-public class UIWorldConsoleInfo
-    protected boolean visible = false
-    ArmyPanelInfo armyPanel = new ArmyPanelInfo()
+public class UIMenuWorldConsoleInfo
+    protected boolean isVisible = false
+    UIExtensionArmyPanelInfo armyInfo = new UIExtensionArmyPanelInfo()
 
-public class UIWorldConsole
+public class UIMenuWorldConsole
     protected static UIMenu menu
 
     protected static framehandle portrait
     protected static UIElementBar expBar
     protected static UIElementBar manaBar
 
-    protected static UIFightResultDialog fightResultDialog
+    //protected static UIFightResultDialog fightResultDialog
 
-    protected static UIArmyPanel armyPanel
-
-    static function setup()
+    static function create()
         menu = UIMenu.create()
-        ..setPoint(FRAMEPOINT_BOTTOMLEFT, FRAMEPOINT_BOTTOMLEFT, 0.02, 0)
-        ..setSize(0.145, 0.177)
+        ..setPointToGameUI(FRAMEPOINT_BOTTOMLEFT, FRAMEPOINT_BOTTOMLEFT, 0.02, 0)
+        ..setSize(0.142, 0.177)
 
-        let menuHandle = menu.getHandle()
+        let armyExtension = UIExtensionArmyPanel.create(menu)
 
-        let armyExtension = UIMouseBlockElement.create(menu)
-        ..setPoint(FRAMEPOINT_BOTTOMLEFT, menuHandle, FRAMEPOINT_BOTTOMRIGHT)
-        ..setSize(0.265, 0.08)
-        let armyExtensionHandle = armyExtension.getHandle()
-
-        createUIFrame("BACKDROP", menuHandle, true)
-        ..setPoint(FRAMEPOINT_TOPLEFT, menuHandle, FRAMEPOINT_TOPLEFT, -0.02, 0.033)
-        ..setPoint(FRAMEPOINT_BOTTOMRIGHT, armyExtensionHandle, FRAMEPOINT_BOTTOMRIGHT)
-        ..setTexture("UI/Textures/HeroMenu/HeroMenu.dds")
+        createUIFrame("BACKDROP", menu)
+        ..setPoint(FRAMEPOINT_TOPLEFT, menu, FRAMEPOINT_TOPLEFT, -0.02, 0.033)
+        ..setPoint(FRAMEPOINT_BOTTOMRIGHT, armyExtension, FRAMEPOINT_BOTTOMRIGHT, 0.01, 0)
+        ..setTexture("UI/WorldConsole/WorldConsole.dds")
         
         portrait = getOriginFrame(ORIGIN_FRAME_PORTRAIT, 0)
         ..clearAllPoints()
@@ -53,23 +42,28 @@ public class UIWorldConsole
         ..setHeight(0.103)
         menu.addSimpleFrame(portrait)
 
-        expBar = UIElementBar.create("HeroMenuExpBar", menu)
-        ..setSize(0.09, 0.013)
-        ..setPoint(FRAMEPOINT_BOTTOMLEFT, menuHandle, FRAMEPOINT_BOTTOMLEFT, 0.033, 0.023)
+        expBar = UIElementBar.create("WorldConsoleExpBar", menu)
+        ..setSize(0.09, 0.014)
+        ..setPoint(FRAMEPOINT_BOTTOMLEFT, menu, FRAMEPOINT_BOTTOMLEFT, 0.033, 0.022)
 
-        manaBar = UIElementBar.create("HeroMenuManaBar", menu)
-        ..setSize(0.09, 0.013)
-        ..setPoint(FRAMEPOINT_BOTTOMLEFT, menuHandle, FRAMEPOINT_BOTTOMLEFT, 0.033, 0.005)
+        manaBar = UIElementBar.create("WorldConsoleManaBar", menu)
+        ..setSize(0.09, 0.014)
+        ..setPoint(FRAMEPOINT_BOTTOMLEFT, menu, FRAMEPOINT_BOTTOMLEFT, 0.033, 0.0045)
+
+        /*
+        createUIFrame("BACKDROP", GAME_UI)
+        ..setAllPoints(GAME_UI)
+        ..setTexture("UI/Button/MenuBTN.dds")
+        */
         
-        armyPanel = new UIArmyPanel(armyExtensionHandle)
-        fightResultDialog = new UIFightResultDialog()
+        //fightResultDialog = new UIFightResultDialog()
 
     static function setupHero(Hero h)
-        armyPanel.setupHero(h)
+        UIExtensionArmyPanel.setupHero(h)
         show(h.getPlayer())
 
     static function update(Player p)
-        if p.worldConsoleInfo.visible == false
+        if p.worldConsoleInfo.isVisible == false
             return
 
         if p.isLocal()
@@ -90,21 +84,22 @@ public class UIWorldConsole
             let maxMana = hero.stats.getMaxMana()
             manaBar.setValue(mana, maxMana)
             manaBar.setText(mana.toString() + " / "+ maxMana.toString())
-
-        armyPanel.update(p)
+            
+        UIExtensionArmyPanel.update(p)
 
     static function hide(Player p)
-        setVisible(p, false)
-        armyPanel.hide(p)
+        if p.worldConsoleInfo.isVisible
+            setVisible(p, false)
+            UIExtensionArmyPanel.hide(p)
 
     static function show(Player p)
         setVisible(p, true)
         update(p)
 
     private static function setVisible(Player p, boolean flag)
-        p.worldConsoleInfo.visible = flag
+        p.worldConsoleInfo.isVisible = flag
         if p.isLocal()
             menu.setVisible(flag)
 
     static function showFightResult(Player p, FightResult result, SequenzListener listener)
-        fightResultDialog.show(p, result, listener)
+        // TODO fightResultDialog.show(p, result, listener)

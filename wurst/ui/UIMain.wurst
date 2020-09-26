@@ -3,14 +3,17 @@ package UIMain
 import FramehandleNames
 import ClosureEvents
 
-import UIActionWindow
+import UIBoardActionMenu
 import UITooltip
 import UIEntityWindow
 import UIInitiativeWindow
-import UIWorldConsole
+import UIMenuWorldConsole
 import UINPCWindow
-import UIHeroWindow
 import UIWindowSpellBook
+import UIHeroWindow
+import UIHandle
+import ClosureTimers
+import UIMenuConsole
 
 public function framehandle.toString() returns string
 	var str = "FrameHandle "
@@ -30,33 +33,27 @@ class UIMain
 
 		//getOriginFrame(ORIGIN_FRAME_MINIMAP).setVisible(true)
 
-
 		getFrame(FramehandleDefaultNames.consoleUI)
-		//..setAbsPoint(FRAMEPOINT_BOTTOM, 0.4, -1.0)
+		//.setAbsPoint(FRAMEPOINT_BOTTOM, 0.4, -1.0)
 		//..setAbsPoint(FRAMEPOINT_TOP, 0.4, 1.0)
 		..setVisible(false)
 
-
-		EventListener.add(EVENT_PLAYER_CHAT_FILTER) ->
-			if GetEventPlayerChatString().startsWith("debug")
-				fpsDebug = fpsDebug == false
-				getFrame(FramehandleDefaultNames.consoleUI).setVisible(fpsDebug)
-				getFrame("ResourceBarFrame").setVisible(fpsDebug)
-
-
 		loadTOCFile("UI\\Framedef.toc")
+
+		
 	
 	static constant MAX_PARTS = 4
 
 	static function load(integer part)
 		if part == 0
-			UIActionWindow.setup()
+			UIBoardActionMenu.create()
 			UITooltip.setup()
 		else if part == 1
 			UIInitiativeWindow.setup()
-			UIWindowSpellBook.setup()
+			UIWindowSpellBook.create()
 		else if part == 2
-			UIWorldConsole.setup()
+			UIMenuConsole.create()
+			UIMenuWorldConsole.create()
 			UINPCWindow.setup()
 		else if part == 3
 			UIEntityWindow.setup()

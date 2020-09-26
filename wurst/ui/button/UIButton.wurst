@@ -1,0 +1,65 @@
+package UIButton
+
+import ClosureFrames
+
+import UI
+import PlayerData
+
+import initlater MouseContext
+import initlater Action
+import UIHandle
+import UIInteractable
+
+public class UIButton extends UIInteractable
+    protected static function createBasicButtonFrame(boolean automaticHighlight, framehandle parent) returns framehandle
+        var name = "Button"
+        if automaticHighlight
+            name += "WithHighlight"
+        return createUIFrameByName(name, parent, false)
+
+    static function create(boolean automaticHighlight, framehandle parent) returns UIButton
+        return new UIButton(createBasicButtonFrame(automaticHighlight, parent))
+
+    protected framehandle imgFrame
+
+    private FrameHandleListener onClickListener
+    private FrameHandleListener onMouseDown
+    private FrameHandleListener onMouseUp
+
+    private construct(framehandle self)
+        super(self)
+        this.imgFrame = getFrame("Texture")
+        self.onClick() () ->
+            self.setEnabled(false)
+            self.setEnabled(true)
+            if onClickListener != null
+                onClickListener.onEvent()
+
+    protected override function onMouseEnterInner(Player p)
+        p.mouseOverButton = this  
+    
+    protected override function onMouseLeaveInner(Player p)
+        p.mouseOverButton = null  
+
+    function setIcon(string str)
+        imgFrame.setTexture(str)
+
+    function triggerOnMouseDown()
+        if onMouseDown != null
+            onMouseDown.onEvent()
+
+    function triggerOnMouseUp()
+        if onMouseUp != null
+            onMouseUp.onEvent()
+
+    function onClick(FrameHandleListener listener)
+        if listener != null
+            onClickListener = listener
+
+    function onMouseDown(FrameHandleListener listener)
+        if listener != null
+            onMouseDown = listener
+
+    function onMouseUp(FrameHandleListener listener)
+        if listener != null
+            onMouseUp = listener

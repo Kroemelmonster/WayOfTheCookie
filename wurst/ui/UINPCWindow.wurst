@@ -5,16 +5,41 @@ import UIButton
 import UIStackSellDialog
 
 import initlater NPC
+import UIButtonIcon
+import UIHandle
 
 public class UINPCWindowInfo
     protected NPC npc
 
+class UINPCWindowButton extends UIButtonIcon
+    protected framehandle textHandle
+    protected framehandle goldTextHandle
+
+    construct(framehandle parent)
+        super(parent, true, false, false)
+        setSize(0.035, 0.035)
+
+        textHandle = createUIFrame("TEXT", self)
+        ..setPoint(FRAMEPOINT_TOPLEFT, self, FRAMEPOINT_BOTTOMLEFT)
+        ..setPoint(FRAMEPOINT_BOTTOMRIGHT, self, FRAMEPOINT_BOTTOMRIGHT, -0.002, 0.009)
+
+        createUIFrameByName("GoldTextSmall", self, false)
+        ..setPoint(FRAMEPOINT_TOPLEFT, textHandle , FRAMEPOINT_BOTTOMLEFT, 0.0, -0.002)
+        ..setPoint(FRAMEPOINT_TOPRIGHT, textHandle, FRAMEPOINT_BOTTOMRIGHT, 0.0, -0.002)
+        ..setHeight(0.01)
+        goldTextHandle = getFrame("GoldTextText")
+
+    function setText(string amount, string gold)
+        textHandle.setText(amount)
+        goldTextHandle.setText(gold)
+
+        
 public class UINPCWindow
     protected static framehandle frame
     protected static framehandle pane
-    protected static UIStackSellDialog stackSellDialog
+    // protected static UIStackSellDialog stackSellDialog
 
-    protected static CommandButton array[15] shopStock
+    protected static UINPCWindowButton array[15] shopStock
 
     static function setup()
         frame = createFrame("BasicBorderWindow", GAME_UI, 0, 0)
@@ -24,8 +49,7 @@ public class UINPCWindow
         pane = getFrame("WindowPane")
 
         for int i = 0 to shopStock.length
-            shopStock[i] = new CommandButton(pane, false)
-            ..addText(true)
+            shopStock[i] = new UINPCWindowButton(pane)
             ..setVisible(false)
             if i == 0
                 shopStock[i].setPoint(FRAMEPOINT_TOPLEFT, pane, FRAMEPOINT_TOPLEFT, 0, 0)
@@ -34,12 +58,12 @@ public class UINPCWindow
             shopStock[i].onClick() ->
                 let p = GetTriggerPlayerData()
                 let stack = p.npcWindowInfo.npc.getShopData().getStock().get(i)
-                stackSellDialog.show(p, stack, stack.getStackType().getCost())
+                // stackSellDialog.show(p, stack, stack.getStackType().getCost())
             shopStock[i].onMouseEnter() ->
                 let p = GetTriggerPlayerData()
                 p.stackWindowInfo.setStackType(p.npcWindowInfo.npc.getShopData().getStock().get(i).getStackType())
                 
-        stackSellDialog = new UIStackSellDialog()
+        // stackSellDialog = new UIStackSellDialog()
 
 
     static function update(Player p)
@@ -53,8 +77,7 @@ public class UINPCWindow
                 if stockitr.hasNext()
                     let stack = stockitr.next()
                     shopStock[i].setIcon(stack.getStackType().icon)
-                    shopStock[i].setText(stack.getAmount().toString())
-                    shopStock[i].setGoldText(stack.getStackType().value.toString())
+                    shopStock[i].setText(stack.getAmount().toString(), stack.getStackType().value.toString())
 
 
             destroy stockitr
@@ -69,7 +92,7 @@ public class UINPCWindow
         if p.isLocal()
             frame.setVisible(false)
 
-        if p.dialogInfo.current == stackSellDialog
-            stackSellDialog.cancel(p)
+       // if p.dialogInfo.current == stackSellDialog
+         //   stackSellDialog.cancel(p)
 
         p.npcWindowInfo.npc = null

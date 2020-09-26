@@ -8,14 +8,14 @@ import initlater BoardStack
 import initlater Hero
 import initlater UIButton
 import initlater UIEntityWindow
-import initlater UIWorldConsole
+import initlater UIMenuWorldConsole
 import initlater UINPCWindow
 import initlater UIDialog
-import initlater UIHeroWindow
 import initlater KeyPressSystem
 import initlater BoardEntity
 import initlater UIWindowSpellBook
 import initlater UIWindow
+import initlater UIHeroWindow
 
 public abstract class KeyPressListener
     abstract function onEvent(Player p, string key)
@@ -42,7 +42,7 @@ public class Player
 
     DialogInfo dialogInfo = new DialogInfo()
 
-    UIWorldConsoleInfo worldConsoleInfo = new UIWorldConsoleInfo()
+    UIMenuWorldConsoleInfo worldConsoleInfo = new UIMenuWorldConsoleInfo()
     UINPCWindowInfo npcWindowInfo = new UINPCWindowInfo()
     UIEntityWindowInfo stackWindowInfo = new UIEntityWindowInfo()
     UIHeroWindowInfo heroWindoInfo = new UIHeroWindowInfo()

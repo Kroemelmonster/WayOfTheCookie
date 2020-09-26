@@ -2,7 +2,6 @@ package ChainLightningSpell
 
 import LinkedList
 import Icons
-import Lightning
 import Abilities
 
 import PlayerData
@@ -15,7 +14,7 @@ import StackType
 
 import initlater Cell
 import initlater BoardStack
-import UIActionWindow
+import UIBoardActionMenu
 import DelayAnimation
 import Damage
 import CastAnimation
@@ -188,12 +187,12 @@ public class ChainLightningSpell extends Spell
         
         tt.setKey(key)
         tt.display(entity.getPlayer(), true)
-        UIActionWindow.updateActionPoints(entity, cost)
+        UIBoardActionMenu.updateActionPoints(entity, cost)
                 
     @inline
     private function hidePreview()
         UITooltip.hide(entity.getPlayer())
-        UIActionWindow.updateActionPoints(entity)
+        UIBoardActionMenu.updateActionPoints(entity)
 
     override function onUIMouseEnter()
         showPreview(null)

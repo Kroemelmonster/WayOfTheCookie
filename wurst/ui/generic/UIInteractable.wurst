@@ -1,0 +1,43 @@
+package UIInteractable
+
+import ClosureFrames
+
+import UI
+import PlayerData
+
+import initlater MouseContext
+import initlater Action
+import UIHandle
+
+public class UIInteractable extends UIHandle
+    static function create(framehandle self) returns UIInteractable
+        return new UIInteractable(self)
+
+    private FrameHandleListener onMouseEnterListener
+    private FrameHandleListener onMouseLeaveListener
+
+    private construct(framehandle self)
+        super(self)
+        self.onMouseEnter() () ->
+            let p = GetTriggerPlayerData()
+            MouseContext.enableMouseMovement(p, false)
+            onMouseEnterInner(p)
+            if onMouseEnterListener != null
+                onMouseEnterListener.onEvent()
+        self.onMouseLeave() () ->
+            let p = GetTriggerPlayerData()
+            MouseContext.enableMouseMovement(p, true)
+            onMouseLeaveInner(p)
+            if onMouseLeaveListener != null
+                onMouseLeaveListener.onEvent()
+
+    protected function onMouseEnterInner(Player _p)
+    protected function onMouseLeaveInner(Player _p)
+
+    function onMouseEnter(FrameHandleListener listener)
+        if listener != null
+            onMouseEnterListener = listener
+
+    function onMouseLeave(FrameHandleListener listener)
+        if listener != null
+            onMouseLeaveListener = listener

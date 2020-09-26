@@ -20,6 +20,7 @@ import StatsModifier
 import Talent
 import LinkedList
 import Globals
+import UIButtonIcon
 
 public class UIEntityWindowInfo
     protected BoardEntity boardEntity
@@ -51,8 +52,6 @@ class UIEntityWindow
     private static framehandle frame
     private static framehandle pane
     private static framehandle icon
-    private static ButtonBorder iconBorder
-    private static UIIconCharge iconCharge
 
     private static framehandle header
     private static framehandle subHeader
@@ -90,8 +89,8 @@ class UIEntityWindow
         ..setSize(0.04, 0.04)
         ..setLevel(10)
         ..setAlpha(200)
-        iconBorder = new ButtonBorder(icon)
-        iconCharge = new UIIconCharge(icon)
+        // iconBorder = new ButtonBorder(icon)
+        // iconCharge = new UIIconCharge(icon)
 
         header = getFrame("StackWindowHeader")
         subHeader = getFrame("StackWindowSubHeader")
@@ -305,7 +304,7 @@ class UIEntityWindow
 
     private static function updateForStackType(Player p, StackType stackType)
         updateSpecifcForStackType(stackType)
-        iconBorder.setBorder(BorderColor.NONE)
+        // TODO iconBorder.setBorder(BorderColor.NONE)
         subHeader.setText("")
 
         stackInfoAttack.setTextBasedOnStats(stackType.attack, stackType.attack, null)
@@ -348,7 +347,7 @@ class UIEntityWindow
         let armyStats = armyStack.stats
 
         updateSpecifcForStackType(stackType)
-        iconBorder.setBorder(BorderColor.NONE)
+        // iconBorder.setBorder(BorderColor.NONE)
         subHeader.setText("")
 
         stackInfoAttack.setTextBasedOnStats(stackType.attack, armyStats.getAttack(), armyStats.attackModi)
@@ -383,7 +382,7 @@ class UIEntityWindow
         let boardStats = boardStack.stats
     
         updateSpecifcForStackType(stackType)
-        iconBorder.setBorderBasedOnPlayerRelationship(p.getRelationshipStatusTo(boardStack.getPlayer()))
+        // iconBorder.setBorderBasedOnPlayerRelationship(p.getRelationshipStatusTo(boardStack.getPlayer()))
         subHeader.setText(boardStats.getAmount().toString() + " / " + boardStats.getStartAmount().toString())
 
         stackInfoAttack.setTextBasedOnStats(armyStats.getAttack(), boardStats.getAttack(), boardStats.attackModi)
@@ -435,9 +434,9 @@ class UIEntityWindow
         let boardHeroStats = boardHero.stats
         icon.setTexture(heroType.icon, 0, true)
         header.setText(heroType.name)
-        iconCharge.setText(hero.getExp().toString())
+        // iconCharge.setText(hero.getExp().toString())
 
-        iconBorder.setBorderBasedOnPlayerRelationship(p.getRelationshipStatusTo(hero.getPlayer()))
+        // iconBorder.setBorderBasedOnPlayerRelationship(p.getRelationshipStatusTo(hero.getPlayer()))
         subHeader.setText("")
 
         stackInfoAttack.setTextBasedOnStats(heroStats.getAttack(), boardHeroStats.getAttack(), null)
@@ -499,7 +498,7 @@ class UIEntityWindow
     private static function updateSpecifcForStackType(StackType stackType)
         icon.setTexture(stackType.icon, 0, true)
         header.setText(stackType.name)
-        iconCharge.setText(stackType.level.toString())
+        // iconCharge.setText(stackType.level.toString())
 
     private static function updateTalents(LinkedList<Talent> visibleTalents)
         let itr = visibleTalents.iterator()

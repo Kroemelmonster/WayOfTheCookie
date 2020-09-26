@@ -1,0 +1,29 @@
+package UIMenuConsole
+import UIWindow
+import UIHandle
+import UIWindowMenu
+import PlayerData
+import UIButtonMenu
+
+public class UIMenuConsole
+    protected static UIMenu menu
+
+    static function create()
+        menu = UIMenu.create()
+        ..setPointToGameUI(FRAMEPOINT_TOPLEFT, FRAMEPOINT_TOPLEFT)
+        ..setPointToGameUI(FRAMEPOINT_TOPRIGHT, FRAMEPOINT_TOPRIGHT)
+        ..setHeight(0.025)
+        ..setVisible(true)
+
+        UIButtonMenu.create(menu, "Menu")
+        ..setPoint(FRAMEPOINT_TOPLEFT, menu, FRAMEPOINT_TOPLEFT)
+        ..setWidth(0.12)
+        ..setScale(0.65)
+        ..onClick() -> 
+            UIWindowMenu.toggle(GetTriggerPlayerData())
+
+        CONSOLE_UI = createUIFrame("FRAME", GAME_UI)
+        ..setPoint(FRAMEPOINT_TOPLEFT, menu, FRAMEPOINT_BOTTOMLEFT)
+        ..setPoint(FRAMEPOINT_BOTTOMRIGHT, GAME_UI, FRAMEPOINT_BOTTOMRIGHT, 0, -0.1)
+
+        UIWindowMenu.create()

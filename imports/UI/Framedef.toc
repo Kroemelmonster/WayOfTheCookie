@@ -2,17 +2,7 @@ UI\FrameDef\Glue\standardtemplates.fdf
 UI\FrameDef\UI\escmenutemplates.fdf
 UI\FrameDef\Glue\battlenettemplates.fdf
 
-UI\Textures\HeroMenu\HeroMenu.fdf
-UI\FrameDef\Basics.fdf
-UI\FrameDef\WorldConsoleSpecials.fdf
-UI\FrameDef\SimpleFrames.fdf
-UI\FrameDef\TextTemplates.fdf
-UI\FrameDef\Basics.fdf
-UI\FrameDef\Tooltip.fdf
-UI\FrameDef\DialogButtons.fdf
-UI\FrameDef\StackWindow.fdf
-UI\FrameDef\HeroWindow.fdf
-UI\FrameDef\CommandButtons.fdf
-UI\FrameDef\SpellBook.fdf
-UI\Window.fdf
-UI\Window.fdf
+UI\Generic\Generic.fdf
+UI\Button\Button.fdf
+UI\WorldConsole\WorldConsole.fdf
+

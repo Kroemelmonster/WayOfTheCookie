@@ -19,7 +19,7 @@ import KUtil
 import initlater Cell
 import initlater BoardStack
 import initlater Board
-import UIActionWindow
+import UIBoardActionMenu
 import MovePositionAnimation
 import DelayAnimation
 import BoardTrigger
@@ -175,7 +175,7 @@ public class WalkAndAttackAction extends DefaultStackAction
                 let remainingActionPoints = getActionPointsAfterWalkToCell(cell)
                 if remainingActionPoints >= 0
                     showCost = ActionCost.getTempCost(stack.getRemainingActionPoints() - remainingActionPoints, false)
-        UIActionWindow.updateActionPoints(entity, showCost)
+        UIBoardActionMenu.updateActionPoints(entity, showCost)
 
     private function finish(boolean endTurn)
         BoardController.finishOrder(entity, ActionCost.getTempCost(stack, 0, endTurn))

@@ -5,7 +5,7 @@ import UITooltip
 import BoardController
 
 
-import UIActionWindow
+import UIBoardActionMenu
 import CastAnimation
 import BoardTrigger
 import Spell
@@ -78,11 +78,11 @@ public class RallingCrySpell extends WarcrySpell
         let tt = createTooltip(level)
         tt.setKey(key)
         tt.display(entity.getPlayer(), true)
-        UIActionWindow.updateActionPoints(entity, cost)
+        UIBoardActionMenu.updateActionPoints(entity, cost)
 
     private function hidePreview()
         UITooltip.hide(entity.getPlayer())
-        UIActionWindow.updateActionPoints(entity)
+        UIBoardActionMenu.updateActionPoints(entity)
 
     override function onUIMouseEnter()
         showPreview()

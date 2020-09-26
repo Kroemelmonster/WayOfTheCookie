@@ -1,0 +1,114 @@
+Frame "BACKDROP" "BACKDROP_IGNORE_EVENTS" {
+	LayerStyle "IGNORETRACKEVENTS",
+}
+
+Frame "TEXT" "TEXT_IGNORE_EVENTS" {
+    LayerStyle "IGNORETRACKEVENTS",
+}
+
+Frame "FRAME" "FRAME_IGNORE_EVENTS" {
+    LayerStyle "IGNORETRACKEVENTS",
+}
+
+Frame "BACKDROP" "WindowBasic" {
+    BackdropTileBackground,
+    BackdropBackground "ui\widgets\escmenu\orc\orc-options-menu-background.dds",
+    BackdropCornerFlags "UL|UR|BL|BR|T|L|B|R",
+    BackdropCornerSize  0.048,
+    BackdropBackgroundSize  0.3,
+    BackdropBackgroundInsets 0.01 0.01 0.01 0.01,
+    BackdropEdgeFile "ui\widgets\escmenu\orc\orc-options-menu-border.dds",
+    BackdropBlendAll,
+}
+
+Frame "BACKDROP" "WindowBasicSmall" INHERITS "WindowBasic" {
+    BackdropCornerSize  0.024,
+    BackdropBackgroundInsets 0.005 0.005 0.005 0.005,
+}
+
+Frame "SLIDER" "SliderHorizontalBasic" {
+    Height 0.017,
+    Width 0.17,
+    SliderLayoutHorizontal,
+    SliderStepSize 1,
+
+    ControlBackdrop "SliderHorizontalBasicControl",
+    Frame "BACKDROP" "SliderHorizontalBasicControl" {
+        DecorateFileNames,
+        BackdropTileBackground,
+        BackdropBackground "EscMenuSliderBackground",
+        BackdropCornerFlags "UL|UR|BL|BR|T|L|B|R",
+        BackdropCornerSize  0.006,
+        BackdropBackgroundSize 0.006,
+        BackdropBackgroundInsets 0.0025 0.0025 0.0025 0.0025,
+        BackdropEdgeFile "EscMenuSliderBorder",
+        BackdropBlendAll,
+    }
+
+    ControlDisabledBackdrop "SliderHorizontalBasicDisabled",
+    Frame "BACKDROP" "SliderHorizontalBasicDisabled" {
+        DecorateFileNames,
+        BackdropTileBackground,
+        BackdropBackground "EscMenuSliderBackground",
+        BackdropCornerFlags "UL|UR|BL|BR|T|L|B|R",
+        BackdropCornerSize  0.006,
+        BackdropBackgroundSize 0.006,
+        BackdropBackgroundInsets 0.0025 0.0025 0.0025 0.0025,
+        BackdropEdgeFile "EscMenuSliderDisabledBorder",
+        BackdropBlendAll,
+    }
+
+    SliderThumbButtonFrame "SliderHorizontalBasicThumb",
+    Frame "BUTTON" "SliderHorizontalBasicThumb" {
+        Width 0.025,
+        Height 0.025,
+
+        ControlBackdrop "SliderHorizontalBasicThumbControl",
+        Frame "BACKDROP" "SliderHorizontalBasicThumbControl" {
+            DecorateFileNames,
+            BackdropBlendAll,
+            BackdropBackground "EscMenuSliderThumbButton",
+        }
+
+        ControlDisabledBackdrop "SliderHorizontalBasicThumbDisabled",
+        Frame "BACKDROP" "SliderHorizontalBasicThumbDisabled" {
+            DecorateFileNames,
+            BackdropBlendAll,
+            BackdropBackground "EscMenuSliderDisabledThumbButton",
+        }
+    }
+}
+
+
+Frame "BACKDROP" "BackdropEditBoxBasic" {
+    DecorateFileNames,
+    BackdropTileBackground,
+    BackdropBackground "EscMenuEditBoxBackground",
+    BackdropCornerFlags "UL|UR|BL|BR|T|L|B|R",
+    BackdropCornerSize  0.0125,
+    BackdropBackgroundSize  0.256,
+    BackdropBackgroundInsets 0.005 0.005 0.005 0.005,
+    BackdropEdgeFile "EscMenuEditBoxBorder",
+    BackdropBlendAll,
+}
+
+
+Frame "EDITBOX" "EditBoxBasic" {
+    Width 0.07,
+    Height 0.03,
+    EditBorderSize 0.009,
+    EditCursorColor 1.0 1.0 1.0,
+
+    EditTextFrame "EditBoxBasicText",
+    Frame "TEXT" "EditBoxBasicText" {
+        LayerStyle "IGNORETRACKEVENTS",
+        UseActiveContext,
+        FrameFont "Fonts\BLQ55Web.ttf", 0.014, "",
+    }
+
+    ControlBackdrop "EditBoxBasicControl",
+    Frame "BACKDROP" "EditBoxBasicControl" INHERITS "BackdropEditBoxBasic" {
+    }
+}
+
+//Fonts\BLQ55Web.ttf

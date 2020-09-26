@@ -11,7 +11,7 @@ import ActionCost
 import OrderSystem
 import BoardController
 import UITooltip
-import UIActionWindow
+import UIBoardActionMenu
 
 import initlater BoardStack
 import BoardTrigger
@@ -32,11 +32,11 @@ public class DefendAction extends InstantStackAction
     override function onUIMouseEnter()
         tt.setKey(key)
         tt.display(stack.getPlayer(), false)
-        UIActionWindow.updateActionPoints(entity, cost)
+        UIBoardActionMenu.updateActionPoints(entity, cost)
 
     override function onUIMouseLeave()
         UITooltip.hide(stack.getPlayer())
-        UIActionWindow.updateActionPoints(entity)
+        UIBoardActionMenu.updateActionPoints(entity)
 
     override function executeForKI(SequenzListenerStatus listener)
         activate()

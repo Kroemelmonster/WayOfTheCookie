@@ -11,7 +11,7 @@ import BoardController
 import UITooltip
 import StatusController
 import StatusType
-import UIActionWindow
+import UIBoardActionMenu
 import KUtil
 import LinkedList
 import Stack
@@ -102,11 +102,11 @@ public class SlamAction extends InstantStackAction
         createTooltip(false, stack.stats.amount)
         ..setKey(key)
         ..display(stack.getPlayer(), true)
-        UIActionWindow.updateActionPoints(entity, cost)
+        UIBoardActionMenu.updateActionPoints(entity, cost)
             
     override function onUIMouseLeave()
         UITooltip.hide(stack.getPlayer())
-        UIActionWindow.updateActionPoints(entity)
+        UIBoardActionMenu.updateActionPoints(entity)
             
     override function executeForKI(SequenzListenerStatus listener)
         let defaultAction = stack.getDefaultAction()

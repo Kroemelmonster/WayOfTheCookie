@@ -4,12 +4,12 @@ import ClosureFrames
 
 import PlayerData
 
-import UIDialog
-
 import BoardTrigger
 import FightResult
 import UITooltip
 
+
+/*
 public class FightResultDialogInfo
     protected SequenzListener listener
 
@@ -34,7 +34,7 @@ class UIFightResultStack
         ..setHeight(0.009)
 
 
-public class UIFightResultDialog extends UIDialog
+public class UIFightResultDialog
     private static constant MAX_STACKS = 10
     private framehandle title
     private framehandle rewardLeft
@@ -151,4 +151,4 @@ public class UIFightResultDialog extends UIDialog
                     secondStacks[i].after.setText(Tooltip.coloredString(Tooltip.COLOR_NEGATIVE, "+" + dif.toString()))
             else
                 secondStacks[i].icon.setVisible(false)
-    
+    */

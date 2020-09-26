@@ -17,7 +17,7 @@ import StackType
 import initlater Cell
 import initlater BoardStack
 import initlater StackTypesDefinition
-import UIActionWindow
+import UIBoardActionMenu
 import Scheduler
 import DelayAnimation
 import CastAnimation
@@ -116,12 +116,12 @@ public class SummonLesserSkeletonAction extends StackAction
     private function showPreview()
         tooltip.setKey(key)
         tooltip.display(stack.getPlayer(), false)
-        UIActionWindow.updateActionPoints(entity, cost)
+        UIBoardActionMenu.updateActionPoints(entity, cost)
                 
     @inline
     private function hidePreview()
         UITooltip.hide(stack.getPlayer())
-        UIActionWindow.updateActionPoints(entity)
+        UIBoardActionMenu.updateActionPoints(entity)
 
     override function onUIMouseEnter()
         recalcSummonAmount()

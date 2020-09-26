@@ -16,7 +16,7 @@ import KUtil
 import initlater Cell
 import initlater BoardStack
 import initlater Board
-import UIActionWindow
+import UIBoardActionMenu
 import BoardTrigger
 import KISystem
 import ClosureTimers
@@ -52,10 +52,10 @@ public class HeroAttackAction extends DefaultAction
             preview.addSpecificToTooltip(entity, cell.getStack(), tt)
             destroy preview
             tt.display(entity.getPlayer(), true)
-            UIActionWindow.updateActionPoints(entity, cost)
+            UIBoardActionMenu.updateActionPoints(entity, cost)
         else
             UITooltip.hide(entity.getPlayer())
-            UIActionWindow.updateActionPoints(entity)
+            UIBoardActionMenu.updateActionPoints(entity)
         /*
         let cell = p.currentMousePosition.cell
         caclulatePath(cell, p.currentMousePosition.nearbyCell)

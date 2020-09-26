@@ -3,9 +3,18 @@ import UIButton
 import PlayerData
 import UITooltip
 import ClosureFrames
+import UIHandle
+import UIButtonIcon
+import Action
 
 public class UIHeroSkillTreeInfo
     protected integer currentTree = 0
+
+class UIHeroSkillTreeButton extends UIButtonIcon
+    construct(framehandle parent)
+        super(parent, true, false, true)
+        setSize(0.035, 0.035)
+
 
 public class UIHeroSkillTree
     private static constant int MAX_SKILLS = 15
@@ -13,7 +22,7 @@ public class UIHeroSkillTree
     private framehandle self
     private framehandle inner
     private framehandle background
-    private ActionButton array[MAX_SKILLS] skills
+    private UIHeroSkillTreeButton array[MAX_SKILLS] skills
 
     private framehandle array[3] skillTreeTabs
     private framehandle array[3] skillTreeTabNames
@@ -26,7 +35,7 @@ public class UIHeroSkillTree
         this.width = 0.255
         this.height = 0.42
 
-        background = createFrame("BACKDROP", "", parent, "", 0)
+        background = createUIFrame("BACKDROP", parent)
         ..setPoint(FRAMEPOINT_TOPLEFT, self, FRAMEPOINT_TOPLEFT)
         ..setPoint(FRAMEPOINT_BOTTOMRIGHT, self, FRAMEPOINT_BOTTOMRIGHT)
         ..setLevel(-INT_MAX)
@@ -62,7 +71,7 @@ public class UIHeroSkillTree
         ..setPoint(FRAMEPOINT_BOTTOMRIGHT, self, FRAMEPOINT_BOTTOMRIGHT, -0.02, -0.01)
 
         for int i = 0 to MAX_SKILLS - 1
-            skills[i] = new ActionButton(inner)
+            skills[i] = new UIHeroSkillTreeButton(inner)
             skills[i].onClick() -> 
                 let p = GetTriggerPlayerData()
                 let h = p.hero
@@ -115,7 +124,7 @@ public class UIHeroSkillTree
                 let skill = skillTree.skills.get(i)
                 skills[i].setPoint(FRAMEPOINT_TOP, inner, FRAMEPOINT_TOPLEFT, width * skill.x, height * -skill.y)
                 skills[i].setVisible(true)
-                skills[i].setLevel(skill.level)
+                skills[i].setCounter(skill.level)
                 skills[i].setIcon(skill.icon)
                 skills[i].setGlowVisible(skill.canLevelUp(h))
             else

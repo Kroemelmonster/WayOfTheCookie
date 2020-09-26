@@ -13,7 +13,7 @@ import StackType
 
 import initlater Cell
 import initlater BoardStack
-import UIActionWindow
+import UIBoardActionMenu
 import DelayAnimation
 import Damage
 import CastAnimation
@@ -168,11 +168,11 @@ public class LightningBoltSpell extends Spell
         //TODO all actions do setKEy ?? pls do better
         tt.setKey(key)
         tt.display(entity.getPlayer(), true)
-        UIActionWindow.updateActionPoints(entity, cost)
+        UIBoardActionMenu.updateActionPoints(entity, cost)
     
     private function hidePreview()
         UITooltip.hide(entity.getPlayer())
-        UIActionWindow.updateActionPoints(entity)
+        UIBoardActionMenu.updateActionPoints(entity)
 
     ondestroy
         if area != null

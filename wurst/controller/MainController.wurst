@@ -8,12 +8,12 @@ import initlater Hero
 import initlater HostileArmy
 import initlater Board
 import PlayerData
-import initlater UIHeroWindow
+import initlater UIMenuWorldConsole
 import initlater UINPCWindow
 import ClosureTimers
-import UIWorldConsole
 import FightResult
 import initlater UIWindow
+import initlater UIHeroWindow
 
 public class MainController
     static function setup()
@@ -35,8 +35,9 @@ public class MainController
         enemy.enable(false)
 
         board.placeCombat(hero, enemy)
-        UIController.switchToCombat(board)
-        board.startCombat()
+        nullTimer() -> 
+            UIController.switchToCombat(board)
+            board.startCombat()
 
 
     static function endFight(Board board, int side)
@@ -46,7 +47,7 @@ public class MainController
 
         let result = new FightResult(hero, enemy.getArmy(), side)
 
-        UIWorldConsole.showFightResult(p, result) -> 
+        UIMenuWorldConsole.showFightResult(p, result) -> 
             UIController.switchToWorld(p)
             board.endFight()
             nullTimer() ->
@@ -82,6 +83,3 @@ public class MainController
             UINPCWindow.hide(p)
         p.hero.enable(flag == false)
         UIHeroWindow.setVisible(p, flag)
-        
-        
-        

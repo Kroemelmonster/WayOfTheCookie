@@ -1,0 +1,21 @@
+Frame "SIMPLESTATUSBAR" "WorldConsoleExpBar" {
+    BarTexture "UI\WorldConsole\ExpBar.dds",
+    Width 0.07,
+    Height 0.012,
+    Layer "BACKGROUND" {
+        Texture "CustomBarBackground" {
+            File "UI\WorldConsole\ExpBarBackground.dds",
+        }
+    }
+}
+
+Frame "SIMPLESTATUSBAR" "WorldConsoleManaBar" {
+    BarTexture "UI\WorldConsole\ManaBar.dds",
+    Width 0.07,
+    Height 0.012,
+    Layer "BACKGROUND" {
+        Texture "CustomBarBackground" {
+            File "UI\WorldConsole\ManaBarBackground.dds",
+        }
+    }
+}

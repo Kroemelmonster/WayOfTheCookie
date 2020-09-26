@@ -3,7 +3,7 @@ package Scheduler
 import ClosureTimers
 import TimerUtils
 
-import UIWorldConsole
+import UIMenuWorldConsole
 import PlayerData
 import UIEntityWindow
 import UINPCWindow
@@ -35,11 +35,11 @@ class Scheduler
                     p.playingBoard.tick(ANIMATION_PERIOD)
 
             doPeriodically(0.2) cb ->
-                UIWorldConsole.update(p)
+                UIHeroWindow.update(p)
                 UIEntityWindow.update(p)
             doPeriodically(0.2) cb ->
                 UINPCWindow.update(p)
-                UIHeroWindow.update(p)
+                UIMenuWorldConsole.update(p)
                 UIWindowSpellBook.update(p)
 
                 

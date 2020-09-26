@@ -1,0 +1,18 @@
+package UIButtonMenu
+import UIButton
+import UIHandle
+
+public class UIButtonMenu extends UIButton
+    static function create(UIHandle parent, string text) returns UIButtonMenu
+        return new UIButtonMenu(parent.self, text)
+
+    private framehandle textFrame
+
+    construct(framehandle parent, string text)
+        super(createUIFrameByName("MenuBTN", parent, false))
+        textFrame = getFrame("MenuBTNText")
+        textFrame.setText(text)
+
+    function setText(string text)
+        textFrame.setText(text)
+        

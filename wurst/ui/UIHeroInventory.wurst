@@ -11,6 +11,8 @@ import initlater PlayerData
 import initlater Hero
 import initlater KItem
 import UITooltip
+import UIButtonIcon
+import UIHandle
 
 constant int MAX_ACTIVESLOTS = 8
 
@@ -57,14 +59,19 @@ public class UIHeroInventoryInfo
         if flagActive == false
             endDrag.pos += MAX_ACTIVESLOTS
 
+class UIHeroInventoryItemButton extends UIButtonIcon
+    protected int index
+
+    construct(framehandle parent)
+        super(parent, true, false, false)
 
 public class UIHeroInventory
-    protected CommandButton array[MAX_ACTIVESLOTS] activeBtns
-    protected CommandButton array[20] backPackBtns
+    protected UIHeroInventoryItemButton array[MAX_ACTIVESLOTS] activeBtns
+    protected UIHeroInventoryItemButton array[20] backPackBtns
 
     construct(framehandle reference)
         for int i = 0 to activeBtns.length - 1
-            activeBtns[i] = new CommandButton(reference, false)
+            activeBtns[i] = new UIHeroInventoryItemButton(reference)
             if i == 0
                 activeBtns[i].setPoint(FRAMEPOINT_TOPLEFT, reference, FRAMEPOINT_TOPLEFT, 0.015, -0.015)
             else
@@ -106,7 +113,7 @@ public class UIHeroInventory
                 UITooltip.hide(p)
         
         for int i = 0 to backPackBtns.length - 1
-            backPackBtns[i] = new CommandButton(reference, false)
+            backPackBtns[i] = new UIHeroInventoryItemButton(reference)
             if ModuloInteger(i, 5) == 0
                 backPackBtns[i].setPoint(FRAMEPOINT_TOPLEFT, reference, FRAMEPOINT_TOPLEFT, 0.015, (i / 5.0).floor() * -0.04 - 0.08)
             else
@@ -147,7 +154,7 @@ public class UIHeroInventory
                 let p = GetTriggerPlayerData()
                 UITooltip.hide(p)
 
-    protected function showItemInfo(Player p, CommandButton btn, KItem kitem)
+    protected function showItemInfo(Player p, UIHeroInventoryItemButton btn, KItem kitem)
         if kitem == null
             return
         let tt = kitem.createTooltip()
@@ -206,9 +213,9 @@ public class UIHeroInventory
                 else
                     info.hero.setBackPackItem(info.startDrag.pos - MAX_ACTIVESLOTS, info.endDrag.object)
 
-    private function drawButton(UIHeroInventoryInfo info, KItem kItem, CommandButton btn, int position)
+    private function drawButton(UIHeroInventoryInfo info, KItem kItem, UIHeroInventoryItemButton btn, int position)
         btn.setAlpha(255)
-        btn.setEnabled(true)
+        btn.enable()
         // wenn wir auf startDrag sind zeige potentiell endrag an
         if info.startDrag.pos == position
             // zeige das an was auf dragEnd ist an
@@ -219,7 +226,7 @@ public class UIHeroInventory
                     btn.setAlpha(80)
             else if info.endDrag.pos > 0
                 btn.setIcon(Textures.dISorc_inventory_slotfiller)
-                btn.setEnabled(false)
+                btn.enable()
         else if info.endDrag.pos == position
             // zeige das was auf dragStart ist an außer das sind wir selber
             if info.startDrag.object != info.endDrag.object
@@ -231,4 +238,4 @@ public class UIHeroInventory
         else
             // there is nothing sooo ?
             btn.setIcon(Textures.dISorc_inventory_slotfiller)
-            btn.setEnabled(false)
+            btn.enable()

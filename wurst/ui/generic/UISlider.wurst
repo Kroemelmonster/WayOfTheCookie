@@ -1,20 +1,21 @@
 package UISlider
 
 import ClosureFrames
+import UIHandle
+import UIInteractable
+import PlayerData
 
-public class UISlider
-    protected framehandle self
+public class UISlider extends UIInteractable
+    static function create(UIHandle parent) returns UISlider
+        return new UISlider(parent.self)
+
     private boolean manual = true
 
-    construct(framehandle reference)
-        self = createFrame("EscMenuSliderTemplate", reference, 0, 0)
-        ..setStepSize(1.0)
-        ..setWidth(0.2)
+    private construct(framehandle parent)
+        super(createUIFrameByName("SliderHorizontalBasic", parent, false))
+        UIInteractable.create(getFrame("SliderHorizontalBasicThumb"))
 
-    function getFrame() returns framehandle
-        return self
-
-    function onSliderValueChange(FrameHandleListener innerFrameHandleListener)
+    function onValueChange(FrameHandleListener innerFrameHandleListener)
         self.onSliderValueChange() -> 
             if manual
                 innerFrameHandleListener.onEvent()
@@ -23,7 +24,7 @@ public class UISlider
                 manual = true
 
     function setValue(int value)
-        if self.getValue().toInt() == value
+        if getValue() == value
             return
         manual = false
         self.setValue(value.toReal())
@@ -33,4 +34,3 @@ public class UISlider
 
     function setMinMax(int lower, int higher)
         self.setMinMax(lower.toReal(), higher.toReal())
-        

@@ -1,4 +1,4 @@
-package UIActionWindow
+package UIBoardActionMenu
 
 import Icons
 import LinkedList
@@ -11,67 +11,110 @@ import initlater Action
 import initlater BoardEntity
 import initlater UIWindowSpellBook
 import ActionCost
+import UIWindow
+import UIHandle
+import UIButtonIcon
 
-class UIActionWindow
-    private static framehandle self
-    private static framehandle pane
+class UIBoardActionButton extends UIButtonIcon
+    private Action action
 
-    private static ActionButton array[4] primaryBtns
-    private static ActionButton array[4] secondaryBtns
+    construct(UIHandle parent)
+        super(parent.self, true, false, true)
+        setSize(0.035, 0.035)
+
+        onClick() () -> 
+            UIBoardActionMenu.activate(action, GetTriggerPlayerData())
+        onMouseEnter() -> 
+            action.onUIMouseEnter()
+        onMouseLeave() -> 
+            if action != null
+                action.onUIMouseLeave()
+
+    function setAction(Action action, Action currentAction, string key)
+        this.action = action
+        setVisible(true)
+        setIcon(action.getIcon())
+        action.setKey(key)
+
+        let cost = action.getCost()
+        setCounter(cost.getCurrentCharges())
+
+        if action == currentAction
+            enable()
+            setGlowVisible(true)
+        else
+            setGlowVisible(false)
+            if action.canActivate()
+                enable()
+            else
+                if not cost.hasEnoughMana()
+                    disable("UI/Textures/Button/BTNExtensionOverlayDisabledMana.dds")
+                else if cost.isOnCooldown()
+                    let cooldown = cost.getCurrentCooldown()
+                    if cooldown > 0
+                        disable("UI/Textures/Button/BTNExtensionOverlapCooldown"+cooldown.toString()+".dds")
+                    else // a cooldown of 0 means the entity just used it and is not allowed to us it this turn again
+                        disable("UI/Textures/Button/BTNExtensionOverlayDisabled.dds")
+                else
+                    disable("UI/Textures/Button/BTNExtensionOverlayDisabled.dds")
+
+    function setEmpty()
+        action = null
+        setVisible(true)
+        disable()
+        setGlowVisible(false)
+        setIcon("Icons/BTNDotted.dds")
+
+class UIBoardActionMenu
+    private static UIMenu menu
+
+    private static UIBoardActionButton array[4] primaryBtns
+    private static UIBoardActionButton array[4] secondaryBtns
     private static framehandle array[10] actionPoints
 
     private static constant string array[4] PRIMARY_KEYS = ["Q", "W", "E", "R"]
     private static constant string array[4] SECONDARY_KEYS = ["F", "D", "S", "A"] //its reverse !
 
-    static function setup()
-        self = createFrame("BACKDROP", "ActionWindow", GAME_UI, "", 0)
+    static function create()
+        menu = UIMenu.create()
         ..setSize(0.17, 0.1164)
-        ..setPoint(FRAMEPOINT_BOTTOMRIGHT, GAME_UI, FRAMEPOINT_BOTTOMRIGHT)
-        ..setTexture("UI/Textures/ActionWindowBackground.dds", 0, true)
+        ..setPointToGameUI(FRAMEPOINT_BOTTOMRIGHT, FRAMEPOINT_BOTTOMRIGHT)
+        
+        createUIFrame("BACKDROP", menu)
+        ..setAllPoints(menu)
+        ..setTexture("UI/BoardConsole/ActionWindowBackground.dds")
 
-        pane = createFrame("FRAME", "ActionWindowFrame", self, "", 0)
-        ..setPoint(FRAMEPOINT_TOPLEFT, self, FRAMEPOINT_TOPLEFT, 0.006, -0.0274)
-        ..setPoint(FRAMEPOINT_BOTTOMRIGHT, self, FRAMEPOINT_BOTTOMRIGHT, -0.0046, 0.007)
+        primaryBtns[0] = new UIBoardActionButton(menu)
+        ..setPoint(FRAMEPOINT_TOPLEFT, menu, FRAMEPOINT_TOPLEFT, 0.006, -0.0274)
 
-        for int i = 0 to primaryBtns.length - 1
-            primaryBtns[i] = new ActionButton(self)
-            if i == 0
-                primaryBtns[i].setPoint(FRAMEPOINT_TOPLEFT, pane, FRAMEPOINT_TOPLEFT, 0, 0)
-            else
-                primaryBtns[i].setPoint(FRAMEPOINT_TOPLEFT, primaryBtns[i - 1].self, FRAMEPOINT_TOPRIGHT, 0.001, 0)
-            primaryBtns[i].onClick() () -> 
-                if primaryBtns[i].isEmpty() == false
-                    activate(primaryBtns[i].action, GetTriggerPlayerData())
-            primaryBtns[i].onMouseEnter() -> 
-                if primaryBtns[i].isEmpty() == false
-                    onMouseEnter(primaryBtns[i].action, GetTriggerPlayerData())
-            primaryBtns[i].onMouseLeave() -> 
-                if primaryBtns[i].isEmpty() == false
-                    onMouseLeave(primaryBtns[i].action, GetTriggerPlayerData())
+        secondaryBtns[0] = new UIBoardActionButton(menu)
+        ..setPoint(FRAMEPOINT_BOTTOMRIGHT, menu, FRAMEPOINT_BOTTOMRIGHT, -0.0046, 0.007)
 
-        for int i = 0 to secondaryBtns.length - 1
-            secondaryBtns[i] = new ActionButton(self)
-            if i == 0
-                secondaryBtns[i].setPoint(FRAMEPOINT_BOTTOMRIGHT, pane, FRAMEPOINT_BOTTOMRIGHT, 0, 0)
-            else
-                secondaryBtns[i].setPoint(FRAMEPOINT_TOPRIGHT, secondaryBtns[i - 1].self, FRAMEPOINT_TOPLEFT, -0.001, 0)
-            secondaryBtns[i].onClick() () -> 
-                activate(secondaryBtns[i].action, GetTriggerPlayerData())
-            secondaryBtns[i].onMouseEnter() -> 
-                onMouseEnter(secondaryBtns[i].action, GetTriggerPlayerData())
-            secondaryBtns[i].onMouseLeave() -> 
-                onMouseLeave(secondaryBtns[i].action, GetTriggerPlayerData())
+        for int i = 1 to primaryBtns.length - 1
+            primaryBtns[i] = new UIBoardActionButton(menu)
+            ..setPoint(FRAMEPOINT_TOPLEFT, primaryBtns[i - 1], FRAMEPOINT_TOPRIGHT, 0.001, 0)
+
+        for int i = 1 to secondaryBtns.length - 1
+            secondaryBtns[i] = new UIBoardActionButton(menu)
+            ..setPoint(FRAMEPOINT_TOPRIGHT, secondaryBtns[i - 1], FRAMEPOINT_TOPLEFT, -0.001, 0)
 
         for int i = 0 to actionPoints.length - 1
-            actionPoints[i] = createFrame("BACKDROP", "", self, "", 0)
-                ..setSize(0.025, 0.013)
-                ..setPoint(FRAMEPOINT_TOPLEFT, self, FRAMEPOINT_TOPLEFT, 0.007 + (0.016 * i), -0.008)
+            actionPoints[i] = createUIFrame("BACKDROP", menu)
+            ..setSize(0.025, 0.013)
+            ..setPoint(FRAMEPOINT_TOPLEFT, menu, FRAMEPOINT_TOPLEFT, 0.007 + (0.016 * i), -0.008)
 
         hide()
 
         Player.forEachActive() (Player activePlayer) ->
             activePlayer.onAnyKeyPress() (Player p, string key) ->
                 onkeyPress(p, key)
+
+    protected static function activate(Action action, Player p)
+        if not OrderSystem.canOrder(p)
+            return
+        if not action.canActivate()
+            return
+        action.activate()
 
     private static function onkeyPress(Player p, string key)
         if OrderSystem.canOrder(p) == false
@@ -94,7 +137,7 @@ class UIActionWindow
         destroy itr
     
     static function self() returns framehandle
-        return self
+        return menu.self
 
     private static function updateActionPointsLocal(BoardEntity entity, int previewLoosingPoints)
         let maxActionPoints = entity.getMaxActionPoints()
@@ -104,11 +147,11 @@ class UIActionWindow
             actionPoints[i].setVisible(i < maxActionPoints)
             if i < maxActionPoints
                 if i >= maxRemainingPoints
-                    actionPoints[i].setTexture("UI/Textures/Icons/ActionPointUsedIcon.dds", 0, true)
+                    actionPoints[i].setTexture("UI/Textures/Icons/ActionPointUsedIcon.dds")
                 else if i >= startPreview
-                    actionPoints[i].setTexture("UI/Textures/Icons/ActionPointUsingIcon.dds", 0, true)
+                    actionPoints[i].setTexture("UI/Textures/Icons/ActionPointUsingIcon.dds")
                 else
-                    actionPoints[i].setTexture("UI/Textures/Icons/ActionPointActiveIcon.dds", 0, true)
+                    actionPoints[i].setTexture("UI/Textures/Icons/ActionPointActiveIcon.dds")
 
     static function updateActionPoints(BoardEntity entity)
         if entity.getBoard().isLocalPlayer()
@@ -157,23 +200,8 @@ class UIActionWindow
             
         destroy actionItr
 
-        self.setVisible(true)
+        menu.setVisible(true)
         updateActionPointsLocal(entity, 0)
-        
-    private static function activate(Action action, Player p)
-        if OrderSystem.canOrder(p) == false
-            return
-
-        if action.canActivate() == false
-            return
-        action.activate()
-
-    private static function onMouseEnter(Action action, Player p)
-        action.onUIMouseEnter()
-
-    private static function onMouseLeave(Action action, Player p)
-        if action != null
-            action.onUIMouseLeave()
 
     static function hide(Player p)
         UIWindowSpellBook.close(p)
@@ -181,4 +209,4 @@ class UIActionWindow
             hide()
 
     static function hide()
-        self.setVisible(false)
+        menu.setVisible(false)
