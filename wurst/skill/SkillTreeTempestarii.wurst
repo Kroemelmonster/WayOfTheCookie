@@ -13,8 +13,8 @@ public class SkillTreeTempestarii extends SkillTree
 
     static function setup()
         TYPE = new SkillTreeType("Tempestarii")
-        TYPE.addListener() -> 
-            return new SkillTreeTempestarii()
+        TYPE.addListener() hero -> 
+            return new SkillTreeTempestarii(hero)
 
         
     int chainLightningLevel = -1
@@ -24,38 +24,39 @@ public class SkillTreeTempestarii extends SkillTree
     int lightningBoltPurgeLevel = -1
 
 
-    construct()
-        super(TYPE)
+    construct(Hero hero)
+        super(TYPE, hero)
 
-        let lightningBoltSkill = new Skill(this, LightningBoltSpell.TYPE.getName(), LightningBoltSpell.TYPE.getIcon(), 0.2, 0)
+        var spellType = LightningBoltSpell.TYPE
+        let lightningBoltSkill = new Skill(this, spellType.getName(), spellType.getIcon(), 0.2, 0)
         skills.add(lightningBoltSkill)
         lightningBoltSkill.addLevel(0, 0, 3)
-        ..addSpellTooltip(LightningBoltSpell.createTooltip(0))
-        ..addLevelListener() (Hero hero) ->
+        ..addSpellTypeAsLines(spellType, 0)
+        ..addLevelListener() ->
             lightningBoltLevel ++
             hero.addSpell(LightningBoltSpell.TYPE)
         lightningBoltSkill.addLevel(0, 0, 3)
-        ..addSpellTooltip(LightningBoltSpell.createTooltip(1))
-        ..addLevelListener() (Hero hero) ->
+        ..addSpellTypeAsLines(spellType, 1)
+        ..addLevelListener() ->
             lightningBoltLevel ++
         lightningBoltSkill.addLevel(0, 0, 3)
-        ..addSpellTooltip(LightningBoltSpell.createTooltip(2))
-        ..addLevelListener() (Hero hero) ->
+        ..addSpellTypeAsLines(spellType, 2)
+        ..addLevelListener() ->
             lightningBoltLevel ++
         lightningBoltSkill.addLevel(0, 0, 3)
-        ..addSpellTooltip(LightningBoltSpell.createTooltip(3))
-        ..addLevelListener() (Hero hero) ->
+        ..addSpellTypeAsLines(spellType, 0)
+        ..addLevelListener() ->
             lightningBoltLevel ++
         lightningBoltSkill.addLevel(0, 0, 3)
-        ..addSpellTooltip(LightningBoltSpell.createTooltip(4))
-        ..addLevelListener() (Hero hero) ->
+        ..addSpellTypeAsLines(spellType, 0)
+        ..addLevelListener() ->
             lightningBoltLevel ++
 
         var skill = new Skill(this, "Cunning Start", Icons.bTNScrollOfRegeneration, 0.75, 0)
         skills.add(skill)
         skill.addLevel(0, 2, 2)
         ..addLine("TODO givey sour hero more initative")
-        ..addLevelListener() (Hero hero) ->
+        ..addLevelListener() ->
             // TODO entweder zeige diesen stat an oder mach daruas ein buff / on hero erstellung änderung
             hero.stats.initModi.addBonus += 10
             
@@ -69,15 +70,15 @@ public class SkillTreeTempestarii extends SkillTree
         ..addSkillRequirement(lightningBoltSkill, 0)
         ..addBlockedBySkill(boltPurgeSkill)
         ..addLine("Modifies the Bolt to also stuns the enemy for "+Tooltip.primaryString(LightningBoltSpell.STUN_DURATION[0].toString())+ " "+Tooltip.secondaryString("timeunits"))
-        ..addLevelListener() (Hero hero) ->
+        ..addLevelListener() ->
             lightningBoltStunLevel++
         boltStunSkill.addLevel(1, 0, 3)
         ..addLine("Modifies the Bolt to also stuns the enemy for "+Tooltip.primaryString(LightningBoltSpell.STUN_DURATION[1].toString())+ " "+Tooltip.secondaryString("timeunits"))
-        ..addLevelListener() (Hero hero) ->
+        ..addLevelListener() ->
             lightningBoltStunLevel++
         boltStunSkill.addLevel(1, 0, 3)
         ..addLine("Modifies the Bolt to also stuns the enemy for "+Tooltip.primaryString(LightningBoltSpell.STUN_DURATION[1].toString())+ " "+Tooltip.secondaryString("timeunits"))
-        ..addLevelListener() (Hero hero) ->
+        ..addLevelListener() ->
             lightningBoltStunLevel++
 
         boltPurgeSkill.addLevel(0, 1, 3)
@@ -85,15 +86,15 @@ public class SkillTreeTempestarii extends SkillTree
         ..addSkillRequirement(lightningBoltSkill, 0)
         ..addBlockedBySkill(boltStunSkill)
         ..addLine("Modifies the Bolt to also pruge the enemy and todo")
-        ..addLevelListener() (Hero hero) ->
+        ..addLevelListener() ->
             lightningBoltPurgeLevel++
         boltPurgeSkill.addLevel(0, 1, 3)
         ..addLine("Modifies the Bolt to also pruge the enemy and todo")
-        ..addLevelListener() (Hero hero) ->
+        ..addLevelListener() ->
             lightningBoltPurgeLevel++
         boltPurgeSkill.addLevel(0, 1, 3)
         ..addLine("Modifies the Bolt to also pruge the enemy and todo")
-        ..addLevelListener() (Hero hero) ->
+        ..addLevelListener() ->
             lightningBoltPurgeLevel++
 
         skill = new Skill(this, "Haste", Icons.bTNWindWalkOn, 0.6, 0.2)
@@ -101,30 +102,32 @@ public class SkillTreeTempestarii extends SkillTree
         skill.addLevel(0, 1, 2)
         ..setSkillTreeLevelRequirement(2)
         ..addLine("TODO Haste Spell")
-        ..addLevelListener() (Hero hero) ->
+        ..addLevelListener() ->
 
         skill = new Skill(this, "Tornado", Icons.bTNTornado, 0.3, 0.4)
         skills.add(skill)
         skill.addLevel(2, 0, 5)
         ..setSkillTreeLevelRequirement(4)
         ..addLine("TODO Tornado Spell")
-        ..addLevelListener() (Hero hero) ->
+        ..addLevelListener() ->
 
-        skill = new Skill(this, ChainLightningSpell.TYPE.getName(), ChainLightningSpell.TYPE.getIcon(), 0.5, 1.0)
+        
+        spellType = ChainLightningSpell.TYPE
+        skill = new Skill(this, spellType.getName(), spellType.getIcon(), 0.5, 1.0)
         skills.add(skill)
         skill.addLevel(0, 0, 6)
         ..setSkillTreeLevelRequirement(10)
-        ..addSpellTooltip(ChainLightningSpell.createTooltip(0, 0))
-        ..addLevelListener() (Hero hero) ->
+        ..addSpellTypeAsLines(spellType, 0)
+        ..addLevelListener() ->
             chainLightningLevel ++
             hero.addSpell(ChainLightningSpell.TYPE)
 
         skill.addLevel(0, 0, 7)
-        ..addSpellTooltip(ChainLightningSpell.createTooltip(0, 1))
-        ..addLevelListener() (Hero hero) ->
+        ..addSpellTypeAsLines(spellType, 1)
+        ..addLevelListener() ->
             chainLightningLevel ++
 
         skill.addLevel(0, 0, 8)
-        ..addSpellTooltip(ChainLightningSpell.createTooltip(0, 2))
-        ..addLevelListener() (Hero hero) ->
+        ..addSpellTypeAsLines(spellType, 2)
+        ..addLevelListener()  ->
             chainLightningLevel ++

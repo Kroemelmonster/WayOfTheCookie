@@ -9,7 +9,6 @@ import PathFinding
 import PlayerData
 import Damage
 import DefaultAction
-import UITooltip
 import BoardController
 import KUtil
 
@@ -24,6 +23,8 @@ import initlater BoardHero
 import HeroAttackAnimation
 import StackType
 import ActionCost
+import TooltipNew
+import UITooltipNew
 
 public class HeroAttackAction extends DefaultAction
     private BoardHero hero
@@ -47,14 +48,14 @@ public class HeroAttackAction extends DefaultAction
     override function recalculateHighlight(Player p)
         let cell = p.currentMousePosition.cell
         if isCellAttackable(cell)
-            let tt = Tooltip.create(name)
+            let tt = TooltipNew.create(name)
             let preview = new DamagePreview(hero.stats.getDamage(), SourceType.ATTACK, hero.stats.getDamageType())
-            preview.addSpecificToTooltip(entity, cell.getStack(), tt)
+            preview.extendTooltipWithSpecific(tt, entity, cell.getStack())
             destroy preview
-            tt.display(entity.getPlayer(), true)
+            UITooltipNew.display(entity.getPlayer(), tt)
             UIBoardActionMenu.updateActionPoints(entity, cost)
         else
-            UITooltip.hide(entity.getPlayer())
+            UITooltipNew.hide(entity.getPlayer())
             UIBoardActionMenu.updateActionPoints(entity)
         /*
         let cell = p.currentMousePosition.cell

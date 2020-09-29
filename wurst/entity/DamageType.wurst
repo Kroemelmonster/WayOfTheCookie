@@ -1,0 +1,43 @@
+package DamageType
+import TooltipNew
+import TooltipGenerator
+
+public enum DamageType
+    PHYISICAL
+    MAGIC
+    FIRE
+    POISON
+
+public class Resistance
+    private int phyiscal = 0
+    private int magic = 0
+    private int fire = 0
+    private int poison = 0
+
+    function addRes(DamageType dType, int value)
+        switch dType
+            case MAGIC
+                magic += value
+            case FIRE
+                fire += value
+            case POISON
+                poison += value
+            default
+                phyiscal += value
+    
+    function getRes(DamageType dType) returns int
+        switch dType
+            case MAGIC
+                return magic
+            case FIRE
+                return fire
+            case POISON
+                return poison
+            default
+                return phyiscal
+
+    function extendTooltip(TooltipNew tt)
+        tt.addLine("Physical Resistance : " + TooltipGenerator.coloredPercent(phyiscal / 100))
+        tt.addLine("Magic Resistance : " + TooltipGenerator.coloredPercent(magic / 100))
+        tt.addLine("Fire Resistance : " + TooltipGenerator.coloredPercent(fire / 100))
+        tt.addLine("Poison Resistance : " + TooltipGenerator.coloredPercent(poison / 100))

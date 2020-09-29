@@ -2,7 +2,6 @@ package CleavingAttackTalent
 
 import initlater Talent
 import initlater StackType
-import UITooltip
 import Icons
 import initlater Cell
 import initlater BoardStack
@@ -37,7 +36,8 @@ public class CleavingAttackTalent extends Talent
     static function setup(real percent) returns Talent
         return new CleavingAttackTalent(percent)
 
-    override function createTooltip(StackType sType) returns Tooltip
+    // TODO 
+    /*override function createTooltip(StackType sType) returns Tooltip
         let tt = Tooltip.create(name)
         tt.addLine("Your Attacks cleave for "+Tooltip.primaryPercent(percent)+" to the two adjacent targets.")
-        return tt
+        return tt*/

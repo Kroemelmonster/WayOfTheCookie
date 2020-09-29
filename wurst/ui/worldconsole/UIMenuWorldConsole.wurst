@@ -8,19 +8,19 @@ import BoardTrigger
 import FightResult
 import UIWindow
 import UIHandle
-import UIElementBar
+import UIProgressBar
 import UIExtensionArmyPanel
+import initlater Scheduler
 
 public class UIMenuWorldConsoleInfo
-    protected boolean isVisible = false
     UIExtensionArmyPanelInfo armyInfo = new UIExtensionArmyPanelInfo()
 
 public class UIMenuWorldConsole
     protected static UIMenu menu
 
     protected static framehandle portrait
-    protected static UIElementBar expBar
-    protected static UIElementBar manaBar
+    protected static UIProgressBar expBar
+    protected static UIProgressBar manaBar
 
     //protected static UIFightResultDialog fightResultDialog
 
@@ -42,64 +42,51 @@ public class UIMenuWorldConsole
         ..setHeight(0.103)
         menu.addSimpleFrame(portrait)
 
-        expBar = UIElementBar.create("WorldConsoleExpBar", menu)
+        expBar = UIProgressBar.create("WorldConsoleExpBar", menu)
         ..setSize(0.09, 0.014)
         ..setPoint(FRAMEPOINT_BOTTOMLEFT, menu, FRAMEPOINT_BOTTOMLEFT, 0.033, 0.022)
 
-        manaBar = UIElementBar.create("WorldConsoleManaBar", menu)
+        manaBar = UIProgressBar.create("WorldConsoleManaBar", menu)
         ..setSize(0.09, 0.014)
         ..setPoint(FRAMEPOINT_BOTTOMLEFT, menu, FRAMEPOINT_BOTTOMLEFT, 0.033, 0.0045)
-
-        /*
-        createUIFrame("BACKDROP", GAME_UI)
-        ..setAllPoints(GAME_UI)
-        ..setTexture("UI/Button/MenuBTN.dds")
-        */
         
         //fightResultDialog = new UIFightResultDialog()
 
-    static function setupHero(Hero h)
-        UIExtensionArmyPanel.setupHero(h)
+        Scheduler.onTime() p ->
+            if menu.isVisible(p)
+                update(p)
+
+    static function initHero(Hero h)
+        UIExtensionArmyPanel.initHero(h)
         show(h.getPlayer())
 
-    static function update(Player p)
-        if p.worldConsoleInfo.isVisible == false
-            return
-
-        if p.isLocal()
-            let realWith  = BlzGetLocalClientWidth()
-            let fourToThreeWidth = BlzGetLocalClientHeight() * 4 / 3
-            let offsetX = ((realWith - fourToThreeWidth) / 2) / realWith * 0.8
-            let multiX = fourToThreeWidth / realWith
-
-            portrait.setAbsPoint(FRAMEPOINT_BOTTOMLEFT, offsetX + multiX  * 0.052, 0.04)
-            portrait.setWidth(0.092 * multiX)
-
-            let hero = p.hero
-            let lvl = hero.getLevel()
-            expBar.setValue(hero.getExp(), Hero.LEVELS[lvl])
-            expBar.setText("Level "+(lvl + 1).toString())
-
-            let mana = hero.stats.getMana()
-            let maxMana = hero.stats.getMaxMana()
-            manaBar.setValue(mana, maxMana)
-            manaBar.setText(mana.toString() + " / "+ maxMana.toString())
-            
-        UIExtensionArmyPanel.update(p)
-
     static function hide(Player p)
-        if p.worldConsoleInfo.isVisible
-            setVisible(p, false)
-            UIExtensionArmyPanel.hide(p)
+        menu.hide(p)
 
     static function show(Player p)
-        setVisible(p, true)
+        menu.show(p)
         update(p)
-
-    private static function setVisible(Player p, boolean flag)
-        p.worldConsoleInfo.isVisible = flag
-        if p.isLocal()
-            menu.setVisible(flag)
 
     static function showFightResult(Player p, FightResult result, SequenzListener listener)
         // TODO fightResultDialog.show(p, result, listener)
+
+    private static function update(Player p)
+        if not p.isLocal()
+            return
+        let realWith  = BlzGetLocalClientWidth()
+        let fourToThreeWidth = BlzGetLocalClientHeight() * 4 / 3
+        let offsetX = ((realWith - fourToThreeWidth) / 2) / realWith * 0.8
+        let multiX = fourToThreeWidth / realWith
+
+        portrait.setAbsPoint(FRAMEPOINT_BOTTOMLEFT, offsetX + multiX  * 0.052, 0.04)
+        portrait.setWidth(0.092 * multiX)
+
+        let hero = p.hero
+        let lvl = hero.getLevel()
+        expBar.setValue(hero.getExp(), Hero.LEVELS[lvl])
+        expBar.setText("Level "+(lvl + 1).toString())
+
+        let mana = hero.stats.getMana()
+        let maxMana = hero.stats.getMaxMana()
+        manaBar.setValue(mana, maxMana)
+        manaBar.setText(mana.toString() + " / "+ maxMana.toString())

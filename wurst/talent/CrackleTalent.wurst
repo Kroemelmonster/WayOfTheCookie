@@ -4,7 +4,6 @@ import Icons
 
 import initlater Talent
 import initlater StackType
-import UITooltip
 import initlater CracklePassive
 
 public class CrackleTalent extends Talent
@@ -18,5 +17,7 @@ public class CrackleTalent extends Talent
             stack.addPassive(passive)
             passive.triggerOnStackCreation(stack)
 
+    /*
     override function createTooltip(StackType sType) returns Tooltip
         return CracklePassive.createTooltip(sType)
+        */

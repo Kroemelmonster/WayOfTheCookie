@@ -2,8 +2,6 @@ package SummonLesserSkeletonTalent
 
 import initlater Talent
 import initlater SummonLesserSkeletonAction
-import initlater StackType
-import UITooltip
 
 public class SummonLesserSkeletonTalent extends Talent
     construct()
@@ -14,5 +12,7 @@ public class SummonLesserSkeletonTalent extends Talent
         ..addGenerateListener() stack ->
             stack.addAction(new SummonLesserSkeletonAction(stack))
 
+    /*
     override function createTooltip(StackType sType) returns Tooltip
         return SummonLesserSkeletonAction.createTooltip(sType)
+        */

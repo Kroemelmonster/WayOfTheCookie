@@ -6,7 +6,6 @@ import Abilities
 
 import PlayerData
 import KUtil
-import UITooltip
 import BoardController
 
 import Action
@@ -26,6 +25,10 @@ import SkillTreeTempestarii
 import SkillTree
 import Globals
 import ActionCost
+import TooltipGenerator
+import TooltipNew
+import UITooltipNew
+import DamageType
 
 public class ChainLightningSpell extends Spell
     static SpellType TYPE
@@ -33,6 +36,8 @@ public class ChainLightningSpell extends Spell
         TYPE = new SpellType("Chain Lightning", Icons.bTNChainLightning)
         TYPE.onCreate() boardHero -> 
             return new ChainLightningSpell(boardHero)
+        TYPE.onCreateTooltipLines() level -> 
+            return createTooltipLines(level, 0)
 
     private static constant ActionCostPreset BASE_COST = ActionCostPreset.create(1, true, 0)
     private static constant int array[3] MANA_COST = [7, 12, 20]
@@ -47,30 +52,30 @@ public class ChainLightningSpell extends Spell
     private static function createDamagePreview() returns DamagePreview
         return new DamagePreview(realRange(0, 0), SourceType.SPELL, DamageType.MAGIC)
 
-    private static function calculateDamage(int power, int level, int amountOfChained)
+    private static function calculateDamage(int level, int power, int amountOfChained) returns DamagePreview
         var multi = 1.0
-        for int i = 1 to amountOfChained
+        for i = 1 to amountOfChained
             multi *= CHAIN_REDUCTION
         multi *= (1.0 + ( power * DAMAGE_PER_SPELLPOWER / 100.0)) 
 
         damagePreview.dmg = realRange(DAMAGE[level] * 0.5 * multi, DAMAGE[level] * 2 * multi)
+        return damagePreview
+
+    private static function createTooltipLines(int level, int power) returns LinkedList<string>
+        return new LinkedList<string>
+        ..add(TooltipGenerator.stat("Target", "Enemy"))
+        ..add(TooltipGenerator.stat("Damage", calculateDamage(level, power, 0).toColoredText()))
+        ..add("")
+        ..add("Lightning strikes from one target and chains up to "+TooltipGenerator.primaryString(MAX_CHAINS[level].toString())+" times")
+        ..add("Each time the damage is descreased by "+TooltipGenerator.primaryPercent(1 - CHAIN_REDUCTION))
 
     private static function adjustCost(ActionCostPreset cost, int level)
         cost.adjustBaseManaCost(MANA_COST[level])
     
-    static function createTooltip(int power, int level) returns Tooltip
-        adjustCost(BASE_COST, level)
-        return createTooltip(power, level, BASE_COST)
-    
-    private static function createTooltip(int power, int level, ActionCostPreset cost) returns Tooltip
-        calculateDamage(power, level, 0)
-        let tt = Tooltip.create(TYPE.getName())
-        ..setCost(cost)
-        ..addLine(Tooltip.stat("Target", "Enemy"))
-        ..addLine(Tooltip.stat("Damage", damagePreview))
-        ..addLine("")
-        ..addLine("Lightning strikes from one target and chains up to "+Tooltip.primaryString(MAX_CHAINS[level].toString())+" times")
-        ..addLine("Each time the damage is descreased by "+Tooltip.primaryPercent(1 - CHAIN_REDUCTION))
+    private static function createTooltip(int level, int power, ActionCostPreset cost) returns TooltipNew
+        let tt = TooltipNew.create(TYPE.getName())
+        ..addLines(createTooltipLines(level, power))
+        cost.setupTooltipCost(tt)
         return tt
         
 
@@ -164,7 +169,7 @@ public class ChainLightningSpell extends Spell
                 area.add(t.getCell())
 
     private function showPreview(Cell fromCell)
-        let tt = createTooltip(hero.stats.getPower(), level, cost)
+        let tt = createTooltip(level, hero.stats.getPower(), cost)
         if fromCell != null
             let list = new LinkedList<BoardStack>()
             list.add(fromCell.getStack())
@@ -180,18 +185,17 @@ public class ChainLightningSpell extends Spell
 
             var chain = 0
             for target in list
-                calculateDamage(hero.stats.getPower(), level, chain)
-                damagePreview.addSpecificToTooltip(stack, target, tt)
+                calculateDamage(level, hero.stats.getPower(), chain).extendTooltipWithSpecific(tt, stack, target)
                 chain ++
             destroy list
         
         tt.setKey(key)
-        tt.display(entity.getPlayer(), true)
+        UITooltipNew.display(entity.getPlayer(), tt)
         UIBoardActionMenu.updateActionPoints(entity, cost)
                 
     @inline
     private function hidePreview()
-        UITooltip.hide(entity.getPlayer())
+        UITooltipNew.hide(entity.getPlayer())
         UIBoardActionMenu.updateActionPoints(entity)
 
     override function onUIMouseEnter()

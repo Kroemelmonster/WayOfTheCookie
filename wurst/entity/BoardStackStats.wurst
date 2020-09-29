@@ -9,6 +9,7 @@ import StackType
 import initlater SubTargetList
 import LinkedList
 import initlater Cell
+import DamageType
 
 public class BoardStackStats
     private StackStats basis
@@ -29,11 +30,8 @@ public class BoardStackStats
     private StatsModifier resultingMoveActionPointModi = new StatsModifier()
 
     int moveCoefficient = 100
+    private Resistance resistance = new Resistance()
 
-    int phyisicalResistance = 0
-    int magicResistance = 0
-    int fireResistance = 0
-    int poisonResistance = 0
 
     private SubTargetList subAttackList = null
 
@@ -41,7 +39,7 @@ public class BoardStackStats
         this.basis = basis
         this.startAmount = amount
         this.amount = amount
-        this.hp = basis.getMaxHp()
+        this.hp = basis.getMaxHP()
         this.stack = stack
 
         /*
@@ -66,29 +64,29 @@ public class BoardStackStats
 
     @inline
     function getMaxActionPoints() returns int
-        return actionPointModi.get(basis.getMaxActionPoints()).round()
+        return actionPointModi.get(basis.getMaxAP()).round()
 
     @inline
     function getMaxMoveActionPoints() returns int
         resultingMoveActionPointModi.addBonus = moveActionPointModi.addBonus + actionPointModi.addBonus
         resultingMoveActionPointModi.multi = moveActionPointModi.multi + actionPointModi.multi - 100
-        return resultingMoveActionPointModi.get(basis.getMaxMoveActionPoints()).round()
+        return resultingMoveActionPointModi.get(basis.getMaxMoveAP()).round()
     
     @inline
     function getMaxHp() returns int
-        return hpModi.get(basis.getMaxHp()).round()
+        return hpModi.get(basis.getMaxHP()).round()
 
     @inline
     function getDamage() returns realRange
-        return damageModi.getRealRange(basis.getDamageOne(), amount)
+        return damageModi.getRealRange(basis.getDamage(), amount)
 
     @inline
     function getDamageOne() returns realRange
-        return damageModi.getRealRange(basis.getDamageOne(), 1)
+        return damageModi.getRealRange(basis.getDamage(), 1)
 
     @inline
     function getAttackRange() returns intRange
-        return basis.getAttackRange()
+        return basis.getRange()
 
     @inline
     function getAttack() returns int
@@ -104,16 +102,7 @@ public class BoardStackStats
 
     @inline
     function getResistance(DamageType dType) returns int
-        let basic = basis.getResistance(dType)
-        switch dType
-            case MAGIC
-                return magicResistance + basic
-            case FIRE
-                return fireResistance + basic
-            case POISON
-                return poisonResistance + basic
-            default
-                return phyisicalResistance + basic
+        return basis.getResistance(dType) + resistance.getRes(dType)
 
     @inline
     function getRemainingActionPoints() returns integer

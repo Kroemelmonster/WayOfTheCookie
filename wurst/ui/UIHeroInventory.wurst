@@ -12,6 +12,8 @@ import initlater KItem
 import UITooltip
 import UIButtonIcon
 import UIHandle
+import TooltipNew
+import UITooltipNew
 
 constant int MAX_ACTIVESLOTS = 8
 
@@ -77,6 +79,7 @@ public class UIHeroInventory
                 activeBtns[i].setPoint(FRAMEPOINT_TOPLEFT, activeBtns[i - 1].self, FRAMEPOINT_TOPRIGHT, 0.002, 0)
             activeBtns[i].onClick() ->
                 let p = GetTriggerPlayerData()
+                /*
                 let kItem = p.heroWindoInfo.inventory.hero.getActiveItem(i)
                 if kItem != null
                     Log.info("item klick "+kItem.toString())
@@ -109,7 +112,7 @@ public class UIHeroInventory
 
             activeBtns[i].onMouseLeave() ->
                 let p = GetTriggerPlayerData()
-                UITooltip.hide(p)
+                UITooltipNew.hide(p)
         
         for int i = 0 to backPackBtns.length - 1
             backPackBtns[i] = new UIHeroInventoryItemButton(reference)
@@ -157,7 +160,7 @@ public class UIHeroInventory
         if kitem == null
             return
         let tt = kitem.createTooltip()
-        tt.display(p, true, TooltipAnchor.TOP_LEFT, btn.self)
+        tt.display(p, true, TooltipNewAnchor.TOP_LEFT, btn.self)
 
     function firstOpen(Player p)
         p.heroWindoInfo.inventory.hero = p.hero
@@ -237,4 +240,4 @@ public class UIHeroInventory
         else
             // there is nothing sooo ?
             btn.setIcon(Textures.dISorc_inventory_slotfiller)
-            btn.enable()
+            btn.enable()*/

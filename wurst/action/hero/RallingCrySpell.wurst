@@ -1,7 +1,6 @@
 package RallingCrySpell
 
 import PlayerData
-import UITooltip
 import BoardController
 
 
@@ -22,6 +21,9 @@ import LinkedList
 import BoardStack
 import RallingCryBuffStack
 import ActionCost
+import TooltipGenerator
+import TooltipNew
+import UITooltipNew
 
 public class RallingCrySpell extends WarcrySpell
     static SpellType TYPE
@@ -31,6 +33,8 @@ public class RallingCrySpell extends WarcrySpell
         TYPE = new SpellType("Ralling Cry", "Icons\\BTNAbilityWarriorWarCry.blp")
         TYPE.onCreate() boardHero -> 
             return new RallingCrySpell(boardHero)
+        TYPE.onCreateTooltipLines() level -> 
+            return createTooltipLines(level)
 
     private static constant ActionCostPreset BASE_COST = ActionCostPreset.create(0, false, 3)
     private static constant int array[5] ATTACK_BONUS = [3, 5, 7, 9, 11]
@@ -41,13 +45,18 @@ public class RallingCrySpell extends WarcrySpell
     private static function createStatusData(int level) returns StatusData
         return StatusData.createDurationI(1, ATTACK_BONUS[level])
 
-    static function createTooltip(int level) returns Tooltip
-        let tt = Tooltip.create(TYPE.getName())
-        ..setCost(BASE_COST)
-        ..addLine(Tooltip.stat("Target", "Allies/Self"))
-        ..addLine("")
-        ..addLine("Gives your self and all your troops a temporary Attack Bonus")
-        ..addStatusType(STATUS, createStatusData(level))
+    private static function createTooltipLines(int level) returns LinkedList<string>
+        let list = new LinkedList<string>
+        ..add(TooltipGenerator.stat("Target", "Allies/Self"))
+        ..add("")
+        ..add("Gives your self and all your troops a temporary Attack Bonus")
+        // TODO addStatusType(STATUS, createStatusData(level))
+        return list
+
+    static function createTooltip(int level) returns TooltipNew
+        let tt = TooltipNew.create(TYPE.getName())
+        ..addLines(createTooltipLines(level))
+        BASE_COST.setupTooltipCost(tt)
         return tt
     
     /* -------------------------------------------------------------------------- */
@@ -77,11 +86,11 @@ public class RallingCrySpell extends WarcrySpell
     private function showPreview()
         let tt = createTooltip(level)
         tt.setKey(key)
-        tt.display(entity.getPlayer(), true)
+        UITooltipNew.display(entity.getPlayer(), tt)
         UIBoardActionMenu.updateActionPoints(entity, cost)
 
     private function hidePreview()
-        UITooltip.hide(entity.getPlayer())
+        UITooltipNew.hide(entity.getPlayer())
         UIBoardActionMenu.updateActionPoints(entity)
 
     override function onUIMouseEnter()

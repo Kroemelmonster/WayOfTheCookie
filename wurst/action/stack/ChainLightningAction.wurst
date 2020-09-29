@@ -8,7 +8,6 @@ import AttachmentPoints
 
 import PlayerData
 import KUtil
-import UITooltip
 import BoardController
 import OrderSystem
 
@@ -29,6 +28,10 @@ import ClosureTimers
 import Effect
 import StackAction
 import ActionCost
+import TooltipGenerator
+import TooltipNew
+import UITooltipNew
+import DamageType
 
 public class ChainLightningAction extends StackAction
     static constant string NAME = "Chain Lightning"
@@ -47,23 +50,27 @@ public class ChainLightningAction extends StackAction
     private static function createDamagePreview() returns DamagePreview
         return new DamagePreview(realRange(0, 0), SourceType.SPELL, DamageType.MAGIC)
 
-    private static function calculateDamage(int amount, int chain)
+    private static function calculateDamage(int amount, int chain) returns DamagePreview
         var multi = 1.0
         for int i = 1 to chain
             multi *= CHAIN_REDUCTION
         multi *= amount
         damagePreview.dmg = realRange(42.0 * multi, 55.0 * multi)
+        return damagePreview
 
-    static function createTooltip(boolean isDefault, int amount) returns Tooltip
-        calculateDamage(amount, 0)
-        let tt = Tooltip.create(NAME)
-        // TODO use the real cost in the real example
-        ..setCost(COST)
-        ..addLine(Tooltip.stat("Target", "Enemy"))
-        ..addLine(Tooltip.stat("Range", MAXRANGE))
-        ..addLine(Tooltip.stat("Damage", damagePreview))
-        ..addLine("")
-        ..addLine("Lightning strikes from one target and chains to nearby other targets")
+    private static function createTooltipLines(int amount) returns LinkedList<string>
+        return new LinkedList<string>
+        ..add(TooltipGenerator.stat("Target", "Enemy"))
+        ..add(TooltipGenerator.stat("Range", MAXRANGE))
+        ..add(TooltipGenerator.stat("Damage", calculateDamage(amount, 0).toColoredText()))
+        ..add("")
+        ..add("Lightning strikes from one target and chains up to "+TooltipGenerator.primaryString(MAX_CHAINS.toString())+" times")
+        ..add("Each time the damage is descreased by "+TooltipGenerator.primaryPercent(1 - CHAIN_REDUCTION))
+
+    private static function createTooltip(int amount) returns TooltipNew
+        let tt = TooltipNew.create(NAME)
+        ..addLines(createTooltipLines(amount))
+        COST.setupTooltipCost(tt)
         return tt
     
     private LinkedList<Cell> area = new LinkedList<Cell>()
@@ -154,8 +161,7 @@ public class ChainLightningAction extends StackAction
 
     @inline
     private function showPreview(Cell fromCell)
-        let tt = createTooltip(false, stack.stats.amount)
-        tt.setKey(key)
+        let tt = createTooltip(stack.stats.amount)
         if fromCell != null
             let list = new LinkedList<BoardStack>()
             list.add(fromCell.getStack())
@@ -171,17 +177,17 @@ public class ChainLightningAction extends StackAction
 
             var chain = 0
             for target in list
-                calculateDamage(stack.stats.amount, chain)
-                damagePreview.addSpecificToTooltip(stack, target, tt)
+                calculateDamage(stack.stats.amount, chain).extendTooltipWithSpecific(tt, stack, target)
                 chain ++
             destroy list
             
-        tt.display(stack.getPlayer(), true)
+        tt.setKey(key)
+        UITooltipNew.display(stack.getPlayer(), tt)
         UIBoardActionMenu.updateActionPoints(entity, cost)
                 
     @inline
     private function hidePreview()
-        UITooltip.hide(stack.getPlayer())
+        UITooltipNew.hide(stack.getPlayer())
         UIBoardActionMenu.updateActionPoints(entity)
 
     override function onUIMouseEnter()

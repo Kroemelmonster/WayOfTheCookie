@@ -1,10 +1,10 @@
-package UIElementBar
+package UIProgressBar
 import UIWindow
 import UIHandle
 
-public class UIElementBar extends UIHandle
-    static function create(string bar, UIMenu parent) returns UIElementBar
-        return new UIElementBar(bar, parent)
+public class UIProgressBar extends UIHandle
+    static function create(string bar, UIMenu parent) returns UIProgressBar
+        return new UIProgressBar(bar, parent)
 
     private framehandle textHandle
 

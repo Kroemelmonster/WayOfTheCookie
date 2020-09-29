@@ -1,0 +1,136 @@
+package UIWindowHero
+import UIWindow
+import UIHandle
+import TooltipNew
+import StackType
+import StatsModifier
+import TooltipGenerator
+import PlayerData
+import Stack
+import Scheduler
+import UITooltipNew
+import Description
+import StackStats
+import DamageType
+import InitiativeList
+import KUtil
+import Talent
+import LinkedList
+import UIInteractableStatInfo
+import UIInteractable
+import HeroStats
+
+public class UIWindowHeroInfo
+
+    protected static function get(Player p) returns UIWindowHeroInfo
+        return p.menuConsoleInfo.heroInfo
+
+    protected static function getStats(Player p) returns HeroStats
+        return p.hero.stats
+
+public class UIWindowHero
+    protected static UIWindowBasic window
+
+    protected static UIInteractableStatInfo attackInfo
+    protected static UIInteractableStatInfo defenceInfo
+    protected static UIInteractableStatInfo powerInfo
+    protected static UIInteractableStatInfo wisdomInfo
+    protected static UIInteractableStatInfo damageInfo
+    protected static UIInteractableStatInfo inititaiveInfo
+
+    static function create()
+        window = UIWindowBasic.create(true)
+        ..setPointToConsoleUI(FRAMEPOINT_TOP, FRAMEPOINT_TOP)
+        ..setSize(0.2, 0.25)
+
+        let infoPadding = 0.005
+        inititaiveInfo = UIInteractableStatInfo.create(window)
+        ..setInnerPoint(FRAMEPOINT_BOTTOMLEFT, window, FRAMEPOINT_BOTTOMLEFT)
+        ..setInnerPoint(FRAMEPOINT_BOTTOMRIGHT, window, FRAMEPOINT_BOTTOM)
+        ..setIcon("UI/Textures/StackInfo/initiative.dds")
+        ..onMouseEnter() -> 
+            let tt = TooltipNew.create("Initiative")
+            Description.extendTooltip(tt, "Initiative")
+            tt.addLine("-----")
+            let p = GetTriggerPlayerData()
+            InitiativeList.extendTooltip(tt, UIWindowHeroInfo.getStats(p).getInitiative())
+            UITooltipNew.display(p, tt, TooltipNewAnchor.RIGHT_BOTTOM , inititaiveInfo)
+
+        damageInfo = UIInteractableStatInfo.create(window)
+        ..setInnerPoint(FRAMEPOINT_BOTTOMLEFT, window, FRAMEPOINT_BOTTOM)
+        ..setInnerPoint(FRAMEPOINT_BOTTOMRIGHT, window, FRAMEPOINT_BOTTOMRIGHT)
+        ..onMouseEnter() -> 
+            let tt = TooltipNew.create("Damage")
+            Description.extendTooltip(tt, "Damage")
+            UITooltipNew.display(GetTriggerPlayerData(), tt, TooltipNewAnchor.RIGHT_BOTTOM , damageInfo)
+
+        powerInfo = UIInteractableStatInfo.create(window)
+        ..setPoint(FRAMEPOINT_BOTTOMLEFT, inititaiveInfo, FRAMEPOINT_TOPLEFT, 0, infoPadding)
+        ..setPoint(FRAMEPOINT_BOTTOMRIGHT, inititaiveInfo, FRAMEPOINT_TOPRIGHT, 0, infoPadding)
+        ..setIcon("UI/Textures/StackInfo/power.dds")
+        ..onMouseEnter() -> 
+            let tt = TooltipNew.create("Power")
+            Description.extendTooltip(tt, "Power")
+            UITooltipNew.display(GetTriggerPlayerData(), tt, TooltipNewAnchor.RIGHT_BOTTOM , powerInfo)
+
+        wisdomInfo = UIInteractableStatInfo.create(window)
+        ..setPoint(FRAMEPOINT_BOTTOMLEFT, damageInfo, FRAMEPOINT_TOPLEFT, 0, infoPadding)
+        ..setPoint(FRAMEPOINT_BOTTOMRIGHT, damageInfo, FRAMEPOINT_TOPRIGHT, 0, infoPadding)
+        ..setIcon("UI/Textures/StackInfo/wisdom.dds")
+        ..onMouseEnter() -> 
+            let tt = TooltipNew.create("Wisdom")
+            Description.extendTooltip(tt, "Wisdom")
+            UITooltipNew.display(GetTriggerPlayerData(), tt, TooltipNewAnchor.RIGHT_BOTTOM , wisdomInfo)
+        
+        attackInfo = UIInteractableStatInfo.create(window)
+        ..setPoint(FRAMEPOINT_BOTTOMLEFT, powerInfo, FRAMEPOINT_TOPLEFT, 0, infoPadding)
+        ..setPoint(FRAMEPOINT_BOTTOMRIGHT, powerInfo, FRAMEPOINT_TOPRIGHT, 0, infoPadding)
+        ..setIcon("UI/Textures/StackInfo/attack.dds")
+        ..onMouseEnter() -> 
+            let tt = TooltipNew.create("Attack")
+            Description.extendTooltip(tt, "AttackHero")
+            UITooltipNew.display(GetTriggerPlayerData(), tt, TooltipNewAnchor.RIGHT_BOTTOM , attackInfo)
+
+        defenceInfo = UIInteractableStatInfo.create(window)
+        ..setPoint(FRAMEPOINT_BOTTOMLEFT, wisdomInfo, FRAMEPOINT_TOPLEFT, 0, infoPadding)
+        ..setPoint(FRAMEPOINT_BOTTOMRIGHT, wisdomInfo, FRAMEPOINT_TOPRIGHT, 0, infoPadding)
+        ..setIcon("UI/Textures/StackInfo/defence.dds")
+        ..onMouseEnter() -> 
+            let tt = TooltipNew.create("Defence")
+            Description.extendTooltip(tt, "Defence")
+            UITooltipNew.display(GetTriggerPlayerData(), tt, TooltipNewAnchor.RIGHT_BOTTOM , defenceInfo)
+        
+        Scheduler.onTime() p ->
+            if window.isVisible(p)
+                update(p)
+    
+    static function toggle(Player p)
+        window.toggle(p)
+
+    private static function update(Player p)
+        if not p.isLocal()
+            return
+        let stats = UIWindowHeroInfo.getStats(p)
+
+        attackInfo.setTextBasedOnStats(stats.getBasisAttack(), stats.getAttack(), stats.getAttackModifier())
+        defenceInfo.setTextBasedOnStats(stats.getBasisDefence(), stats.getDefence(), stats.getDefenceModifier())
+        wisdomInfo.setTextBasedOnStats(stats.getBasisWisdom(), stats.getWisdom(), stats.getWisdomModifier())
+        powerInfo.setTextBasedOnStats(stats.getBasisPower(), stats.getPower(), stats.getPowerModifier())
+        damageInfo.setText(damageToText(stats.getBasisDamage(), stats.getDamage()))
+        damageInfo.setIcon(stats.getDamageType())
+        inititaiveInfo.setTextBasedOnStats(stats.getBasisInitiative(), stats.getInitiative(), stats.getInitiativeModifier())
+
+
+    private static function damageToText(realRange basisDmg, realRange modifiedDmg) returns string
+        let dmgDifference = modifiedDmg.avg() - basisDmg.avg()
+        let roundedBasisDmg = basisDmg.round()
+        return roundedBasisDmg.min.toString() + " - " + roundedBasisDmg.max.toString() + TooltipGenerator.coloredModiReal(dmgDifference, 1)
+    
+    /*
+
+        updateTalents(armyStats.getAllVisibleTalents())
+        for int i = 0 to buffs.length
+            buffs[i].setVisible(false)
+        
+
+*/

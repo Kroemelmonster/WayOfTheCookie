@@ -5,15 +5,14 @@ import ClosureEvents
 
 import UIBoardActionMenu
 import UITooltip
-import UIEntityWindow
 import UIInitiativeWindow
 import UIMenuWorldConsole
 import UINPCWindow
 import UIWindowSpellBook
-import UIHeroWindow
 import UIHandle
 import ClosureTimers
 import UIMenuConsole
+import UITooltipNew
 
 public function framehandle.toString() returns string
 	var str = "FrameHandle "
@@ -53,9 +52,8 @@ class UIMain
 			UIWindowSpellBook.create()
 		else if part == 2
 			UIMenuConsole.create()
-			UIMenuWorldConsole.create()
 			UINPCWindow.setup()
+			UITooltipNew.create()
 		else if part == 3
-			UIEntityWindow.setup()
+			UIMenuWorldConsole.create()
 		else if part == 4
-			UIHeroWindow.setup()

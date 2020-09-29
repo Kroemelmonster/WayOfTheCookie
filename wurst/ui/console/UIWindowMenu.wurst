@@ -6,6 +6,7 @@ import UIButtonMenu
 import FramehandleNames
 import UIDialog
 
+
 public class UIWindowMenu
     protected static UIWindowBasic window
 
@@ -14,25 +15,16 @@ public class UIWindowMenu
         ..setPointToConsoleUI(FRAMEPOINT_TOP, FRAMEPOINT_TOP)
         ..setSize(0.29, 0.35)
 
-        let exampleDialog = UIDialog.create()
-        ..onAccept() -> 
-            Log.trace("Accepting")
-        exampleDialog.onClose() (Player p) ->
-            Log.trace("not accepting")
-
         let btnEnd = UIButtonMenu.create(window, "End Game")
         ..setInnerPoint(FRAMEPOINT_BOTTOMLEFT, window, FRAMEPOINT_BOTTOMLEFT)
         ..setInnerPoint(FRAMEPOINT_BOTTOMRIGHT, window, FRAMEPOINT_BOTTOMRIGHT)
-        ..onClick() -> 
-            exampleDialog.open(GetTriggerPlayerData())
-            //EndGame(false)
-
-        
+        ..onClick() ->
+            EndGame(false)
         
         let btnFrames = UIButtonMenu.create(window, "Frames off")
         ..setPoint(FRAMEPOINT_BOTTOMLEFT, btnEnd, FRAMEPOINT_TOPLEFT, 0, 0.01)
         ..setPoint(FRAMEPOINT_BOTTOMRIGHT, btnEnd, FRAMEPOINT_TOPRIGHT, 0, 0.01)
-        btnFrames.onClick() -> 
+        btnFrames.onClick() ->
             let ressourceBar = getFrame("ConsoleUI")
             let isVisible = ressourceBar.isVisible()
             ressourceBar.setVisible(not isVisible)

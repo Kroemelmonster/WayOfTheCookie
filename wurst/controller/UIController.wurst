@@ -1,6 +1,5 @@
 package UIController
 
-import UIEntityWindow
 import initlater UIMenuWorldConsole
 
 import initlater Board
@@ -19,12 +18,18 @@ import BoardTrigger
 import ClosureTimers
 import LinkedList
 import UIWindow
+import initlater Hero
+import initlater HeroData
+import initlater UIMenuConsole
 
 class UIController
+    static function initHero(Hero hero)
+        UIMenuConsole.initHero(hero)
+        UIMenuWorldConsole.initHero(hero)
 
     static function selectEntity(Player p, BoardEntity entity)
         UIBoardActionMenu.update(p)
-        p.stackWindowInfo.setBoardEntity(entity)
+        // TODO p.stackWindowInfo.setBoardEntity(entity)
             
     static function triggerOnActionChange(Board board)
         let currentEntry = board.getInitiative().getCurrent().getBoardEntity()
@@ -86,9 +91,10 @@ class UIController
         entity.getDefaultAction().onAnyStackCellChange()
         entity.getBoard().drawAll()
 
-    private static function switchToCombat(Player p)
-        p.stackWindowInfo.clear()
+    static function updateHeroData(Hero hero, HeroDataChange changedData)
+        UIMenuConsole.updateHeroData(hero, changedData)
 
+    private static function switchToCombat(Player p)
         UIWindow.closeAll(p)
 
         UIMenuWorldConsole.hide(p)
@@ -99,7 +105,6 @@ class UIController
         switchToCombat(b.getPlayer(1))
         
     static function switchToWorld(Player p)
-        p.stackWindowInfo.clear()
         p.blzPlayer.setCameraPosition(p.hero.getCoord())
         
         UIWindow.closeAll(p)

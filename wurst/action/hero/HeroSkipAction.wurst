@@ -9,20 +9,17 @@ import Abilities
 
 import OrderSystem
 import BoardController
-import UITooltip
 import UIBoardActionMenu
 
 import initlater BoardEntity
 import BoardTrigger
 import ActionCost
+import UITooltipNew
+import TooltipNew
 
 public class HeroSkipAction extends InstantAction
-    private Tooltip tt
-
     construct(BoardEntity entity)
         super(entity, Icons.bTNCancel, "Skip", ActionCostPreset.create(0, true))
-        tt = Tooltip.create(name)
-        tt.addLine("Skips your turn")
         
     override function canActivate() returns boolean
         return true
@@ -31,12 +28,14 @@ public class HeroSkipAction extends InstantAction
         BoardController.finishOrder(entity, cost)
         
     override function onUIMouseEnter()
-        tt.setKey(key)
-        tt.display(entity.getPlayer(), false)
+        let tt = TooltipNew.create(name)
+        ..setKey(key)
+        ..addLine("Opens your vastly filled Skillbook")
+        UITooltipNew.display(entity.getPlayer(), tt)
         UIBoardActionMenu.updateActionPoints(entity, cost)
 
     override function onUIMouseLeave()
-        UITooltip.hide(entity.getPlayer())
+        UITooltipNew.hide(entity.getPlayer())
         UIBoardActionMenu.updateActionPoints(entity)
 
     override function executeForKI(SequenzListenerStatus listener)
@@ -44,4 +43,3 @@ public class HeroSkipAction extends InstantAction
         listener.continue(0)
 
     ondestroy
-        destroy tt

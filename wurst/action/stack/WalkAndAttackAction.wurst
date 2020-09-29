@@ -11,7 +11,6 @@ import PlayerData
 import AttackAnimation
 import Damage
 import DefaultStackAction
-import UITooltip
 import BoardController
 import TargetList
 import KUtil
@@ -27,6 +26,8 @@ import SubTargetList
 import KISystem
 import ClosureTimers
 import ActionCost
+import UITooltipNew
+import TooltipNew
 
 function subActionMoveEnd(Board board, BoardStack stack, int remainingMoveActionPoints, SequenzListenerStatus next, int status)
     if status == 0
@@ -159,13 +160,13 @@ public class WalkAndAttackAction extends DefaultStackAction
         let cell = p.currentMousePosition.cell
         caclulatePath(cell, p.currentMousePosition.nearbyCell)
         if hasValidTarget == false
-            UITooltip.hide(stack.getPlayer())
+            UITooltipNew.hide(stack.getPlayer())
         else
-            let tt = Tooltip.create(name)
+            let tt = TooltipNew.create(name)
             let preview = new DamagePreview(stack.stats.getDamage(), SourceType.ATTACK, stack.stats.getDamageType())
-            preview.addSpecificToTooltip(stack, cell.getStack(), tt)
+            preview.extendTooltipWithSpecific(tt, stack, cell.getStack())
             destroy preview
-            tt.display(stack.getPlayer(), true)
+            UITooltipNew.display(stack.getPlayer(), tt)
         
         var showCost = ActionCost.getTempCost(0, false)
         if cell != null

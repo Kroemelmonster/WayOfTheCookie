@@ -4,8 +4,6 @@ import Icons
 
 import initlater Talent
 import initlater PoisonousPassive
-import initlater StackType
-import UITooltip
 
 public class PoisonousTalent extends Talent
     construct()
@@ -18,5 +16,7 @@ public class PoisonousTalent extends Talent
             stack.addPassive(passive)
             passive.triggerOnStackCreation(stack)
 
+    /*
     override function createTooltip(StackType sType) returns Tooltip
         return PoisonousPassive.createTooltip(sType)
+        */

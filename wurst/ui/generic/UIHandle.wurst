@@ -3,8 +3,11 @@ package UIHandle
 public function createUIFrame(string frameType, framehandle parent) returns framehandle
     return createUIFrame(frameType, parent, false)
 
+function hasFrameTypeEvents(string frameType) returns boolean
+    return frameType != "SPRITE" and frameType != "FRAME"
+
 public function createUIFrame(string frameType, framehandle parent, boolean registerEvents) returns framehandle
-    if not registerEvents
+    if not registerEvents and hasFrameTypeEvents(frameType)
         return createFrame(frameType +  "_IGNORE_EVENTS", parent, 0, 0)
     return createFrame(frameType, "", parent, "", 0)
 
@@ -69,6 +72,9 @@ public class UIHandle
         
     function setWidth(real width)
         self.setWidth(width)
+
+    function setLevel(int level)
+        self.setLevel(level)
 
     function isVisible() returns boolean
         return self.isVisible()

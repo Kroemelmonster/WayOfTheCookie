@@ -2,8 +2,6 @@ package ChainLightningTalent
 
 import initlater Talent
 import initlater ChainLightningAction
-import initlater StackType
-import UITooltip
 
 public class ChainLightningTalent extends Talent
     construct()
@@ -14,5 +12,5 @@ public class ChainLightningTalent extends Talent
         ..addGenerateListener() stack ->
             stack.addAction(new ChainLightningAction(stack))
 
-    override function createTooltip(StackType sType) returns Tooltip
-        return ChainLightningAction.createTooltip(true, 1)
+    // TODO  override function createTooltip(StackType sType) returns TooltipNew
+        // TODO return ChainLightningAction.createTooltip(true, 1)

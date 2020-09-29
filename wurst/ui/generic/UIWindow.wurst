@@ -8,11 +8,14 @@ import LinkedList
 
 public framehandle CONSOLE_UI
 
-public class UIMouseBlockElement extends UIHandle
-    static function create(UIMenu parent) returns UIMouseBlockElement
-        return new UIMouseBlockElement(parent.self)
+public class UIMenuPlayerInfo
+    LinkedList<UIMenu> currentVisibleMenues = new LinkedList<UIMenu>()
+    LinkedList<UIWindow> currentOpenWindows = new LinkedList<UIWindow>()
 
+public abstract class UIMouseBlockElement extends UIHandle
     private LinkedList<framehandle> simpleFrames
+    protected PlayerListener onShowListener
+    protected PlayerListener onHideListener
 
     private construct(framehandle parent)
         super(createUIFrame("MENU", parent, true))
@@ -39,6 +42,8 @@ public class UIMouseBlockElement extends UIHandle
             for simpleFrame in simpleFrames
                 simpleFrame.setVisible(flag)
 
+    abstract function isVisible(Player p) returns boolean
+
     function addSimpleFrame(framehandle simple)
         if simpleFrames == null
             simpleFrames = new LinkedList<framehandle>()
@@ -47,72 +52,136 @@ public class UIMouseBlockElement extends UIHandle
 
 public class UIMenu extends UIMouseBlockElement
     static function create() returns UIMenu
-        return new UIMenu()
+        return new UIMenu(GAME_UI, false)
 
-    private construct()
-        super(GAME_UI)
-        self.setVisible(false)
+    static function create(UIMenu parent) returns UIMenu
+        let menu = new UIMenu(parent.self, true)
+        parent.children.add(menu)
+        menu.parent = parent
+        return menu
 
-public class UIWindow extends UIMenu
+    protected LinkedList<UIMenu> children = new LinkedList<UIMenu>
+    protected UIMenu parent
+
+    private construct(framehandle parent, boolean initalVisible)
+        super(parent)
+        super.setVisible(initalVisible)
+
+    override function isVisible(Player p) returns boolean
+        if parent != null
+            return parent.isVisible(p)
+        else
+            return p.uiMenuPlayerInfo.currentVisibleMenues.has(this)
+
+    function show(Player p)
+        if parent != null
+            Log.trace("You cant show a children menu")
+            return
+        if isVisible(p)
+            return
+        p.uiMenuPlayerInfo.currentVisibleMenues.add(this)
+        triggerOnShow(p)
+        for child in children
+            child.triggerOnShow(p)
+        if p.isLocal()
+            super.setVisible(true)
+
+    function hide(Player p)
+        if parent != null
+            Log.trace("You cant hide a children menu")
+            return
+        if not isVisible(p)
+            return
+        p.uiMenuPlayerInfo.currentVisibleMenues.remove(this)
+        for child in children
+            child.triggerOnHide(p)
+        triggerOnHide(p)
+        if p.isLocal()
+            super.setVisible(false)
+
+    private function triggerOnShow(Player p)
+        if onShowListener != null
+            onShowListener.onEvent(p)
+      
+    private function triggerOnHide(Player p)
+        if onHideListener != null
+            onHideListener.onEvent(p)
+
+    override function setVisible(boolean flag)
+        super.setVisible(flag)
+        Log.trace("PLEASE dont use set Visible on a Menu, use show / hide instead")
+
+    function onShow(PlayerListener listener)
+        onShowListener = listener
+    
+    function onHide(PlayerListener listener)
+        if onHideListener != null
+            Log.error("You allready added an onHideListener to this Menu")
+        onHideListener = listener
+
+public class UIWindow extends UIMouseBlockElement
     static function create() returns UIWindow
         return new UIWindow()
 
     static function closeCurrent(Player p)
-        let lastWindow = p.currentOpenWindows.peek()
+        let lastWindow = p.uiMenuPlayerInfo.currentOpenWindows.peek()
         if lastWindow != null
             lastWindow.close(p)
 
     static function closeAll(Player p)
-        let backItr = p.currentOpenWindows.staticBackItr()
+        let backItr = p.uiMenuPlayerInfo.currentOpenWindows.staticBackItr()
         while backItr.hasNext()
             let window = backItr.next()
             window.close(p)
         destroy backItr
+        
+    private construct()
+        super(GAME_UI)
+        super.setVisible(false)
+        setLevel(100)
 
-    private PlayerListener onCloseListener
-    private PlayerListener onOpenListener
-
-    private function isOpen(Player p) returns boolean
-        return p.currentOpenWindows.has(this)
+    override function isVisible(Player p) returns boolean
+        return p.uiMenuPlayerInfo.currentOpenWindows.has(this)
 
     function open(Player p)
-        if not isOpen(p)
-            p.currentOpenWindows.add(this)
-            if onOpenListener != null
-                onOpenListener.onEvent(p)
+        if isVisible(p)
+            return
+        p.uiMenuPlayerInfo.currentOpenWindows.add(this)
+        if onShowListener != null
+            onShowListener.onEvent(p)
         if p.isLocal()
             super.setVisible(true)
 
     function close(Player p)
-        if isOpen(p)
-            p.currentOpenWindows.remove(this)
-            if onCloseListener != null
-                onCloseListener.onEvent(p)
+        if not isVisible(p)
+            return
+        p.uiMenuPlayerInfo.currentOpenWindows.remove(this)
+        if onHideListener != null
+            onHideListener.onEvent(p)
         if p.isLocal()
             super.setVisible(false)
 
     protected function closeWithoutTrigger(Player p)
-        if isOpen(p)
-            p.currentOpenWindows.remove(this)
+        if isVisible(p)
+            p.uiMenuPlayerInfo.currentOpenWindows.remove(this)
         if p.isLocal()
             super.setVisible(false)
 
     function toggle(Player p)
-        if isOpen(p)
+        if isVisible(p)
             close(p)
         else
             open(p)
 
-    
     override function setVisible(boolean flag)
         super.setVisible(flag)
         Log.trace("PLEASE dont use set Visible on a Window, use close / open instead")
 
     function onClose(PlayerListener listener)
-        onCloseListener = listener
+        onHideListener = listener
     
     function onOpen(PlayerListener listener)
-        onOpenListener = listener
+        onShowListener = listener
 
 public class UIWindowBasic extends UIWindow
     static function create(boolean small) returns UIWindowBasic
@@ -133,15 +202,6 @@ public class UIWindowBasic extends UIWindow
         innerFrame = createUIFrame("FRAME", self)
         ..setPoint(FRAMEPOINT_TOPLEFT, self, FRAMEPOINT_TOPLEFT, padding, -padding)
         ..setPoint(FRAMEPOINT_BOTTOMRIGHT, self, FRAMEPOINT_BOTTOMRIGHT, -padding, padding)
-
-
-        /*
-        window = UIWindow.create()
-        ..setPointToConsoleUI(FRAMEPOINT_TOPLEFT, FRAMEPOINT_TOPLEFT)
-        ..setSize(0.5, 0.3)
-        createUIFrameByName("WindowBasic", window, false)
-        ..setAllPoints(window)
-        */
 
 public function framehandle.setInnerPoint(framepointtype point, UIWindowBasic relative, framepointtype relativePoint)
     this.setPoint(point, relative.innerFrame, relativePoint)

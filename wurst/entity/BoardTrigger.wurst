@@ -6,6 +6,7 @@ import initlater BoardStack
 import initlater Cell
 import initlater Damage
 import initlater BoardEntity
+import initlater PlayerData
 
 public abstract class SequenzListener
     function continue()
@@ -20,6 +21,9 @@ public abstract class SequenzListenerStatus
         destroy this
 
     abstract function continueInner(int status)
+
+public abstract class SequenzPlayerListener
+    abstract function onEvent(Player p)
 
 public abstract class BoardTriggerOnAnyCellEnter
     abstract function onEvent(BoardStack stack, Cell fromCell, Cell toCell, SequenzListener next)

@@ -7,7 +7,6 @@ import initlater Board
 import initlater BoardStack
 import initlater Hero
 import initlater UIButton
-import initlater UIEntityWindow
 import initlater UIMenuWorldConsole
 import initlater UINPCWindow
 import initlater UIDialog
@@ -15,7 +14,7 @@ import initlater KeyPressSystem
 import initlater BoardEntity
 import initlater UIWindowSpellBook
 import initlater UIWindow
-import initlater UIHeroWindow
+import initlater UIMenuConsole
 
 public abstract class KeyPressListener
     abstract function onEvent(Player p, string key)
@@ -44,9 +43,8 @@ public class Player
 
     UIMenuWorldConsoleInfo worldConsoleInfo = new UIMenuWorldConsoleInfo()
     UINPCWindowInfo npcWindowInfo = new UINPCWindowInfo()
-    UIEntityWindowInfo stackWindowInfo = new UIEntityWindowInfo()
-    UIHeroWindowInfo heroWindoInfo = new UIHeroWindowInfo()
     UISpellBookInfo spellBookInfo = new UISpellBookInfo()
+    UIMenuConsoleInfo menuConsoleInfo = new UIMenuConsoleInfo()
 
     mousePosition currentMousePosition
 
@@ -59,7 +57,7 @@ public class Player
     color c
 
     LinkedList<KeyPressListener> keyPressListener = new LinkedList<KeyPressListener>()
-    LinkedList<UIWindow> currentOpenWindows = new LinkedList<UIWindow>()
+    UIMenuPlayerInfo uiMenuPlayerInfo = new UIMenuPlayerInfo()
 
     player blzPlayer
 
@@ -88,6 +86,9 @@ public class Player
 
     function toString() returns string
         return blzPlayer.getNameColored()
+
+    function toColor() returns string
+        return c.toColorString()
 
     function onAnyKeyPress(KeyPressListener listener)
         keyPressListener.add(listener)

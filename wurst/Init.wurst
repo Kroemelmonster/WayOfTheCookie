@@ -18,6 +18,7 @@ import SkillTree
 import UITooltip
 import MainController
 import HeroTypesDefinition
+import Description
 
 let globalSetups = new LinkedList<SetupListener>()
 
@@ -70,14 +71,17 @@ function setupSystems()
 	BlzEnableSelections(true, false)
 	Tooltip.setup()
 
-function start()
-	//Log.info("Start")
-	World.generateHeroes()
-	MainController.setup()
-	Scheduler.setup()
-
 function defineObjects()
 	//Log.info("Flesh out some Units")
+	Description.setup()
 	StatusType.setup()
 	Action.setup()
 	KItemTypeSet.setup()
+
+function start()
+	//Log.info("Start")
+	World.generateHeroes()
+	Scheduler.setup()
+
+	MainController.startGame()
+

@@ -16,6 +16,7 @@ import BoardTrigger
 import initlater DelayAnimation
 import Ailment
 import initlater BoardEntity
+import DamageType
 
 public class PoisonAilment extends Status
     static StatusType TYPE

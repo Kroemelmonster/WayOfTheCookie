@@ -11,6 +11,8 @@ import PlayerData
 import Hero
 import UIInitiativeWindow
 import BoardEntity
+import TooltipNew
+import TooltipGenerator
 
 class InitiativeEntity
     protected BoardEntity boardEntity = null
@@ -260,6 +262,11 @@ public class InitiativeList
     @inline
     protected static function initiativeToTime(int initivative) returns int
         return (ONE_ROUND / ((initivative / 10.0) + 1.0)).round()
+
+    static function extendTooltip(TooltipNew tt, int initiative)
+        tt.addLine("Every time this units ends its turn it has to wait "
+        + TooltipGenerator.primaryString(intiativeToDisplayTime(initiative).toString())
+        + " " + TooltipGenerator.secondaryString("timeunits") + " until it can act again")
 
     @inline
     static function intiativeToDisplayTime(int initiative) returns int

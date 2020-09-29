@@ -3,7 +3,6 @@ package SlamTalent
 import initlater Talent
 import initlater SlamAction
 import initlater StackType
-import UITooltip
 
 public class SlamTalent extends Talent
     construct()
@@ -14,5 +13,7 @@ public class SlamTalent extends Talent
         ..addGenerateListener() stack ->
             stack.addAction(new SlamAction(stack))
 
+    /*
     override function createTooltip(StackType sType) returns Tooltip
         return SlamAction.createTooltip(true, 1)
+        */

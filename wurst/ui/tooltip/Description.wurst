@@ -1,0 +1,105 @@
+package Description
+import HashMap
+import LinkedList
+import TooltipNew
+import TooltipGenerator
+import Globals
+
+public class Description
+    private static constant HashMap<string, Description> bookOfWisdom = new HashMap<string, Description>
+
+    static function setup()
+        create("Attack")
+        ..addLine("Increases your damage with attacks.")
+        ..addLine("")
+        ..addLine("Each " + TooltipGenerator.secondaryString("Attack")
+         + " that you have more than your opponents "
+         + TooltipGenerator.secondaryString("Defence")
+         + " will increase your damage dealt by "
+         + TooltipGenerator.coloredPercent(DAMAGECALC_ATTACK_VS_DEFENCE_POSITIVE / 100.0)
+         + " up to "
+         + TooltipGenerator.coloredPercent(DAMAGECALC_ATTACK_VS_DEFENCE_POSITIVE_MAX / 100.0))
+
+        create("AttackHero")
+        ..addLine("Increases the attack of all your troops.")
+        ..addLine("Also increases your attackdamage by "
+         + TooltipGenerator.coloredPercent(ATTACK_DAMAGE_PER_ATTACK / 100.0))
+        ..addLine("")
+        ..addLine("Each " + TooltipGenerator.secondaryString("Attack")
+         + " that your troops have more than your opponents " + TooltipGenerator.secondaryString("Defence")
+         + " will increase their damage dealt by "
+         + TooltipGenerator.coloredPercent(DAMAGECALC_ATTACK_VS_DEFENCE_POSITIVE / 100.0)
+         + " up to "
+         + TooltipGenerator.coloredPercent(DAMAGECALC_ATTACK_VS_DEFENCE_POSITIVE_MAX / 100.0))
+
+        create("Defence")
+        ..addLine("Decreases the damage of enemies attacks.")
+        ..addLine("")
+        ..addLine("Each " + TooltipGenerator.secondaryString("Defence")
+         + " that you have more than your opponents "
+         + TooltipGenerator.secondaryString("Attack")
+         + " will decreases their damage dealt by "
+         + TooltipGenerator.coloredPercent(DAMAGECALC_ATTACK_VS_DEFENCE_NEGATIVE / 100.0)
+         + " up to "
+         + TooltipGenerator.coloredPercent(DAMAGECALC_ATTACK_VS_DEFENCE_NEGATIVE_MAX / 100.0))
+
+        create("Damage")
+        ..addLine("This is the raw damage you would do.")
+
+        create("Range")
+        ..addLine("If you have any, allows you to attack from a Distance.")
+
+        create("Initiative")
+        ..addLine("Determines the interval between your turns.")
+
+        create("ActionPoints")
+        ..addLine("This indicates how much u can do while its your turn.")
+        ..addLine("")
+        ..addLine("Most Action do need theese points to be used.")
+        ..addLine("Moving one cell will cost one "
+         + TooltipGenerator.secondaryString("Actionpoint")
+         + " unless stated otherwise.")
+        ..addLine("Your standard Attack do cost one "
+         + TooltipGenerator.secondaryString("Actionpoint")
+         + " to use but it will deplet all remaining.")
+        ..addLine("Your turn ends automaticly when you dont have any "
+         + TooltipGenerator.secondaryString("Actionpoints")
+         + " left.")
+
+        create("HitPoints")
+        ..addLine("How much you can take untill one stacks dies.")
+        ..addLine("")
+        ..addLine("Everytime you take damage only one unit looses hp untill it has no more.")
+        ..addLine("Then it dies and you loose one stack. The whole stack perish if there are no more.")
+
+        create("Leadership")
+        ..addLine("The requirement to controll one stack.")
+
+        create("Spellpower")
+        ..addLine("Increases the potency of most Spells.")
+        ..addLine("")
+        ..addLine("On default each point increases the damage of your spells by "
+         + TooltipGenerator.coloredPercent(DAMAGE_PER_SPELLPOWER / 100.0))
+
+        create("Wisdom")
+        ..addLine("Increases the maximum Mana you have.")
+        ..addLine("")
+        ..addLine("Each " + TooltipGenerator.secondaryString("Wisdom")
+         + " increases your Mana Pool by " + TooltipGenerator.coloredModiInt(MANA_PER_WISDOWM))
+
+    static function extendTooltip(TooltipNew tt, string keyword)
+        if not bookOfWisdom.has(keyword)
+            return
+        let desc = bookOfWisdom.get(keyword)
+        tt.addLines(desc.lines.copy())
+
+    private static function create(string keyword) returns Description
+        let desc = new Description()
+        bookOfWisdom.put(keyword, desc)
+        return desc
+
+    protected LinkedList<string> lines = new LinkedList<string>
+    function addLine(string line)
+        lines.add(line)
+
+    

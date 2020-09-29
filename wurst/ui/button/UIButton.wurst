@@ -20,6 +20,9 @@ public class UIButton extends UIInteractable
     static function create(boolean automaticHighlight, framehandle parent) returns UIButton
         return new UIButton(createBasicButtonFrame(automaticHighlight, parent))
 
+    static function create(boolean automaticHighlight, UIHandle parent) returns UIButton
+        return new UIButton(createBasicButtonFrame(automaticHighlight, parent.self))
+        
     protected framehandle imgFrame
 
     private FrameHandleListener onClickListener

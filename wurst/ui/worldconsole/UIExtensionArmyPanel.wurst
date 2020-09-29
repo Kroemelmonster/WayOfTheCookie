@@ -8,6 +8,8 @@ import initlater Hero
 import UIHandle
 import UIButtonIcon
 import UIDialogSplitStack
+import initlater Scheduler
+import initlater UIWindowEntity
 
 public class UIExtensionArmyPanelInfo
     protected int startDragMousePressedIndex = -1
@@ -17,6 +19,10 @@ public class UIExtensionArmyPanelInfo
     protected ArmyStack stackDragStart
     protected int dragEnd = -1
     protected ArmyStack stackDragEnd
+
+    protected static function get(Player p) returns UIExtensionArmyPanelInfo
+        return p.worldConsoleInfo.armyInfo
+        // TODO make this cool
 
     protected function setupDragStart(int i)
         stackDragStart = army.getStack(i)
@@ -50,11 +56,10 @@ class UIExtensionArmyButton extends UIButtonIcon
 
         onClick() ->
             let p = GetTriggerPlayerData()
+            // TODO auslagern
             let stack = p.worldConsoleInfo.armyInfo.army.getStack(index)
             if stack != null
-                p.stackWindowInfo.setArmyStack(stack)
-            // let p = GetTriggerPlayerData()
-            // let _info = p.worldConsoleInfo.armyPanel
+                UIWindowEntity.open(p, stack)
 
         onMouseDown() -> 
             let mouseBtn = BlzGetTriggerPlayerMouseButton()
@@ -75,7 +80,6 @@ class UIExtensionArmyButton extends UIButtonIcon
                 let stack = info.army.getStack(index)
                 if stack != null
                     UIDialogSplitStack.open(p, stack)
-                   // TODO UIExtensionArmyPanel.dialogStackSplit.show(p, stack)
             
         onMouseEnter() -> 
             let p = GetTriggerPlayerData()
@@ -83,7 +87,6 @@ class UIExtensionArmyButton extends UIButtonIcon
 
             if info.dragStart >= 0
                 info.setupDragEnd(index)
-                UIExtensionArmyPanel.update(p)
 
     private function setText(string text)
         textHandle.setText(text)
@@ -129,18 +132,17 @@ public class UIExtensionArmyPanel
     protected static UIExtensionArmyButton array[5] btns
     // protected static UIStackSplitDialog dialogStackSplit
 
-    static function create(UIMenu parent) returns UIMouseBlockElement
-        let element = UIMouseBlockElement.create(parent)
-        ..setPoint(FRAMEPOINT_BOTTOMLEFT, parent, FRAMEPOINT_BOTTOMRIGHT)
+    static function create(UIMenu leftMenu) returns UIMenu
+        let element = UIMenu.create(leftMenu)
+        ..setPoint(FRAMEPOINT_BOTTOMLEFT, leftMenu, FRAMEPOINT_BOTTOMRIGHT)
         ..setSize(0.258, 0.076)
-
+        
         createUIFrame("BACKDROP", element)
         ..setAllPoints(element)
         ..setTexture("UI/WorldConsole/WorldConsoleArmyPanelBackground.dds")
         
         btns[0] = new UIExtensionArmyButton(element, 0)
         ..setPoint(FRAMEPOINT_BOTTOMLEFT, element, FRAMEPOINT_BOTTOMLEFT, 0.011, 0.007)
-
         
         for int i = 1 to Army.MAX_SIZE - 1
             btns[i] = new UIExtensionArmyButton(element, i)
@@ -148,23 +150,25 @@ public class UIExtensionArmyPanel
 
        // dialogStackSplit = new UIStackSplitDialog()
 
+        Scheduler.onTime() p ->
+            if element.isVisible(p)
+                update(p)
+
+        element.onHide() p ->
+            Log.trace("its getting hidden")
+            cancelDrag(p)
+
         return element
 
-    static function setupHero(Hero h)
+    static function initHero(Hero h)
         let info = h.getPlayer().worldConsoleInfo.armyInfo
         info.army = h.getArmy()
 
-    static function hide(Player p)
-            // 
-        //if p.dialogInfo.current == dialogStackSplit
-          //  dialogStackSplit.cancel(p)
-        cancelDrag(p)
-
-    static function cancelDrag(Player p)
+    private static function cancelDrag(Player p)
         let info = p.worldConsoleInfo.armyInfo
         info.setupDragStart(-1)
 
-    static function update(Player p)
+    private static function update(Player p)
         let info = p.worldConsoleInfo.armyInfo
         // are you currently Dragging ?
         if info.dragStart >= 0

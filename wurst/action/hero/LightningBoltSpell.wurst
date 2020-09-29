@@ -5,7 +5,6 @@ import Doodads
 
 import PlayerData
 import KUtil
-import UITooltip
 import BoardController
 
 import Action
@@ -30,6 +29,10 @@ import Status
 import UIController
 import PurgedDebuff
 import ActionCost
+import TooltipGenerator
+import TooltipNew
+import UITooltipNew
+import DamageType
 
 public class LightningBoltSpell extends Spell
     static SpellType TYPE
@@ -38,6 +41,8 @@ public class LightningBoltSpell extends Spell
         TYPE = new SpellType("Lightning Bolt", "Icons\\BTNLightningBolt.blp")
         TYPE.onCreate() boardHero -> 
             return new LightningBoltSpell(boardHero)
+        TYPE.onCreateTooltipLines() level -> 
+            return createTooltipLines(level, 0, 0, 0)
 
     private static constant ActionCostPreset BASE_COST = ActionCostPreset.create(1, true, 0)
     private static constant int array[5] MANA_COST = [4, 5, 6, 7, 8]
@@ -46,39 +51,40 @@ public class LightningBoltSpell extends Spell
     static constant int array[3] STUN_DURATION = [100, 200, 400]
     static constant int array[3] PURGE_SLOW = [1, 2, 3]
     static StatusType PURGE_DEBUFF
-    
-    private static function calculateDamage(int power, int level)
-        let multi = (1.0 + (power * DAMAGE_PER_SPELLPOWER / 100.0)) 
-        damagePreview.dmg = realRange(DAMAGE[level] * 0.5 * multi, DAMAGE[level] * 2 * multi)
 
     @inline
     private static function createPurgeStatusData(int purgeLevel) returns StatusData
         return StatusData.createDurationI(2, PURGE_SLOW[purgeLevel])
 
-    private static function adjustCost(ActionCostPreset cost, int level)
-        cost.adjustBaseManaCost(MANA_COST[level])
+    private static function calculateDamage(int level, int power) returns DamagePreview
+        let multi = (1.0 + (power * DAMAGE_PER_SPELLPOWER / 100.0)) 
+        damagePreview.dmg = realRange(DAMAGE[level] * 0.5 * multi, DAMAGE[level] * 2 * multi)
+        return damagePreview
 
-    static function createTooltip(int level) returns Tooltip
-        adjustCost(BASE_COST, level)
-        return createTooltip(0, level, -1, -1, BASE_COST)
-
-    private static function createTooltip(int power, int level, int stunLevel, int purgeLevel, ActionCostPreset cost) returns Tooltip
-        calculateDamage(power, level)
-        let tt = Tooltip.create(TYPE.getName())
-        ..setCost(cost)
-        ..addLine(Tooltip.stat("Target", "Enemy"))
-        ..addLine(Tooltip.stat("Damage", damagePreview))
-        ..addLine("")
+    private static function createTooltipLines(int level, int power, int stunLevel, int purgeLevel) returns LinkedList<string>
+        let lines = new LinkedList<string>
+        ..add(TooltipGenerator.stat("Target", "Enemy"))
+        ..add(TooltipGenerator.stat("Damage", calculateDamage(level, power).toColoredText()))
+        ..add("")
         var str = "Lightning strikes"
         if stunLevel >= 0
-            str += " and stuns for "+Tooltip.primaryString(STUN_DURATION[stunLevel].toString())+ " "+Tooltip.secondaryString("timeunits")
+            str += " and stuns for " + TooltipGenerator.primaryString(STUN_DURATION[stunLevel].toString()) + " " + TooltipGenerator.secondaryString("timeunits")
         if purgeLevel >= 0
             str += " and purges"
         str +=" one Enemy"
-        tt.addLine(str)
+        lines.add(str)
         if purgeLevel >= 0
-            tt.addLine("---")
-            tt.addStatusType(PURGE_DEBUFF, createPurgeStatusData(purgeLevel))
+            lines.add("---")
+            // TODO tt.addStatusType(PURGE_DEBUFF, createPurgeStatusData(purgeLevel))
+        return lines
+
+    private static function adjustCost(ActionCostPreset cost, int level)
+        cost.adjustBaseManaCost(MANA_COST[level])
+
+    private static function createTooltip(int level, int power, int stunLevel, int purgeLevel, ActionCostPreset cost) returns TooltipNew
+        let tt = TooltipNew.create(TYPE.getName())
+        ..addLines(createTooltipLines(level, power, stunLevel, purgeLevel))
+        cost.setupTooltipCost(tt)
         return tt
     
     /* -------------------------------------------------------------------------- */
@@ -162,16 +168,15 @@ public class LightningBoltSpell extends Spell
         let power = hero.stats.getPower()
         let tt = createTooltip(power, level, stunLevel, purgeLevel, cost)
         if fromCell != null
-            calculateDamage(power, level)
-            damagePreview.addSpecificToTooltip(stack, fromCell.getStack(), tt)
+            calculateDamage(power, level).extendTooltipWithSpecific(tt, stack, fromCell.getStack())
         
         //TODO all actions do setKEy ?? pls do better
         tt.setKey(key)
-        tt.display(entity.getPlayer(), true)
+        UITooltipNew.display(entity.getPlayer(), tt)
         UIBoardActionMenu.updateActionPoints(entity, cost)
     
     private function hidePreview()
-        UITooltip.hide(entity.getPlayer())
+        UITooltipNew.hide(entity.getPlayer())
         UIBoardActionMenu.updateActionPoints(entity)
 
     ondestroy

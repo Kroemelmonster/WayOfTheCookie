@@ -1,0 +1,69 @@
+package HeroData
+
+import initlater Hero
+import PlayerData
+import UITooltip
+import TooltipNew
+import TooltipGenerator
+import MainController
+
+public abstract class AbstractHeroData
+    protected int might = 0
+    protected int mind = 0
+    protected int magic = 0
+
+    construct(int might, int mind, int magic)
+        this.might = might
+        this.mind = mind
+        this.magic = magic
+
+
+public class HeroData extends AbstractHeroData
+    construct(int might, int mind, int magic)
+        super(might, mind, magic)
+
+    function getMight() returns int
+        return might
+    
+    function getMind() returns int
+        return mind
+
+    function getMagic() returns int
+        return magic
+
+
+public class HeroDataChange extends AbstractHeroData
+    construct(int might, int mind, int magic)
+        super(might, mind, magic)
+
+    function canPay(Hero h) returns boolean
+        let data = h.getData()
+        if data.might < might
+            return false
+        if data.mind < mind
+            return false
+        if data.magic < magic
+            return false
+        return true
+    
+    function pay(Hero h)
+        let data = h.getData()
+        data.might -= might
+        data.mind -= mind
+        data.magic -= magic
+
+        MainController.updateHeroData(h, this)
+    
+    private function addIconToTooltipCost(TooltipNew tt, int has, int cost, string icon)
+        if cost <= 0
+            return
+        if has >= cost
+            tt.addIcon(TooltipGenerator.primaryString(cost.toString()), icon)
+        else
+            tt.addIcon(TooltipGenerator.coloredInt(TooltipGenerator.COLOR_NEGATIVE, cost), icon)
+
+    function setupTooltipCost(TooltipNew tt, Hero h)
+        let data = h.getData()
+        addIconToTooltipCost(tt, data.might, might, "UI/Console/IconMight.dds")
+        addIconToTooltipCost(tt, data.mind, mind, "UI/Console/IconMind.dds")
+        addIconToTooltipCost(tt, data.magic, magic, "UI/Console/IconMagic.dds")

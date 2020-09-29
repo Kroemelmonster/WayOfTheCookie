@@ -79,7 +79,6 @@ Frame "SLIDER" "SliderHorizontalBasic" {
     }
 }
 
-
 Frame "BACKDROP" "BackdropEditBoxBasic" {
     DecorateFileNames,
     BackdropTileBackground,
@@ -91,7 +90,6 @@ Frame "BACKDROP" "BackdropEditBoxBasic" {
     BackdropEdgeFile "EscMenuEditBoxBorder",
     BackdropBlendAll,
 }
-
 
 Frame "EDITBOX" "EditBoxBasic" {
     Width 0.07,

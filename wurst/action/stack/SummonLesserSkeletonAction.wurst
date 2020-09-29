@@ -6,7 +6,6 @@ import Abilities
 
 import PlayerData
 import KUtil
-import UITooltip
 import BoardController
 import OrderSystem
 
@@ -24,6 +23,9 @@ import CastAnimation
 import BoardTrigger
 import ClosureTimers
 import ActionCost
+import TooltipGenerator
+import TooltipNew
+import UITooltipNew
 
 public class SummonLesserSkeletonAction extends StackAction
     static constant string NAME = "Summon Skeleton"
@@ -33,37 +35,34 @@ public class SummonLesserSkeletonAction extends StackAction
     private static constant int MAXRANGE = 1
     private static constant string EFFECT = Abilities.raiseSkeleton
     private static StackType SUMMONED_TYPE
-    private static Tooltip BASE_TOOLTIP
 
     static function setup()
         SUMMONED_TYPE = StackTypes.LESSER_SKELETON
-        BASE_TOOLTIP = Tooltip.create(NAME)
-        ..setCost(COST)
-        
-        ..addLine(Tooltip.stat("Target", "Empty Cell"))
-        ..addLine(Tooltip.stat("Range", MAXRANGE))
-        ..addLine("")
-        ..addLine("")
 
-    private static function getSummonLeadershipAmount(StackType sType) returns intRange
-        return intRange((sType.leadership * 0.3).ceil(), (sType.leadership * 0.6).ceil())
+    private static function getSummonLeadershipAmount(int amount) returns intRange
+        return intRange((SUMMONED_TYPE.leadership * amount * 0.3).ceil(), (SUMMONED_TYPE.leadership * amount * 0.6).ceil())
 
-    static function createTooltip(StackType sType) returns Tooltip
-        let leadership = getSummonLeadershipAmount(sType)
-        let str = "Summons a Stack of "+ Tooltip.coloredString(Tooltip.COLOR_SECONDARY, SUMMONED_TYPE.name) +" with a Leaderhip of "+Tooltip.coloredRange(Tooltip.COLOR_PRIMARY, leadership)
-        let tt = Tooltip.copy(BASE_TOOLTIP)
-        ..setLine(3, str)
+    private static function createTooltipLines(int amount) returns LinkedList<string>
+        let leadership = getSummonLeadershipAmount(amount)
+        return new LinkedList<string>
+        ..add(TooltipGenerator.stat("Target", "Empty Cell"))
+        ..add(TooltipGenerator.stat("Range", MAXRANGE))
+        ..add("")
+        ..add("Summons a Stack of "+ TooltipGenerator.coloredString(TooltipGenerator.COLOR_SECONDARY, SUMMONED_TYPE.name) + 
+            " with a Leaderhip of "+TooltipGenerator.coloredRange(TooltipGenerator.COLOR_PRIMARY, leadership))
 
+    private static function createTooltip(int amount) returns TooltipNew
+        let tt = TooltipNew.create(NAME)
+        ..addLines(createTooltipLines(amount))
+        COST.setupTooltipCost(tt)
         return tt
 
     private LinkedList<Cell> area = new LinkedList<Cell>()
-    private Tooltip tooltip
     private intRange summonAmount  
 
     construct(BoardStack stack)
         super(stack, ICON, NAME, COST)
         presetOption(ActionOption.PRIMARY)
-        tooltip = Tooltip.copy(BASE_TOOLTIP)
 
     override function getHighlightResultForCell(Player p, Cell cell) returns CellResult
         if area.has(cell)
@@ -97,12 +96,14 @@ public class SummonLesserSkeletonAction extends StackAction
 
     private function recalcSummonAmount()
         let amount = stack.stats.getAmount()
-        let leadershipAmount = getSummonLeadershipAmount(stack.getStackType())
+        let leadershipAmount = getSummonLeadershipAmount(stack.stats.amount)
         summonAmount = intRange((leadershipAmount.min * amount / SUMMONED_TYPE.leadership).ceil(), (leadershipAmount.max * amount / SUMMONED_TYPE.leadership).ceil())
-        
+
+        // TODO
+        /*
         var str = "Summons a Stack of "+ Tooltip.coloredRange(Tooltip.COLOR_PRIMARY, summonAmount)
         str += " " + Tooltip.coloredString(Tooltip.COLOR_SECONDARY, SUMMONED_TYPE.name)
-        tooltip.setLine(3, str)
+        tooltip.setLine(3, str)*/
 
     private function recalculate()
         area.clear()
@@ -114,13 +115,14 @@ public class SummonLesserSkeletonAction extends StackAction
 
     @inline
     private function showPreview()
-        tooltip.setKey(key)
-        tooltip.display(stack.getPlayer(), false)
+        let tt = createTooltip(stack.stats.amount)
+        ..setKey(key)
+        UITooltipNew.display(stack.getPlayer(), tt)
         UIBoardActionMenu.updateActionPoints(entity, cost)
                 
     @inline
     private function hidePreview()
-        UITooltip.hide(stack.getPlayer())
+        UITooltipNew.hide(stack.getPlayer())
         UIBoardActionMenu.updateActionPoints(entity)
 
     override function onUIMouseEnter()
@@ -145,6 +147,4 @@ public class SummonLesserSkeletonAction extends StackAction
     ondestroy
         if area != null
             destroy area
-        if tooltip != null
-            destroy tooltip
         

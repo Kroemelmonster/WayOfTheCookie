@@ -7,6 +7,7 @@ import PlayerData
 import UIWindow
 import UIButtonMenu
 import initlater UIDialogSplitStack
+import UIHandle
 
 public class DialogInfo
     DialogInfoSplitStack splitInfo = new DialogInfoSplitStack()
@@ -16,11 +17,19 @@ public class UIDialog extends UIWindowBasic
         return new UIDialog()
 
     private FrameHandleListener onAccept
+    private framehandle handleHeader
 
     private construct()
         super(true)
         setPointToConsoleUI(FRAMEPOINT_CENTER, FRAMEPOINT_CENTER)
         setSize(0.35, 0.15)
+        // TODO dynamicly change level depning on last clicked dilaog / window
+        setLevel(1000)
+
+        handleHeader = createUIFrameByName("TextDialogHeader", self, false)
+        ..setInnerPoint(FRAMEPOINT_TOP, this, FRAMEPOINT_TOP)
+        ..setTextAlignment(TEXT_JUSTIFY_TOP, TEXT_JUSTIFY_CENTER)
+        ..setSize(0.1, 0.2)
 
         addButton(FRAMEPOINT_BOTTOMLEFT, "Accept") ->
             if onAccept != null
@@ -32,6 +41,9 @@ public class UIDialog extends UIWindowBasic
 
     function onAccept(FrameHandleListener onAccept)
         this.onAccept = onAccept
+
+    function setHeader(string text)
+        handleHeader.setText(text)
 
     function addButton(framepointtype framepoint, string text, FrameHandleListener onClick) returns UIButtonMenu
         return UIButtonMenu.create(this, text)

@@ -5,13 +5,13 @@ import initlater StackType
 import DefaultTalent
 import SummonLesserSkeletonTalent
 import CounterAttackTalent
-import UITooltip
 import ChainLightningTalent
 import PoisonousTalent
 import DeepCuttingTalent
 import CrackleTalent
 import SlamTalent
 import CleavingAttackTalent
+import TooltipNew
 
 interface GenerateListener
     function onStackCreation(BoardStack stack)
@@ -72,5 +72,5 @@ public class Talent
     function getName() returns string
         return name
     
-    function createTooltip(StackType _sType) returns Tooltip
+    function createTooltip(StackType _sType) returns TooltipNew
         return null

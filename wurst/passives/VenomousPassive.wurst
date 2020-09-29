@@ -11,9 +11,9 @@ import StatusController
 import StatusType
 import Status
 import PoisonAilment
-import initlater SkillTreeVenomancer
 import DelayAnimation
 
+/*
 public class VenomousPassive extends PassiveAction
     private SkillTreeVenomancer skillTree
 
@@ -30,3 +30,4 @@ public class VenomousPassive extends PassiveAction
                     next.continue()
             else
                 next.continue()
+                */

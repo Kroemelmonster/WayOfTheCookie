@@ -5,8 +5,6 @@ import Icons
 import initlater Talent
 import initlater DeepCuttingPassive
 import initlater StackType
-import UITooltip
-
 public class DeepCuttingTalent extends Talent
     construct()
         super("Deep Cutting", Icons.pASBTNCriticalStrike)
@@ -18,5 +16,7 @@ public class DeepCuttingTalent extends Talent
             stack.addPassive(passive)
             passive.triggerOnStackCreation(stack)
 
+    /*
     override function createTooltip(StackType sType) returns Tooltip
         return DeepCuttingPassive.createTooltip(sType)
+        */

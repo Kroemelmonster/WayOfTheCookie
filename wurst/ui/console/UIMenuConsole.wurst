@@ -4,26 +4,120 @@ import UIHandle
 import UIWindowMenu
 import PlayerData
 import UIButtonMenu
+import Hero
+import HeroData
+import UIWindowSkillTree
+import UIWindowEntity
+import UIWindowHero
+
+public class UIMenuConsoleInfo
+    UIWindowSkillTreeInfo skillTreeInfo = new UIWindowSkillTreeInfo()
+    UIWindowEntityInfo entityInfo = new UIWindowEntityInfo()
+    UIWindowHeroInfo heroInfo = new UIWindowHeroInfo()
+
+class UIRessource extends UIHandle
+    protected static function create(UIHandle parent, real height, real width, string icon) returns UIRessource
+        return new UIRessource(parent, height, width, icon)
+
+    private framehandle handleText
+    
+    private construct(UIHandle parent, real height, real width, string icon)
+        super(createUIFrame("BACKDROP", parent))
+        setTexture("UI/Console/BackgroundRessource.dds")
+        setSize(width, height)
+
+        let padding = 0.003
+
+        let handleIcon = createUIFrame("BACKDROP", self)
+        ..setPoint(FRAMEPOINT_LEFT, self, FRAMEPOINT_LEFT, padding, 0)
+        ..setSize(height - (padding * 2), height - (padding * 2))
+        ..setTexture(icon)
+
+        handleText = createUIFrame("TEXT", self)
+        ..setPoint(FRAMEPOINT_LEFT, handleIcon, FRAMEPOINT_RIGHT, padding, 0)
+        ..setScale(1.3)
+    
+    protected function setValue(int value)
+        handleText.setText(value.toString())
 
 public class UIMenuConsole
     protected static UIMenu menu
+
+    protected static UIRessource ressourceLeadership
+    protected static UIRessource ressourceGold
+    protected static UIRessource ressourceMight
+    protected static UIRessource ressourceMind
+    protected static UIRessource ressourceMagic
 
     static function create()
         menu = UIMenu.create()
         ..setPointToGameUI(FRAMEPOINT_TOPLEFT, FRAMEPOINT_TOPLEFT)
         ..setPointToGameUI(FRAMEPOINT_TOPRIGHT, FRAMEPOINT_TOPRIGHT)
-        ..setHeight(0.025)
-        ..setVisible(true)
 
-        UIButtonMenu.create(menu, "Menu")
-        ..setPoint(FRAMEPOINT_TOPLEFT, menu, FRAMEPOINT_TOPLEFT)
-        ..setWidth(0.12)
-        ..setScale(0.65)
+        let paddingTop = 0.003
+
+        let paddingBtns = 0.003
+        let menuBtn = UIButtonMenu.create(menu, "Menu")
+        ..setPoint(FRAMEPOINT_TOPLEFT, menu, FRAMEPOINT_TOPLEFT, 0, -paddingTop)
+        ..setSize(0.12, 0.065)
         ..onClick() -> 
             UIWindowMenu.toggle(GetTriggerPlayerData())
+
+        let skillTree = UIButtonMenu.create(menu, "SkillTree")
+        ..setPoint(FRAMEPOINT_LEFT, menuBtn, FRAMEPOINT_RIGHT, paddingBtns, 0)
+        ..setSize(0.12, 0.065)
+        ..onClick() -> 
+            UIWindowSkillTree.toggle(GetTriggerPlayerData())
+
+        UIButtonMenu.create(menu, "Stats")
+        ..setPoint(FRAMEPOINT_LEFT, skillTree, FRAMEPOINT_RIGHT, paddingBtns, 0)
+        ..setSize(0.12, 0.065)
+        ..onClick() -> 
+            UIWindowHero.toggle(GetTriggerPlayerData())
+
+        let paddingRessource = 0.003
+        let ressourceWidth = 0.09
+        let ressourceHeight = 0.024
+        ressourceLeadership = UIRessource.create(menu, ressourceHeight, ressourceWidth, "UI/Console/IconLeadership.dds")
+        ..setPoint(FRAMEPOINT_TOPRIGHT, menu, FRAMEPOINT_TOPRIGHT, 0, -paddingTop)
+        ressourceGold = UIRessource.create(menu, ressourceHeight, ressourceWidth, "UI/Console/IconGold.dds")
+        ..setPoint(FRAMEPOINT_RIGHT, ressourceLeadership, FRAMEPOINT_LEFT, -paddingRessource, 0)
+
+        let littleRessourceWidth = (((ressourceWidth * 2) - paddingRessource) / 3)
+        ressourceMight = UIRessource.create(menu, ressourceHeight, littleRessourceWidth, "UI/Console/IconMight.dds")
+        ..setPoint(FRAMEPOINT_TOPLEFT, ressourceGold, FRAMEPOINT_BOTTOMLEFT, 0, -paddingRessource)
+        ressourceMind = UIRessource.create(menu, ressourceHeight, littleRessourceWidth, "UI/Console/IconMind.dds")
+        ..setPoint(FRAMEPOINT_LEFT, ressourceMight, FRAMEPOINT_RIGHT, paddingRessource, 0)
+        ressourceMagic = UIRessource.create(menu, ressourceHeight, littleRessourceWidth, "UI/Console/IconMagic.dds")
+        ..setPoint(FRAMEPOINT_LEFT, ressourceMind, FRAMEPOINT_RIGHT, paddingRessource, 0)
+
+        menu.setHeight(paddingTop + paddingRessource + (ressourceHeight * 2))
 
         CONSOLE_UI = createUIFrame("FRAME", GAME_UI)
         ..setPoint(FRAMEPOINT_TOPLEFT, menu, FRAMEPOINT_BOTTOMLEFT)
         ..setPoint(FRAMEPOINT_BOTTOMRIGHT, GAME_UI, FRAMEPOINT_BOTTOMRIGHT, 0, -0.1)
 
         UIWindowMenu.create()
+        UIWindowSkillTree.create()
+        UIWindowEntity.create()
+        UIWindowHero.create()
+
+    static function initHero(Hero hero)
+        menu.show(hero.getPlayer())
+        if hero.getPlayer().isLocal()
+            ressourceLeadership.setValue(hero.getLeadership())
+            ressourceGold.setValue(hero.getGold())
+       
+        updateHeroDataInner(hero.getData())
+
+        UIWindowSkillTree.initHero(hero)
+
+    static function updateHeroData(Hero hero, HeroDataChange _changedData)
+        if not hero.getPlayer().isLocal()
+            return
+        updateHeroDataInner(hero.getData())
+
+    static function updateHeroDataInner(HeroData data)
+        ressourceMight.setValue(data.getMight())
+        ressourceMind.setValue(data.getMind())
+        ressourceMagic.setValue(data.getMagic())

@@ -1,5 +1,7 @@
 package ActionCost
 import initlater BoardEntity
+import TooltipNew
+import TooltipGenerator
 
 public class ActionCostPreset
     protected int ap
@@ -49,6 +51,16 @@ public class ActionCostPreset
     
     function hasCooldown() returns boolean
         return maxCooldown > 0
+
+    function setupTooltipCost(TooltipNew tt)
+        tt.addIcon(TooltipGenerator.primaryString(getAPAsText())
+        , "UI/Tooltip/TooltipAddonAPIcon.dds")
+        if hasMana()
+            tt.addIcon(TooltipGenerator.primaryString(mana.toString())
+            , "UI/Tooltip/TooltipAddonManaIcon.dds")
+        if hasCooldown()
+            tt.addIcon(TooltipGenerator.primaryString(maxCooldown.toString())
+            , "UI/Tooltip/TooltipAddonManaIcon.dds")
 
 public class ActionCost extends ActionCostPreset
     private static ActionCost TEMP = new ActionCost(null, -1, false, -1, -1, -1)

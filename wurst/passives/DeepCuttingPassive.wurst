@@ -19,6 +19,7 @@ import Status
 import DelayAnimation
 import AttachmentPoints
 import BleedingAilment
+import DamageType
 
 public class DeepCuttingPassive extends PassiveAction
     private static constant int DURATION = 2

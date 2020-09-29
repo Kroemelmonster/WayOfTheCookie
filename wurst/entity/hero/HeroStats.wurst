@@ -7,6 +7,7 @@ import initlater Hero
 import initlater HeroType
 import Globals
 import StackType
+import DamageType
 
 public class HeroStats
     private Hero hero
@@ -43,49 +44,79 @@ public class HeroStats
         
         this.mana = getMaxMana()
 
-    @inline
     function getInitiative() returns int
         return initModi.get(heroType.initiative).round()
 
-    @inline
     function getMaxActionPoints() returns int
         return actionPointModi.get(heroType.actionPoints).round()
 
-    @inline
-    function getAttack() returns int
-        return attackModi.get(basicAttack).round()
+    function getBasisAttack() returns int
+        return basicAttack
 
-    @inline
-    function getDefence() returns int
-        return defenceModi.get(basicDefence).round()
+    function getBasisDefence() returns int
+        return basicDefence
 
-    @inline
-    function getPower() returns int
-        return defenceModi.get(basicPower).round()
+    function getBasisPower() returns int
+        return basicPower
 
-    @inline
-    function getWisdom() returns int
-        return wisdomModi.get(basicWisdom).round()
+    function getBasisWisdom() returns int
+        return basicWisdom
 
-    @inline
-    function getAdditionalMana() returns int
-        return additionalManaModi.get(0).round()
-    
-    @inline
-    function getMaxMana() returns int
-        return getWisdom() * MANA_PER_WISDOWM + getAdditionalMana()
+    function getBasisInitiative() returns int
+        return heroType.initiative
 
-    function getDamage() returns realRange        
-        return damageModi.getRealRange(getRawDamage(), 1)
-
-    function getRawDamage() returns realRange
+    function getBasisDamage() returns realRange
         realAttackModi.addBonus = 0
         realAttackModi.multi = 100 + (getAttack() * ATTACK_DAMAGE_PER_ATTACK).toInt()
         return realAttackModi.getRealRange(heroType.getDamage(hero.getLevel()), 1)
 
-    @inline
+    function getAttack() returns int
+        return attackModi.get(getBasisAttack()).round()
+
+    function getDefence() returns int
+        return defenceModi.get(getBasisDefence()).round()
+
+    function getPower() returns int
+        return defenceModi.get(getBasisPower()).round()
+
+    function getWisdom() returns int
+        return wisdomModi.get(getBasisWisdom()).round()
+
+    function getDamage() returns realRange        
+        return damageModi.getRealRange(getBasisDamage(), 1)
+
+    function getAdditionalMana() returns int
+        return additionalManaModi.get(0).round()
+    
+    function getMaxMana() returns int
+        return getWisdom() * MANA_PER_WISDOWM + getAdditionalMana()
+
+    function getAttackModifier() returns StatsModifier
+        return attackModi
+
+    function getDefenceModifier() returns StatsModifier
+        return defenceModi
+
+    function getPowerModifier() returns StatsModifier
+        return powerModi
+
+    function getWisdomModifier() returns StatsModifier
+        return wisdomModi
+
+    function getDamageModifier() returns StatsModifier
+        return damageModi
+
+    function getInitiativeModifier() returns StatsModifier
+        return initModi
+
+    function getAPModifier() returns StatsModifier
+        return actionPointModi
+
     function getMana() returns int
         return mana
+
+    function getDamageType() returns DamageType
+        return damageType
 
     ondestroy
         Log.error("tried to destroy herostats ???")

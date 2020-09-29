@@ -5,6 +5,9 @@ import BoardStack
 import UITooltip
 import BoardEntity
 import Globals
+import TooltipGenerator
+import TooltipNew
+import DamageType
 
 public enum SourceType
     ATTACK
@@ -17,6 +20,11 @@ public abstract class Damage
     boolean isTriggered = false
     SourceType sourceType = ATTACK
 
+    static constant COLOR_PHYISICAL = colorA(200, 200, 200, 200).toColorString()
+    static constant COLOR_MAGICAL = colorA(43, 181, 245, 200).toColorString()
+    static constant COLOR_POISON = colorA(167, 252, 71, 199).toColorString()
+    static constant COLOR_FIRE = colorA(255, 120, 86, 200).toColorString()
+
     construct(SourceType sourceType, DamageType damageType)
         this.damageType = damageType
         this.sourceType = sourceType
@@ -24,7 +32,17 @@ public abstract class Damage
     function copyTo(Damage copy)
         copy.isDot = this.isDot
         copy.isTriggered = this.isTriggered
-    
+
+    static function type2Color(DamageType dType) returns string
+        switch dType
+            case MAGIC
+                return COLOR_MAGICAL
+            case POISON
+                return COLOR_POISON
+            case FIRE
+                return COLOR_FIRE
+            default
+                return COLOR_PHYISICAL
 
 public class DamageInstance extends Damage
     real dmg
@@ -78,10 +96,16 @@ public class DamagePreview extends Damage
         super.copyTo(instance)
         return instance
 
-    function addSpecificToTooltip(BoardEntity source, BoardStack target, Tooltip tooltip)
+    function extendTooltipWithSpecific(TooltipNew tooltip, BoardEntity source, BoardStack target)
         let preview = new SpecificDamagePreview(this, source, target)
-        tooltip.addSpecificDamagePreview(preview)
+        tooltip.addLine(TooltipGenerator.coloredString(preview.target.getPlayer().toColor(), preview.target.getName()))
+        tooltip.addLine(TooltipGenerator.stat("Damage", Tooltip.damageType2Color(preview.damagePreview.damageType), preview.damage))
+        tooltip.addLine(TooltipGenerator.stat("Kills", Tooltip.COLOR_NEGATIVE, preview.amount))
         destroy preview
+
+    function toColoredText() returns string
+        return TooltipGenerator.coloredRange(Damage.type2Color(damageType), dmg.round())
+        
 
 public abstract class SpecificDamage
     BoardStack target

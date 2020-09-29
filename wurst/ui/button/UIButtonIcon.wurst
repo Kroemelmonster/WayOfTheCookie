@@ -10,8 +10,12 @@ public enum BorderColor
     NONE
 
 public class UIButtonIcon extends UIButton
-    static function create(framehandle parent, boolean automaticHighlight, boolean hasBorder, boolean hasCounter) returns UIButton
+    static function create(framehandle parent, boolean automaticHighlight, boolean hasBorder, boolean hasCounter) returns UIButtonIcon
         return new UIButtonIcon(parent, automaticHighlight, hasBorder, hasCounter)
+    
+    static function create(UIHandle parent, boolean automaticHighlight, boolean hasBorder, boolean hasCounter) returns UIButtonIcon
+        return new UIButtonIcon(parent.self, automaticHighlight, hasBorder, hasCounter)
+
 
     private framehandle counterFrame
     private framehandle counterTextFrame
@@ -70,6 +74,10 @@ public class UIButtonIcon extends UIButton
     function disable()
         self.setEnabled(false)
         blockFrame.setVisible(false)
+
+    override function setSize(real width, real height)
+        super.setSize(width, height)
+        glowFrame.setScale(width / 0.038)
 
     function setBorder(BorderColor color)
         switch(color)

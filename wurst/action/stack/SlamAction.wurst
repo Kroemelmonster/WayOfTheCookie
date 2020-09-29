@@ -6,10 +6,7 @@ import Abilities
 import Action
 import InstantStackAction
 
-import OrderSystem
 import BoardController
-import UITooltip
-import StatusController
 import StatusType
 import UIBoardActionMenu
 import KUtil
@@ -30,6 +27,10 @@ import Damage
 import Globals
 import StunDebuff
 import ActionCost
+import TooltipGenerator
+import TooltipNew
+import UITooltipNew
+import DamageType
 
 public class SlamAction extends InstantStackAction
     static constant string NAME = "Slam"
@@ -46,19 +47,24 @@ public class SlamAction extends InstantStackAction
     private static function createDamagePreview() returns DamagePreview
         return new DamagePreview(realRange(0, 0), SourceType.SPELL, DamageType.PHYISICAL)
 
-    private static function calculateDamage(int amount)
+    private static function calculateDamage(int amount) returns DamagePreview
         damagePreview.dmg = realRange(100.0 * amount, 150.0 * amount)
+        return damagePreview
 
-    static function createTooltip(boolean isDefault, int amount) returns Tooltip
-        calculateDamage(amount)
-        let tt = Tooltip.create(NAME)
-        ..setCost(COST)
-        ..addLine(Tooltip.stat("Target", "Self"))
-        ..addLine(Tooltip.stat("Range", MAXRANGE))
-        ..addLine(Tooltip.stat("Damage", damagePreview))
-        ..addLine("")
-        ..addLine("Slams the Ground around and dealing massive AoE Damage")
-        ..addLine("This Slam is so powerfull that enemys get "+Tooltip.secondaryString(StunDebuff.TYPE.getName())+ " and placed back in the initaive by "+Tooltip.primaryString(DAZZED_TIME.toString())+ " "+Tooltip.secondaryString("timeunits"))
+    private static function createTooltipLines(int amount) returns LinkedList<string>
+        return new LinkedList<string>
+        ..add(TooltipGenerator.stat("Target", "None"))
+        ..add(TooltipGenerator.stat("Range", MAXRANGE))
+        ..add(TooltipGenerator.stat("Damage", calculateDamage(amount).toColoredText()))
+        ..add("")
+        ..add("Slams the Ground around and dealing massive AoE Damage")
+        //  ..addLine("This Slam is so powerfull that enemys get "+Tooltip.secondaryString(StunDebuff.TYPE.getName())+ " and placed back in the initaive by "+Tooltip.primaryString(DAZZED_TIME.toString())+ " "+Tooltip.secondaryString("timeunits"))
+
+
+    static function createTooltip(int amount) returns TooltipNew
+        let tt = TooltipNew.create(NAME)
+        ..addLines(createTooltipLines(amount))
+        COST.setupTooltipCost(tt)
         return tt
 
     construct(BoardStack stack)
@@ -99,13 +105,13 @@ public class SlamAction extends InstantStackAction
             hit(targets.iterator(), damagePreview.getRandomInstance())
 
     override function onUIMouseEnter()
-        createTooltip(false, stack.stats.amount)
+        let tt = createTooltip(stack.stats.amount)
         ..setKey(key)
-        ..display(stack.getPlayer(), true)
+        UITooltipNew.display(stack.getPlayer(), tt)
         UIBoardActionMenu.updateActionPoints(entity, cost)
             
     override function onUIMouseLeave()
-        UITooltip.hide(stack.getPlayer())
+        UITooltipNew.hide(stack.getPlayer())
         UIBoardActionMenu.updateActionPoints(entity)
             
     override function executeForKI(SequenzListenerStatus listener)

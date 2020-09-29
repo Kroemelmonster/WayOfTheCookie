@@ -5,14 +5,20 @@ import initlater ChainLightningSpell
 import initlater LightningBoltSpell
 import initlater RallingCrySpell
 import ActionCost
+import TooltipNew
+import LinkedList
 
 interface SpellCreateListener
     function create(BoardHero boardHero) returns Spell
+
+interface SpellCreateTooltipLinesListener
+    function create(int level) returns LinkedList<string>
 
 public class SpellType
     protected string icon
     protected string name
     protected SpellCreateListener listener
+    protected SpellCreateTooltipLinesListener tooltipLinesListener
 
     construct(string name, string icon)
         this.icon = icon
@@ -20,6 +26,9 @@ public class SpellType
     
     function onCreate(SpellCreateListener listener)
         this.listener = listener
+
+    function onCreateTooltipLines(SpellCreateTooltipLinesListener tooltipLinesListener)
+        this.tooltipLinesListener = tooltipLinesListener
 
     @inline
     function create(BoardHero boardHero) returns Spell
@@ -36,6 +45,9 @@ public class SpellType
     @inline
     function toString() returns string
         return "SpellType '"+name+"'"
+
+    function createTooltipLines(int level) returns LinkedList<string>
+        return tooltipLinesListener.create(level)
 
     static function setup()
         ChainLightningSpell.setup()

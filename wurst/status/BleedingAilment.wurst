@@ -18,6 +18,7 @@ import BoardTrigger
 import initlater DelayAnimation
 import Ailment
 import BoardEntity
+import DamageType
 
 public class BleedingAilment extends Status
     static StatusType TYPE

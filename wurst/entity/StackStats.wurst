@@ -9,8 +9,18 @@ import LinkedList
 import Talent
 import initlater BoardStack
 import HeroStats
+import DamageType
 
-public class StackStats
+public interface HasEntityStats extends HasEntityBasicStats
+    function getBasis() returns HasEntityBasicStats
+    function getAttackModifier() returns StatsModifier
+    function getDefenceModifier() returns StatsModifier
+    function getInitiativeModifier() returns StatsModifier
+    function getDamageModifier() returns StatsModifier
+    function getAPModifier() returns StatsModifier
+    function getMaxHPModifier() returns StatsModifier
+
+public class StackStats implements HasEntityStats
     private Stack stack
     private HeroStats heroStats
     StackType stackType
@@ -24,16 +34,18 @@ public class StackStats
     StatsModifier moveActionPointModi = new StatsModifier()
     private StatsModifier resultingMoveActionPointModi = new StatsModifier()
 
-    int phyisicalResistance = 0
-    int magicResistance = 0
-    int fireResistance = 0
-    int poisonResistance = 0
+    private Resistance resistance = new Resistance()
 
     LinkedList<Talent> talents = new LinkedList<Talent>()
 
-    function getAllVisibleTalents() returns LinkedList<Talent>
-        return talents.filter() (Talent t) ->
-            return t.isHidden() == false
+    override function getBasis() returns StackType
+        return stackType
+
+    override function getIcon() returns string
+        return getBasis().getIcon()
+
+    override function getTalents() returns LinkedList<Talent>
+        return talents
 
     function addUniqueTalent(Talent talent)
         if talents.has(talent) == false
@@ -55,68 +67,75 @@ public class StackStats
         this.heroStats = heroStats
         this.talents.addAll(stackType.talents)
 
-    @inline
-    function getInitiative() returns int
-        return initModi.get(stackType.initiative).round()
+    override function getMaxHP() returns int
+        return hpModi.get(getBasis().getMaxHP()).round()
 
-    @inline
-    function getMaxActionPoints() returns int
-        return actionPointModi.get(stackType.actionPoints).round()
+    function getDamageAll() returns realRange
+        return damageModi.getRealRange(getBasis().getDamage(), getAmount())
 
-    function getMaxMoveActionPoints() returns int
-        resultingMoveActionPointModi.addBonus = moveActionPointModi.addBonus + actionPointModi.addBonus
-        resultingMoveActionPointModi.multi = moveActionPointModi.multi + actionPointModi.multi - 100
-        // there are no stackTypes who inherintly have a different move action point... You should always use a passive for this
-        return resultingMoveActionPointModi.get(stackType.actionPoints).round()
-
-    @inline
-    function getMaxHp() returns int
-        return hpModi.get(stackType.maxHp).round()
-
-    @inline
-    function getDamage() returns realRange
-        return damageModi.getRealRange(stackType.damage, getAmount())
-
-    @inline
-    function getDamageOne() returns realRange
-        return damageModi.getRealRange(stackType.damage, 1)
-
-    @inline
-    function getAttackRange() returns intRange
-        return stackType.attackRange
-
-    @inline
-    function getAttack() returns int
-        var basis = stackType.attack
+    override function getAttack() returns int
+        var basis = getBasis().getAttack()
         if heroStats != null
             basis += heroStats.getAttack()
         return attackModi.get(basis).round()
 
-    @inline
-    function getDefence() returns int
-        var basis = stackType.defence
+    override function getDefence() returns int
+        var basis = getBasis().getDefence()
         if heroStats != null
             basis += heroStats.getDefence()
         return defenceModi.get(basis).round()
 
-    @inline
-    function getResistance(DamageType dType) returns int
-        let basic = stackType.getResistance(dType)
-        switch dType
-            case MAGIC
-                return magicResistance + basic
-            case FIRE
-                return fireResistance + basic
-            case POISON
-                return poisonResistance + basic
-            default
-                return phyisicalResistance + basic
+    override function getDamage() returns realRange
+        return damageModi.getRealRange(getBasis().getDamage(), 1)
 
-    @inline
+    override function getRange() returns intRange
+        return getBasis().getRange()
+
+    override function getInitiative() returns int
+        return initModi.get(getBasis().getInitiative()).round()
+
+    override function getMaxAP() returns int
+        return actionPointModi.get(getBasis().getMaxAP()).round()
+
+    override function getMaxMoveAP() returns int
+        resultingMoveActionPointModi.addBonus = moveActionPointModi.addBonus + actionPointModi.addBonus
+        resultingMoveActionPointModi.multi = moveActionPointModi.multi + actionPointModi.multi - 100
+        // there are no stackTypes who inherintly have a different move action point... You should always use a passive for this
+        return resultingMoveActionPointModi.get(getBasis().getMaxMoveAP()).round()
+
+    override function getLeadership() returns int
+        return getBasis().getLeadership()
+
+    override function getAttackModifier() returns StatsModifier
+        return attackModi
+
+    override function getDefenceModifier() returns StatsModifier
+        return defenceModi
+
+    override function getDamageModifier() returns StatsModifier
+        return damageModi
+
+    override function getAPModifier() returns StatsModifier
+        return actionPointModi
+
+    override function getInitiativeModifier() returns StatsModifier
+        return initModi
+
+    override function getMaxHPModifier() returns StatsModifier
+        return hpModi
+
+    override function getDamageType() returns DamageType
+        return getBasis().getDamageType()
+
+    override function getResistance() returns Resistance
+        return resistance
+
+    function getResistance(DamageType dType) returns int
+        return getBasis().getResistance(dType) + resistance.getRes(dType)
+
     function getAmount() returns int
         return stack.getAmount()
 
-    @inline
     function getWeight() returns real
         return stackType.weight.toReal()
 
@@ -129,3 +148,4 @@ public class StackStats
         destroy moveActionPointModi
         destroy resultingMoveActionPointModi
         destroy hpModi
+        destroy resistance

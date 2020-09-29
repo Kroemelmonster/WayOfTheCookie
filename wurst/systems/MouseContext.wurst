@@ -8,7 +8,7 @@ import OrderSystem
 
 import initlater UIInitiativeWindow
 import initlater Mouse3DPositionSystem
-import initlater UITooltip
+import initlater UITooltipNew
 import BoardEntity
 
 class MouseContext
@@ -74,5 +74,5 @@ class MouseContext
     
     private static function resetHighlight(Player p)
         UIInitiativeWindow.resetHighlight(p)
-        UITooltip.hide(p)
+        UITooltipNew.hide(p)
 

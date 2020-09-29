@@ -5,16 +5,17 @@ import TimerUtils
 
 import UIMenuWorldConsole
 import PlayerData
-import UIEntityWindow
 import UINPCWindow
-import UIHeroWindow
 
 import initlater Board
 import UIWindowSpellBook
+import LinkedList
+import BoardTrigger
 
 class Scheduler
     private static timer realTime
     private static int gameTime
+    private static LinkedList<SequenzPlayerListener> registeredListener = new LinkedList<SequenzPlayerListener>
 
     static private function tick()
         gameTime += 1
@@ -26,6 +27,18 @@ class Scheduler
     static function getTimeIn(real seconds) returns int
         return gameTime + (seconds * 10).floor()
 
+    static function onTime(SequenzPlayerListener listener)
+        registeredListener.add(listener)
+
+    private static function doPeriodicallyInner(Player p, LLIterator<SequenzPlayerListener> listener)
+        if not listener.hasNext()
+            destroy listener
+            return
+        listener.next().onEvent(p)
+        if listener.hasNext()
+            nullTimer() ->
+                doPeriodicallyInner(p, listener)
+
     static function setup()
         realTime = getTimer()
         realTime.start(.1, () -> tick())
@@ -35,11 +48,10 @@ class Scheduler
                     p.playingBoard.tick(ANIMATION_PERIOD)
 
             doPeriodically(0.2) cb ->
-                UIHeroWindow.update(p)
-                UIEntityWindow.update(p)
+                doPeriodicallyInner(p, registeredListener.iterator())
+                
             doPeriodically(0.2) cb ->
                 UINPCWindow.update(p)
-                UIMenuWorldConsole.update(p)
                 UIWindowSpellBook.update(p)
 
                 

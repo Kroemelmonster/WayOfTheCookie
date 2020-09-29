@@ -1,0 +1,7 @@
+Frame "TEXT" "TextDialogHeader" {
+    LayerStyle "IGNORETRACKEVENTS",
+	UseActiveContext,
+	FrameFont "Fonts\BLQ55Web.ttf", 0.017, "",
+	FontShadowColor 0 0 0 0.7,
+	FontShadowOffset 0.003 -0.003,
+}

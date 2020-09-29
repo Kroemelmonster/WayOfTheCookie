@@ -16,6 +16,7 @@ import WalkAndAttackAction
 import Abilities
 import AttachmentPoints
 import DelayAnimation
+import DamageType
 
 public class CracklePassive extends PassiveAction
     private static constant string EFFECT = Abilities.lightningShieldBuff

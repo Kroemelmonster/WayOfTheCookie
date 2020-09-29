@@ -28,6 +28,7 @@ public class UIDialogSplitStack
 
     static function create()
         dia = UIDialog.create()
+        ..setHeader("Split")
         ..onAccept() -> 
             let p = GetTriggerPlayerData()
             let info = p.dialogInfo.splitInfo
@@ -80,7 +81,7 @@ public class UIDialogSplitStack
         let info = p.dialogInfo.splitInfo
         info.amount = amount
         if amount > info.maxAmount
-            info.amount = info.stack.getAmount()
+            info.amount = info.maxAmount
         if amount < 1
             info.amount = 1
 

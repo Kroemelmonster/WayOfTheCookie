@@ -13,13 +13,15 @@ import initlater UINPCWindow
 import ClosureTimers
 import FightResult
 import initlater UIWindow
-import initlater UIHeroWindow
+import initlater HeroData
 
 public class MainController
-    static function setup()
-        Player.forEachActive() (Player activePlayer) ->
+    static function startGame()
+        Player.forEachActive() activePlayer ->
             activePlayer.onAnyKeyPress() (Player p, string key) ->
                 onkeyPress(p, key)
+
+            UIController.initHero(activePlayer.hero)
 
     private static function onkeyPress(Player p, string key)
         if key == "Escape"
@@ -55,6 +57,8 @@ public class MainController
                 hero.enable(true)
                 enemy.kill()
             
+    static function updateHeroData(Hero hero, HeroDataChange changedData)
+        UIController.updateHeroData(hero, changedData)
 
     static function interact(Hero hero, NPC npc)
         hero.startInteract(npc)
@@ -75,11 +79,5 @@ public class MainController
             stack.setAmount(stack.getAmount() - intoAmount)
             hero.addStackAtFree(stack.getStackType(), intoAmount)
 
-    static function toggleHeroWindow(Player p)
-        openHeroWindow(p, UIHeroWindow.isVisibleToPlayer(p) == false)
-
     static function openHeroWindow(Player p, boolean flag)
-        if flag
-            UINPCWindow.hide(p)
-        p.hero.enable(flag == false)
-        UIHeroWindow.setVisible(p, flag)
+        // TODO p.hero.enable(flag == false)

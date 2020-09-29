@@ -11,6 +11,8 @@ import initlater Damage
 import initlater StackType
 import initlater Status
 import ActionCost
+import TooltipNew
+import DamageType
 
 constant LINE_HEIGHT = 0.0122
 constant HEIGHT_OFFSET = 0.03
@@ -19,15 +21,8 @@ constant MIN_HEIGHT = 0.08
 framehandle lineTest
 real tooltipTextWidth
 
-public class Description
+public class DescriptionOld
     LinkedList<string> lines = new LinkedList<string>()
-
-public enum TooltipAnchor
-    TOP_LEFT
-    TOP_RIGHT
-    BOTTOM_RIGHT
-    BOTTOM_LEFT
-    BOTTOM_LEFT_UP
 
 public class TooltipLine
     string str
@@ -64,7 +59,7 @@ public class Tooltip
     static constant DAMAGE_COLOR_POISON = colorA(167, 252, 71, 199).toColorString()
     static constant DAMAGE_COLOR_FIRE = colorA(255, 120, 86, 200).toColorString()
 
-    static Description DESCRIPTION_POISON = new Description()
+    static DescriptionOld DESCRIPTION_POISON = new DescriptionOld()
 
     static function setup()
         DESCRIPTION_POISON.lines.add(Tooltip.secondaryString("Poisoned") + " is an Ailment that makes you suffer a small percentage of the initial hit as " + 
@@ -250,7 +245,7 @@ public class Tooltip
 
     @inline
     function setCost(ActionCostPreset cost)
-        this.apCost = cost.getAPAsText()
+        this.apCost = "TODO"
         if cost.hasCooldown()
             cooldown = cost.getMaxCooldown()
         else
@@ -284,7 +279,7 @@ public class Tooltip
                 count += ttLine.resultingLines
         return count
 
-    function display(Player p, boolean once, TooltipAnchor anchor, framehandle reference)
+    function display(Player p, boolean once, TooltipNewAnchor anchor, framehandle reference)
         UITooltip.setTooltip(p, this, anchor, reference)
         if once
             destroy this
@@ -352,23 +347,11 @@ class UITooltip
         for int i = 0 to icons.length
             icons[i] = new UITooltipIcon(header, i)
 
-    static protected function setTooltip(Player p, Tooltip tt, TooltipAnchor anchor, framehandle reference)
+    static protected function setTooltip(Player p, Tooltip tt, TooltipNewAnchor anchor, framehandle reference)
         if p.isLocal() == false
             return
         
         self.clearAllPoints()
-        switch anchor
-            case TOP_RIGHT
-                self.setPoint(FRAMEPOINT_TOPRIGHT, reference, FRAMEPOINT_TOPLEFT)
-            case BOTTOM_RIGHT
-                self.setPoint(FRAMEPOINT_BOTTOMRIGHT, reference, FRAMEPOINT_BOTTOMLEFT)
-            case BOTTOM_LEFT
-                self.setPoint(FRAMEPOINT_BOTTOMLEFT, reference, FRAMEPOINT_BOTTOMRIGHT)
-            case BOTTOM_LEFT_UP
-                self.setPoint(FRAMEPOINT_BOTTOMLEFT, reference, FRAMEPOINT_TOPLEFT)
-            default
-                self.setPoint(FRAMEPOINT_TOPLEFT, reference, FRAMEPOINT_TOPRIGHT)
-        setTooltipInner(tt)
 
 
     static protected function setTooltip(Player p, Tooltip tt)

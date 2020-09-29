@@ -5,21 +5,22 @@ import SkillTreeChieftain
 import SkillTreeTempestarii
 import SkillTreeSpirit
 import initlater Hero
-import UITooltip
+import HeroData
+import TooltipNew
+import TooltipGenerator
+import Spell
 
 public interface SkillStackUpdateListener
     function onStackUpdate(ArmyStack armyStack, boolean add)
 
 interface SkillHeroUpdateListener
-    function onLevel(Hero hero)
+    function onLevel()
 
 interface SkillTreeCreateListener
-    function create() returns SkillTree
+    function create(Hero hero) returns SkillTree
 
 public class SkillLevel
-    int costMight
-    int costMind
-    int costMagic
+    protected HeroDataChange cost
     protected LinkedList<string> desc = new LinkedList<string>
     protected Skill skill
     protected int level
@@ -31,9 +32,10 @@ public class SkillLevel
     protected SkillHeroUpdateListener listener
     protected SkillStackUpdateListener stackListener
 
-    construct(Skill skill, int level)
+    construct(Skill skill, int level, HeroDataChange cost)
         this.skill = skill
         this.level = level
+        this.cost = cost
 
     function addSkillRequirement(Skill skill, int reqLevel)
         if requirements == null
@@ -62,27 +64,22 @@ public class SkillLevel
     function addLine(string str)
         desc.add(str)
 
-    function addSpellTooltip(Tooltip tt)
-        if level == 0
-            desc.add("Grants Spell")
-        Tooltip.insert(desc, tt)
-        destroy tt
+    function addSpellTypeAsLines(SpellType spellType, int level)
+        desc.addAll(spellType.createTooltipLines(level))
 
+    function createTooltipLines() returns LinkedList<string>
+        return desc.copy()
 
-    protected function canLevel(Hero h, SkillTree tree) returns boolean
-        if h.might < costMight
-            return false
-        if h.mind < costMind
-            return false
-        if h.magic < costMagic
+    protected function canLevel() returns boolean
+        if not cost.canPay(skill.tree.hero)
             return false
 
-        if tree.level < skillTreeLevelRequirment
+        if skill.tree.level < skillTreeLevelRequirment
             return false
 
         if requirements != null
             for SkillLevel requirement in requirements
-                if requirement.learned == false
+                if not requirement.learned
                     return false
 
         if blockedBySkill != null
@@ -92,14 +89,12 @@ public class SkillLevel
 
         return true
 
-    protected function doLevel(Hero h)
-        h.might -= costMight
-        h.mind -= costMind
-        h.magic -= costMagic
+    protected function doLevel()
+        cost.pay(skill.tree.hero)
 
         learned = true
         if listener != null
-            listener.onLevel(h)
+            listener.onLevel()
 
 
 public class Skill
@@ -112,7 +107,6 @@ public class Skill
     int level = 0
 
     protected LinkedList<SkillLevel> levels = new LinkedList<SkillLevel>()
-    protected LinkedList<Description> descriptions = null
 
     construct(SkillTree tree, string name, string icon, real x, real y)
         this.tree = tree
@@ -122,34 +116,27 @@ public class Skill
         this.y = y
 
     function addLevel(int costMight, int costMind, int costMagic) returns SkillLevel
-        let newLevel = new SkillLevel(this, levels.size())
-        newLevel.costMight = costMight
-        newLevel.costMagic = costMagic
-        newLevel.costMind = costMind
+        let cost = new HeroDataChange(costMight, costMind, costMagic)
+        let newLevel = new SkillLevel(this, levels.size(), cost)
         levels.add(newLevel)
         return newLevel
 
     protected function getLevel(int l) returns SkillLevel
         return levels.get(l)
 
-    function addDescription(Description description)
-        if descriptions == null
-            descriptions = new LinkedList<Description>
-        descriptions.add(description)
-
     function onStackUpdate(ArmyStack armyStack, boolean add)
         if level > 0
             levels.get(level - 1).onStackUpdate(armyStack, add)
 
-    function canLevelUp(Hero h) returns boolean
+    function canLevelUp() returns boolean
         if levels.size() <= level
             return false
-        return levels.get(level).canLevel(h, tree)
+        return levels.get(level).canLevel()
 
-    function dolevelUp(Hero h)
-        if canLevelUp(h) == false
+    function dolevelUp()
+        if not canLevelUp()
             return
-        let army = h.getArmy()
+        let army = tree.hero.getArmy()
         if level > 0
             let earlierStackListener = levels.get(level - 1).stackListener
             if earlierStackListener != null
@@ -158,7 +145,7 @@ public class Skill
                     if stack != null
                         earlierStackListener.onStackUpdate(stack, false)
 
-        levels.get(level).doLevel(h)
+        levels.get(level).doLevel()
         tree.level ++
         let stackListener = levels.get(level).stackListener
         if stackListener != null
@@ -169,65 +156,46 @@ public class Skill
         
         level ++
     
-    function createTooltip(Hero h) returns Tooltip
-        let tt = Tooltip.create(name)
+    function createTooltip() returns TooltipNew
+        let tt = TooltipNew.create(name)
         if level > 0
-            let curLevel = levels.get(level - 1)
-            for line in curLevel.desc
-                tt.addLine(line)
+            tt.addLines(levels.get(level -  1).createTooltipLines())
 
-        if level < levels.size()
-            if level > 0
-                tt.addLine("")
-            tt.addLine(Tooltip.secondaryString("Next Level"))
-            let nextLevel = levels.get(level)
-            if nextLevel.costMight > 0
-                if h.might >= nextLevel.costMight
-                    tt.addLine(Tooltip.stat("Might", Tooltip.COLOR_POSITIVE, nextLevel.costMight))
-                else
-                    tt.addLine(Tooltip.stat("Might", Tooltip.COLOR_NEGATIVE, nextLevel.costMight))
-            if nextLevel.costMind > 0
-                if h.mind >= nextLevel.costMind
-                    tt.addLine(Tooltip.stat("Mind", Tooltip.COLOR_POSITIVE, nextLevel.costMind))
-                else
-                    tt.addLine(Tooltip.stat("Mind", Tooltip.COLOR_NEGATIVE, nextLevel.costMind))
-            if nextLevel.costMagic > 0
-                if h.magic >= nextLevel.costMagic
-                    tt.addLine(Tooltip.stat("Magic", Tooltip.COLOR_POSITIVE, nextLevel.costMagic))
-                else
-                    tt.addLine(Tooltip.stat("Magic", Tooltip.COLOR_NEGATIVE, nextLevel.costMagic))
+        if level >= levels.size()
+            return tt
 
-            if nextLevel.skillTreeLevelRequirment > 0
-                if tree.level >= nextLevel.skillTreeLevelRequirment 
-                    tt.addLine(Tooltip.stat("Requires Level", Tooltip.COLOR_POSITIVE, nextLevel.skillTreeLevelRequirment))
-                else
-                    tt.addLine(Tooltip.stat("Requires Level", Tooltip.COLOR_NEGATIVE, nextLevel.skillTreeLevelRequirment))
-
-            if nextLevel.requirements != null
-                for requirement in nextLevel.requirements
-                    let txt = requirement.skill.name + " ["+(requirement.level + 1).toString() + "]"
-                    if requirement.learned
-                        tt.addLine(Tooltip.stat("Requires", Tooltip.COLOR_POSITIVE, txt))
-                    else
-                        tt.addLine(Tooltip.stat("Requires", Tooltip.COLOR_NEGATIVE, txt))
-
-            if nextLevel.blockedBySkill != null
-                for blockingSkill in nextLevel.blockedBySkill
-                    let txt = blockingSkill.name
-                    if blockingSkill.level == 0
-                        tt.addLine(Tooltip.stat("Blocked by", Tooltip.COLOR_POSITIVE, txt))
-                    else
-                        tt.addLine(Tooltip.stat("Blocked by", Tooltip.COLOR_NEGATIVE, txt))
-
+        if level > 0
             tt.addLine("")
-            for line in nextLevel.desc
-                tt.addLine(line)
+
+        tt.addLine(TooltipGenerator.secondaryString("Next Level"))
+        let nextLevel = levels.get(level)
+        nextLevel.cost.setupTooltipCost(tt, tree.hero)
         
-        if descriptions != null
-            for description in descriptions
-                tt.addLine("")
-                for line in description.lines
-                    tt.addLine(line)
+        if nextLevel.skillTreeLevelRequirment > 0
+            if tree.level >= nextLevel.skillTreeLevelRequirment 
+                tt.addLine(TooltipGenerator.stat("Requires Level", TooltipGenerator.COLOR_POSITIVE, nextLevel.skillTreeLevelRequirment))
+            else
+                tt.addLine(TooltipGenerator.stat("Requires Level", TooltipGenerator.COLOR_NEGATIVE, nextLevel.skillTreeLevelRequirment))
+
+        if nextLevel.requirements != null
+            for requirement in nextLevel.requirements
+                let txt = requirement.skill.name + " ["+(requirement.level + 1).toString() + "]"
+                if requirement.learned
+                    tt.addLine(TooltipGenerator.stat("Requires", TooltipGenerator.COLOR_POSITIVE, txt))
+                else
+                    tt.addLine(TooltipGenerator.stat("Requires", TooltipGenerator.COLOR_NEGATIVE, txt))
+
+        if nextLevel.blockedBySkill != null
+            for blockingSkill in nextLevel.blockedBySkill
+                let txt = blockingSkill.name
+                if blockingSkill.level == 0
+                    tt.addLine(TooltipGenerator.stat("Blocked by", TooltipGenerator.COLOR_POSITIVE, txt))
+                else
+                    tt.addLine(TooltipGenerator.stat("Blocked by", TooltipGenerator.COLOR_NEGATIVE, txt))
+
+        tt.addLine("")
+        for line in nextLevel.desc
+            tt.addLine(line)
 
 
         
@@ -249,8 +217,8 @@ public class SkillTreeType
         return name
 
     @inline
-    function createNew() returns SkillTree
-        return listener.create()
+    function createNew(Hero hero) returns SkillTree
+        return listener.create(hero)
 
     static function setup()
         SkillTreeChieftain.setup()
@@ -260,6 +228,7 @@ public class SkillTreeType
 
 public abstract class SkillTree
     protected SkillTreeType skillTreeType
+    protected Hero hero
     protected int level = 0
     LinkedList<Skill> skills = new LinkedList<Skill>()
     
@@ -272,14 +241,18 @@ public abstract class SkillTree
         if stackListener != null
             this.stackListener.onStackUpdate(armyStack, add)
 
-    construct(SkillTreeType skillTreeType)
+    construct(SkillTreeType skillTreeType, Hero hero)
         this.skillTreeType = skillTreeType
+        this.hero = hero
     
     function getName() returns string
         return skillTreeType.name
 
     function getLevel() returns int
         return level
+
+    function getHero() returns Hero
+        return hero
 
     function isSkillTreeType(SkillTreeType skillTreeType) returns boolean
         return this.skillTreeType == skillTreeType

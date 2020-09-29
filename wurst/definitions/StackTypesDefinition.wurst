@@ -9,6 +9,7 @@ import StackSoundTypesDefinition
 import KUtil
 import Talent
 import LinkedList
+import DamageType
 
 
 public class StackTypes
@@ -158,8 +159,8 @@ class StackTypesDefinition
         ..setAttack(13)
         ..setDefence(13)
         ..setDamageType(DamageType.POISON)
-        ..setResistanceAgainst(DamageType.POISON, 40)
-        ..setResistanceAgainst(DamageType.FIRE, -25)
+        ..addResistanceAgainst(DamageType.POISON, 40)
+        ..addResistanceAgainst(DamageType.FIRE, -25)
             
 
         StackTypes.FOREST_TROLL = createRange(UnitTypesIds.FOREST_TROLL, UnitTypesIds.ARMY_FOREST_TROLL, Icons.bTNForestTroll, StackSoundSets.FOOTMAN, 2, 20, 100)
@@ -196,5 +197,5 @@ class StackTypesDefinition
         ..setAttack(16)
         ..setDefence(14)
         ..setDamageType(DamageType.FIRE)
-        ..setResistanceAgainst(DamageType.FIRE, 20)
-        ..setResistanceAgainst(DamageType.MAGIC, 20)
+        ..addResistanceAgainst(DamageType.FIRE, 20)
+        ..addResistanceAgainst(DamageType.MAGIC, 20)

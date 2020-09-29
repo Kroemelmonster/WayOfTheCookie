@@ -10,6 +10,9 @@ public function intRange.op_mult(int m) returns intRange
 public function intRange.random() returns int
     return GetRandomInt(this.min, this.max)
 
+public function intRange.toReal() returns realRange
+    return realRange(this.min.toReal(), this.max.toReal())
+
 public function intRange.avg() returns real
     return (this.min + this.max) / 2.0
 

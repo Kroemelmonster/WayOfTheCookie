@@ -6,12 +6,7 @@ import StackSoundSet
 import KUtil
 import Talent
 import initlater BoardStack
-
-public enum DamageType
-    PHYISICAL
-    MAGIC
-    FIRE
-    POISON
+import DamageType
 
 public class Family
     string name
@@ -24,8 +19,25 @@ public class Family
     static Family SKELTON = new Family("Skelton")
     static Family SASQUATCH = new Family("Sasquatch")
 
+public interface HasEntityBasicStats
+    function getIcon() returns string
 
-public class StackType
+    function getAttack() returns int
+    function getDefence() returns int
+    function getDamage() returns realRange
+    function getRange() returns intRange
+    function getInitiative() returns int
+    function getMaxAP() returns int
+    function getMaxMoveAP() returns int
+    function getMaxHP() returns int
+    
+    function getLeadership() returns int
+    function getDamageType() returns DamageType
+    function getResistance() returns Resistance
+
+    function getTalents() returns LinkedList<Talent>
+
+public class StackType implements HasEntityBasicStats
     integer unitId
     integer armyUnitId
     StackSoundSet soundSet
@@ -47,11 +59,7 @@ public class StackType
     int defence
 
     DamageType damageType = PHYISICAL
-
-    int phyisicalResistance = 0
-    int magicResistance = 0
-    int fireResistance = 0
-    int poisonResistance = 0
+    private Resistance resistance = new Resistance()
 
     LinkedList<Talent> talents = new LinkedList<Talent>()
 
@@ -77,66 +85,75 @@ public class StackType
     function isFamily(Family fam) returns boolean
         return families.has(fam)
         
-    function getAllVisibleTalents() returns LinkedList<Talent>
-        return talents.filter() (Talent t) ->
-            return t.isHidden() == false
+    override function getTalents() returns LinkedList<Talent>
+        return talents
 
-    @inline
     function getResistance(DamageType dType) returns int
-        switch dType
-            case MAGIC
-                return magicResistance
-            case FIRE
-                return fireResistance
-            case POISON
-                return poisonResistance
-            default
-                return phyisicalResistance
+        return resistance.getRes(dType)
 
-    @inline
     function setMaxHp(int value)
         maxHp = value
     
-    @inline
     function setDamage(intRange value)
         damage = value
 
-    @inline
     function getCost() returns int
         return value
 
-    @inline
     function setAttackRange(intRange value)
         attackRange = value
 
-    @inline
     function setInitiative(int value)
         initiative = value
 
-    @inline
     function setActionPoints(int value)
         actionPoints = value
 
-    @inline
     function setAttack(int value)
         attack = value
 
-    @inline
     function setDefence(int value)
         defence = value
+
+    function addResistanceAgainst(DamageType dType, int value)
+        resistance.addRes(dType, value)
     
-    @inline
     function setDamageType(DamageType value)
         this.damageType = value
 
-    @inline
-    function setResistanceAgainst(DamageType dType, int value)
-        switch dType
-            case MAGIC
-                magicResistance = value
-            case FIRE
-                fireResistance = value
-            case POISON
-                poisonResistance = value
-            default
-                phyisicalResistance = value
+    override function getIcon() returns string
+        return icon
+
+    override function getAttack() returns int
+        return attack
+
+    override function getDefence() returns int
+        return defence
+
+    override function getDamage() returns realRange
+        return damage.toReal()
+
+    override function getRange() returns intRange
+        return attackRange
+
+    override function getInitiative() returns int
+        return initiative
+    
+    override function getMaxAP() returns int
+        return actionPoints
+
+    override function getMaxMoveAP() returns int
+        return getMaxAP()
+    
+    override function getMaxHP() returns int
+        return maxHp
+
+    override function getLeadership() returns int
+        return leadership
+
+    override function getDamageType() returns DamageType
+        return damageType
+
+    override function getResistance() returns Resistance
+        return resistance
+    

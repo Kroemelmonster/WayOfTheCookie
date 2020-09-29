@@ -12,36 +12,37 @@ public class SkillTreeChieftain extends SkillTree
 
     static function setup()
         TYPE = new SkillTreeType("Chieftain")
-        TYPE.addListener() -> 
-            return new SkillTreeChieftain()
+        TYPE.addListener() hero -> 
+            return new SkillTreeChieftain(hero)
 
     int rallingCryLevel = -1
 
-    construct()
-        super(TYPE)
+    construct(Hero hero)
+        super(TYPE, hero)
 
-        var skill = new Skill(this, RallingCrySpell.TYPE.getName(), RallingCrySpell.TYPE.getIcon(), 0.2, 0)
+        var spellType = RallingCrySpell.TYPE
+        var skill = new Skill(this, spellType.getName(), spellType.getIcon(), 0.2, 0)
         skills.add(skill)
         skill.addLevel(2, 0, 0)
-        ..addSpellTooltip(RallingCrySpell.createTooltip(0))
-        ..addLevelListener() (Hero hero) ->
+        ..addSpellTypeAsLines(spellType, 0)
+        ..addLevelListener() ->
             rallingCryLevel ++
             hero.addSpell(RallingCrySpell.TYPE)
         skill.addLevel(3, 0, 0)
-        ..addSpellTooltip(RallingCrySpell.createTooltip(1))
-        ..addLevelListener() (Hero hero) ->
+        ..addSpellTypeAsLines(spellType, 1)
+        ..addLevelListener() ->
             rallingCryLevel ++
         skill.addLevel(3, 0, 0)
-        ..addSpellTooltip(RallingCrySpell.createTooltip(2))
-        ..addLevelListener() (Hero hero) ->
+        ..addSpellTypeAsLines(spellType, 2)
+        ..addLevelListener() ->
             rallingCryLevel ++
         skill.addLevel(3, 0, 0)
-        ..addSpellTooltip(RallingCrySpell.createTooltip(3))
-        ..addLevelListener() (Hero hero) ->
+        ..addSpellTypeAsLines(spellType, 3)
+        ..addLevelListener() ->
             rallingCryLevel ++
         skill.addLevel(3, 0, 0)
-        ..addSpellTooltip(RallingCrySpell.createTooltip(4))
-        ..addLevelListener() (Hero hero) ->
+        ..addSpellTypeAsLines(spellType, 4)
+        ..addLevelListener() ->
             rallingCryLevel ++
 
         /*

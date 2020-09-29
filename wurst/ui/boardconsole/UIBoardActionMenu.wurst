@@ -103,8 +103,6 @@ class UIBoardActionMenu
             ..setSize(0.025, 0.013)
             ..setPoint(FRAMEPOINT_TOPLEFT, menu, FRAMEPOINT_TOPLEFT, 0.007 + (0.016 * i), -0.008)
 
-        hide()
-
         Player.forEachActive() (Player activePlayer) ->
             activePlayer.onAnyKeyPress() (Player p, string key) ->
                 onkeyPress(p, key)
