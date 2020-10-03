@@ -1,14 +1,14 @@
 package UIWindowEntity
 import UIWindow
 import UIHandle
-import TooltipNew
+import Tooltip
 import StackType
 import StatsModifier
-import TooltipGenerator
+import StringUtils
 import PlayerData
 import Stack
 import Scheduler
-import UITooltipNew
+import UITooltip
 import Description
 import StackStats
 import DamageType
@@ -46,12 +46,10 @@ class UITalent extends UIInteractable
 
         onMouseEnter() () ->
             let p = GetTriggerPlayerData()
-            let tt = TooltipNew.create(talent.getName())
-            Description.extendTooltip(tt, "Defence")
-            // TODO need to get talent to tooltip
-            UITooltipNew.display(p, tt, TooltipNewAnchor.LEFT_BOTTOM , self)
+            let tt = talent.createTooltip()
+            UITooltip.display(p, tt, TooltipAnchor.LEFT_BOTTOM , self)
         onMouseLeave() ->
-            UITooltipNew.hide(GetTriggerPlayerData())
+            UITooltip.hide(GetTriggerPlayerData())
 
     protected function setTalent(Talent talent)
         setVisible(true)
@@ -90,80 +88,80 @@ public class UIWindowEntity
         infoAttack = UIInteractableStatInfo.create(window)
         ..setInnerPoint(FRAMEPOINT_TOPLEFT, window, FRAMEPOINT_TOPLEFT, 0, -(iconSize + infoPadding))
         ..setInnerPoint(FRAMEPOINT_TOPRIGHT, window, FRAMEPOINT_TOP, 0,  -(iconSize + infoPadding))
-        ..setIcon("UI/Textures/StackInfo/attack.dds")
+        ..setIcon("ICONS/STATAttack.dds")
         ..onMouseEnter() -> 
-            let tt = TooltipNew.create("Attack")
+            let tt = Tooltip.create("Attack")
             Description.extendTooltip(tt, "Attack")
-            UITooltipNew.display(GetTriggerPlayerData(), tt, TooltipNewAnchor.LEFT_BOTTOM , infoAttack)
+            UITooltip.display(GetTriggerPlayerData(), tt, TooltipAnchor.LEFT_BOTTOM , infoAttack)
 
         infoDefence = UIInteractableStatInfo.create(window)
         ..setInnerPoint(FRAMEPOINT_TOPLEFT, window, FRAMEPOINT_TOP, 0,  -(iconSize + infoPadding))
         ..setInnerPoint(FRAMEPOINT_TOPRIGHT, window, FRAMEPOINT_TOPRIGHT, 0,  -(iconSize + infoPadding))
-        ..setIcon("UI/Textures/StackInfo/defence.dds")
+        ..setIcon("ICONS/STATDefence.dds")
         ..onMouseEnter() -> 
-            let tt = TooltipNew.create("Defence")
+            let tt = Tooltip.create("Defence")
             Description.extendTooltip(tt, "Defence")
             tt.addLine("-----")
             let p = GetTriggerPlayerData()
             UIWindowEntityInfo.getStats(p).getResistance().extendTooltip(tt)
-            UITooltipNew.display(p, tt, TooltipNewAnchor.LEFT_BOTTOM , infoDefence)
+            UITooltip.display(p, tt, TooltipAnchor.LEFT_BOTTOM , infoDefence)
 
         infoDamage = UIInteractableStatInfo.create(window)
         ..setPoint(FRAMEPOINT_TOPLEFT, infoAttack, FRAMEPOINT_BOTTOMLEFT, 0, -infoPadding)
         ..setPoint(FRAMEPOINT_TOPRIGHT, infoAttack, FRAMEPOINT_BOTTOMRIGHT, 0, -infoPadding)
         ..onMouseEnter() -> 
-            let tt = TooltipNew.create("Damage")
+            let tt = Tooltip.create("Damage")
             Description.extendTooltip(tt, "Damage")
-            UITooltipNew.display(GetTriggerPlayerData(), tt, TooltipNewAnchor.LEFT_BOTTOM , infoDamage)
+            UITooltip.display(GetTriggerPlayerData(), tt, TooltipAnchor.LEFT_BOTTOM , infoDamage)
 
         infoRange = UIInteractableStatInfo.create(window)
         ..setPoint(FRAMEPOINT_TOPLEFT, infoDefence, FRAMEPOINT_BOTTOMLEFT, 0, -infoPadding)
         ..setPoint(FRAMEPOINT_TOPRIGHT, infoDefence, FRAMEPOINT_BOTTOMRIGHT, 0, -infoPadding)
-        ..setIcon("UI/Textures/StackInfo/range.dds")
+        ..setIcon("ICONS/STATRange.dds")
         ..onMouseEnter() -> 
-            let tt = TooltipNew.create("Range")
+            let tt = Tooltip.create("Range")
             Description.extendTooltip(tt, "Range")
-            UITooltipNew.display(GetTriggerPlayerData(), tt, TooltipNewAnchor.LEFT_BOTTOM , infoRange)
+            UITooltip.display(GetTriggerPlayerData(), tt, TooltipAnchor.LEFT_BOTTOM , infoRange)
 
         infoInititaive = UIInteractableStatInfo.create(window)
         ..setPoint(FRAMEPOINT_TOPLEFT, infoDamage, FRAMEPOINT_BOTTOMLEFT, 0, -infoPadding)
         ..setPoint(FRAMEPOINT_TOPRIGHT, infoDamage, FRAMEPOINT_BOTTOMRIGHT, 0, -infoPadding)
-        ..setIcon("UI/Textures/StackInfo/initiative.dds")
+        ..setIcon("ICONS/STATInitiative.dds")
         ..onMouseEnter() -> 
-            let tt = TooltipNew.create("Initiative")
+            let tt = Tooltip.create("Initiative")
             Description.extendTooltip(tt, "Initiative")
             tt.addLine("-----")
             let p = GetTriggerPlayerData()
             InitiativeList.extendTooltip(tt, UIWindowEntityInfo.getStats(p).getInitiative())
-            UITooltipNew.display(p, tt, TooltipNewAnchor.LEFT_BOTTOM , infoInititaive)
+            UITooltip.display(p, tt, TooltipAnchor.LEFT_BOTTOM , infoInititaive)
 
         infoAP = UIInteractableStatInfo.create(window)
         ..setPoint(FRAMEPOINT_TOPLEFT, infoRange, FRAMEPOINT_BOTTOMLEFT, 0, -infoPadding)
         ..setPoint(FRAMEPOINT_TOPRIGHT, infoRange, FRAMEPOINT_BOTTOMRIGHT, 0, -infoPadding)
-        ..setIcon("UI/Textures/StackInfo/actionpoints.dds")
+        ..setIcon("ICONS/STATActionpoints.dds")
         ..onMouseEnter() -> 
-            let tt = TooltipNew.create("ActionPoints")
+            let tt = Tooltip.create("ActionPoints")
             Description.extendTooltip(tt, "ActionPoints")
-            UITooltipNew.display(GetTriggerPlayerData(), tt, TooltipNewAnchor.LEFT_BOTTOM , infoAP)
+            UITooltip.display(GetTriggerPlayerData(), tt, TooltipAnchor.LEFT_BOTTOM , infoAP)
 
         infoHP = UIInteractableStatInfo.create(window)
         ..setPoint(FRAMEPOINT_TOPLEFT, infoInititaive, FRAMEPOINT_BOTTOMLEFT, 0, -infoPadding)
         ..setPoint(FRAMEPOINT_TOPRIGHT, infoInititaive, FRAMEPOINT_BOTTOMRIGHT, 0, -infoPadding)
-        ..setIcon("UI/Textures/StackInfo/hp.dds")
+        ..setIcon("ICONS/STATHp.dds")
         ..onMouseEnter() -> 
-            let tt = TooltipNew.create("HitPoints")
+            let tt = Tooltip.create("HitPoints")
             Description.extendTooltip(tt, "HitPoints")
-            UITooltipNew.display(GetTriggerPlayerData(), tt, TooltipNewAnchor.LEFT_BOTTOM , infoHP)
+            UITooltip.display(GetTriggerPlayerData(), tt, TooltipAnchor.LEFT_BOTTOM , infoHP)
 
         infoLeadership = UIInteractableStatInfo.create(window)
         ..setPoint(FRAMEPOINT_TOPLEFT, infoAP, FRAMEPOINT_BOTTOMLEFT, 0, -infoPadding)
         ..setPoint(FRAMEPOINT_TOPRIGHT, infoAP, FRAMEPOINT_BOTTOMRIGHT, 0, -infoPadding)
-        ..setIcon("UI/Textures/StackInfo/leadership.dds")
+        ..setIcon("ICONS/STATLeadership.dds")
         ..onMouseEnter() -> 
-            let tt = TooltipNew.create("Leadership")
+            let tt = Tooltip.create("Leadership")
             Description.extendTooltip(tt, "Leadership")
             // TODO advanced like this :
-            /*
+        /*
             stackInfoHp.setPoint(FRAMEPOINT_TOPRIGHT, stackInfoInitiative.self, FRAMEPOINT_BOTTOMRIGHT, 0, -0.005)
             stackInfoLeadership.setVisible(true)
             bar.setVisible(false)
@@ -175,7 +173,7 @@ public class UIWindowEntity
             stackInfoLeadership.setTooltipLine(3, "You can still controll "
              + Tooltip.primaryString(p.hero.getMaxAmountOfStackTypeRemainingBasedOnLeadership(stackType).toString())
              + " more Stacks of " + Tooltip.secondaryString(stackType.name) + ".")*/
-            UITooltipNew.display(GetTriggerPlayerData(), tt, TooltipNewAnchor.LEFT_BOTTOM , infoLeadership)
+            UITooltip.display(GetTriggerPlayerData(), tt, TooltipAnchor.LEFT_BOTTOM , infoLeadership)
 
         handleTalents[0] = UITalent.create(window)
         ..setPoint(FRAMEPOINT_TOPLEFT, infoHP, FRAMEPOINT_BOTTOMLEFT, 0, -infoPadding)
@@ -183,7 +181,7 @@ public class UIWindowEntity
         let paddingSmallerIcons = 0.002
         for i = 1 to handleTalents.length - 1
             handleTalents[i] = UITalent.create(window)
-            ..setPoint(FRAMEPOINT_TOPLEFT, handleTalents[i - 1], FRAMEPOINT_TOPLEFT, paddingSmallerIcons, 0)
+            ..setPoint(FRAMEPOINT_TOPLEFT, handleTalents[i - 1], FRAMEPOINT_TOPRIGHT, paddingSmallerIcons, 0)
 
         Scheduler.onTime() p ->
             if window.isVisible(p)
@@ -218,7 +216,7 @@ public class UIWindowEntity
     private static function damageToText(realRange basisDmg, realRange modifiedDmg) returns string
         let dmgDifference = modifiedDmg.avg() - basisDmg.avg()
         let roundedBasisDmg = basisDmg.round()
-        return roundedBasisDmg.min.toString() + " - " + roundedBasisDmg.max.toString() + TooltipGenerator.coloredModiReal(dmgDifference, 1)
+        return roundedBasisDmg.min.toString() + " - " + roundedBasisDmg.max.toString() + StringUtils.coloredModiReal(dmgDifference, 1)
     
     private static function rangeToText(intRange attackRange) returns string
         if attackRange.max == 1
@@ -228,13 +226,13 @@ public class UIWindowEntity
         return attackRange.min.toString() + " - " + attackRange.max.toString() 
 
     private static function apToText(int basisAP, int modifiedAP, int modifiedMoveAP) returns string
-        var str = basisAP.toString() + TooltipGenerator.coloredModiInt(basisAP - modifiedAP)
+        var str = basisAP.toString() + StringUtils.coloredModiInt(basisAP - modifiedAP)
         if modifiedMoveAP > 0 and modifiedMoveAP != modifiedAP
             str += " | "
             if modifiedMoveAP > modifiedAP
-                str += TooltipGenerator.coloredString(TooltipGenerator.COLOR_POSITIVE, " " + modifiedMoveAP.toString())
+                str += StringUtils.coloredString(StringUtils.COLOR_POSITIVE, " " + modifiedMoveAP.toString())
             else
-                str += TooltipGenerator.coloredString(TooltipGenerator.COLOR_NEGATIVE, " " + modifiedMoveAP.toString())
+                str += StringUtils.coloredString(StringUtils.COLOR_NEGATIVE, " " + modifiedMoveAP.toString())
         return str
 
     private static function updateTalents(LinkedList<Talent> talents)

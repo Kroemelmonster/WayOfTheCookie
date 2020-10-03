@@ -1,0 +1,60 @@
+package CracklePassive
+
+import PassiveAction
+import AttackAnimation
+import BoardController
+import Damage
+import KUtil
+
+import initlater BoardStack
+import initlater Cell
+import initlater BoardEntity
+import StackType
+import BoardTrigger
+import WalkAndAttackAction
+import Abilities
+import AttachmentPoints
+import DelayAnimation
+import DamageType
+import initlater StackPassiveAction
+import initlater PassiveActionType
+import Icons
+import LinkedList
+import StringUtils
+
+public class CracklePassive extends StackPassiveAction
+    static PassiveActionType TYPE
+    static function setup()
+        TYPE = new PassiveActionType("Crackle", Icons.bTNBreathOfFrost) // TODO bad icon
+        TYPE.onCreate() entity -> 
+            return new CracklePassive(entity)
+        TYPE.onCreateTooltipLines() amount -> 
+            return createTooltipLines()
+
+    private static constant string EFFECT = Abilities.lightningShieldBuff
+
+    private static function createTooltipLines() returns LinkedList<string>
+        return new LinkedList<string>
+        ..add("On attack this unit will also strike the enemy with "
+        + StringUtils.primaryPercent(0.5) + " of the damage dealt as additional magic damage")
+
+    construct(BoardEntity entity)
+        super(entity, TYPE)
+        stack.getTriggers().addOnDamageDealt() (BoardEntity source, BoardStack target, SpecificDamageInstance specificInstance, SequenzListener next) ->
+            if specificInstance.damageInstance.isTriggered
+                next.continue()
+            else if specificInstance.damageInstance.sourceType != ATTACK
+                next.continue()
+            else if specificInstance.damageInstance.damageType != DamageType.PHYISICAL
+                next.continue()
+            else
+                DelayAnimation.create(stack.getBoard(), 0.6) ->
+                    target.flashAttachEffect(EFFECT, AttachmentPoints.chest)
+                    let damage = new DamageInstance(specificInstance.damageInstance.dmg * 0.5, SourceType.ATTACK, DamageType.MAGIC)
+                    damage.isTriggered = true
+
+                    BoardController.dealDamage(source, damage, target) -> 
+                        destroy damage
+                        DelayAnimation.create(stack.getBoard(), 0.1) ->
+                            next.continue()
+

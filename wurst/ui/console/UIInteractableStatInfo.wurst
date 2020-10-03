@@ -1,11 +1,11 @@
 package UIInteractableStatInfo
 import UIHandle
 import UIInteractable
-import UITooltipNew
+import UITooltip
 import PlayerData
 import DamageType
 import StatsModifier
-import TooltipGenerator
+import StringUtils
 
 public class UIInteractableStatInfo extends UIInteractable
     static function create(UIHandle parent) returns UIInteractableStatInfo
@@ -28,7 +28,7 @@ public class UIInteractableStatInfo extends UIInteractable
         ..setTextAlignment(TEXT_JUSTIFY_MIDDLE, TEXT_JUSTIFY_LEFT)
 
         onMouseLeave() () ->
-            UITooltipNew.hide(GetTriggerPlayerData())
+            UITooltip.hide(GetTriggerPlayerData())
 
     function setIcon(string str)
         handleIcon.setTexture(str)
@@ -36,16 +36,16 @@ public class UIInteractableStatInfo extends UIInteractable
     function setIcon(DamageType damageType)
         switch damageType
             case MAGIC
-                handleIcon.setTexture("UI/Textures/StackInfo/dmg-magic.dds")
+                handleIcon.setTexture("ICONS/STATDmgMagic.dds")
             case FIRE
-                handleIcon.setTexture("UI/Textures/StackInfo/dmg-fire.dds")
+                handleIcon.setTexture("ICONS/STATDmgFire.dds")
             case POISON
-                handleIcon.setTexture("UI/Textures/StackInfo/dmg-poison.dds")
+                handleIcon.setTexture("ICONS/STATDmgPoison.dds")
             default
-                handleIcon.setTexture("UI/Textures/StackInfo/dmg-physical.dds")
+                handleIcon.setTexture("ICONS/STATDmgPhysical.dds")
 
     function setText(string txt)
         handleText.setText(txt)
 
     function setTextBasedOnStats(int basic, int modified, StatsModifier _modi)
-        handleText.setText(basic.toString() + TooltipGenerator.coloredModiInt(modified - basic))
+        handleText.setText(basic.toString() + StringUtils.coloredModiInt(modified - basic))

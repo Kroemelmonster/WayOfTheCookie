@@ -6,7 +6,7 @@ import initlater LightningBoltSpell
 
 import Icons
 import LinkedList
-import UITooltip
+import StringUtils
 
 public class SkillTreeTempestarii extends SkillTree
     static SkillTreeType TYPE
@@ -69,15 +69,21 @@ public class SkillTreeTempestarii extends SkillTree
         ..setSkillTreeLevelRequirement(2)
         ..addSkillRequirement(lightningBoltSkill, 0)
         ..addBlockedBySkill(boltPurgeSkill)
-        ..addLine("Modifies the Bolt to also stuns the enemy for "+Tooltip.primaryString(LightningBoltSpell.STUN_DURATION[0].toString())+ " "+Tooltip.secondaryString("timeunits"))
+        ..addLine("Modifies the Bolt to also stuns the enemy for "
+         + StringUtils.primaryString(LightningBoltSpell.STUN_DURATION[0].toString())
+         + " " + StringUtils.secondaryString("timeunits"))
         ..addLevelListener() ->
             lightningBoltStunLevel++
         boltStunSkill.addLevel(1, 0, 3)
-        ..addLine("Modifies the Bolt to also stuns the enemy for "+Tooltip.primaryString(LightningBoltSpell.STUN_DURATION[1].toString())+ " "+Tooltip.secondaryString("timeunits"))
+        ..addLine("Modifies the Bolt to also stuns the enemy for "
+         + StringUtils.primaryString(LightningBoltSpell.STUN_DURATION[1].toString()) 
+         + " " + StringUtils.secondaryString("timeunits"))
         ..addLevelListener() ->
             lightningBoltStunLevel++
         boltStunSkill.addLevel(1, 0, 3)
-        ..addLine("Modifies the Bolt to also stuns the enemy for "+Tooltip.primaryString(LightningBoltSpell.STUN_DURATION[1].toString())+ " "+Tooltip.secondaryString("timeunits"))
+        ..addLine("Modifies the Bolt to also stuns the enemy for "
+         + StringUtils.primaryString(LightningBoltSpell.STUN_DURATION[1].toString())
+         + " " + StringUtils.secondaryString("timeunits"))
         ..addLevelListener() ->
             lightningBoltStunLevel++
 

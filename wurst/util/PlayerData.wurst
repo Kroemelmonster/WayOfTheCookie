@@ -8,7 +8,6 @@ import initlater BoardStack
 import initlater Hero
 import initlater UIButton
 import initlater UIMenuWorldConsole
-import initlater UINPCWindow
 import initlater UIDialog
 import initlater KeyPressSystem
 import initlater BoardEntity
@@ -42,7 +41,6 @@ public class Player
     DialogInfo dialogInfo = new DialogInfo()
 
     UIMenuWorldConsoleInfo worldConsoleInfo = new UIMenuWorldConsoleInfo()
-    UINPCWindowInfo npcWindowInfo = new UINPCWindowInfo()
     UISpellBookInfo spellBookInfo = new UISpellBookInfo()
     UIMenuConsoleInfo menuConsoleInfo = new UIMenuConsoleInfo()
 

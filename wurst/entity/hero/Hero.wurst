@@ -19,6 +19,7 @@ import HeroStats
 import LinkedList
 import initlater Spell
 import HeroData
+import ActionType
 
 constant HashMap<unit, Hero> map = new HashMap<unit, Hero>
 
@@ -44,11 +45,11 @@ public class Hero
     protected int attack = 0
     protected int defence = 0
 
-    LinkedList<SpellType> spells
+    LinkedList<ActionType> spells
     protected SkillTree array[3] skillTrees
 
-    protected KItem array[8] items
-    protected KItem array[20] backpack
+    protected KItem array[MAX_ACTIVE_ITEMS] items
+    protected KItem array[MAX_BACKPACK_ITEMS] backpack
 
     protected Army army
     protected HeroData data
@@ -64,7 +65,7 @@ public class Hero
         this.p = p
         this.heroType = heroType
         this.stats = new HeroStats(this, heroType)
-        spells = new LinkedList<SpellType>()
+        spells = new LinkedList<ActionType>()
 
         u = createUnit(playerData[0].blzPlayer, heroType.armyUnitId, playerData[0].blzPlayer.getStartLocation(), angle(0))
         army = new Army(stats)
@@ -173,7 +174,7 @@ public class Hero
 
     function getCurrentLeadershipRequirementOfStackType(StackType stackType) returns int
         var req = 0
-        for int i = 0 to Army.MAX_SIZE - 1
+        for i = 0 to Army.MAX_SIZE - 1
             let stack = army.getStack(i)
             if stack != null and stack.getStackType() == stackType
                 req += stackType.leadership * stack.getAmount()
@@ -184,7 +185,7 @@ public class Hero
         return ((leadership - getCurrentLeadershipRequirementOfStackType(stackType)) / stackType.leadership.toReal()).floor()
 
     function setVulnearble(boolean flag)
-        if flag == false
+        if not flag
             u.abortOrder()
             u.setInvulnerable(true)
         else
@@ -234,18 +235,19 @@ public class Hero
 
         return result
 
-    function addSpell(SpellType spellType)
+    function addSpell(ActionType spellType)
+        // TODO maybe make safe that this only accepts spells
         spells.add(spellType)
-
-    function getActiveItemsLength() returns int
-        return items.length
 
     function getActiveItem(int index) returns KItem
         if index < 0 or index >= items.length
             return null
         return items[index]
 
-    function setActiveItem(int index, KItem kItem)
+    function equiqItemAt(int index, KItem kItem)
+        if kItem == null
+            unequipItemAt(index)
+            return
         items[index] = kItem
         kItem.onEquip(this, true)
         for int i = 0 to Army.MAX_SIZE - 1
@@ -253,17 +255,16 @@ public class Hero
             if armyStack != null
                 kItem.onStackUpdate(armyStack, true)
         
-    function removeActiveItem(int index)
+    function unequipItemAt(int index)
         let kItem = items[index]
+        if kItem == null
+            return
         kItem.onEquip(this, false)
         for int i = 0 to Army.MAX_SIZE - 1
             let armyStack = army.getStack(i)
             if armyStack != null
                 kItem.onStackUpdate(armyStack, false)
         items[index] = null
-
-    function getBackPackItemsLength() returns int
-        return backpack.length
 
     function getBackPackItem(int index) returns KItem
         if index < 0 or index >= backpack.length

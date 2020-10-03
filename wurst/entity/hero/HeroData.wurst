@@ -2,9 +2,8 @@ package HeroData
 
 import initlater Hero
 import PlayerData
-import UITooltip
-import TooltipNew
-import TooltipGenerator
+import Tooltip
+import StringUtils
 import MainController
 
 public abstract class AbstractHeroData
@@ -54,15 +53,15 @@ public class HeroDataChange extends AbstractHeroData
 
         MainController.updateHeroData(h, this)
     
-    private function addIconToTooltipCost(TooltipNew tt, int has, int cost, string icon)
+    private function addIconToTooltipCost(Tooltip tt, int has, int cost, string icon)
         if cost <= 0
             return
         if has >= cost
-            tt.addIcon(TooltipGenerator.primaryString(cost.toString()), icon)
+            tt.addIcon(StringUtils.primaryString(cost.toString()), icon)
         else
-            tt.addIcon(TooltipGenerator.coloredInt(TooltipGenerator.COLOR_NEGATIVE, cost), icon)
+            tt.addIcon(StringUtils.coloredInt(StringUtils.COLOR_NEGATIVE, cost), icon)
 
-    function setupTooltipCost(TooltipNew tt, Hero h)
+    function setupTooltipCost(Tooltip tt, Hero h)
         let data = h.getData()
         addIconToTooltipCost(tt, data.might, might, "UI/Console/IconMight.dds")
         addIconToTooltipCost(tt, data.mind, mind, "UI/Console/IconMind.dds")

@@ -11,9 +11,11 @@ import UIHandle
 import UIProgressBar
 import UIExtensionArmyPanel
 import initlater Scheduler
+import UIWindowNPC
 
 public class UIMenuWorldConsoleInfo
     UIExtensionArmyPanelInfo armyInfo = new UIExtensionArmyPanelInfo()
+    UIWindowNPCInfo npcInfo = new UIWindowNPCInfo()
 
 public class UIMenuWorldConsole
     protected static UIMenu menu
@@ -50,11 +52,12 @@ public class UIMenuWorldConsole
         ..setSize(0.09, 0.014)
         ..setPoint(FRAMEPOINT_BOTTOMLEFT, menu, FRAMEPOINT_BOTTOMLEFT, 0.033, 0.0045)
         
-        //fightResultDialog = new UIFightResultDialog()
+        UIWindowNPC.create()
 
         Scheduler.onTime() p ->
             if menu.isVisible(p)
                 update(p)
+        
 
     static function initHero(Hero h)
         UIExtensionArmyPanel.initHero(h)

@@ -11,11 +11,11 @@ import AttachmentPoints
 import initlater Board
 import initlater HeroAttackAction
 import initlater HeroSkipAction
-import initlater HeroOpenSpellBookAction
 import AbilityIds
 import initlater BoardHeroStats
 import HeroType
 import initlater Spell
+import ActionType
 
 public class BoardHero extends BoardEntity
     private static int MAX_QUICKCAST_SPELLS = 3
@@ -39,9 +39,8 @@ public class BoardHero extends BoardEntity
         actions = new LinkedList<Action>()
         defaultAction = new HeroAttackAction(this)
         actions.add(new HeroSkipAction(this))
-        actions.add(new HeroOpenSpellBookAction(this))
 
-        for SpellType spell in hero.spells
+        for ActionType spell in hero.spells
             actions.add(spell.create(this))
 
         resetActionPoints()

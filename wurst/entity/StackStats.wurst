@@ -59,7 +59,7 @@ public class StackStats implements HasEntityStats
 
     function triggerOnCreation(BoardStack boardStack)
         for talent in talents
-            talent.onStackCreation(boardStack)
+            talent.onEntityCreation(boardStack)
 
     construct(Stack stack, StackType stackType, HeroStats heroStats)
         this.stackType = stackType

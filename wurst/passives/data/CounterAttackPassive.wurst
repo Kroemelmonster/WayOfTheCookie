@@ -1,0 +1,57 @@
+package CounterAttackPassive
+
+import PassiveAction
+import AttackAnimation
+import BoardController
+import Damage
+import KUtil
+
+import initlater BoardStack
+import initlater Cell
+import StackType
+import BoardTrigger
+import WalkAndAttackAction
+import initlater PassiveActionType
+import Icons
+import LinkedList
+import BoardEntity
+import initlater StackPassiveAction
+
+public class CounterAttackPassive extends StackPassiveAction
+    static PassiveActionType TYPE
+    static function setup()
+        TYPE = new PassiveActionType("Counter Attack", "Icons/PASCounterAttack.dds")
+        TYPE.onCreate() entity -> 
+            return new CounterAttackPassive(entity)
+        TYPE.onCreateTooltipLines() amount -> 
+            return createTooltipLines()
+
+    private static constant int MAX_COUNTER = 1
+
+    private static function createTooltipLines() returns LinkedList<string>
+        return new LinkedList<string>
+        ..add("This unit will counter an attack of opposing unit once per round")
+
+    private int counter = MAX_COUNTER
+
+    construct(BoardEntity entity)
+        super(entity, TYPE)
+        stack.getTriggers().addTurnEnd() (SequenzListener next) ->
+            counter = MAX_COUNTER
+            next.continue()
+
+        stack.getTriggers().addOnAttacked() (BoardStack attacker, BoardStack defender, SequenzListener next) ->
+            if attacker.isAlive() and defender.isAlive() and checkForCounterAttack(attacker, attacker.getCell())
+                subActionAttack(0, stack, attacker, false) (attackStatus) ->
+                    counter --
+                    next.continue()
+            else
+                next.continue()
+
+    private function checkForCounterAttack(BoardStack _attacker, Cell fromCell) returns boolean
+        if counter <= 0
+            return false
+
+        let attackRange = stack.stats.getAttackRange()
+        let distance = fromCell.getDistanceTo(stack.getCell())
+        return distance >= attackRange.min and distance <= attackRange.max

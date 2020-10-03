@@ -23,12 +23,9 @@ class HeroTypesDefinition
         HeroTypes.list.add(heroType)
         return heroType
 
-    static function setup(LinkedList<SetupListener> setups)
-        setups.add() ->
-            SpellType.setup()
-        setups.add() ->
-            SkillTreeType.setup()
-            setupOne()
+    static function setup()
+        SkillTreeType.setup()
+        setupOne()
 
     private static function setupOne()
         HeroTypes.FAR_SEER = createDefault(UnitTypesIds.BOARD_HERO_FAR_SEER, UnitTypesIds.HERO_FAR_SEER, Icons.bTNHeroFarseer)

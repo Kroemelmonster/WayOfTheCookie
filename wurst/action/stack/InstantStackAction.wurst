@@ -8,10 +8,29 @@ import ActionCost
 import StackAction
 import BoardStack
 import InstantAction
+import BoardEntity
+import ActionType
 
-public abstract class InstantStackAction extends InstantAction
+public abstract class InstantStackAction extends StackAction
 
-    construct(BoardStack stack, string btn, string name, ActionCostPreset cost)
-        super(stack, btn, name, cost)
-        this.stack = stack
+    construct(BoardEntity entity, ActionType actionType, ActionCostPreset cost)
+        super(entity, actionType, cost)
+        presetOption(ActionOption.INSTANT)
+
+    override function getPreviewResultForCell(Cell cell) returns CellResult
+        return CellResult.NONE
+
+    override function getHighlightResultForCell(Player p, Cell cell) returns CellResult
+        return CellResult.NONE
+
+    override function recalculatePreview()
+        return
+
+    override function recalculateHighlight(Player p)
+        return
+
+    override function sendTargetOrder(Cell cell) returns boolean
+        return false
+
+    abstract override function activate()
         

@@ -2,8 +2,8 @@ package Status
 
 import initlater BoardEntity
 import initlater StatusType
-import UITooltip
 import BoardTrigger
+import Tooltip
 
 public class StatusData
     int duration
@@ -16,7 +16,7 @@ public class StatusData
         this.firstRealValue = firstRealValue
 
     static function create() returns StatusData
-        return new StatusData(0,0,0)
+        return new StatusData(0, 0, 0)
 
     static function createI(int firstValue) returns StatusData
         return new StatusData(0, firstValue, 0)

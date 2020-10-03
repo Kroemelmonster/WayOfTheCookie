@@ -1,25 +1,23 @@
 package PassiveAction
 
-import initlater BoardStack
-
-public abstract class PassiveActionListener
-    abstract function onFinish()
+import initlater BoardEntity
+import initlater PassiveActionType
+import Tooltip
 
 public abstract class PassiveAction
-    protected BoardStack stack
+    protected BoardEntity entity
+    protected PassiveActionType actionType
     protected string name
 
-    construct(BoardStack stack, string name)
-        this.stack = stack
-        this.name = name
+    construct(BoardEntity entity, PassiveActionType actionType)
+        this.entity = entity
+        this.actionType = actionType
 
-    @inline
     function getName() returns string
-        return name
+        return actionType.getName()
 
-    @inline
     function toString() returns string
         return "Passive '"+getName()+"'"
-    
-    @inline
-    abstract function triggerOnStackCreation(BoardStack stack)
+
+    protected function createBasicTooltip() returns Tooltip
+        return Tooltip.create(getName())

@@ -1,0 +1,211 @@
+package ChainLightningSpell
+
+import LinkedList
+import Icons
+import Abilities
+
+import PlayerData
+import KUtil
+import BoardController
+
+import Action
+import StackType
+
+import initlater Cell
+import initlater BoardStack
+import UIMenuActionConsole
+import DelayAnimation
+import Damage
+import CastAnimation
+import BoardTrigger
+import Spell
+import BoardHero
+import BoardEntity
+import SkillTreeTempestarii
+import SkillTree
+import Globals
+import ActionCost
+import StringUtils
+import Tooltip
+import UITooltip
+import DamageType
+import ActionType
+
+public class ChainLightningSpell extends Spell
+    static ActionType TYPE
+    static function setup()
+        TYPE = new ActionType("Chain Lightning", Icons.bTNChainLightning)
+        TYPE.onCreate() entity -> 
+            return new ChainLightningSpell(entity)
+        TYPE.onCreateTooltipLines() level -> 
+            return createTooltipLines(level, 0)
+
+    private static constant ActionCostPreset BASE_COST = ActionCostPreset.create(1, true, 0)
+    private static constant int array[3] MANA_COST = [7, 12, 20]
+    private static constant int array[3] MAX_CHAINS = [1, 2, 3]
+    private static constant int array[3] DAMAGE = [40, 70, 100]
+
+    private static constant int CHAIN_RANGE = 3
+    private static constant real CHAIN_REDUCTION = 0.90
+    private static constant DamagePreview damagePreview = createDamagePreview()
+    
+    @inline
+    private static function createDamagePreview() returns DamagePreview
+        return new DamagePreview(realRange(0, 0), SourceType.SPELL, DamageType.MAGIC)
+
+    private static function createTooltipLines(int level, int power) returns LinkedList<string>
+        return new LinkedList<string>
+        ..add(StringUtils.stat("Target", "Enemy"))
+        ..add(StringUtils.stat("Damage", calculateDamage(level, power, 0).toColoredText()))
+        ..add("")
+        ..add("Lightning strikes from one target and chains up to "
+         + StringUtils.primaryString(MAX_CHAINS[level].toString()) + " times")
+        ..add("Each time the damage is descreased by "
+         + StringUtils.primaryPercent(1 - CHAIN_REDUCTION))
+
+    private static function adjustCost(ActionCostPreset cost, int level)
+        cost.adjustBaseManaCost(MANA_COST[level])
+
+    private static function calculateDamage(int level, int power, int amountOfChained) returns DamagePreview
+        var multi = 1.0
+        for i = 1 to amountOfChained
+            multi *= CHAIN_REDUCTION
+        multi *= (1.0 + ( power * DAMAGE_PER_SPELLPOWER / 100.0)) 
+
+        damagePreview.dmg = realRange(DAMAGE[level] * 0.5 * multi, DAMAGE[level] * 2 * multi)
+        return damagePreview
+
+    /* -------------------------------------------------------------------------- */
+    
+    private LinkedList<Cell> area = new LinkedList<Cell>()
+
+    construct(BoardEntity entity)
+        super(entity, TYPE, BASE_COST)
+        let skillTree = hero.hero.getSkillTree(SkillTreeTempestarii.TYPE) castTo SkillTreeTempestarii
+        setLevel(skillTree.chainLightningLevel)
+        adjustCost(cost, level)
+
+    override function getHighlightResultForCell(Player p, Cell cell) returns CellResult
+        if area.has(cell)
+            return CellResult.NEGATIVE
+        return CellResult.NONE
+
+    override function recalculatePreview()
+        recalculatePossibleTargets()
+
+    override function recalculateHighlight(Player p)
+        if area.has(p.currentMousePosition.cell)
+            showPreview(p.currentMousePosition.cell)
+        else
+            hidePreview()
+
+    private function finishOrder(LinkedList<BoardStack> prevTargets, DamageInstance baseDamage)
+        destroy prevTargets
+        destroy baseDamage
+        BoardController.finishOrder(entity, cost)
+
+    private function chainToNext(LinkedList<BoardStack> prevTargets, BoardEntity prev, DamageInstance baseDamage, BoardStack target, int chains)
+        let targetPos = target.getPos3Real()
+        var lightningModel = LIGHTNING_CHAIN_LIGHTNING_SEECONDARY
+        if chains == 0
+            lightningModel = LIGHTNING_CHAIN_LIGHTNING_PRIMARY
+        let bolt = addLightning(lightningModel, true, prev.getPos3Real(), targetPos)
+        let e = addEffect(Abilities.boltImpact, targetPos)
+        DelayAnimation.create(entity.getBoard(), 0.3) ->
+            bolt.destr()
+            e.setPosition(-100000, -10000, 10000)
+            e.destr()
+            let targetCell = target.getCell()
+            BoardController.dealDamage(hero, baseDamage, target) -> 
+                if chains < MAX_CHAINS[level]
+                    prevTargets.add(target)
+                    baseDamage.dmg *= CHAIN_REDUCTION
+
+                    Cell _newTargetCell = null
+                    if target.isOnBoard()
+                        // why not just use targetCell ?? because the unit might be moved so the chain goes on from there :O
+                        _newTargetCell = target.getCell()
+                    else
+                        _newTargetCell = targetCell
+                    let _nextTarget = getNextTarget(prevTargets, _newTargetCell)
+                    if _nextTarget == null
+                        finishOrder(prevTargets, baseDamage)
+                    else
+                        chainToNext(prevTargets, target, baseDamage, _nextTarget, chains + 1)
+                else
+                    finishOrder(prevTargets, baseDamage)
+
+    override function sendTargetOrder(Cell cell) returns boolean
+        if area.has(cell)
+            CastAnimation.create(hero, cell) () ->
+                calculateDamage(hero.stats.getPower(), level, 0)
+                let rolledBaseDamage = damagePreview.getRandomInstance()
+                chainToNext(new LinkedList<BoardStack>(), entity, rolledBaseDamage, cell.getStack(), 0)
+            return true
+        
+        return false
+
+    private function getNextTarget(LinkedList<BoardStack> prevTargets, Cell fromCell) returns BoardStack
+        BoardStack nextTarget = null
+        let itr = fromCell.eachCellInRangeIterator(intRange(1, CHAIN_RANGE))
+        while itr.hasNext() and nextTarget == null
+            let cell = itr.next()
+            let possibleTarget = cell.getStack()
+            if possibleTarget != null and possibleTarget.isEnemy(entity) and prevTargets.has(possibleTarget) == false
+                nextTarget = possibleTarget
+
+        destroy itr
+        return nextTarget
+
+    private function recalculatePossibleTargets()
+        area.clear()
+
+        entity.getBoard().forEachStack() (BoardStack t) ->
+            if t.getPlayer() != entity.getPlayer()
+                area.add(t.getCell())
+
+    private function showPreview(Cell fromCell)
+        let tt = createBasicTooltip()
+        ..addLines(createTooltipLines(level, hero.stats.getPower()))
+        if fromCell != null
+            let list = new LinkedList<BoardStack>()
+            list.add(fromCell.getStack())
+            tt.addLine("")
+            var i = 0
+            while i < MAX_CHAINS[level]
+                i++
+                let nextTarget = getNextTarget(list, list.peek().getCell())
+                if nextTarget != null
+                    list.add(nextTarget)
+                else
+                    i = 100
+
+            var chain = 0
+            for target in list
+                calculateDamage(level, hero.stats.getPower(), chain)
+                .extendTooltipWithSpecific(tt, entity, target)
+                chain ++
+            destroy list
+        
+        UITooltip.display(entity.getPlayer(), tt)
+        UIMenuActionConsole.updateActionPoints(entity, cost)
+                
+    @inline
+    private function hidePreview()
+        UITooltip.hide(entity.getPlayer())
+        UIMenuActionConsole.updateActionPoints(entity)
+
+    override function onUIMouseEnter()
+        showPreview(null)
+
+    override function onUIMouseLeave()
+        hidePreview()
+    
+    override function executeForKI(SequenzListenerStatus listener)
+        Log.error("YOU NEED TO WRITE KI FOR CHAIN LIGHTNING SPELL")
+        listener.continue(-1)
+
+    ondestroy
+        if area != null
+            destroy area
+        

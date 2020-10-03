@@ -11,12 +11,13 @@ import initlater BoardStack
 import PathFinding
 import BoardEntity
 import ActionCost
+import ActionType
 
 public abstract class DefaultAction extends Action
     protected TargetList targets
 
-    construct(BoardEntity entity, string name, ActionCostPreset cost)
-        super(entity, "", name, cost)
+    construct(BoardEntity entity, ActionType actionType, ActionCostPreset cost)
+        super(entity, actionType, cost)
         presetOption(ActionOption.DEFAULT)
 
     abstract function getPathing() returns StackPathFinding

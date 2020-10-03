@@ -1,0 +1,50 @@
+package CleavingAttackTalent
+
+import initlater Talent
+import initlater StackType
+import Icons
+import initlater Cell
+import initlater BoardStack
+import LinkedList
+import initlater SubTargetList
+import KUtil
+import BoardEntity
+import Tooltip
+import StringUtils
+import Icon
+
+public class CleavingAttackTalent extends Talent
+    protected real percent
+
+    construct(real percent)
+        super(new Icon("Cleaving Attack", Icons.pASBTNCleavingAttack))
+        this.percent = percent
+
+    override function onEntityCreation(BoardEntity entity)
+        if entity.getType() != EntityType.STACK
+            Log.error(entity.toString() + " has a talent "
+                + getName() + " which does not work for a non stack")
+            return
+        let stack = entity.toStack()
+        stack.stats.setSubAttackTarget() (Cell reference, BoardStack mainTarget) ->
+            let neighbourIndex = reference.getNeighbourIndex(mainTarget.getCell())
+            let list = new LinkedList<SubTarget>()
+            if neighbourIndex != -1
+                addNeighbour(stack, reference, neighbourIndex, -1, list)
+                addNeighbour(stack, reference, neighbourIndex, 1, list)
+            return list
+
+
+    private function addNeighbour(BoardStack stack, Cell reference, int index, int add, LinkedList<SubTarget> toList)
+        let cell = reference.getNeighbourSecure(index + add)
+        if cell == null
+            return
+        let result = cell.getStack()
+        if result == null or not stack.isEnemy(result)
+            return
+        toList.add(new SubTarget(result, percent))
+
+    override function createTooltip() returns Tooltip
+        return createBasicTooltip()
+        ..addLine("Your Attacks cleave for " + StringUtils.primaryPercent(percent)
+         + " to the two adjacent targets.")

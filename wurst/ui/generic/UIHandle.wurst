@@ -4,7 +4,7 @@ public function createUIFrame(string frameType, framehandle parent) returns fram
     return createUIFrame(frameType, parent, false)
 
 function hasFrameTypeEvents(string frameType) returns boolean
-    return frameType != "SPRITE" and frameType != "FRAME"
+    return frameType != "SPRITE"
 
 public function createUIFrame(string frameType, framehandle parent, boolean registerEvents) returns framehandle
     if not registerEvents and hasFrameTypeEvents(frameType)
@@ -93,3 +93,9 @@ public function framehandle.setPoint(framepointtype point, UIHandle relative, fr
 
 public function framehandle.setAllPoints(UIHandle relative)
     this.setAllPoints(relative.self)
+
+public function framehandle.toString() returns string
+	var str = "FrameHandle "
+	str += this.getName()
+	str += " enabled " + this.isEnabled().toString()
+	return str

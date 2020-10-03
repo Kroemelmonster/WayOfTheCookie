@@ -1,0 +1,132 @@
+package Tooltip
+import UITooltip
+import LinkedList
+import PlayerData
+
+public enum TooltipAnchor
+    TOP_LEFT
+    TOP_RIGHT
+    BOTTOM_RIGHT
+    BOTTOM_LEFT
+    BOTTOM_LEFT_UP
+    RIGHT_BOTTOM
+    LEFT_BOTTOM
+
+class TooltipLine
+    protected string text
+    protected int resultingLines
+
+    construct(string text)
+        setLine(text)
+
+    private construct(string text, int resultingLines)
+        this.text = text
+        this.resultingLines = resultingLines
+
+    protected static function copy(TooltipLine line) returns TooltipLine
+        return new TooltipLine(line.text, line.resultingLines)
+
+    protected function setLine(string text)
+        this.text = text
+        resultingLines = UITooltip.getLineCount(text)
+
+class TooltipIcon
+    protected string text
+    protected string icon
+
+    construct(string text, string icon)
+        this.text = text
+        this.icon = icon
+
+    function getText() returns string
+        return text
+
+    function getIcon() returns string
+        return icon
+
+
+public class Tooltip
+    static function create(string header) returns Tooltip
+        return new Tooltip()
+        ..setHeader(header)
+
+    protected string header = ""
+    protected string key = ""
+    protected LinkedList<TooltipLine> lines
+    protected LinkedList<TooltipIcon> icons
+
+    private construct()
+        lines = new LinkedList<TooltipLine>
+
+    @inline
+    function addLine(string text)
+        lines.add(new TooltipLine(text))
+
+        
+    /** !! Carefull this deletes the list !! **/
+    @inline
+    function addLines(LinkedList<string> lines)
+        for line in lines
+            addLine(line)
+        destroy lines
+
+    function setHeader(string header)
+        this.header = header
+
+    function setKey(string key)
+        this.key = key
+
+    @inline
+    function addTooltip(Tooltip other, boolean once)
+        for TooltipLine line in other.lines
+            if line != null
+                lines.add(line)
+        if once
+            destroy other
+
+    @inline
+    function updateLine(int index, string text)
+        lines.get(index).setLine(text)
+
+    @inline
+    function getLine(int index) returns string
+        return lines.get(index).text
+
+    function addIcon(string text, string icon)
+        if icons == null
+            icons = new LinkedList<TooltipIcon>
+        icons.add(new TooltipIcon(text, icon))
+
+    function convertUIText() returns string
+        var str = ""
+        for TooltipLine ttLine in lines
+            if ttLine != null
+                str += ttLine.text + "|n"
+        return str
+
+    function convertUIHeader() returns string
+        var str = header
+        if key != ""
+            // TODO str += " [" +coloredString(COLOR_PRIMARY, key)+ "]"
+        return str
+
+    function getIcons() returns LinkedList<TooltipIcon>
+        return icons
+
+    function getLineCount() returns int
+        var count = 0
+        for TooltipLine ttLine in lines
+            if ttLine != null
+                count += ttLine.resultingLines
+        return count
+
+    ondestroy
+        for line in lines
+            destroy line
+        destroy lines
+        lines = null
+        if icons != null
+            for icon in icons
+                destroy icon
+            destroy icons
+        icons = null

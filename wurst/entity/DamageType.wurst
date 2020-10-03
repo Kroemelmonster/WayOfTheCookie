@@ -1,6 +1,6 @@
 package DamageType
-import TooltipNew
-import TooltipGenerator
+import Tooltip
+import StringUtils
 
 public enum DamageType
     PHYISICAL
@@ -36,8 +36,8 @@ public class Resistance
             default
                 return phyiscal
 
-    function extendTooltip(TooltipNew tt)
-        tt.addLine("Physical Resistance : " + TooltipGenerator.coloredPercent(phyiscal / 100))
-        tt.addLine("Magic Resistance : " + TooltipGenerator.coloredPercent(magic / 100))
-        tt.addLine("Fire Resistance : " + TooltipGenerator.coloredPercent(fire / 100))
-        tt.addLine("Poison Resistance : " + TooltipGenerator.coloredPercent(poison / 100))
+    function extendTooltip(Tooltip tt)
+        tt.addLine("Physical Resistance : " + StringUtils.coloredPercent(phyiscal / 100))
+        tt.addLine("Magic Resistance : " + StringUtils.coloredPercent(magic / 100))
+        tt.addLine("Fire Resistance : " + StringUtils.coloredPercent(fire / 100))
+        tt.addLine("Poison Resistance : " + StringUtils.coloredPercent(poison / 100))

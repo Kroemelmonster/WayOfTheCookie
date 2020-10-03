@@ -2,11 +2,10 @@ package Damage
 import StackType
 import KUtil
 import BoardStack
-import UITooltip
 import BoardEntity
 import Globals
-import TooltipGenerator
-import TooltipNew
+import StringUtils
+import Tooltip
 import DamageType
 
 public enum SourceType
@@ -96,15 +95,15 @@ public class DamagePreview extends Damage
         super.copyTo(instance)
         return instance
 
-    function extendTooltipWithSpecific(TooltipNew tooltip, BoardEntity source, BoardStack target)
+    function extendTooltipWithSpecific(Tooltip tooltip, BoardEntity source, BoardStack target)
         let preview = new SpecificDamagePreview(this, source, target)
-        tooltip.addLine(TooltipGenerator.coloredString(preview.target.getPlayer().toColor(), preview.target.getName()))
-        tooltip.addLine(TooltipGenerator.stat("Damage", Tooltip.damageType2Color(preview.damagePreview.damageType), preview.damage))
-        tooltip.addLine(TooltipGenerator.stat("Kills", Tooltip.COLOR_NEGATIVE, preview.amount))
+        tooltip.addLine(StringUtils.coloredString(preview.target.getPlayer().toColor(), preview.target.getName()))
+        tooltip.addLine(StringUtils.stat("Damage", Damage.type2Color(preview.damagePreview.damageType), preview.damage))
+        tooltip.addLine(StringUtils.stat("Kills", StringUtils.COLOR_NEGATIVE, preview.amount))
         destroy preview
 
     function toColoredText() returns string
-        return TooltipGenerator.coloredRange(Damage.type2Color(damageType), dmg.round())
+        return StringUtils.coloredRange(Damage.type2Color(damageType), dmg.round())
         
 
 public abstract class SpecificDamage
@@ -128,6 +127,12 @@ public class SpecificDamageInstance extends SpecificDamage
         remainingHp = target.stats.getHp()
         remainingHp += target.stats.getMaxHp() * amount
         remainingHp -= damage
+
+    function toColoredText() returns string
+        var str = StringUtils.coloredInt(Damage.type2Color(damageInstance.damageType), damage)
+        if amount > 0
+            str +=  "   " + StringUtils.coloredInt(StringUtils.COLOR_NEGATIVE, amount)
+        return str 
 
     ondestroy
         destroy damageInstance

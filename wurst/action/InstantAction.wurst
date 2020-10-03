@@ -6,11 +6,12 @@ import Action
 import initlater Cell
 import ActionCost
 import BoardEntity
+import ActionType
 
 public abstract class InstantAction extends Action
 
-    construct(BoardEntity entity, string btn, string name, ActionCostPreset cost)
-        super(entity, btn, name, cost)
+    construct(BoardEntity entity, ActionType actionType, ActionCostPreset cost)
+        super(entity, actionType, cost)
         presetOption(ActionOption.INSTANT)
 
     override function getPreviewResultForCell(Cell cell) returns CellResult

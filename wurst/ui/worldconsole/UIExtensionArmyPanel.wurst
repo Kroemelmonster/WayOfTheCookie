@@ -52,8 +52,6 @@ class UIExtensionArmyButton extends UIButtonIcon
         ..setPoint(FRAMEPOINT_BOTTOMRIGHT, self, FRAMEPOINT_BOTTOMRIGHT, -0.002, -0.009)
         ..setTextAlignment(TEXT_JUSTIFY_TOP, TEXT_JUSTIFY_RIGHT)
 
-        UIDialogSplitStack.create()
-
         onClick() ->
             let p = GetTriggerPlayerData()
             // TODO auslagern
@@ -136,6 +134,8 @@ public class UIExtensionArmyPanel
         let element = UIMenu.create(leftMenu)
         ..setPoint(FRAMEPOINT_BOTTOMLEFT, leftMenu, FRAMEPOINT_BOTTOMRIGHT)
         ..setSize(0.258, 0.076)
+
+        UIDialogSplitStack.create()
         
         createUIFrame("BACKDROP", element)
         ..setAllPoints(element)
@@ -148,14 +148,11 @@ public class UIExtensionArmyPanel
             btns[i] = new UIExtensionArmyButton(element, i)
             ..setPoint(FRAMEPOINT_LEFT, btns[i - 1], FRAMEPOINT_RIGHT, 0.002, 0)
 
-       // dialogStackSplit = new UIStackSplitDialog()
-
         Scheduler.onTime() p ->
             if element.isVisible(p)
                 update(p)
 
         element.onHide() p ->
-            Log.trace("its getting hidden")
             cancelDrag(p)
 
         return element

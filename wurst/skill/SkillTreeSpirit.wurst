@@ -4,7 +4,6 @@ import initlater Hero
 
 import Icons
 import LinkedList
-import UITooltip
 
 public class SkillTreeSpirit extends SkillTree
     static SkillTreeType TYPE

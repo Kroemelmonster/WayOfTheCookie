@@ -6,14 +6,15 @@ import initlater Cell
 import initlater BoardEntity
 import initlater OrderSystem
 
-import initlater SummonLesserSkeletonAction
-import initlater SlamAction
 import initlater BoardStack
 import BoardTrigger
 import UIController
 import ActionCost
 import BitSet
 import initlater BoardHero
+import Icon
+import initlater ActionType
+import Tooltip
 
 public enum CellResult
     DEFAULT
@@ -32,24 +33,16 @@ public enum ActionOption
 public abstract class Action
     protected BoardEntity entity
 
-    protected BoardStack stack
-    protected BoardHero hero
-
-    protected string icon
-    protected string name
+    protected ActionType actionType
     protected string key = ""
     protected ActionCost cost
 
     private bitset optionSet = bitset(0)
 
-    construct(BoardEntity entity, string icon, string name, ActionCostPreset cost)
+    construct(BoardEntity entity, ActionType actionType, ActionCostPreset cost)
         this.entity = entity
-        this.icon = icon
-        this.name = name
+        this.actionType = actionType
         this.cost = ActionCost.create(entity, cost)
-    
-    static function setup()
-        SummonLesserSkeletonAction.setup()
 
     function getPreviewResultForCell(Cell _cell) returns CellResult
         return CellResult.NONE
@@ -75,11 +68,9 @@ public abstract class Action
     function canBeActivatedByKey(string key) returns boolean
         return key == this.key
 
-    @inline
     function getCost() returns ActionCost
         return cost
 
-    @inline
     function tickCooldown()
         cost.tickCooldown()
 
@@ -88,7 +79,6 @@ public abstract class Action
             return canActivateExtraCondition()
         return false
 
-    @inline
     protected function canActivateExtraCondition() returns boolean
         return true
 
@@ -99,15 +89,12 @@ public abstract class Action
         entity.setCurrentAction(this)
         UIController.triggerOnActionChange(entity.getPlayer().playingBoard)
 
-    @inline
     protected function presetOption(ActionOption opt)
         optionSet = optionSet.set(opt castTo int)
 
-    @inline
     protected function removeOption(ActionOption opt)
         optionSet = optionSet.reset(opt castTo int)
 
-    @inline
     function hasOption(ActionOption option) returns boolean
         return optionSet.get(option castTo int)
 
@@ -122,14 +109,17 @@ public abstract class Action
     function setKey(string key)
         this.key = key
 
-    @inline
+    function createBasicTooltip() returns Tooltip
+        let tt = Tooltip.create(getName())
+        cost.setupTooltipCost(tt)
+        tt.setKey(key)
+        return tt
+
     function getIcon() returns string
-        return icon
+        return actionType.getIcon()
 
-    @inline
     function getName() returns string
-        return name
+        return actionType.getName()
 
-    @inline
     function toString() returns string
         return "Action '"+getName()+"'"

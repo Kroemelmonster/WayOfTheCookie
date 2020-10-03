@@ -1,0 +1,17 @@
+package StackPassiveAction
+import Action
+import BoardStack
+import ActionCost
+import BoardEntity
+import ActionType
+import PassiveAction
+import PassiveActionType
+
+public abstract class StackPassiveAction extends PassiveAction
+    protected BoardStack stack
+
+    construct(BoardEntity stack, PassiveActionType actionType)
+        super(stack, actionType)
+        if entity.getType() != EntityType.STACK
+            Log.error("Tried to add an Stack Action to an non Stack")
+        this.stack = entity.toStack()

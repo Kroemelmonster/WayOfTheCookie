@@ -1,0 +1,101 @@
+package RallingCrySpell
+
+import PlayerData
+import BoardController
+
+
+import UIMenuActionConsole
+import CastAnimation
+import BoardTrigger
+import Spell
+import BoardHero
+import BoardEntity
+import SkillTree
+import StatusType
+import StatusController
+import Status
+import WarcrySpell
+import SkillTreeChieftain
+import StatusRallingCry
+import LinkedList
+import BoardStack
+import ActionCost
+import StringUtils
+import Tooltip
+import UITooltip
+import ActionType
+
+public class RallingCrySpell extends WarcrySpell
+    static ActionType TYPE
+    static function setup()
+        STATUS = StatusRallingCryHero.TYPE
+        STATUS_STACKS = StatusRallingCryStack.TYPE
+        TYPE = new ActionType("Ralling Cry", "Icons\\BTNAbilityWarriorWarCry.blp")
+        TYPE.onCreate() entity -> 
+            return new RallingCrySpell(entity)
+        TYPE.onCreateTooltipLines() level -> 
+            return createTooltipLines(level)
+
+    private static constant ActionCostPreset BASE_COST = ActionCostPreset.create(0, false, 3)
+    private static constant int array[5] ATTACK_BONUS = [3, 5, 7, 9, 11]
+    static StatusType STATUS
+    static StatusType STATUS_STACKS
+
+    private static function createStatusData(int level) returns StatusData
+        return StatusData.createDurationI(1, ATTACK_BONUS[level])
+
+    private static function createTooltipLines(int level) returns LinkedList<string>
+        let list = new LinkedList<string>
+        ..add(StringUtils.stat("Target", "Allies/Self"))
+        ..add("")
+        ..add("Gives your self and all your troops a temporary Attack Bonus")
+        // TODO addStatusType(STATUS, createStatusData(level))
+        return list
+    
+    /* -------------------------------------------------------------------------- */
+
+    private LinkedList<BoardStack> affectedAllies = new LinkedList<BoardStack>()
+
+    private construct(BoardEntity entity)
+        super(entity, TYPE, BASE_COST)
+        let skillTree = hero.hero.getSkillTree(SkillTreeChieftain.TYPE) castTo SkillTreeChieftain
+        setLevel(skillTree.rallingCryLevel)
+
+    override function activate()
+        CastAnimation.create(entity) -> 
+            StatusController.add(STATUS, entity, createStatusData(level))
+            ..addOnEndListener() (SequenzListener next) ->
+                affectedAllies.forEach() (BoardStack ally) ->
+                    if ally.isAlive()
+                        StatusController.remove(STATUS_STACKS, ally)
+                next.continue()
+
+            entity.getBoard().forEachStack() (BoardStack ally) ->
+                if ally.getPlayer() == entity.getPlayer()
+                    affectedAllies.add(ally)
+                    StatusController.add(STATUS_STACKS, ally, createStatusData(level))
+            BoardController.finishOrder(entity, cost)
+
+    private function showPreview()
+        let tt = createBasicTooltip()
+        ..addLines(createTooltipLines(level))
+        UITooltip.display(entity.getPlayer(), tt)
+        UIMenuActionConsole.updateActionPoints(entity, cost)
+
+    private function hidePreview()
+        UITooltip.hide(entity.getPlayer())
+        UIMenuActionConsole.updateActionPoints(entity)
+
+    override function onUIMouseEnter()
+        showPreview()
+
+    override function onUIMouseLeave()
+        hidePreview()
+
+    ondestroy
+
+    /* ----------------------------------- KI ----------------------------------- */
+    
+    override function executeForKI(SequenzListenerStatus listener)
+        Log.error("YOU NEED TO WRITE KI FOR RALLING CRY SPELL")
+        listener.continue(-1)

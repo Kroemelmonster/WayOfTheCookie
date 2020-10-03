@@ -6,9 +6,9 @@ import Spell
 import OrderSystem
 import Action
 import UIHandle
-import UIBoardActionMenu
 import ClosureFrames
 import UIWindow
+import UIMenuActionConsole
 
 public class UISpellBookInfo
     protected boolean isOpen = false
@@ -46,12 +46,12 @@ public class UIWindowSpellBook
         ..setPoint(FRAMEPOINT_TOPLEFT, leftSideFrameHandle, FRAMEPOINT_TOP, 0, 0)
         ..setPoint(FRAMEPOINT_TOPRIGHT, leftSideFrameHandle, FRAMEPOINT_TOPRIGHT, 0, 0)
 
-        for int index = 2 to spells.length - 1
+        for index = 2 to spells.length - 1
             spells[index] = UIElementSpell.create(leftSideFrameHandle)
             spells[index].setPoint(FRAMEPOINT_TOPLEFT, spells[index - 2].getMainHandle(), FRAMEPOINT_BOTTOMLEFT, 0, 0)
             spells[index].setPoint(FRAMEPOINT_TOPRIGHT, spells[index - 2].getMainHandle(), FRAMEPOINT_BOTTOMRIGHT, 0, 0)
 
-        for int index = 0 to spells.length - 1
+        for index = 0 to spells.length - 1
             spells[index].onClick() () -> 
                 click(spells[index].getSpell(), GetTriggerPlayerData())
             spells[index].onMouseEnter() -> 
@@ -97,7 +97,7 @@ public class UIWindowSpellBook
 
     private static function click(Spell spell, Player p)
         spell.toggleQuickcast()
-        UIBoardActionMenu.update(p)
+        UIMenuActionConsole.update(p)
         update(p)
 
     private static function onMouseEnter(Action action, Player p)

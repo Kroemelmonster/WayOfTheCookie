@@ -6,7 +6,6 @@ import PlayerData
 
 import BoardTrigger
 import FightResult
-import UITooltip
 
 
 /*

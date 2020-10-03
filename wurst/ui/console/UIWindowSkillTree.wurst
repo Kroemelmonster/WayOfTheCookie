@@ -1,7 +1,6 @@
 package UIWindowSkillTree
 import UIButton
 import PlayerData
-import UITooltip
 import ClosureFrames
 import UIHandle
 import UIButtonIcon
@@ -9,8 +8,8 @@ import Action
 import UIWindow
 import initlater Scheduler
 import Hero
-import TooltipNew
-import UITooltipNew
+import Tooltip
+import UITooltip
 import SkillTree
 
 public class UIWindowSkillTreeInfo
@@ -26,6 +25,7 @@ public class UIWindowSkillTreeInfo
         return p.hero.getSkillTree(getCurrentTab(p))
 
 public class UIWindowSkillTree
+    static constant WIDTH = 0.29
     protected static UIWindowBasic window
     protected static UIButton array[3] tabs
     protected static framehandle array[3] handleTabNames
@@ -39,11 +39,11 @@ public class UIWindowSkillTree
 
     static function create()
         let tabHeight = 0.03
+        let tabPaddingTop = 0.01
         let width = 0.29
-        let height = 0.35
         window = UIWindowBasic.create(true)
-        ..setPointToConsoleUI(FRAMEPOINT_TOPLEFT, FRAMEPOINT_TOPLEFT, 0, -tabHeight)
-        ..setSize(width, height)
+        ..setPointToConsoleUI(FRAMEPOINT_TOPLEFT, FRAMEPOINT_TOPLEFT, 0, -(tabHeight - tabPaddingTop))
+        ..setSize(WIDTH, 0.35 -(tabHeight - tabPaddingTop))
 
         let backdropPadding = 0.01
         handleBackground = createUIFrame("BACKDROP", window)
@@ -53,18 +53,17 @@ public class UIWindowSkillTree
 
         let innerPadding = 0.03
         innerWidth = width - (innerPadding * 2)
-        innerHeight = height - (innerPadding * 2)
+        innerHeight = WIDTH - (innerPadding * 2)
         handlInnerFrame = createUIFrame("FRAME", window)
         ..setPoint(FRAMEPOINT_TOPLEFT, window, FRAMEPOINT_TOPLEFT, innerPadding, -innerPadding)
         ..setPoint(FRAMEPOINT_BOTTOMRIGHT, window, FRAMEPOINT_BOTTOMRIGHT, -innerPadding, innerPadding)
  
 
-        let tabPaddingTop = -0.01
         let tabPaddingH = 0.005
         let tabWidth = (width - (tabPaddingH * 6)) / 3
 
         createTab(0, tabWidth, tabHeight)
-        ..setPoint(FRAMEPOINT_BOTTOMLEFT, window, FRAMEPOINT_TOPLEFT, tabPaddingH * 2, tabPaddingTop)
+        ..setPoint(FRAMEPOINT_BOTTOMLEFT, window, FRAMEPOINT_TOPLEFT, tabPaddingH * 2, -tabPaddingTop)
 
         createTab(1, tabWidth, tabHeight)
         ..setPoint(FRAMEPOINT_LEFT, tabs[0], FRAMEPOINT_RIGHT, tabPaddingH, 0)
@@ -82,10 +81,10 @@ public class UIWindowSkillTree
             skills[i].onMouseEnter() -> 
                 let p = GetTriggerPlayerData()
                 let skill = UIWindowSkillTreeInfo.getCurrentSkillTree(p).skills.get(i)
-                UITooltipNew.display(p, skill.createTooltip(), TooltipNewAnchor.RIGHT_BOTTOM, skills[i])
+                UITooltip.display(p, skill.createTooltip(), TooltipAnchor.RIGHT_BOTTOM, skills[i])
 
             skills[i].onMouseLeave() -> 
-                UITooltipNew.hide(GetTriggerPlayerData())
+                UITooltip.hide(GetTriggerPlayerData())
 
         Scheduler.onTime() (Player p) ->
             if window.isVisible(p)

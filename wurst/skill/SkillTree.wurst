@@ -6,9 +6,10 @@ import SkillTreeTempestarii
 import SkillTreeSpirit
 import initlater Hero
 import HeroData
-import TooltipNew
-import TooltipGenerator
+import Tooltip
+import StringUtils
 import Spell
+import ActionType
 
 public interface SkillStackUpdateListener
     function onStackUpdate(ArmyStack armyStack, boolean add)
@@ -64,8 +65,8 @@ public class SkillLevel
     function addLine(string str)
         desc.add(str)
 
-    function addSpellTypeAsLines(SpellType spellType, int level)
-        desc.addAll(spellType.createTooltipLines(level))
+    function addSpellTypeAsLines(ActionType actionType, int level)
+        desc.addAll(actionType.createTooltipLines(level))
 
     function createTooltipLines() returns LinkedList<string>
         return desc.copy()
@@ -156,8 +157,8 @@ public class Skill
         
         level ++
     
-    function createTooltip() returns TooltipNew
-        let tt = TooltipNew.create(name)
+    function createTooltip() returns Tooltip
+        let tt = Tooltip.create(name)
         if level > 0
             tt.addLines(levels.get(level -  1).createTooltipLines())
 
@@ -167,31 +168,31 @@ public class Skill
         if level > 0
             tt.addLine("")
 
-        tt.addLine(TooltipGenerator.secondaryString("Next Level"))
+        tt.addLine(StringUtils.secondaryString("Next Level"))
         let nextLevel = levels.get(level)
         nextLevel.cost.setupTooltipCost(tt, tree.hero)
         
         if nextLevel.skillTreeLevelRequirment > 0
             if tree.level >= nextLevel.skillTreeLevelRequirment 
-                tt.addLine(TooltipGenerator.stat("Requires Level", TooltipGenerator.COLOR_POSITIVE, nextLevel.skillTreeLevelRequirment))
+                tt.addLine(StringUtils.stat("Requires Level", StringUtils.COLOR_POSITIVE, nextLevel.skillTreeLevelRequirment))
             else
-                tt.addLine(TooltipGenerator.stat("Requires Level", TooltipGenerator.COLOR_NEGATIVE, nextLevel.skillTreeLevelRequirment))
+                tt.addLine(StringUtils.stat("Requires Level", StringUtils.COLOR_NEGATIVE, nextLevel.skillTreeLevelRequirment))
 
         if nextLevel.requirements != null
             for requirement in nextLevel.requirements
                 let txt = requirement.skill.name + " ["+(requirement.level + 1).toString() + "]"
                 if requirement.learned
-                    tt.addLine(TooltipGenerator.stat("Requires", TooltipGenerator.COLOR_POSITIVE, txt))
+                    tt.addLine(StringUtils.stat("Requires", StringUtils.COLOR_POSITIVE, txt))
                 else
-                    tt.addLine(TooltipGenerator.stat("Requires", TooltipGenerator.COLOR_NEGATIVE, txt))
+                    tt.addLine(StringUtils.stat("Requires", StringUtils.COLOR_NEGATIVE, txt))
 
         if nextLevel.blockedBySkill != null
             for blockingSkill in nextLevel.blockedBySkill
                 let txt = blockingSkill.name
                 if blockingSkill.level == 0
-                    tt.addLine(TooltipGenerator.stat("Blocked by", TooltipGenerator.COLOR_POSITIVE, txt))
+                    tt.addLine(StringUtils.stat("Blocked by", StringUtils.COLOR_POSITIVE, txt))
                 else
-                    tt.addLine(TooltipGenerator.stat("Blocked by", TooltipGenerator.COLOR_NEGATIVE, txt))
+                    tt.addLine(StringUtils.stat("Blocked by", StringUtils.COLOR_NEGATIVE, txt))
 
         tt.addLine("")
         for line in nextLevel.desc

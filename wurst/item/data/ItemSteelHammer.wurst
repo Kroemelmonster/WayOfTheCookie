@@ -1,0 +1,38 @@
+package ItemSteelHammer
+
+import Icons
+import initlater Stack
+import initlater KItem
+import initlater Hero
+import initlater KItemType
+import LinkedList
+import StringUtils
+
+public class ItemSteelHammer extends KItem
+    static KItemType TYPE
+
+    static function setup()
+        TYPE = new KItemType("Steel Hammer", Icons.bTNHammer)
+        TYPE.setCreationListener()() ->
+            return new ItemSteelHammer(TYPE)
+        TYPE.setTooltipListener() () ->
+            return createTooltipBaseLines()
+
+    private static constant int VALUE = 5
+
+    private static function createTooltipBaseLines() returns LinkedList<string>
+        return new LinkedList<string>
+        ..add("Adds " + StringUtils.primaryString(VALUE.toString()) + " Attack")
+
+    construct(KItemType itemType)
+        super(itemType)
+
+    override function onEquip(Hero h, boolean add)
+        if add
+            h.stats.attackModi.addBonus += VALUE
+        else
+            h.stats.attackModi.addBonus -= VALUE
+
+
+    override function onStackUpdate(ArmyStack armyStack, boolean add)
+        

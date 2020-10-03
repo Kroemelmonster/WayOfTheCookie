@@ -1,72 +1,26 @@
 package Spell
 import Action
 import initlater BoardHero
-import initlater ChainLightningSpell
-import initlater LightningBoltSpell
-import initlater RallingCrySpell
 import ActionCost
-import TooltipNew
-import LinkedList
-
-interface SpellCreateListener
-    function create(BoardHero boardHero) returns Spell
-
-interface SpellCreateTooltipLinesListener
-    function create(int level) returns LinkedList<string>
-
-public class SpellType
-    protected string icon
-    protected string name
-    protected SpellCreateListener listener
-    protected SpellCreateTooltipLinesListener tooltipLinesListener
-
-    construct(string name, string icon)
-        this.icon = icon
-        this.name = name
-    
-    function onCreate(SpellCreateListener listener)
-        this.listener = listener
-
-    function onCreateTooltipLines(SpellCreateTooltipLinesListener tooltipLinesListener)
-        this.tooltipLinesListener = tooltipLinesListener
-
-    @inline
-    function create(BoardHero boardHero) returns Spell
-        return listener.create(boardHero)
-
-    @inline
-    function getIcon() returns string
-        return icon
-    
-    @inline
-    function getName() returns string
-        return name
-
-    @inline
-    function toString() returns string
-        return "SpellType '"+name+"'"
-
-    function createTooltipLines(int level) returns LinkedList<string>
-        return tooltipLinesListener.create(level)
-
-    static function setup()
-        ChainLightningSpell.setup()
-        LightningBoltSpell.setup()
-        RallingCrySpell.setup()
+import ActionType
+import BoardEntity
 
 public abstract class Spell extends Action
     protected BoardHero hero
     protected int level
 
-    construct(BoardHero hero, SpellType spellType, ActionCostPreset cost)
-        super(hero, spellType.icon, spellType.name, cost)
-        this.hero = hero
+    construct(BoardEntity entity, ActionType actionType, ActionCostPreset cost)
+        super(entity, actionType, cost)
+        if entity.getType() != EntityType.HERO
+            Log.error("Tried to add a Spell to an non Hero")
+        this.hero = entity.toHero()
         presetOption(ActionOption.SPELL)
         activateQuickcast(true)
 
     function setLevel(int i)
         if i < 0
-            Log.error("Tried to create the Spell "+name+ " with a level of "+i.toString())
+            Log.error("Tried to create the Spell " + getName() 
+             + " with a level of " + i.toString())
         this.level = i
 
     function toggleQuickcast()

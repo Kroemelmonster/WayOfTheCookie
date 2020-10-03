@@ -1,0 +1,59 @@
+package ItemSimpleAxe
+
+import Icons
+import initlater Stack
+import initlater KItem
+import initlater Hero
+import StackType
+import initlater KItemType
+import LinkedList
+import Tooltip
+import StringUtils
+
+public class ItemSimpleAxe extends KItem
+    static KItemType TYPE
+
+    static function setup()
+        TYPE = new KItemType("Simple Axe",  Icons.bTNOrcMeleeUpOne)
+        TYPE.setCreationListener()() ->
+            return new ItemSimpleAxe(TYPE)
+        TYPE.setTooltipListener() () ->
+            return createTooltipBaseLines()
+
+    private static function createTooltipBaseLines() returns LinkedList<string>
+        return new LinkedList<string>
+        ..add("TODO this item just gives damage to a random entiy family")
+
+    private static function createSpecificTooltip(ItemSimpleAxe i) returns Tooltip
+        return Tooltip.create(TYPE.getName())
+        ..addLine("Adds " + StringUtils.primaryString(i.value.toString())
+        + " Damage to all " + i.family.name)
+
+    private int value
+    private Family family
+
+    construct(KItemType itemType)
+        super(itemType)
+        value = GetRandomInt(3, 8)
+        let i = GetRandomInt(0, 2)
+        if i == 0
+            family = Family.TROLL
+        else if i == 1
+            family = Family.SKELTON
+        else
+            family = Family.GNOLL
+
+
+    override function onEquip(Hero h, boolean add)
+
+    override function onStackUpdate(ArmyStack armyStack, boolean add)
+        if armyStack.getStackType().isFamily(family) == false
+            return
+        if add
+            armyStack.stats.damageModi.addBonus += value
+        else
+            armyStack.stats.damageModi.addBonus -= value
+   
+    override function createTooltip() returns Tooltip
+        return createSpecificTooltip(this)
+        

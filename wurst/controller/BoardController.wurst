@@ -15,14 +15,13 @@ import initlater Action
 import initlater OrderSystem
 import LinkedList
 import BoardTrigger
-import UITooltip
 import initlater MainController
 import BoardEntity
 import Globals
 import Status
 import StatusType
-import StunDebuff
 import ActionCost
+import StatusStunned
 
 public class BoardController
 
@@ -34,7 +33,7 @@ public class BoardController
         let board = target.getBoard()
         board.getInitiative().pushEntity(target, time)
         if target.getType() == EntityType.STACK
-            StatusController.add(StunDebuff.TYPE, target, StatusData.createDuration(1))
+            StatusController.add(StatusStunned.TYPE, target, StatusData.createDuration(1))
         next.continue()
 
     /** Use this to summon / create a Stack mid Fight */
@@ -81,7 +80,7 @@ public class BoardController
             return
         let coord = target.getCell().getCoord()
         
-        standardTextTag(coord, Tooltip.coloredSpecificDamageInstance(specificInstance))
+        standardTextTag(coord, specificInstance.toColoredText())
         target.stats.addAmount(-specificInstance.amount)
         
         if target.stats.getAmount() == 0

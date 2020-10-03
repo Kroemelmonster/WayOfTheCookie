@@ -1,0 +1,67 @@
+package ActionType
+
+import Action
+import LinkedList
+import Icon
+import BoardEntity
+import initlater SummonLesserSkeletonAction
+import initlater ChainLightningSpell
+import initlater LightningBoltSpell
+import initlater RallingCrySpell
+import initlater WaitAction
+import initlater DefendAction
+import initlater SlamAction
+import initlater ChainLightningAction
+import initlater WalkAndAttackAction
+import initlater HeroSkipAction
+import initlater HeroAttackAction
+import initlater ActionTalent
+
+interface ActionCreateListener
+    function create(BoardEntity boardEntity) returns Action
+
+interface ActionCreateTooltipLinesListener
+    function create(int value) returns LinkedList<string>
+
+public class ActionType extends Icon
+    protected ActionCreateListener listener
+    protected ActionCreateTooltipLinesListener tooltipLinesListener
+    protected ActionTalent creatingTalent
+
+    construct(string name, string icon)
+        super(name, icon)
+    
+    function onCreate(ActionCreateListener listener)
+        this.listener = listener
+
+    function onCreateTooltipLines(ActionCreateTooltipLinesListener tooltipLinesListener)
+        this.tooltipLinesListener = tooltipLinesListener
+
+    function create(BoardEntity boardEntity) returns Action
+        return listener.create(boardEntity)
+
+    function toString() returns string
+        return "ActionType '"+name+"'"
+
+    function createTooltipLines(int value) returns LinkedList<string>
+        return tooltipLinesListener.create(value)
+
+    function getTalent() returns ActionTalent
+        if creatingTalent == null
+            creatingTalent = new ActionTalent(this)
+        return creatingTalent
+
+    static function setup()
+        WaitAction.setup()
+        DefendAction.setup()
+        WalkAndAttackAction.setup()
+        SlamAction.setup()
+        ChainLightningAction.setup()
+        SummonLesserSkeletonAction.setup()
+
+
+        HeroSkipAction.setup()
+        HeroAttackAction.setup()
+        ChainLightningSpell.setup()
+        LightningBoltSpell.setup()
+        RallingCrySpell.setup()

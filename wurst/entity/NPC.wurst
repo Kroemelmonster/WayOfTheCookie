@@ -5,9 +5,9 @@ import LinkedList
 
 import Stack
 import StackType
-import UINPCWindow
 
 import initlater Hero
+import initlater UIWindowNPC
 
 constant HashMap<unit, NPC> map = new HashMap<unit, NPC>
 
@@ -53,12 +53,12 @@ public class NPCShop extends NPC
 
     override function startInteraction(Hero h)
         h.setVulnearble(false)
-        UINPCWindow.setupNPC(h.getPlayer(), this)
+        UIWindowNPC.open(h.getPlayer(), this)
 
 
     override function endInteraction(Hero h)
         h.setVulnearble(true)
-        UINPCWindow.hide(h.getPlayer())
+        UIWindowNPC.hide(h.getPlayer())
     
 
 public class NPCShopData

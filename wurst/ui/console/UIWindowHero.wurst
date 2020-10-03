@@ -1,14 +1,14 @@
 package UIWindowHero
 import UIWindow
 import UIHandle
-import TooltipNew
+import Tooltip
 import StackType
 import StatsModifier
-import TooltipGenerator
+import StringUtils
 import PlayerData
 import Stack
 import Scheduler
-import UITooltipNew
+import UITooltip
 import Description
 import StackStats
 import DamageType
@@ -19,14 +19,107 @@ import LinkedList
 import UIInteractableStatInfo
 import UIInteractable
 import HeroStats
+import UIWindowSkillTree
+import UIButtonIcon
+import KItem
+import Hero
+
+tuple itemDrag(int pos, KItem kitem)
 
 public class UIWindowHeroInfo
-
     protected static function get(Player p) returns UIWindowHeroInfo
         return p.menuConsoleInfo.heroInfo
 
+    protected static function getHero(Player p) returns Hero
+        return p.hero
+
     protected static function getStats(Player p) returns HeroStats
-        return p.hero.stats
+        return getHero(p).stats
+
+    protected int mousePressedIndexAtDragStart = -1
+    protected UIWindowHeroItem dragStart = null
+    protected UIWindowHeroItem dragEnd = null
+
+    protected static function setupDragStart(Player p, UIWindowHeroItem handleItem)
+        if handleItem.kitem == null
+            return
+        let info = get(p)
+        info.dragStart = handleItem
+        info.mousePressedIndexAtDragStart = p.mousePressedIndex
+
+    protected static function setupDragEnd(Player p, UIWindowHeroItem handleItem)
+        let info = get(p)
+        if info.dragStart != null and info.dragStart != handleItem
+            info.dragEnd = handleItem
+
+    protected static function checkAndCancelDrag(Player p)
+        let info = get(p)
+        if info.dragStart == null
+            return
+        if info.mousePressedIndexAtDragStart != p.mousePressedIndex
+            cancelDrag(p)
+    
+    protected static function cancelDrag(Player p)
+        let info = get(p)
+        info.dragStart = null
+        info.dragEnd = null
+        info.mousePressedIndexAtDragStart = -1
+
+    protected static function tryFinishDrag(Player p)
+        let info = get(p)
+        let hero = getHero(p)
+        if info.dragStart != null
+            hero.unequipItemAt(info.dragStart.index)
+            hero.unequipItemAt(info.dragEnd.index)
+
+            hero.equiqItemAt(info.dragStart.index, info.dragEnd.kitem)
+            hero.equiqItemAt(info.dragEnd.index, info.dragStart.kitem)
+
+        UIWindowHero.update(p)
+
+class UIWindowHeroItem extends UIButtonIcon
+    protected KItem kitem
+    protected int index
+
+    construct(UIHandle parent)
+        super(parent.self, true, false, false)
+        setSize(0.035, 0.035)
+        onMouseDown() -> 
+            if BlzGetTriggerPlayerMouseButton() == MOUSE_BUTTON_TYPE_LEFT
+                UIWindowHeroInfo.setupDragStart(GetTriggerPlayerData(), this)
+        onMouseUp() -> 
+            UIWindowHeroInfo.tryFinishDrag(GetTriggerPlayerData())
+        onMouseEnter() -> 
+            UIWindowHeroInfo.setupDragEnd(GetTriggerPlayerData(), this)
+
+    protected function setItem(KItem kitem, int index)
+        this.kitem = kitem
+        this.index = index
+
+    protected function updateIcon(KItem kitem, boolean wasDragged)
+        if kitem == null
+            setIcon("Icons/BTNDotted.dds")
+            setAlpha(255)
+            // TODO disable enable
+        else
+            setIcon(kitem.getIcon())
+            if wasDragged
+                setAlpha(80)
+            else
+                setAlpha(255)
+
+    protected function update(Player p)
+        let info = UIWindowHeroInfo.get(p)
+        // we currently drag somehting to here
+        if info.dragEnd == this
+            updateIcon(info.dragStart.kitem, true)
+            return
+        // we currently drag something from here
+        if info.dragStart == this and info.dragEnd != null
+            updateIcon(info.dragEnd.kitem, true)
+            return
+        updateIcon(kitem, false)
+
 
 public class UIWindowHero
     protected static UIWindowBasic window
@@ -38,68 +131,81 @@ public class UIWindowHero
     protected static UIInteractableStatInfo damageInfo
     protected static UIInteractableStatInfo inititaiveInfo
 
+    protected static UIWindowHeroItem array[MAX_ACTIVE_ITEMS] activeItems
+    // MAX_BACKPACK_ITEMS
+
     static function create()
         window = UIWindowBasic.create(true)
-        ..setPointToConsoleUI(FRAMEPOINT_TOP, FRAMEPOINT_TOP)
-        ..setSize(0.2, 0.25)
+        ..setPointToConsoleUI(FRAMEPOINT_TOPLEFT, FRAMEPOINT_TOPLEFT, UIWindowSkillTree.WIDTH + 0.01, 0)
+        ..setSize(0.27, 0.35)
+
+        activeItems[0] = new UIWindowHeroItem(window)
+        ..setInnerPoint(FRAMEPOINT_TOPLEFT, window, FRAMEPOINT_TOPLEFT)
+
+        for i = 1 to activeItems.length - 1
+            activeItems[i] = new UIWindowHeroItem(window)
+            ..setPoint(FRAMEPOINT_TOPLEFT, activeItems[i - 1], FRAMEPOINT_TOPRIGHT, 0.0015, 0)
 
         let infoPadding = 0.005
         inititaiveInfo = UIInteractableStatInfo.create(window)
         ..setInnerPoint(FRAMEPOINT_BOTTOMLEFT, window, FRAMEPOINT_BOTTOMLEFT)
         ..setInnerPoint(FRAMEPOINT_BOTTOMRIGHT, window, FRAMEPOINT_BOTTOM)
-        ..setIcon("UI/Textures/StackInfo/initiative.dds")
+        ..setIcon("ICONS/STATInitiative.dds")
         ..onMouseEnter() -> 
-            let tt = TooltipNew.create("Initiative")
+            let tt = Tooltip.create("Initiative")
             Description.extendTooltip(tt, "Initiative")
             tt.addLine("-----")
             let p = GetTriggerPlayerData()
             InitiativeList.extendTooltip(tt, UIWindowHeroInfo.getStats(p).getInitiative())
-            UITooltipNew.display(p, tt, TooltipNewAnchor.RIGHT_BOTTOM , inititaiveInfo)
+            UITooltip.display(p, tt, TooltipAnchor.RIGHT_BOTTOM , inititaiveInfo)
 
         damageInfo = UIInteractableStatInfo.create(window)
         ..setInnerPoint(FRAMEPOINT_BOTTOMLEFT, window, FRAMEPOINT_BOTTOM)
         ..setInnerPoint(FRAMEPOINT_BOTTOMRIGHT, window, FRAMEPOINT_BOTTOMRIGHT)
         ..onMouseEnter() -> 
-            let tt = TooltipNew.create("Damage")
+            let tt = Tooltip.create("Damage")
             Description.extendTooltip(tt, "Damage")
-            UITooltipNew.display(GetTriggerPlayerData(), tt, TooltipNewAnchor.RIGHT_BOTTOM , damageInfo)
+            UITooltip.display(GetTriggerPlayerData(), tt, TooltipAnchor.RIGHT_BOTTOM , damageInfo)
 
         powerInfo = UIInteractableStatInfo.create(window)
         ..setPoint(FRAMEPOINT_BOTTOMLEFT, inititaiveInfo, FRAMEPOINT_TOPLEFT, 0, infoPadding)
         ..setPoint(FRAMEPOINT_BOTTOMRIGHT, inititaiveInfo, FRAMEPOINT_TOPRIGHT, 0, infoPadding)
-        ..setIcon("UI/Textures/StackInfo/power.dds")
+        ..setIcon("ICONS/STATPower.dds")
         ..onMouseEnter() -> 
-            let tt = TooltipNew.create("Power")
+            let tt = Tooltip.create("Power")
             Description.extendTooltip(tt, "Power")
-            UITooltipNew.display(GetTriggerPlayerData(), tt, TooltipNewAnchor.RIGHT_BOTTOM , powerInfo)
+            UITooltip.display(GetTriggerPlayerData(), tt, TooltipAnchor.RIGHT_BOTTOM , powerInfo)
 
         wisdomInfo = UIInteractableStatInfo.create(window)
         ..setPoint(FRAMEPOINT_BOTTOMLEFT, damageInfo, FRAMEPOINT_TOPLEFT, 0, infoPadding)
         ..setPoint(FRAMEPOINT_BOTTOMRIGHT, damageInfo, FRAMEPOINT_TOPRIGHT, 0, infoPadding)
-        ..setIcon("UI/Textures/StackInfo/wisdom.dds")
+        ..setIcon("ICONS/STATWisdom.dds")
         ..onMouseEnter() -> 
-            let tt = TooltipNew.create("Wisdom")
+            let tt = Tooltip.create("Wisdom")
             Description.extendTooltip(tt, "Wisdom")
-            UITooltipNew.display(GetTriggerPlayerData(), tt, TooltipNewAnchor.RIGHT_BOTTOM , wisdomInfo)
+            UITooltip.display(GetTriggerPlayerData(), tt, TooltipAnchor.RIGHT_BOTTOM , wisdomInfo)
         
         attackInfo = UIInteractableStatInfo.create(window)
         ..setPoint(FRAMEPOINT_BOTTOMLEFT, powerInfo, FRAMEPOINT_TOPLEFT, 0, infoPadding)
         ..setPoint(FRAMEPOINT_BOTTOMRIGHT, powerInfo, FRAMEPOINT_TOPRIGHT, 0, infoPadding)
-        ..setIcon("UI/Textures/StackInfo/attack.dds")
+        ..setIcon("ICONS/STATAttack.dds")
         ..onMouseEnter() -> 
-            let tt = TooltipNew.create("Attack")
+            let tt = Tooltip.create("Attack")
             Description.extendTooltip(tt, "AttackHero")
-            UITooltipNew.display(GetTriggerPlayerData(), tt, TooltipNewAnchor.RIGHT_BOTTOM , attackInfo)
+            UITooltip.display(GetTriggerPlayerData(), tt, TooltipAnchor.RIGHT_BOTTOM , attackInfo)
 
         defenceInfo = UIInteractableStatInfo.create(window)
         ..setPoint(FRAMEPOINT_BOTTOMLEFT, wisdomInfo, FRAMEPOINT_TOPLEFT, 0, infoPadding)
         ..setPoint(FRAMEPOINT_BOTTOMRIGHT, wisdomInfo, FRAMEPOINT_TOPRIGHT, 0, infoPadding)
-        ..setIcon("UI/Textures/StackInfo/defence.dds")
+        ..setIcon("ICONS/STATDefence.dds")
         ..onMouseEnter() -> 
-            let tt = TooltipNew.create("Defence")
+            let tt = Tooltip.create("Defence")
             Description.extendTooltip(tt, "Defence")
-            UITooltipNew.display(GetTriggerPlayerData(), tt, TooltipNewAnchor.RIGHT_BOTTOM , defenceInfo)
-        
+            UITooltip.display(GetTriggerPlayerData(), tt, TooltipAnchor.RIGHT_BOTTOM , defenceInfo)
+
+        window.onClose() p ->
+            UIWindowHeroInfo.cancelDrag(p)
+
         Scheduler.onTime() p ->
             if window.isVisible(p)
                 update(p)
@@ -107,7 +213,7 @@ public class UIWindowHero
     static function toggle(Player p)
         window.toggle(p)
 
-    private static function update(Player p)
+    protected static function update(Player p)
         if not p.isLocal()
             return
         let stats = UIWindowHeroInfo.getStats(p)
@@ -120,17 +226,21 @@ public class UIWindowHero
         damageInfo.setIcon(stats.getDamageType())
         inititaiveInfo.setTextBasedOnStats(stats.getBasisInitiative(), stats.getInitiative(), stats.getInitiativeModifier())
 
+        UIWindowHeroInfo.checkAndCancelDrag(p)
+
+        let hero = UIWindowHeroInfo.getHero(p)
+        for i = 0 to activeItems.length - 1
+            activeItems[i].setItem(hero.getActiveItem(i), i)
+
+        for i = 0 to activeItems.length - 1
+            activeItems[i].update(p)
+
+
+
+    
 
     private static function damageToText(realRange basisDmg, realRange modifiedDmg) returns string
         let dmgDifference = modifiedDmg.avg() - basisDmg.avg()
         let roundedBasisDmg = basisDmg.round()
-        return roundedBasisDmg.min.toString() + " - " + roundedBasisDmg.max.toString() + TooltipGenerator.coloredModiReal(dmgDifference, 1)
+        return roundedBasisDmg.min.toString() + " - " + roundedBasisDmg.max.toString() + StringUtils.coloredModiReal(dmgDifference, 1)
     
-    /*
-
-        updateTalents(armyStats.getAllVisibleTalents())
-        for int i = 0 to buffs.length
-            buffs[i].setVisible(false)
-        
-
-*/

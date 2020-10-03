@@ -1,0 +1,99 @@
+package UIWindowNPC
+import UIButton
+import PlayerData
+import ClosureFrames
+import UIHandle
+import UIButtonIcon
+import Action
+import UIWindow
+import initlater Scheduler
+import Hero
+import Tooltip
+import UITooltip
+import SkillTree
+import NPC
+import UIWindowSkillTree
+
+public class UIWindowNPCInfo
+    protected NPC npc
+
+    protected static function get(Player p) returns UIWindowNPCInfo
+        return p.worldConsoleInfo.npcInfo
+
+    protected static function getNPC(Player p) returns NPC
+        return get(p).npc
+    
+    protected static function setNPC(Player p, NPC npc)
+        get(p).npc = npc
+
+class UIWindowNPCSellButton extends UIButtonIcon
+    protected framehandle handleText
+    protected framehandle handleGoldText
+
+    construct(UIHandle parent)
+        super(parent.self, true, false, false)
+        setSize(0.035, 0.035)
+        setVisible(false)
+
+        handleText = createUIFrame("TEXT", self)
+        ..setPoint(FRAMEPOINT_TOPLEFT, self, FRAMEPOINT_BOTTOMLEFT, 0, 0.002)
+        ..setPoint(FRAMEPOINT_BOTTOMRIGHT, self, FRAMEPOINT_BOTTOMRIGHT, -0.002, -0.009)
+        ..setTextAlignment(TEXT_JUSTIFY_TOP, TEXT_JUSTIFY_RIGHT)
+
+        handleGoldText = createUIFrame("TEXT", self)
+        ..setPoint(FRAMEPOINT_TOPLEFT, handleText, FRAMEPOINT_BOTTOMLEFT, 0, -0.002)
+        ..setPoint(FRAMEPOINT_TOPRIGHT, handleText, FRAMEPOINT_BOTTOMRIGHT, 0, -0.012)
+        ..setTextAlignment(TEXT_JUSTIFY_TOP, TEXT_JUSTIFY_RIGHT)
+
+    function setText(string amount, string gold)
+        handleText.setText(amount)
+        handleGoldText.setText(gold)
+        
+
+public class UIWindowNPC
+    protected static UIWindowBasic window
+    protected static UIWindowNPCSellButton array[15] stockUnits
+
+
+    static function create()
+        let width = UIWindowSkillTree.WIDTH
+        window = UIWindowBasic.create(true)
+        ..setPointToConsoleUI(FRAMEPOINT_TOPLEFT, FRAMEPOINT_TOPLEFT)
+        ..setSize(width, 0.35)
+
+        stockUnits[0] = new UIWindowNPCSellButton(window)
+        ..setInnerPoint(FRAMEPOINT_TOPLEFT, window, FRAMEPOINT_TOPLEFT)
+
+        for i = 1 to stockUnits.length - 1
+            stockUnits[i] = new UIWindowNPCSellButton(window)
+            ..setPoint(FRAMEPOINT_TOPLEFT, stockUnits[i - 1], FRAMEPOINT_TOPRIGHT)
+
+
+        Scheduler.onTime() (Player p) ->
+            if window.isVisible(p)
+                update(p)
+
+    static function open(Player p, NPC npc)
+        UIWindowNPCInfo.setNPC(p, npc)
+        window.open(p)
+        update(p)
+    
+    static function hide(Player p)
+        window.close(p)
+
+    private static function update(Player p)
+        if not p.isLocal()
+            return
+        
+        let npc = UIWindowNPCInfo.getNPC(p)
+        
+        if npc.getType() == SHOP
+            let stockitr = npc.getShopData().getStock().iterator()
+            for i = 0 to stockUnits.length - 1
+                stockUnits[i].setVisible(stockitr.hasNext())
+                if stockitr.hasNext()
+                    let stack = stockitr.next()
+                    stockUnits[i].setIcon(stack.getStackType().icon)
+                    stockUnits[i].setText(stack.getAmount().toString(), stack.getStackType().value.toString())
+
+            destroy stockitr

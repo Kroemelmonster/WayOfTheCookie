@@ -14,11 +14,13 @@ import World
 import Scheduler
 import KUtil
 import KItem
-import SkillTree
-import UITooltip
 import MainController
 import HeroTypesDefinition
 import Description
+import KItemType
+import ActionType
+import PassiveActionType
+import Talent
 
 let globalSetups = new LinkedList<SetupListener>()
 
@@ -30,10 +32,8 @@ init
 	for int i = 0 to UIMain.MAX_PARTS
 		globalSetups.add() ->
 			UIMain.load(i)
-	StackTypesDefinition.setup(globalSetups)
-	globalSetups.add() ->
-		defineObjects()
-	HeroTypesDefinition.setup(globalSetups)
+	
+	initDefineObjects()
 	globalSetups.add() ->
 		createTestBoard()
 	globalSetups.add() ->
@@ -69,14 +69,23 @@ function setupSystems()
 	Player.setup()
 	Mouse3DPositionSystem.setup()
 	BlzEnableSelections(true, false)
-	Tooltip.setup()
 
-function defineObjects()
-	//Log.info("Flesh out some Units")
-	Description.setup()
-	StatusType.setup()
-	Action.setup()
-	KItemTypeSet.setup()
+function initDefineObjects()
+	globalSetups.add() ->
+		Description.setup()
+	globalSetups.add() ->
+		StatusType.setup()
+	globalSetups.add() ->
+		ActionType.setup()
+	globalSetups.add() ->
+		PassiveActionType.setup()
+	globalSetups.add() ->
+		TalentSet.setup()
+	StackTypesDefinition.setup(globalSetups)
+	globalSetups.add() ->
+		KItemType.setup()
+	globalSetups.add() ->
+		HeroTypesDefinition.setup()
 
 function start()
 	//Log.info("Start")

@@ -1,0 +1,49 @@
+package KItemType
+
+import LinkedList
+import Tooltip
+import KItem
+import ItemSimpleAxe
+import ItemSteelHammer
+
+interface KItemCreateListener
+    function create() returns KItem
+
+interface KItemCreateTooltipLinesListener
+    function create() returns LinkedList<string>
+
+public class KItemType
+    protected string name
+    protected string icon
+    protected KItemCreateListener listener
+    protected KItemCreateTooltipLinesListener tooltipLinesListener
+
+    construct(string name, string icon)
+        this.icon = icon
+        this.name = name
+
+    static function setup()
+        ItemSimpleAxe.setup()
+        ItemSteelHammer.setup()
+        
+    function setCreationListener(KItemCreateListener listener)
+        this.listener = listener
+
+    function setTooltipListener(KItemCreateTooltipLinesListener listener)
+        this.tooltipLinesListener = listener
+
+    function createNew() returns KItem
+        return listener.create()
+
+    function getIcon() returns string
+        return icon
+    
+    function getName() returns string
+        return name
+
+    function createTooltip() returns Tooltip
+        return Tooltip.create(name)
+        ..addLines(tooltipLinesListener.create())
+
+    function toString() returns string
+        return "KItemType '"+name+"'"

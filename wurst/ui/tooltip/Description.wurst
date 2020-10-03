@@ -1,8 +1,8 @@
 package Description
 import HashMap
 import LinkedList
-import TooltipNew
-import TooltipGenerator
+import Tooltip
+import StringUtils
 import Globals
 
 public class Description
@@ -12,36 +12,36 @@ public class Description
         create("Attack")
         ..addLine("Increases your damage with attacks.")
         ..addLine("")
-        ..addLine("Each " + TooltipGenerator.secondaryString("Attack")
+        ..addLine("Each " + StringUtils.secondaryString("Attack")
          + " that you have more than your opponents "
-         + TooltipGenerator.secondaryString("Defence")
+         + StringUtils.secondaryString("Defence")
          + " will increase your damage dealt by "
-         + TooltipGenerator.coloredPercent(DAMAGECALC_ATTACK_VS_DEFENCE_POSITIVE / 100.0)
+         + StringUtils.coloredPercent(DAMAGECALC_ATTACK_VS_DEFENCE_POSITIVE / 100.0)
          + " up to "
-         + TooltipGenerator.coloredPercent(DAMAGECALC_ATTACK_VS_DEFENCE_POSITIVE_MAX / 100.0))
+         + StringUtils.coloredPercent(DAMAGECALC_ATTACK_VS_DEFENCE_POSITIVE_MAX / 100.0))
 
         create("AttackHero")
         ..addLine("Increases the attack of all your troops.")
         ..addLine("Also increases your attackdamage by "
-         + TooltipGenerator.coloredPercent(ATTACK_DAMAGE_PER_ATTACK / 100.0))
+         + StringUtils.coloredPercent(ATTACK_DAMAGE_PER_ATTACK / 100.0))
         ..addLine("")
-        ..addLine("Each " + TooltipGenerator.secondaryString("Attack")
-         + " that your troops have more than your opponents " + TooltipGenerator.secondaryString("Defence")
+        ..addLine("Each " + StringUtils.secondaryString("Attack")
+         + " that your troops have more than your opponents " + StringUtils.secondaryString("Defence")
          + " will increase their damage dealt by "
-         + TooltipGenerator.coloredPercent(DAMAGECALC_ATTACK_VS_DEFENCE_POSITIVE / 100.0)
+         + StringUtils.coloredPercent(DAMAGECALC_ATTACK_VS_DEFENCE_POSITIVE / 100.0)
          + " up to "
-         + TooltipGenerator.coloredPercent(DAMAGECALC_ATTACK_VS_DEFENCE_POSITIVE_MAX / 100.0))
+         + StringUtils.coloredPercent(DAMAGECALC_ATTACK_VS_DEFENCE_POSITIVE_MAX / 100.0))
 
         create("Defence")
         ..addLine("Decreases the damage of enemies attacks.")
         ..addLine("")
-        ..addLine("Each " + TooltipGenerator.secondaryString("Defence")
+        ..addLine("Each " + StringUtils.secondaryString("Defence")
          + " that you have more than your opponents "
-         + TooltipGenerator.secondaryString("Attack")
+         + StringUtils.secondaryString("Attack")
          + " will decreases their damage dealt by "
-         + TooltipGenerator.coloredPercent(DAMAGECALC_ATTACK_VS_DEFENCE_NEGATIVE / 100.0)
+         + StringUtils.coloredPercent(DAMAGECALC_ATTACK_VS_DEFENCE_NEGATIVE / 100.0)
          + " up to "
-         + TooltipGenerator.coloredPercent(DAMAGECALC_ATTACK_VS_DEFENCE_NEGATIVE_MAX / 100.0))
+         + StringUtils.coloredPercent(DAMAGECALC_ATTACK_VS_DEFENCE_NEGATIVE_MAX / 100.0))
 
         create("Damage")
         ..addLine("This is the raw damage you would do.")
@@ -57,13 +57,13 @@ public class Description
         ..addLine("")
         ..addLine("Most Action do need theese points to be used.")
         ..addLine("Moving one cell will cost one "
-         + TooltipGenerator.secondaryString("Actionpoint")
+         + StringUtils.secondaryString("Actionpoint")
          + " unless stated otherwise.")
         ..addLine("Your standard Attack do cost one "
-         + TooltipGenerator.secondaryString("Actionpoint")
+         + StringUtils.secondaryString("Actionpoint")
          + " to use but it will deplet all remaining.")
         ..addLine("Your turn ends automaticly when you dont have any "
-         + TooltipGenerator.secondaryString("Actionpoints")
+         + StringUtils.secondaryString("Actionpoints")
          + " left.")
 
         create("HitPoints")
@@ -79,15 +79,15 @@ public class Description
         ..addLine("Increases the potency of most Spells.")
         ..addLine("")
         ..addLine("On default each point increases the damage of your spells by "
-         + TooltipGenerator.coloredPercent(DAMAGE_PER_SPELLPOWER / 100.0))
+         + StringUtils.coloredPercent(DAMAGE_PER_SPELLPOWER / 100.0))
 
         create("Wisdom")
         ..addLine("Increases the maximum Mana you have.")
         ..addLine("")
-        ..addLine("Each " + TooltipGenerator.secondaryString("Wisdom")
-         + " increases your Mana Pool by " + TooltipGenerator.coloredModiInt(MANA_PER_WISDOWM))
+        ..addLine("Each " + StringUtils.secondaryString("Wisdom")
+         + " increases your Mana Pool by " + StringUtils.coloredModiInt(MANA_PER_WISDOWM))
 
-    static function extendTooltip(TooltipNew tt, string keyword)
+    static function extendTooltip(Tooltip tt, string keyword)
         if not bookOfWisdom.has(keyword)
             return
         let desc = bookOfWisdom.get(keyword)

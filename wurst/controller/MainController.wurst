@@ -9,7 +9,6 @@ import initlater HostileArmy
 import initlater Board
 import PlayerData
 import initlater UIMenuWorldConsole
-import initlater UINPCWindow
 import ClosureTimers
 import FightResult
 import initlater UIWindow

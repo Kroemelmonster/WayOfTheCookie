@@ -1,0 +1,216 @@
+package UIMenuActionConsole
+
+import PlayerData
+
+import initlater Hero
+import UIFightResultDialog
+import BoardTrigger
+import FightResult
+import UIWindow
+import UIHandle
+import UIProgressBar
+import UIExtensionArmyPanel
+import initlater Scheduler
+import UIWindowNPC
+import UIButtonIcon
+import Action
+import Icons
+import BoardEntity
+import ActionCost
+import OrderSystem
+
+
+class UIBoardActionButton extends UIButtonIcon
+    private Action action
+
+    construct(UIHandle parent)
+        super(parent.self, true, false, true)
+        setSize(0.037, 0.037)
+
+        onClick() () -> 
+            UIMenuActionConsole.activate(action, GetTriggerPlayerData())
+        onMouseEnter() -> 
+            if action != null
+                action.onUIMouseEnter()
+        onMouseLeave() -> 
+            if action != null
+                action.onUIMouseLeave()
+
+    function setAction(Action action, Action currentAction, string key)
+        this.action = action
+        setVisible(true)
+        setIcon(action.getIcon())
+        action.setKey(key)
+
+        let cost = action.getCost()
+        setCounter(cost.getCurrentCharges())
+
+        if action == currentAction
+            enable()
+            setGlowVisible(true)
+        else
+            setGlowVisible(false)
+            if action.canActivate()
+                enable()
+            else
+                if not cost.hasEnoughMana()
+                    disable("UI/Button/BTNExtensionOverlayDisabledMana.dds")
+                else if cost.isOnCooldown()
+                    let cooldown = cost.getCurrentCooldown()
+                    if cooldown > 0
+                        disable("UI/Button/BTNExtensionOverlapCooldown" + cooldown.toString() + ".dds")
+                    else // a cooldown of 0 means the entity just used it and is not allowed to us it this turn again
+                        disable("UI/Button/BTNExtensionOverlayDisabled.dds")
+                else
+                    disable("UI/Button/BTNExtensionOverlayDisabled.dds")
+
+    function setEmpty()
+        action = null
+        setVisible(false)
+        //disable()
+        //setGlowVisible(false)
+        //setIcon("Icons/BTNDotted.dds")
+
+public class UIMenuActionConsole
+    protected static UIMenu menu
+
+    //protected static UIFightResultDialog fightResultDialog
+    protected static framehandle array[8] handleActionPoints
+
+    protected static UIBoardActionButton array[4] primaryBtns
+    protected static UIBoardActionButton array[4] secondaryBtns
+
+    protected static constant string array[4] PRIMARY_KEYS = ["Q", "W", "E", "R"]
+    protected static constant string array[4] SECONDARY_KEYS = ["F", "D", "S", "A"] //its reverse !
+
+
+    static function create()
+        let width = 0.2
+        menu = UIMenu.create()
+        ..setPointToGameUI(FRAMEPOINT_BOTTOMRIGHT, FRAMEPOINT_BOTTOMRIGHT)
+        ..setSize(width, width / 1.37179487179)
+
+        let actionPointWidth = 0.0205
+        handleActionPoints[0] = createUIFrame("BACKDROP", menu)
+        ..setPoint(FRAMEPOINT_TOPLEFT, menu, FRAMEPOINT_TOPLEFT, 0.0276, -0.04)
+        ..setSize(actionPointWidth, actionPointWidth)
+        ..setTexture("UI/glues/singleplayer/humancampaign3d/black32.ds")
+
+        for i = 1 to handleActionPoints.length - 1
+            handleActionPoints[i] = createUIFrame("BACKDROP", menu)
+            ..setPoint(FRAMEPOINT_TOPLEFT, handleActionPoints[i - 1], FRAMEPOINT_TOPRIGHT)
+            ..setSize(actionPointWidth, actionPointWidth)
+            handleActionPoints[i].setTexture("UI/glues/singleplayer/humancampaign3d/black32.ds")
+
+        createUIFrame("BACKDROP", menu)
+        ..setPoint(FRAMEPOINT_TOPLEFT, menu, FRAMEPOINT_TOPLEFT)
+        ..setPoint(FRAMEPOINT_BOTTOMRIGHT, menu, FRAMEPOINT_BOTTOMRIGHT)
+        ..setTexture("UI/BoardConsole/ActionWindowBackground.dds")
+        ..setAlpha(255)
+
+        primaryBtns[0] = new UIBoardActionButton(menu)
+        ..setPoint(FRAMEPOINT_TOPLEFT, menu, FRAMEPOINT_TOPLEFT, 0.029, -0.062)
+
+        secondaryBtns[0] = new UIBoardActionButton(menu)
+        ..setPoint(FRAMEPOINT_BOTTOMRIGHT, menu, FRAMEPOINT_BOTTOMRIGHT, -0.011, 0.006)
+
+        let padding = 0.004
+        for i = 1 to primaryBtns.length - 1
+            primaryBtns[i] = new UIBoardActionButton(menu)
+            ..setPoint(FRAMEPOINT_TOPLEFT, primaryBtns[i - 1], FRAMEPOINT_TOPRIGHT, padding, 0)
+
+        for i = 1 to secondaryBtns.length - 1
+            secondaryBtns[i] = new UIBoardActionButton(menu)
+            ..setPoint(FRAMEPOINT_TOPRIGHT, secondaryBtns[i - 1], FRAMEPOINT_TOPLEFT, -padding, 0)
+
+    static function updateActionPoints(BoardEntity entity)
+        if entity.getBoard().isLocalPlayer()
+            updateActionPointsLocal(entity, 0)
+
+    static function updateActionPoints(BoardEntity entity, ActionCostPreset cost)
+        if entity.getBoard().isLocalPlayer()
+            var ap = cost.getAP()
+            if cost.isApFill()
+                ap = 100
+            updateActionPointsLocal(entity, ap)
+    
+    static function update(Player p)
+        if not p.isLocal() or p.isConntrolledByKI
+            return
+
+        if OrderSystem.couldOrderIFInteractable(p) == false
+            hide(p)
+            return
+        let entity = p.currentSelectedEntity
+
+        let currentAction = entity.getCurrentAction()
+
+        for int i = 0 to primaryBtns.length - 1
+            primaryBtns[i].setEmpty()
+
+        for int i = 0 to secondaryBtns.length - 1
+            secondaryBtns[i].setVisible(false)
+
+            
+        let actionItr = entity.getActions().iterator()
+
+        var primaryIndex = 0
+        var secondaryIndex = 0
+        while actionItr.hasNext()
+            let action = actionItr.next()
+            if action.showAsPrimary()
+                primaryBtns[primaryIndex].setAction(action, currentAction, PRIMARY_KEYS[primaryIndex])
+                primaryIndex ++
+            if action.showAsSecondary()
+                secondaryBtns[secondaryIndex].setAction(action, currentAction, SECONDARY_KEYS[secondaryIndex])
+                secondaryIndex ++
+            
+        destroy actionItr
+
+        menu.show(p)
+        updateActionPointsLocal(entity, 0)
+
+    static function hide(Player p)
+        menu.hide(p)
+
+    protected static function activate(Action action, Player p)
+        if not OrderSystem.canOrder(p)
+            return
+        if not action.canActivate()
+            return
+        action.activate()
+
+    private static function onkeyPress(Player p, string key)
+        if OrderSystem.canOrder(p) == false
+            return
+        if key == "Escape"
+            OrderSystem.resetCurrentSelectedAction(p.currentSelectedEntity)
+            return
+
+        let itr = p.currentSelectedEntity.getActions().iterator()
+        boolean continue = true
+        var counter = 0
+        while itr.hasNext() and continue
+            let action = itr.next()
+
+            if not action.hasOption(ActionOption.DEFAULT) and action.canBeActivatedByKey(key)
+                activate(action, p)
+                // only trigger one action
+                continue = false
+            counter ++
+        destroy itr
+
+    private static function updateActionPointsLocal(BoardEntity entity, int previewLoosingPoints)
+        let maxActionPoints = entity.getMaxActionPoints()
+        let maxRemainingPoints = entity.getRemainingActionPoints()
+        let startPreview = maxRemainingPoints - previewLoosingPoints
+        for i = 0 to handleActionPoints.length - 1
+            if i < maxActionPoints
+                if i >= maxRemainingPoints
+                    handleActionPoints[i].setTexture("UI/BoardConsole/WarningColor.dds")
+                else if i >= startPreview
+                    handleActionPoints[i].setTexture("UI/BoardConsole/SecondaryColor.dds")
+                else
+                    handleActionPoints[i].setTexture("UI/BoardConsole/PrimaryColor.dds")
+            else
+                handleActionPoints[i].setTexture("UI/glues/singleplayer/humancampaign3d/black32.ds")

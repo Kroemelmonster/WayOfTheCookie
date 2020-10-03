@@ -1,0 +1,57 @@
+package StatusStunned
+
+import AttachmentPoints
+import Icons
+import Abilities
+
+import Status
+
+import initlater StatusType
+import initlater BoardEntity
+import BoardTrigger
+import Tooltip
+import LinkedList
+
+public class StatusStunned extends Status
+    static StatusType TYPE
+
+    static function setup()
+        TYPE = new StatusType("Stunned", Icons.bTNStun)
+        TYPE.setCreationListener()(BoardEntity entity) ->
+            return new StatusStunned(TYPE, entity)
+        TYPE.setTooltipListener() (StatusData data) ->
+            return createTooltipLines(data)
+
+    private static function createTooltipLines(StatusData data) returns LinkedList<string>
+        let lines = new LinkedList<string>
+        ..add("You are stuned!")
+        if data != null
+            destroy data
+        return lines
+
+    /* -------------------------------------------------------------------------- */
+    
+    private effect display
+    private BoardTrigger turnStartListener
+
+    construct(StatusType statusType, BoardEntity entity)
+        super(statusType, entity)
+        display = entity.addAttachEffect(Abilities.thunderclapTarget, AttachmentPoints.overhead)
+
+        turnStartListener = entity.getTriggers().addTurnStart() (SequenzListener next) ->
+            kill()
+            next.continue()
+
+    override function updateInner(StatusData data)
+
+    override function createCurrentTooltip() returns Tooltip
+        return TYPE.createTooltip(null)
+
+    override function hide()
+        if display != null
+            display.destr()
+
+    ondestroy
+        if entity.isAlive() // TODO is this really necesery ?
+            entity.getTriggers().removeOnTurnStart(turnStartListener)
+        hide()

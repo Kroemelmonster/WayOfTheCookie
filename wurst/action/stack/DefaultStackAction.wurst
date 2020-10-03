@@ -8,10 +8,15 @@ import ActionCost
 import StackAction
 import BoardStack
 import DefaultAction
+import BoardEntity
+import ActionType
 
 public abstract class DefaultStackAction extends DefaultAction
+    protected BoardStack stack
 
-    construct(BoardStack stack, string name, ActionCostPreset cost)
-        super(stack, name, cost)
-        this.stack = stack
-        
+    construct(BoardEntity entity, ActionType actionType, ActionCostPreset cost)
+        super(entity, actionType, cost)
+        if entity.getType() != EntityType.STACK
+            Log.error("Tried to add an Stack Action to an non Stack")
+        this.stack = entity.toStack()
+        presetOption(ActionOption.DEFAULT)

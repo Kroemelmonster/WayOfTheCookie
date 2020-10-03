@@ -10,6 +10,11 @@ import KUtil
 import Talent
 import LinkedList
 import DamageType
+import CounterAttackPassive
+import SummonLesserSkeletonAction
+import SlamAction
+import CracklePassive
+import ChainLightningAction
 
 
 public class StackTypes
@@ -37,13 +42,13 @@ public class StackTypes
 class StackTypesDefinition
     private static function createDefault(integer unitId, integer armyId, string icon, StackSoundSet soundSet, int level, int leadership, int weight) returns StackType
         let stackType = new StackType(unitId, armyId, icon, soundSet, GetObjectName(unitId), level, leadership, (leadership * (1 + 0.4 * level)).round(), weight)
-        ..addTalent(TalentSet.DEFAULT)
+        TalentSet.addStackDefaultAction(stackType)
         StackTypes.list.add(stackType)
         return stackType
     
     private static function createMelee(integer unitId, integer armyId, string icon, StackSoundSet soundSet, int level, int leadership, int weight) returns StackType
         return createDefault(unitId, armyId, icon, soundSet, level, leadership, weight)
-        ..addTalent(TalentSet.COUNTER_ATTACK)
+        ..addTalent(CounterAttackPassive.TYPE.getTalent())
         ..setAttackRange(intRange(1, 1))
 
     private static function createRange(integer unitId, integer armyId, string icon, StackSoundSet soundSet, int level, int leadership, int weight) returns StackType
@@ -52,8 +57,6 @@ class StackTypesDefinition
 
     static function setup(LinkedList<SetupListener> setups)
         StackTypesDefintion.setup()
-        setups.add() ->
-            TalentSet.setup()
         setups.add() ->
             setupOne()
         setups.add() ->
@@ -78,7 +81,7 @@ class StackTypesDefinition
         ..setDefence(5)
 
         StackTypes.NECROMANCER = createRange(UnitTypesIds.NECROMANCER, UnitTypesIds.ARMY_NECROMANCER, Icons.bTNNecromancer, StackSoundSets.NECROMANCER, 2, 25, 200)
-        ..addTalent(TalentSet.SUMMON_LESSER_SKELETON)
+        ..addTalent(SummonLesserSkeletonAction.TYPE.getTalent())
         ..setInitiative(7)
         ..setActionPoints(2)
         ..setMaxHp(20)
@@ -111,7 +114,7 @@ class StackTypesDefinition
         StackTypes.ANCIENT_SASQUATCH = createMelee(UnitTypesIds.ANCIENT_SASQUATCH, UnitTypesIds.ARMY_ANCIENT_SASQUATCH, 
         "ReplaceableTextures\\CommandButtons\\BTNSasquatchAncient.blp", StackSoundSets.SKELETON, 5, 950, 100)
         ..addFamily(Family.SASQUATCH)
-        ..addTalent(TalentSet.SLAM)
+        ..addTalent(SlamAction.TYPE.getTalent())
         ..addTalent(TalentSet.CLEAVE50)
         ..setInitiative(6)
         ..setActionPoints(6)
@@ -141,7 +144,7 @@ class StackTypesDefinition
 
         StackTypes.GNOLL_WARDEN = createMelee(UnitTypesIds.GNOLL_WARDEN, UnitTypesIds.ARMY_GNOLL_WARDEN, Icons.bTNGnollWarden, StackSoundSets.SKELETON, 3, 170, 100)
         ..addFamily(Family.GNOLL)
-        ..addTalent(TalentSet.CRACKLE)
+        ..addTalent(CracklePassive.TYPE.getTalent())
         ..setInitiative(5)
         ..setActionPoints(5)
         ..setMaxHp(220)
@@ -151,7 +154,6 @@ class StackTypesDefinition
 
     private static function setupTwo()
         StackTypes.WIDOW_SPIDER = createMelee(UnitTypesIds.WIDOW_SPIDER, UnitTypesIds.ARMY_WIDOW_SPIDER, Icons.bTNSpiderBlack, StackSoundSets.SKELETON, 2, 30, 100)
-        ..addTalent(TalentSet.POPISONOUS)
         ..setInitiative(3)
         ..setActionPoints(3)
         ..setMaxHp(60)
@@ -165,7 +167,7 @@ class StackTypesDefinition
 
         StackTypes.FOREST_TROLL = createRange(UnitTypesIds.FOREST_TROLL, UnitTypesIds.ARMY_FOREST_TROLL, Icons.bTNForestTroll, StackSoundSets.FOOTMAN, 2, 20, 100)
         ..addFamily(Family.TROLL)
-        ..addTalent(TalentSet.COUNTER_ATTACK)
+        ..addTalent(CounterAttackPassive.TYPE.getTalent())
         ..setInitiative(4)
         ..setActionPoints(3)
         ..setMaxHp(22)
@@ -176,8 +178,7 @@ class StackTypesDefinition
 
         StackTypes.FOREST_TROLL_BERSERKER = createRange(UnitTypesIds.FOREST_TROLL_BERSERKER, UnitTypesIds.ARMY_FOREST_TROLL_BERSERKER, Icons.bTNForestTrollTrapper1, StackSoundSets.FOOTMAN, 3, 150, 110)
         ..addFamily(Family.TROLL)
-        ..addTalent(TalentSet.COUNTER_ATTACK)
-        ..addTalent(TalentSet.DEEP_CUTTING)
+        ..addTalent(CounterAttackPassive.TYPE.getTalent())
         ..setInitiative(5)
         ..setActionPoints(3)
         ..setMaxHp(150)
@@ -188,7 +189,7 @@ class StackTypesDefinition
 
         StackTypes.FOREST_TROLL_HIGH_PRIEST = createRange(UnitTypesIds.FOREST_TROLL_HIGH_PRIEST, UnitTypesIds.ARMY_FOREST_TROLL_HIGH_PRIEST, "ReplaceableTextures\\CommandButtons\\BTNForestTrollHighPriest.blp", StackSoundSets.NECROMANCER, 3, 200, 200)
         ..addFamily(Family.TROLL)
-        ..addTalent(TalentSet.CHAIN_LIGHTNING)
+        ..addTalent(ChainLightningAction.TYPE.getTalent())
         ..setInitiative(5)
         ..setActionPoints(2)
         ..setMaxHp(130)

@@ -8,11 +8,13 @@ import Spell
 import initlater Cell
 import initlater BoardHero
 import ActionCost
+import ActionType
+import BoardEntity
 
 public abstract class InstantSpell extends Spell
 
-    construct(BoardHero hero, SpellType spellType, ActionCostPreset cost)
-        super(hero, spellType, cost)
+    construct(BoardEntity entity, ActionType actionType, ActionCostPreset cost)
+        super(entity, actionType, cost)
         presetOption(ActionOption.INSTANT)
 
     override function getPreviewResultForCell(Cell cell) returns CellResult

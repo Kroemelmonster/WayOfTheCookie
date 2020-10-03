@@ -1,24 +1,12 @@
 package UIMain
 
 import FramehandleNames
-import ClosureEvents
-
-import UIBoardActionMenu
-import UITooltip
 import UIInitiativeWindow
 import UIMenuWorldConsole
-import UINPCWindow
 import UIWindowSpellBook
-import UIHandle
-import ClosureTimers
 import UIMenuConsole
-import UITooltipNew
-
-public function framehandle.toString() returns string
-	var str = "FrameHandle "
-	str += this.getName()
-	str += " enabled " + this.isEnabled().toString()
-	return str
+import UITooltip
+import UIMenuActionConsole
 
 boolean fpsDebug = false
 
@@ -45,15 +33,13 @@ class UIMain
 
 	static function load(integer part)
 		if part == 0
-			UIBoardActionMenu.create()
-			UITooltip.setup()
-		else if part == 1
+			UIMenuActionConsole.create()
+		if part == 1
 			UIInitiativeWindow.setup()
 			UIWindowSpellBook.create()
 		else if part == 2
 			UIMenuConsole.create()
-			UINPCWindow.setup()
-			UITooltipNew.create()
+			UITooltip.create()
 		else if part == 3
 			UIMenuWorldConsole.create()
 		else if part == 4

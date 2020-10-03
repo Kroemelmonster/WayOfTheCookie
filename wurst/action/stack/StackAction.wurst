@@ -2,8 +2,14 @@ package StackAction
 import Action
 import BoardStack
 import ActionCost
+import BoardEntity
+import ActionType
 
 public abstract class StackAction extends Action
-    construct(BoardStack stack, string icon, string name, ActionCostPreset cost)
-        super(stack, icon, name, cost)
-        this.stack = stack
+    protected BoardStack stack
+
+    construct(BoardEntity stack, ActionType actionType, ActionCostPreset cost)
+        super(stack, actionType, cost)
+        if entity.getType() != EntityType.STACK
+            Log.error("Tried to add an Stack Action to an non Stack")
+        this.stack = entity.toStack()

@@ -1,61 +1,68 @@
 package StatusType
 
 import Status
-import UITooltip
-import BleedingAilment
-import PoisonAilment
-import StunDebuff
-import PurgedDebuff
+import AilmentBleeding
+import AilmentPoison
+import StatusStunned
+import StatusPurged
 import BoardEntity
-import RallingCryBuffHero
-import RallingCryBuffStack
+import StatusRallingCry
+import LinkedList
+import Tooltip
 
 interface StatusCreateListener
     function create(BoardEntity entity) returns Status
 
-interface StatusTypeTooltipListener
-    function getTooltip(StatusData data) returns Tooltip
+interface StatusCreateTooltipLinesListener
+    function create(StatusData data) returns LinkedList<string>
 
 public class StatusType
     protected string name
     protected string icon
     protected StatusCreateListener listener
-    protected StatusTypeTooltipListener tooltipCreator
+    protected StatusCreateTooltipLinesListener tooltipLinesListener
 
     construct(string name, string icon)
         this.icon = icon
         this.name = name
 
     static function setup()
-        BleedingAilment.setup()
-        PoisonAilment.setup()
-        StunDebuff.setup()
-        PurgedDebuff.setup()
-        RallingCryBuffHero.setup()
-        RallingCryBuffStack.setup()
-
+        AilmentBleeding.setup()
+        AilmentPoison.setup()
+        StatusStunned.setup()
+        StatusPurged.setup()
+        StatusRallingCryStack.setup()
+        StatusRallingCryHero.setup()
+        
     function setCreationListener(StatusCreateListener listener)
         this.listener = listener
 
-    function setTooltipListener(StatusTypeTooltipListener listener)
-        this.tooltipCreator = listener
+    function setTooltipListener(StatusCreateTooltipLinesListener listener)
+        this.tooltipLinesListener = listener
 
-    @inline
     function createNew(BoardEntity entity) returns Status
         return listener.create(entity)
 
-    @inline
     function getIcon() returns string
         return icon
     
-    @inline
     function getName() returns string
         return name
 
-    @inline
-    function getTooltip(StatusData data) returns Tooltip
-        return tooltipCreator.getTooltip(data)
+    function createTooltipLines() returns LinkedList<string>
+        return tooltipLinesListener.create(null)
+        ..addtoStart(name)
 
-    @inline
+    function createTooltipLines(StatusData data) returns LinkedList<string>
+        return tooltipLinesListener.create(data)
+        ..addtoStart(name)
+
+    function createTooltip() returns Tooltip
+        return createTooltip(null)
+
+    function createTooltip(StatusData data) returns Tooltip
+        return Tooltip.create(name)
+        ..addLines(createTooltipLines(data))
+
     function toString() returns string
         return "StatusType '"+name+"'"

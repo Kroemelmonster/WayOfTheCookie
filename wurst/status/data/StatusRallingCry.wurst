@@ -1,0 +1,110 @@
+package StatusRallingCry
+
+import AttachmentPoints
+import Abilities
+
+import Status
+
+import initlater BoardEntity
+import initlater StatusType
+import BoardTrigger
+import LinkedList
+import StringUtils
+import Tooltip
+
+public class StatusRallingCryStack extends Status
+    static StatusType TYPE
+
+    static function setup()
+        TYPE = new StatusType("Ralling Cry", "Icons\\BTNAbilityWarriorWarCry.blp")
+        TYPE.setCreationListener()(BoardEntity entity) ->
+            return new StatusRallingCryHero(TYPE, entity)
+        TYPE.setTooltipListener() (StatusData data) ->
+            return createTooltipBaseLines(data)
+
+    protected static function createTooltipBaseLines(int attackValue) returns LinkedList<string>
+        return new LinkedList<string>
+        ..add("Increases the Attack by "
+            + StringUtils.coloredInt(StringUtils.COLOR_POSITIVE, attackValue))
+
+    protected static function createTooltipBaseLines(StatusData data) returns LinkedList<string>
+        let lines = createTooltipBaseLines(getAttackValue(data))
+        if data != null
+            destroy data
+        return lines
+
+    protected static function createTooltip(StatusRallingCryStack b) returns Tooltip
+        return Tooltip.create(TYPE.getName())
+        ..addLine(StringUtils.stat("Duration", b.duration))
+        ..addLine("")
+        ..addLines(createTooltipBaseLines(b.attack))
+
+    protected static function getAttackValue(StatusData data) returns int
+        return data.firstIntValue
+
+    /* -------------------------------------------------------------------------- */
+
+    protected BoardTrigger turnStartListener
+    protected int duration
+    protected int attack = 0
+
+    construct(StatusType statusType, BoardEntity entity)
+        super(statusType, entity)
+
+        turnStartListener = entity.getTriggers().addTurnStart() (SequenzListener next) ->
+            duration--
+            if duration <= 0
+                kill()
+                    
+            else
+                next.continue()
+
+    override function updateInner(StatusData data)
+        this.duration = data.duration
+        toggle(false)
+        this.attack = getAttackValue(data)
+        toggle(true)
+
+
+    override function createCurrentTooltip() returns Tooltip
+        return createTooltip(this)
+
+    protected function toggle(boolean flag)
+        let multi = flag ? 1 : -1
+        entity.toStack().stats.attackModi.addBonus += attack * multi
+
+    override function hide()
+
+    ondestroy
+        if entity.isAlive()
+            toggle(false)
+            entity.getTriggers().removeOnTurnStart(turnStartListener)
+        hide()
+
+        if onEndListener != null
+            destroy onEndListener
+
+public class StatusRallingCryHero extends StatusRallingCryStack
+    static StatusType TYPE
+
+    static function setup()
+        TYPE = new StatusType("Ralling Cry", "Icons\\BTNAbilityWarriorWarCry.blp")
+        TYPE.setCreationListener()(BoardEntity entity) ->
+            return new StatusRallingCryHero(TYPE, entity)
+        TYPE.setTooltipListener() (StatusData data) ->
+            return StatusRallingCryStack.createTooltipBaseLines(data)
+
+    /* -------------------------------------------------------------------------- */
+    protected effect display
+
+    construct(StatusType statusType, BoardEntity entity)
+        super(statusType, entity)
+        display = entity.addAttachEffect(Abilities.drumsCasterHeal, AttachmentPoints.origin)
+
+    protected override function toggle(boolean flag)
+        let multi = flag ? 1 : -1
+        entity.toHero().stats.attackModi.addBonus += attack * multi
+
+    override function hide()
+        if display != null
+            display.destr()
