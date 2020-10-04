@@ -4,7 +4,7 @@ import KUtil
 import StackType
 import LinkedList
 import SkillTree
-import DamageType
+import DamageAndResistance
 
 public class HeroType
     integer unitId

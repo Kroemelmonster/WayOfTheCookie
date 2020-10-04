@@ -19,8 +19,8 @@ import HeroTypesDefinition
 import Description
 import KItemType
 import ActionType
-import PassiveActionType
-import Talent
+import PassiveType
+import TalentType
 
 let globalSetups = new LinkedList<SetupListener>()
 
@@ -78,9 +78,10 @@ function initDefineObjects()
 	globalSetups.add() ->
 		ActionType.setup()
 	globalSetups.add() ->
-		PassiveActionType.setup()
+		PassiveType.setup()
 	globalSetups.add() ->
-		TalentSet.setup()
+		TalentType.setup()
+
 	StackTypesDefinition.setup(globalSetups)
 	globalSetups.add() ->
 		KItemType.setup()

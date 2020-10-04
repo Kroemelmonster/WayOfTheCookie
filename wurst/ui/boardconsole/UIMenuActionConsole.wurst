@@ -2,22 +2,15 @@ package UIMenuActionConsole
 
 import PlayerData
 
-import initlater Hero
-import UIFightResultDialog
-import BoardTrigger
-import FightResult
 import UIWindow
 import UIHandle
-import UIProgressBar
-import UIExtensionArmyPanel
-import initlater Scheduler
-import UIWindowNPC
 import UIButtonIcon
 import Action
-import Icons
 import BoardEntity
 import ActionCost
 import OrderSystem
+import PlayerBoardHelper
+import MouseContext
 
 
 class UIBoardActionButton extends UIButtonIcon
@@ -28,13 +21,29 @@ class UIBoardActionButton extends UIButtonIcon
         setSize(0.037, 0.037)
 
         onClick() () -> 
-            UIMenuActionConsole.activate(action, GetTriggerPlayerData())
+            tryToActivate(GetTriggerPlayerData())
         onMouseEnter() -> 
             if action != null
                 action.onUIMouseEnter()
         onMouseLeave() -> 
             if action != null
                 action.onUIMouseLeave()
+
+    protected function simulateClick(Player p)
+        tryToActivate(p)
+
+    private function tryToActivate(Player p)
+        let activeEntity = PlayerBoardHelper.getCurrentActiveEntity(p)
+        if not OrderSystem.canOrderUnit(p, activeEntity)
+            return
+        if  not OrderSystem.isUnitSelected(p, activeEntity)
+            // lets do correct that
+            MouseContext.forcePlayerSelect(p, activeEntity.getCell())
+        if not OrderSystem.canInteractWithBoard(p)
+            return
+        if not action.canActivate()
+            return
+        action.activate()
 
     function setAction(Action action, Action currentAction, string key)
         this.action = action
@@ -54,15 +63,15 @@ class UIBoardActionButton extends UIButtonIcon
                 enable()
             else
                 if not cost.hasEnoughMana()
-                    disable("UI/Button/BTNExtensionOverlayDisabledMana.dds")
+                    disable("UI/Button/BTNExtensionOverlapDisabledMana.dds")
                 else if cost.isOnCooldown()
                     let cooldown = cost.getCurrentCooldown()
                     if cooldown > 0
                         disable("UI/Button/BTNExtensionOverlapCooldown" + cooldown.toString() + ".dds")
                     else // a cooldown of 0 means the entity just used it and is not allowed to us it this turn again
-                        disable("UI/Button/BTNExtensionOverlayDisabled.dds")
+                        disable("UI/Button/BTNExtensionOverlapDisabled.dds")
                 else
-                    disable("UI/Button/BTNExtensionOverlayDisabled.dds")
+                    disable("UI/Button/BTNExtensionOverlapDisabled.dds")
 
     function setEmpty()
         action = null
@@ -85,16 +94,19 @@ public class UIMenuActionConsole
 
 
     static function create()
-        let width = 0.2
+        let imgWidth = 0.2
+        let imgHeight = imgWidth / 1.37179487179
+        let paddingMenuLeft = 0.02
+        let paddingMenuTop = 0.03
         menu = UIMenu.create()
         ..setPointToGameUI(FRAMEPOINT_BOTTOMRIGHT, FRAMEPOINT_BOTTOMRIGHT)
-        ..setSize(width, width / 1.37179487179)
+        ..setSize(imgWidth - paddingMenuLeft, imgHeight - paddingMenuTop)
 
         let actionPointWidth = 0.0205
         handleActionPoints[0] = createUIFrame("BACKDROP", menu)
-        ..setPoint(FRAMEPOINT_TOPLEFT, menu, FRAMEPOINT_TOPLEFT, 0.0276, -0.04)
+        ..setPoint(FRAMEPOINT_TOPLEFT, menu, FRAMEPOINT_TOPLEFT, 0.0276 -paddingMenuLeft, -0.04 +paddingMenuTop)
         ..setSize(actionPointWidth, actionPointWidth)
-        ..setTexture("UI/glues/singleplayer/humancampaign3d/black32.ds")
+        ..setTexture("UI/glues/singleplayer/humancampaign3d/black32.dds")
 
         for i = 1 to handleActionPoints.length - 1
             handleActionPoints[i] = createUIFrame("BACKDROP", menu)
@@ -103,13 +115,12 @@ public class UIMenuActionConsole
             handleActionPoints[i].setTexture("UI/glues/singleplayer/humancampaign3d/black32.ds")
 
         createUIFrame("BACKDROP", menu)
-        ..setPoint(FRAMEPOINT_TOPLEFT, menu, FRAMEPOINT_TOPLEFT)
+        ..setPoint(FRAMEPOINT_TOPLEFT, menu, FRAMEPOINT_TOPLEFT, -paddingMenuLeft, paddingMenuTop)
         ..setPoint(FRAMEPOINT_BOTTOMRIGHT, menu, FRAMEPOINT_BOTTOMRIGHT)
         ..setTexture("UI/BoardConsole/ActionWindowBackground.dds")
-        ..setAlpha(255)
 
         primaryBtns[0] = new UIBoardActionButton(menu)
-        ..setPoint(FRAMEPOINT_TOPLEFT, menu, FRAMEPOINT_TOPLEFT, 0.029, -0.062)
+        ..setPoint(FRAMEPOINT_TOPLEFT, menu, FRAMEPOINT_TOPLEFT, 0.029 -paddingMenuLeft, -0.062 +paddingMenuTop)
 
         secondaryBtns[0] = new UIBoardActionButton(menu)
         ..setPoint(FRAMEPOINT_BOTTOMRIGHT, menu, FRAMEPOINT_BOTTOMRIGHT, -0.011, 0.006)
@@ -123,6 +134,11 @@ public class UIMenuActionConsole
             secondaryBtns[i] = new UIBoardActionButton(menu)
             ..setPoint(FRAMEPOINT_TOPRIGHT, secondaryBtns[i - 1], FRAMEPOINT_TOPLEFT, -padding, 0)
 
+        Player.forEachActive() activePlayer ->
+            activePlayer.onAnyKeyPress() (Player p, string key) ->
+                onkeyPress(p, key)
+
+
     static function updateActionPoints(BoardEntity entity)
         if entity.getBoard().isLocalPlayer()
             updateActionPointsLocal(entity, 0)
@@ -133,26 +149,30 @@ public class UIMenuActionConsole
             if cost.isApFill()
                 ap = 100
             updateActionPointsLocal(entity, ap)
+
+    private static function updateUninteractableLocal()
+        for i = 0 to handleActionPoints.length - 1
+            handleActionPoints[i].setTexture("UI/glues/singleplayer/humancampaign3d/black32.ds")
+        
     
     static function update(Player p)
         if not p.isLocal() or p.isConntrolledByKI
             return
+    
+        for i = 0 to primaryBtns.length - 1
+            primaryBtns[i].setVisible(false)
 
-        if OrderSystem.couldOrderIFInteractable(p) == false
-            hide(p)
-            return
-        let entity = p.currentSelectedEntity
-
-        let currentAction = entity.getCurrentAction()
-
-        for int i = 0 to primaryBtns.length - 1
-            primaryBtns[i].setEmpty()
-
-        for int i = 0 to secondaryBtns.length - 1
+        for i = 0 to secondaryBtns.length - 1
             secondaryBtns[i].setVisible(false)
 
-            
-        let actionItr = entity.getActions().iterator()
+        let activeEntity = PlayerBoardHelper.getCurrentActiveEntity(p)
+
+        if activeEntity.getPlayer() != p
+            updateUninteractableLocal()
+            return
+
+        let currentAction = activeEntity.getCurrentAction()
+        let actionItr = activeEntity.getActions().iterator()
 
         var primaryIndex = 0
         var secondaryIndex = 0
@@ -167,38 +187,34 @@ public class UIMenuActionConsole
             
         destroy actionItr
 
-        menu.show(p)
-        updateActionPointsLocal(entity, 0)
+        updateActionPointsLocal(activeEntity, 0)
 
     static function hide(Player p)
         menu.hide(p)
 
-    protected static function activate(Action action, Player p)
-        if not OrderSystem.canOrder(p)
-            return
-        if not action.canActivate()
-            return
-        action.activate()
+    static function show(Player p)
+        menu.show(p)
+
+    private static function getBtnFromKey(string key) returns UIBoardActionButton
+        for i = 0 to PRIMARY_KEYS.length - 1
+            if key == PRIMARY_KEYS[i]
+                return primaryBtns[i]
+        for i = 0 to SECONDARY_KEYS.length - 1
+            if key == SECONDARY_KEYS[i]
+                return secondaryBtns[i]
+
+        return null
 
     private static function onkeyPress(Player p, string key)
-        if OrderSystem.canOrder(p) == false
+        if not OrderSystem.canOrderUnit(p, PlayerBoardHelper.getCurrentActiveEntity(p))
             return
         if key == "Escape"
             OrderSystem.resetCurrentSelectedAction(p.currentSelectedEntity)
             return
 
-        let itr = p.currentSelectedEntity.getActions().iterator()
-        boolean continue = true
-        var counter = 0
-        while itr.hasNext() and continue
-            let action = itr.next()
-
-            if not action.hasOption(ActionOption.DEFAULT) and action.canBeActivatedByKey(key)
-                activate(action, p)
-                // only trigger one action
-                continue = false
-            counter ++
-        destroy itr
+        let btn = getBtnFromKey(key)
+        if btn != null
+            btn.simulateClick(p)
 
     private static function updateActionPointsLocal(BoardEntity entity, int previewLoosingPoints)
         let maxActionPoints = entity.getMaxActionPoints()

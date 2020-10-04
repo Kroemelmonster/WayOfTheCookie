@@ -6,16 +6,16 @@ import PlayerData
 import UIController
 import OrderSystem
 
-import initlater UIInitiativeWindow
+import initlater UIMenuBoardConsole
 import initlater Mouse3DPositionSystem
 import initlater UITooltip
 import BoardEntity
+import PlayerBoardHelper
 
 class MouseContext
     /** Use this to force a player to select a cell **/
     static function forcePlayerSelect(Player p, Cell cell)
-        p.currentSelectedEntity = null
-        onMouseSelect(p, mousePosition(cell, null))
+        onMouseSelect(p, mousePosition(cell, null), false)
 
     /** Use this to simulate a Mouse Entering **/
     static function forceMouseEnter(Player p, Cell cell)
@@ -41,38 +41,41 @@ class MouseContext
         if mP.cell != null
             let stack = mP.cell.getStack()
             if stack != null
-                UIInitiativeWindow.highlightEntity(p, stack)
+                UIMenuBoardConsole.highlightEntity(p, stack)
 
         p.currentMousePosition = mP
         UIController.triggerOnPlayerCellHighlight(p)
 
     /** is used as an interpreted version of a userinput leaving ANY cell / stack **/
-    static function onMouseLeave(Player p)
+    private static function onMouseLeave(Player p)
         resetHighlight(p)
 
     /** is used as an interpreted version of a userinput selecting ANY cell / stack **/
-    static function onMouseSelect(Player p, mousePosition mP)
-        let entity = getEntityToSelect(p, mP)
+    static function onMouseSelect(Player p, mousePosition mP, boolean manual)
+        var entity = getMousePositionEntity(mP)
+        var directClick = manual
+        if entity == null
+            directClick = false
+            entity = PlayerBoardHelper.getCurrentActiveEntity(p)
 
         p.currentSelectedEntity = entity
-        UIController.selectEntity(p, entity)
+        UIController.selectEntity(p, entity, directClick)
         UIController.triggerOnPlayerCellHighlight(p)
 
     /** is used as an interpreted version of a userinput ordering ANY cell / stack **/
     static function onOrder(Player p, mousePosition mP)
         OrderSystem.sendSimpleTargetOrder(p, mP.cell)
 
-    private static function getEntityToSelect(Player p, mousePosition mP) returns BoardEntity
-        let currentEntity = p.playingBoard.getInitiative().getCurrent()
-        if mP.cell == null or mP.cell.getStack() == null
-            return currentEntity.getBoardEntity()
-        return mP.cell.getStack()
+    private static function getMousePositionEntity(mousePosition mP) returns BoardEntity
+        if mP.cell != null
+            return mP.cell.getStack()
+        return null
 
     @inline
     static function enableMouseMovement(Player p, boolean enable)
         Mouse3DPositionSystem.setEnabled(p, enable)
     
     private static function resetHighlight(Player p)
-        UIInitiativeWindow.resetHighlight(p)
+        UIMenuBoardConsole.resetHighlight(p)
         UITooltip.hide(p)
 

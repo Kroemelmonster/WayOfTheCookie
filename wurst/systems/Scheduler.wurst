@@ -3,11 +3,9 @@ package Scheduler
 import ClosureTimers
 import TimerUtils
 
-import UIMenuWorldConsole
 import PlayerData
 
 import initlater Board
-import UIWindowSpellBook
 import LinkedList
 import BoardTrigger
 
@@ -49,9 +47,6 @@ class Scheduler
             doPeriodically(0.2) cb ->
                 doPeriodicallyInner(p, registeredListener.iterator())
                 
-            doPeriodically(0.2) cb ->
-                UIWindowSpellBook.update(p)
-
                 
                 
             

@@ -13,9 +13,14 @@ import BoardEntity
 
 public abstract class WarcrySpell extends InstantSpell
 
+    static function createType(string name, string icon) returns ActionType
+        return new ActionType(name, icon)
+        ..enableOption(ActionTypeOption.SPELL)
+        ..enableOption(ActionTypeOption.INSTANT)
+        ..enableOption(ActionTypeOption.WARCRY)
+
     construct(BoardEntity entity, ActionType actionType, ActionCostPreset cost)
         super(entity, actionType, cost)
-        presetOption(ActionOption.WARCRY)
 
 
     override function sendTargetOrder(Cell cell) returns boolean

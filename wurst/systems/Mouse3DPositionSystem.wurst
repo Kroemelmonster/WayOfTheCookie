@@ -77,7 +77,7 @@ class Mouse3DPositionSystem
     
     private static function onMouseClick(mousePosition mP, Player p, mousebuttontype btn)
         if btn == MOUSE_BUTTON_TYPE_LEFT
-            MouseContext.onMouseSelect(p, mP)
+            MouseContext.onMouseSelect(p, mP, true)
         else if btn == MOUSE_BUTTON_TYPE_RIGHT
             currentlyProcessing = true
             MouseContext.onOrder(p, mP)

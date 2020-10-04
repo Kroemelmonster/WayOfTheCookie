@@ -28,17 +28,17 @@ import ActionCost
 import StringUtils
 import Tooltip
 import UITooltip
-import DamageType
+import DamageAndResistance
 import ActionType
 
 public class ChainLightningSpell extends Spell
     static ActionType TYPE
     static function setup()
-        TYPE = new ActionType("Chain Lightning", Icons.bTNChainLightning)
+        TYPE = Spell.createType("Chain Lightning", Icons.bTNChainLightning)
         TYPE.onCreate() entity -> 
             return new ChainLightningSpell(entity)
         TYPE.onCreateTooltipLines() level -> 
-            return createTooltipLines(level, 0)
+            return createTooltipLines(level, 0, true)
 
     private static constant ActionCostPreset BASE_COST = ActionCostPreset.create(1, true, 0)
     private static constant int array[3] MANA_COST = [7, 12, 20]
@@ -53,8 +53,13 @@ public class ChainLightningSpell extends Spell
     private static function createDamagePreview() returns DamagePreview
         return new DamagePreview(realRange(0, 0), SourceType.SPELL, DamageType.MAGIC)
 
-    private static function createTooltipLines(int level, int power) returns LinkedList<string>
+    private static function createBaseTooltipLines(boolean addCost) returns LinkedList<string>
+        if addCost
+            return BASE_COST.createTooltipLines()
         return new LinkedList<string>
+
+    private static function createTooltipLines(int level, int power, boolean addCost) returns LinkedList<string>
+        return createBaseTooltipLines(addCost)
         ..add(StringUtils.stat("Target", "Enemy"))
         ..add(StringUtils.stat("Damage", calculateDamage(level, power, 0).toColoredText()))
         ..add("")
@@ -166,7 +171,7 @@ public class ChainLightningSpell extends Spell
 
     private function showPreview(Cell fromCell)
         let tt = createBasicTooltip()
-        ..addLines(createTooltipLines(level, hero.stats.getPower()))
+        ..addLines(createTooltipLines(level, hero.stats.getPower(), false))
         if fromCell != null
             let list = new LinkedList<BoardStack>()
             list.add(fromCell.getStack())

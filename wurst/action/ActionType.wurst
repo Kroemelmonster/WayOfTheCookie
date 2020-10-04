@@ -15,7 +15,15 @@ import initlater ChainLightningAction
 import initlater WalkAndAttackAction
 import initlater HeroSkipAction
 import initlater HeroAttackAction
-import initlater ActionTalent
+import initlater ActionTalentType
+import BitSet
+
+public enum ActionTypeOption
+    INSTANT
+    PRIMARY
+    DEFAULT
+    SPELL
+    WARCRY
 
 interface ActionCreateListener
     function create(BoardEntity boardEntity) returns Action
@@ -26,7 +34,9 @@ interface ActionCreateTooltipLinesListener
 public class ActionType extends Icon
     protected ActionCreateListener listener
     protected ActionCreateTooltipLinesListener tooltipLinesListener
-    protected ActionTalent creatingTalent
+    protected ActionTalentType creatingTalent
+
+    protected bitset optionSet = bitset(0)
 
     construct(string name, string icon)
         super(name, icon)
@@ -43,12 +53,18 @@ public class ActionType extends Icon
     function toString() returns string
         return "ActionType '"+name+"'"
 
+    function enableOption(ActionTypeOption opt)
+        optionSet = optionSet.set(opt castTo int)
+
+    function hasOption(ActionTypeOption option) returns boolean
+        return optionSet.get(option castTo int)
+
     function createTooltipLines(int value) returns LinkedList<string>
         return tooltipLinesListener.create(value)
 
-    function getTalent() returns ActionTalent
+    function getTalent() returns ActionTalentType
         if creatingTalent == null
-            creatingTalent = new ActionTalent(this)
+            creatingTalent = new ActionTalentType(this)
         return creatingTalent
 
     static function setup()

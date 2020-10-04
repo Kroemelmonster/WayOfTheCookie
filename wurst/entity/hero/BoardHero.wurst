@@ -109,9 +109,9 @@ public class BoardHero extends BoardEntity
     function updateQuickcast()
         var index = 0
         for action in actions
-            if action.hasOption(ActionOption.SPELL)
+            if action.hasOption(ActionTypeOption.SPELL)
                 let spell = action castTo Spell
-                if spell.hasOption(ActionOption.PRIMARY)
+                if spell.isQuickcast()
                     index++
                     if index >= MAX_QUICKCAST_SPELLS
                         spell.activateQuickcast(false)

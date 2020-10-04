@@ -1,0 +1,20 @@
+package PassiveTalentType
+
+import PassiveType
+import Tooltip
+import BoardEntity
+import TalentType
+import PassiveTalent
+
+public class PassiveTalentType extends TalentType
+    protected PassiveType passiveType
+    
+    construct(PassiveType passiveType)
+        super(passiveType)
+        this.passiveType = passiveType
+        
+        onCreate() entity ->
+            return new PassiveTalent(this, passiveType, entity)
+        onCreateTooltip() -> 
+            return createBasicTooltip()
+            ..addLines(passiveType.createTooltipLines(1))

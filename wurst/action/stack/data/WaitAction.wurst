@@ -21,18 +21,25 @@ public class WaitAction extends InstantStackAction
     static ActionType TYPE
 
     static function setup()
-        TYPE = new ActionType("Wait", Icons.bTNPatrol)
+        TYPE = InstantStackAction.createType("Wait", Icons.bTNPatrol)
         TYPE.onCreate() entity -> 
             return new WaitAction(entity)
         TYPE.onCreateTooltipLines() amount -> 
-            return createTooltipLines(amount)
+            return createTooltipLines(amount, true)
 
-    private static function createTooltipLines(int _amount) returns LinkedList<string>
+    private static constant ActionCostPreset BASE_COST = ActionCostPreset.create(0, false)
+
+    private static function createBaseTooltipLines(boolean addCost) returns LinkedList<string>
+        if addCost
+            return BASE_COST.createTooltipLines()
         return new LinkedList<string>
+
+    private static function createTooltipLines(int _amount, boolean addCost) returns LinkedList<string>
+        return createBaseTooltipLines(addCost)
         ..add("Postpones your turn by half your initiative, if you didnt do it this turn already")
 
     construct(BoardEntity entity)
-        super(entity, TYPE, ActionCostPreset.create(0, false))
+        super(entity, TYPE, BASE_COST)
 
         
     override function canActivate() returns boolean

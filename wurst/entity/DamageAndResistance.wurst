@@ -1,0 +1,53 @@
+package DamageAndResistance
+import Tooltip
+import StringUtils
+
+public enum DamageType
+    PHYISICAL
+    MAGIC
+    FIRE
+    POISON
+
+public class Resistance
+    private Resistance basis
+
+    private int phyiscal = 0
+    private int magic = 0
+    private int fire = 0
+    private int poison = 0
+
+    construct()
+
+    construct(Resistance basis)
+        this.basis = basis
+
+    function addRes(DamageType dType, int value)
+        switch dType
+            case MAGIC
+                magic += value
+            case FIRE
+                fire += value
+            case POISON
+                poison += value
+            default
+                phyiscal += value
+    
+    function getRes(DamageType dType) returns int
+        var baseRes = 0
+        if basis != null
+            baseRes = basis.getRes(dType)
+        switch dType
+            case MAGIC
+                return magic + baseRes
+            case FIRE
+                return fire + baseRes
+            case POISON
+                return poison + baseRes
+            default
+                return phyiscal + baseRes 
+
+    function extendTooltip(Tooltip tt)
+        tt.addLine("Physical Resistance : " + StringUtils.coloredPercent(getRes(DamageType.PHYISICAL) / 100))
+        tt.addLine("Magic Resistance : " + StringUtils.coloredPercent(getRes(DamageType.MAGIC) / 100))
+        tt.addLine("Fire Resistance : " + StringUtils.coloredPercent(getRes(DamageType.FIRE) / 100))
+        tt.addLine("Poison Resistance : " + StringUtils.coloredPercent(getRes(DamageType.POISON) / 100))

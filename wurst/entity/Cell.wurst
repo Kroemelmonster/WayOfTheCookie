@@ -57,6 +57,7 @@ public class Cell
     function getBoard() returns Board
         return board
     
+    // TODO this should be entity
     function getStack() returns BoardStack
         return stack
 

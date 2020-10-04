@@ -9,6 +9,7 @@ import HeroData
 import UIWindowSkillTree
 import UIWindowEntity
 import UIWindowHero
+import UIWindowSpellBook
 
 public class UIMenuConsoleInfo
     UIWindowSkillTreeInfo skillTreeInfo = new UIWindowSkillTreeInfo()
@@ -72,11 +73,17 @@ public class UIMenuConsole
         ..onClick() -> 
             UIWindowSkillTree.toggle(GetTriggerPlayerData())
 
-        UIButtonMenu.create(menu, "Stats")
+        let statsBtn = UIButtonMenu.create(menu, "Stats")
         ..setPoint(FRAMEPOINT_LEFT, skillTree, FRAMEPOINT_RIGHT, paddingBtns, 0)
         ..setSize(btnWidth, btnHeight)
         ..onClick() -> 
             UIWindowHero.toggle(GetTriggerPlayerData())
+
+        UIButtonMenu.create(menu, "Spellbook")
+        ..setPoint(FRAMEPOINT_LEFT, statsBtn, FRAMEPOINT_RIGHT, paddingBtns, 0)
+        ..setSize(btnWidth, btnHeight)
+        ..onClick() -> 
+            UIWindowSpellBook.toggle(GetTriggerPlayerData())
 
         let paddingRessource = 0.003
         let ressourceWidth = 0.09
@@ -104,6 +111,7 @@ public class UIMenuConsole
         UIWindowSkillTree.create()
         UIWindowEntity.create()
         UIWindowHero.create()
+        UIWindowSpellBook.create()
 
     static function initHero(Hero hero)
         menu.show(hero.getPlayer())

@@ -9,12 +9,12 @@ import initlater Board
 import BoardHero
 import PlayerData
 import Hero
-import UIInitiativeWindow
+import UIMenuBoardConsole
 import BoardEntity
 import Tooltip
 import StringUtils
 
-class InitiativeEntity
+public class InitiativeEntity
     protected BoardEntity boardEntity = null
 
     protected int initiative = 0
@@ -160,7 +160,7 @@ public class InitiativeList
             entity.update()
             insertEntities(entity)
         if updateUI
-            UIInitiativeWindow.refresh(this)
+            UIMenuBoardConsole.refresh(this)
         
         
     private function insertEntities(InitiativeEntity entity)
@@ -256,7 +256,7 @@ public class InitiativeList
         if current.boardEntity != null
             BoardController.onTurnStart(current.boardEntity, current.isWaiting())
 
-        UIInitiativeWindow.refresh(this)
+        UIMenuBoardConsole.refresh(this)
         
 
     @inline

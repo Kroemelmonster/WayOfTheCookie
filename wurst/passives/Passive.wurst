@@ -1,23 +1,26 @@
-package PassiveAction
+package Passive
 
 import initlater BoardEntity
-import initlater PassiveActionType
+import initlater PassiveType
 import Tooltip
 
-public abstract class PassiveAction
+public abstract class Passive
     protected BoardEntity entity
-    protected PassiveActionType actionType
+    protected PassiveType passiveType
     protected string name
 
-    construct(BoardEntity entity, PassiveActionType actionType)
+    construct(BoardEntity entity, PassiveType passiveType)
         this.entity = entity
-        this.actionType = actionType
+        this.passiveType = passiveType
 
     function getName() returns string
-        return actionType.getName()
+        return passiveType.getName()
 
     function toString() returns string
         return "Passive '"+getName()+"'"
+
+    function getType() returns PassiveType
+        return passiveType
 
     protected function createBasicTooltip() returns Tooltip
         return Tooltip.create(getName())

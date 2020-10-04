@@ -9,7 +9,8 @@ import LinkedList
 import Talent
 import initlater BoardStack
 import HeroStats
-import DamageType
+import DamageAndResistance
+import initlater TalentType
 
 public interface HasEntityStats extends HasEntityBasicStats
     function getBasis() returns HasEntityBasicStats
@@ -36,7 +37,7 @@ public class StackStats implements HasEntityStats
 
     private Resistance resistance = new Resistance()
 
-    LinkedList<Talent> talents = new LinkedList<Talent>()
+    LinkedList<TalentType> talents = new LinkedList<TalentType>()
 
     override function getBasis() returns StackType
         return stackType
@@ -44,22 +45,20 @@ public class StackStats implements HasEntityStats
     override function getIcon() returns string
         return getBasis().getIcon()
 
-    override function getTalents() returns LinkedList<Talent>
+    function getTalents() returns LinkedList<TalentType>
         return talents
-
-    function addUniqueTalent(Talent talent)
-        if talents.has(talent) == false
-            talents.add(talent)
             
-    function addTalent(Talent talent)
+    function addTalent(TalentType talent)
         talents.add(talent)
 
-    function removeTalent(Talent talent)
+    function removeTalent(TalentType talent)
         talents.remove(talent)
 
-    function triggerOnCreation(BoardStack boardStack)
-        for talent in talents
-            talent.onEntityCreation(boardStack)
+    override function forEachTalentStat(LLItrClosure<TalentStats> itr)
+        talents.forEach() (TalentType talentType) ->
+            if not talentType.isHidden()
+                itr.run(talentType)
+        destroy itr
 
     construct(Stack stack, StackType stackType, HeroStats heroStats)
         this.stackType = stackType

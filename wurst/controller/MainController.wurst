@@ -27,7 +27,6 @@ public class MainController
             UIWindow.closeCurrent(p)
         if p.playingBoard != null
             return
-        // TODO make HeroWindow actually a window
 
 
     static function startFight(Hero hero, HostileArmy enemy, Board board)
@@ -35,8 +34,7 @@ public class MainController
         hero.enable(false)
         enemy.enable(false)
 
-        board.placeCombat(hero, enemy)
-        nullTimer() -> 
+        board.placeCombat(hero, enemy) ->
             UIController.switchToCombat(board)
             board.startCombat()
 
@@ -77,6 +75,3 @@ public class MainController
         if hero.getArmy().hasStack(stack)
             stack.setAmount(stack.getAmount() - intoAmount)
             hero.addStackAtFree(stack.getStackType(), intoAmount)
-
-    static function openHeroWindow(Player p, boolean flag)
-        // TODO p.hero.enable(flag == false)

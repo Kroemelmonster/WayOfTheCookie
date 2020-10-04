@@ -137,7 +137,7 @@ public class UIWindowHero
     static function create()
         window = UIWindowBasic.create(true)
         ..setPointToConsoleUI(FRAMEPOINT_TOPLEFT, FRAMEPOINT_TOPLEFT, UIWindowSkillTree.WIDTH + 0.01, 0)
-        ..setSize(0.27, 0.35)
+        ..setSize(0.25, 0.35)
 
         activeItems[0] = new UIWindowHeroItem(window)
         ..setInnerPoint(FRAMEPOINT_TOPLEFT, window, FRAMEPOINT_TOPLEFT)
@@ -157,7 +157,7 @@ public class UIWindowHero
             tt.addLine("-----")
             let p = GetTriggerPlayerData()
             InitiativeList.extendTooltip(tt, UIWindowHeroInfo.getStats(p).getInitiative())
-            UITooltip.display(p, tt, TooltipAnchor.RIGHT_BOTTOM , inititaiveInfo)
+            UITooltip.display(p, tt, TooltipAnchor.LEFT_BOTTOM , inititaiveInfo)
 
         damageInfo = UIInteractableStatInfo.create(window)
         ..setInnerPoint(FRAMEPOINT_BOTTOMLEFT, window, FRAMEPOINT_BOTTOM)
@@ -165,7 +165,7 @@ public class UIWindowHero
         ..onMouseEnter() -> 
             let tt = Tooltip.create("Damage")
             Description.extendTooltip(tt, "Damage")
-            UITooltip.display(GetTriggerPlayerData(), tt, TooltipAnchor.RIGHT_BOTTOM , damageInfo)
+            UITooltip.display(GetTriggerPlayerData(), tt, TooltipAnchor.LEFT_BOTTOM , damageInfo)
 
         powerInfo = UIInteractableStatInfo.create(window)
         ..setPoint(FRAMEPOINT_BOTTOMLEFT, inititaiveInfo, FRAMEPOINT_TOPLEFT, 0, infoPadding)
@@ -174,7 +174,7 @@ public class UIWindowHero
         ..onMouseEnter() -> 
             let tt = Tooltip.create("Power")
             Description.extendTooltip(tt, "Power")
-            UITooltip.display(GetTriggerPlayerData(), tt, TooltipAnchor.RIGHT_BOTTOM , powerInfo)
+            UITooltip.display(GetTriggerPlayerData(), tt, TooltipAnchor.LEFT_BOTTOM , powerInfo)
 
         wisdomInfo = UIInteractableStatInfo.create(window)
         ..setPoint(FRAMEPOINT_BOTTOMLEFT, damageInfo, FRAMEPOINT_TOPLEFT, 0, infoPadding)
@@ -183,7 +183,7 @@ public class UIWindowHero
         ..onMouseEnter() -> 
             let tt = Tooltip.create("Wisdom")
             Description.extendTooltip(tt, "Wisdom")
-            UITooltip.display(GetTriggerPlayerData(), tt, TooltipAnchor.RIGHT_BOTTOM , wisdomInfo)
+            UITooltip.display(GetTriggerPlayerData(), tt, TooltipAnchor.LEFT_BOTTOM , wisdomInfo)
         
         attackInfo = UIInteractableStatInfo.create(window)
         ..setPoint(FRAMEPOINT_BOTTOMLEFT, powerInfo, FRAMEPOINT_TOPLEFT, 0, infoPadding)
@@ -192,7 +192,7 @@ public class UIWindowHero
         ..onMouseEnter() -> 
             let tt = Tooltip.create("Attack")
             Description.extendTooltip(tt, "AttackHero")
-            UITooltip.display(GetTriggerPlayerData(), tt, TooltipAnchor.RIGHT_BOTTOM , attackInfo)
+            UITooltip.display(GetTriggerPlayerData(), tt, TooltipAnchor.LEFT_BOTTOM , attackInfo)
 
         defenceInfo = UIInteractableStatInfo.create(window)
         ..setPoint(FRAMEPOINT_BOTTOMLEFT, wisdomInfo, FRAMEPOINT_TOPLEFT, 0, infoPadding)
@@ -201,7 +201,7 @@ public class UIWindowHero
         ..onMouseEnter() -> 
             let tt = Tooltip.create("Defence")
             Description.extendTooltip(tt, "Defence")
-            UITooltip.display(GetTriggerPlayerData(), tt, TooltipAnchor.RIGHT_BOTTOM , defenceInfo)
+            UITooltip.display(GetTriggerPlayerData(), tt, TooltipAnchor.LEFT_BOTTOM , defenceInfo)
 
         window.onClose() p ->
             UIWindowHeroInfo.cancelDrag(p)

@@ -29,20 +29,21 @@ import ActionCost
 import StringUtils
 import Tooltip
 import UITooltip
-import DamageType
+import DamageAndResistance
 import ActionType
 import BoardEntity
 
 public class SlamAction extends InstantStackAction
     static ActionType TYPE
     static function setup()
-        TYPE = new ActionType("Slam", Icons.bTNGolemThunderClap)
+        TYPE = InstantStackAction.createType("Slam", Icons.bTNGolemThunderClap)
+        ..enableOption(ActionTypeOption.PRIMARY)
         TYPE.onCreate() entity -> 
             return new SlamAction(entity)
         TYPE.onCreateTooltipLines() amount -> 
-            return createTooltipLines(amount)
+            return createTooltipLines(amount, true)
 
-    private static constant ActionCostPreset COST = ActionCostPreset.create(1, false, 2)
+    private static constant ActionCostPreset BASE_COST = ActionCostPreset.create(1, false, 2)
     private static constant int MAXRANGE = 1
     private static constant string EFFECT = Abilities.thunderclapCaster
 
@@ -53,8 +54,13 @@ public class SlamAction extends InstantStackAction
     private static function createDamagePreview() returns DamagePreview
         return new DamagePreview(realRange(0, 0), SourceType.SPELL, DamageType.PHYISICAL)
 
-    private static function createTooltipLines(int amount) returns LinkedList<string>
+    private static function createBaseTooltipLines(boolean addCost) returns LinkedList<string>
+        if addCost
+            return BASE_COST.createTooltipLines()
         return new LinkedList<string>
+
+    private static function createTooltipLines(int amount, boolean addCost) returns LinkedList<string>
+        return createBaseTooltipLines(addCost)
         ..add(StringUtils.stat("Target", "None"))
         ..add(StringUtils.stat("Range", MAXRANGE))
         ..add(StringUtils.stat("Damage", calculateDamage(amount).toColoredText()))
@@ -68,8 +74,7 @@ public class SlamAction extends InstantStackAction
         return damagePreview
 
     construct(BoardEntity entity)
-        super(entity, TYPE, COST)
-        presetOption(ActionOption.PRIMARY)
+        super(entity, TYPE, BASE_COST)
 
     private function getTargets() returns LinkedList<BoardStack>
         let area = stack.getCell().getAllCellsInRange(intRange(0, MAXRANGE))
@@ -106,7 +111,7 @@ public class SlamAction extends InstantStackAction
 
     override function onUIMouseEnter()
         let tt = createBasicTooltip()
-        ..addLines(createTooltipLines(stack.stats.amount))
+        ..addLines(createTooltipLines(stack.stats.amount, false))
         UITooltip.display(stack.getPlayer(), tt)
         UIMenuActionConsole.updateActionPoints(entity, cost)
             

@@ -2,6 +2,7 @@ package ActionCost
 import initlater BoardEntity
 import Tooltip
 import StringUtils
+import LinkedList
 
 public class ActionCostPreset
     protected int ap
@@ -60,7 +61,16 @@ public class ActionCostPreset
             , "UI/Tooltip/TooltipAddonManaIcon.dds")
         if hasCooldown()
             tt.addIcon(StringUtils.primaryString(maxCooldown.toString())
-            , "UI/Tooltip/TooltipAddonManaIcon.dds")
+            , "UI/Tooltip/TooltipAddonCooldownIcon.dds")
+
+    function createTooltipLines() returns LinkedList<string>
+        let lines = new LinkedList<string>()
+        ..add(StringUtils.stat("Cost", getAPAsText()))
+        if hasMana()
+            lines.add(StringUtils.stat("Mana", mana.toString()))
+        if hasCooldown()
+            lines.add(StringUtils.stat("Cooldown", maxCooldown.toString()))
+        return lines
 
 public class ActionCost extends ActionCostPreset
     private static ActionCost TEMP = new ActionCost(null, -1, false, -1, -1, -1)

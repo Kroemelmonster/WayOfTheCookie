@@ -22,18 +22,25 @@ import LinkedList
 public class HeroSkipAction extends InstantAction
     static ActionType TYPE
     static function setup()
-        TYPE = new ActionType("Skip", Icons.bTNCancel)
+        TYPE = InstantAction.createType("Skip", Icons.bTNCancel)
         TYPE.onCreate() entity -> 
             return new HeroSkipAction(entity)
         TYPE.onCreateTooltipLines() amount -> 
-            return createTooltipLines()
+            return createTooltipLines(true)
 
-    private static function createTooltipLines() returns LinkedList<string>
+    private static constant ActionCostPreset BASE_COST = ActionCostPreset.create(0, true)
+
+    private static function createBaseTooltipLines(boolean addCost) returns LinkedList<string>
+        if addCost
+            return BASE_COST.createTooltipLines()
         return new LinkedList<string>
+
+    private static function createTooltipLines(boolean addCost) returns LinkedList<string>
+        return createBaseTooltipLines(addCost)
         ..add("This just skips ya turn")
 
     construct(BoardEntity entity)
-        super(entity, TYPE, ActionCostPreset.create(0, true))
+        super(entity, TYPE, BASE_COST)
         
     override function canActivate() returns boolean
         return true
@@ -43,7 +50,7 @@ public class HeroSkipAction extends InstantAction
         
     override function onUIMouseEnter()
         let tt = createBasicTooltip()
-        ..addLines(createTooltipLines())
+        ..addLines(createTooltipLines(false))
         UITooltip.display(entity.getPlayer(), tt)
         UIMenuActionConsole.updateActionPoints(entity, cost)
 

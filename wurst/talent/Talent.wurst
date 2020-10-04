@@ -1,50 +1,28 @@
 package Talent
 
-import initlater BoardStack
-import initlater StackType
-import CleavingAttackTalent
 import Tooltip
 import Icon
 import BoardEntity
-import ActionTalent
-import ActionType
-import initlater WalkAndAttackAction
-import initlater DefendAction
-import initlater WaitAction
+import initlater TalentType
 
-public class TalentSet
-    static Talent CLEAVE50
-    static Talent CLEAVE100
+public abstract class Talent implements TalentStats
+    protected TalentType talentType
+    protected BoardEntity entity
 
-    static function addStackDefaultAction(StackType stackType)
-        stackType.talents.add(WalkAndAttackAction.TYPE.getTalent())
-        stackType.talents.add(DefendAction.TYPE.getTalent())
-        stackType.talents.add(WaitAction.TYPE.getTalent())
+    construct(TalentType talentType, BoardEntity entity)
+        this.talentType = talentType
+        this.entity = entity
 
-    static function setup()
-
-        CLEAVE50 = new CleavingAttackTalent(0.5)
-        CLEAVE100 = new CleavingAttackTalent(1)
-
-
-public abstract class Talent
-    private Icon icon
-
-    construct(Icon icon)
-        this.icon = icon
-
-    abstract function onEntityCreation(BoardEntity entity)
-
-    function isHidden() returns boolean
-        return getIcon() == ""
-
-    abstract function createTooltip() returns Tooltip
-
-    function getName() returns string
-        return icon.getName()
-
-    function getIcon() returns string
-        return icon.getIcon()
+    abstract override function createTooltip() returns Tooltip
 
     protected function createBasicTooltip() returns Tooltip
         return Tooltip.create(getName())
+
+    override function getName() returns string
+        return talentType.getName()
+
+    override function getIcon() returns string
+        return talentType.getIcon()
+
+    function isHidden() returns boolean
+        return getIcon() == ""

@@ -9,12 +9,13 @@ import StackSoundTypesDefinition
 import KUtil
 import Talent
 import LinkedList
-import DamageType
+import DamageAndResistance
 import CounterAttackPassive
 import SummonLesserSkeletonAction
 import SlamAction
 import CracklePassive
 import ChainLightningAction
+import TalentType
 
 
 public class StackTypes
@@ -42,7 +43,7 @@ public class StackTypes
 class StackTypesDefinition
     private static function createDefault(integer unitId, integer armyId, string icon, StackSoundSet soundSet, int level, int leadership, int weight) returns StackType
         let stackType = new StackType(unitId, armyId, icon, soundSet, GetObjectName(unitId), level, leadership, (leadership * (1 + 0.4 * level)).round(), weight)
-        TalentSet.addStackDefaultAction(stackType)
+        TalentType.addStackDefaultAction(stackType)
         StackTypes.list.add(stackType)
         return stackType
     
@@ -115,7 +116,7 @@ class StackTypesDefinition
         "ReplaceableTextures\\CommandButtons\\BTNSasquatchAncient.blp", StackSoundSets.SKELETON, 5, 950, 100)
         ..addFamily(Family.SASQUATCH)
         ..addTalent(SlamAction.TYPE.getTalent())
-        ..addTalent(TalentSet.CLEAVE50)
+        // TODO ..addTalent(TalentSet.CLEAVE50)
         ..setInitiative(6)
         ..setActionPoints(6)
         ..setMaxHp(1200)

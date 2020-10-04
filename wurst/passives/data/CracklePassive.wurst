@@ -1,6 +1,6 @@
 package CracklePassive
 
-import PassiveAction
+import Passive
 import AttackAnimation
 import BoardController
 import Damage
@@ -15,17 +15,17 @@ import WalkAndAttackAction
 import Abilities
 import AttachmentPoints
 import DelayAnimation
-import DamageType
-import initlater StackPassiveAction
-import initlater PassiveActionType
+import DamageAndResistance
+import initlater StackPassive
+import initlater PassiveType
 import Icons
 import LinkedList
 import StringUtils
 
-public class CracklePassive extends StackPassiveAction
-    static PassiveActionType TYPE
+public class CracklePassive extends StackPassive
+    static PassiveType TYPE
     static function setup()
-        TYPE = new PassiveActionType("Crackle", Icons.bTNBreathOfFrost) // TODO bad icon
+        TYPE = new PassiveType("Crackle", Icons.bTNBreathOfFrost) // TODO bad icon
         TYPE.onCreate() entity -> 
             return new CracklePassive(entity)
         TYPE.onCreateTooltipLines() amount -> 

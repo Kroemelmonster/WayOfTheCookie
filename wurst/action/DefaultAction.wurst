@@ -16,9 +16,12 @@ import ActionType
 public abstract class DefaultAction extends Action
     protected TargetList targets
 
+    static function createType(string name) returns ActionType
+        return new ActionType(name, "")
+        ..enableOption(ActionTypeOption.DEFAULT)
+
     construct(BoardEntity entity, ActionType actionType, ActionCostPreset cost)
         super(entity, actionType, cost)
-        presetOption(ActionOption.DEFAULT)
 
     abstract function getPathing() returns StackPathFinding
 

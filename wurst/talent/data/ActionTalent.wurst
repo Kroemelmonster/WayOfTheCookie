@@ -1,0 +1,30 @@
+package ActionTalent
+import BoardEntity
+import TalentType
+import ActionType
+import Talent
+import Tooltip
+import Action
+import BoardStack
+import initlater ActionTalentType
+
+public class ActionTalent extends Talent
+    protected Action action
+    protected BoardStack stack
+
+    construct(ActionTalentType talentType, ActionType actionType, BoardEntity entity)
+        super(talentType, entity)
+        if entity.getType() == EntityType.STACK
+            stack = entity.toStack()
+            action = actionType.create(stack)
+            stack.addAction(action)
+        else
+            Log.error(entity.toString() + " has a talent "
+             + getName() + " which can not be automaticly added")
+
+    override function createTooltip() returns Tooltip
+        return createBasicTooltip()
+        ..addLines(action.getType().createTooltipLines(stack.stats.amount))
+
+    override function isHidden() returns boolean
+        return talentType.isHidden()

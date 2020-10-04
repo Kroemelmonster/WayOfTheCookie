@@ -1,0 +1,136 @@
+package UIWindowSpellBook
+
+import PlayerData
+import Spell
+import OrderSystem
+import Action
+import UIHandle
+import ClosureFrames
+import UIWindow
+import UIMenuActionConsole
+import Scheduler
+import UIInteractable
+import ActionType
+
+class UIElementSpell extends UIInteractable
+    static function create(framehandle parent) returns UIElementSpell
+        return new UIElementSpell(parent)
+
+    protected framehandle handleIcon
+    protected framehandle handleSelect
+    protected framehandle handleText
+
+    protected Spell spell
+    
+    private construct(framehandle parent)
+        super(createUIFrame("MENU", parent, true))
+        setHeight(0.0585)
+        setVisible(false)
+
+        handleIcon = createUIFrame("BACKDROP", self)
+        ..setPoint(FRAMEPOINT_TOPLEFT, self, FRAMEPOINT_TOPLEFT, 0.01, -0.008)
+        ..setSize(0.036, 0.0335)
+
+        handleText = createUIFrameByName("SpellBookText", self, false)
+        ..setTextColor(colorA(0, 0, 0, 255))
+        ..setPoint(FRAMEPOINT_BOTTOMLEFT, self, FRAMEPOINT_BOTTOMLEFT, 0.01, 0.007)
+        ..setPoint(FRAMEPOINT_BOTTOMRIGHT, self, FRAMEPOINT_BOTTOMRIGHT, -0.01, 0.007)
+        ..setTextAlignment(TEXT_JUSTIFY_BOTTOM, TEXT_JUSTIFY_LEFT)
+
+        handleSelect = createUIFrame("BACKDROP", self)
+        ..setAllPoints(self)
+        ..setAlpha(150)
+        ..setTexture("UI/Console/SelectedSpell.dds")
+        ..setVisible(false)
+
+        self.onClick() -> 
+            onClickInner(GetTriggerPlayerData())
+        onMouseEnter() -> 
+            spell.onUIMouseEnter()
+        onMouseLeave() -> 
+            spell.onUIMouseLeave()
+
+    function setSpell(Spell spell)
+        this.spell = spell
+        setVisible(true)
+        handleText.setText(spell.getName())
+        handleIcon.setTexture(spell.getIcon())
+        handleSelect.setVisible(spell.isQuickcast())
+
+    private function onClickInner(Player p)
+        Log.trace("click spell")
+        spell.toggleQuickcast()
+        UIMenuActionConsole.update(p)
+        UIWindowSpellBook.update(p)
+
+public class UIWindowSpellBook
+    private static UIWindow window
+    private static UIElementSpell array[10] spells
+
+    static function create()
+        window = UIWindow.create()
+        ..setPointToConsoleUI(FRAMEPOINT_TOPLEFT, FRAMEPOINT_TOPLEFT)
+        ..setSize(0.5, 0.3)
+
+        window.onOpen() (Player p) ->
+            update(p)
+
+        createUIFrame("BACKDROP", window)
+        ..setAllPoints(window)
+        ..setTexture("UI/Console/SpellBook.dds")
+
+        let leftSideFrameHandle = createUIFrame("FRAME", window)
+        ..setPoint(FRAMEPOINT_TOPLEFT, window, FRAMEPOINT_TOPLEFT, 0.043, -0.032)
+        ..setPoint(FRAMEPOINT_BOTTOMRIGHT, window, FRAMEPOINT_BOTTOM, -0.016, 0)
+
+        createUIFrame("BACKDROP", window)
+        ..setAllPoints(window)
+        ..setTexture("UI/Console/SpellBookRipped.dds")
+
+        spells[0] = UIElementSpell.create(leftSideFrameHandle)
+        ..setPoint(FRAMEPOINT_TOPLEFT, leftSideFrameHandle, FRAMEPOINT_TOPLEFT, 0, 0)
+        ..setPoint(FRAMEPOINT_TOPRIGHT, leftSideFrameHandle, FRAMEPOINT_TOP, 0, 0)
+
+        spells[1] = UIElementSpell.create(leftSideFrameHandle)
+        ..setPoint(FRAMEPOINT_TOPLEFT, leftSideFrameHandle, FRAMEPOINT_TOP, 0, 0)
+        ..setPoint(FRAMEPOINT_TOPRIGHT, leftSideFrameHandle, FRAMEPOINT_TOPRIGHT, 0, 0)
+
+        for index = 2 to spells.length - 1
+            spells[index] = UIElementSpell.create(leftSideFrameHandle)
+            spells[index].setPoint(FRAMEPOINT_TOPLEFT, spells[index - 2], FRAMEPOINT_BOTTOMLEFT, 0, 0)
+            spells[index].setPoint(FRAMEPOINT_TOPRIGHT, spells[index - 2], FRAMEPOINT_BOTTOMRIGHT, 0, 0)
+
+        Scheduler.onTime() p ->
+            if window.isVisible(p)
+                update(p)
+
+    static function close(Player p)
+        window.close(p)
+
+    static function open(Player p)
+        window.open(p)
+
+    static function toggle(Player p)
+        window.toggle(p)
+
+    protected static function update(Player p)
+        if not p.isLocal()
+            return
+            
+        let entity = p.currentSelectedEntity
+
+        let actionItr = entity.getActions().iterator()
+
+        for i = 0 to spells.length - 1
+            spells[i].setVisible(false)
+
+        var index = 0
+        while actionItr.hasNext()
+            let action = actionItr.next()
+            if action.hasOption(ActionTypeOption.SPELL)
+                let spell = action castTo Spell
+                spells[index].setSpell(spell)
+                index++
+
+        destroy actionItr
+

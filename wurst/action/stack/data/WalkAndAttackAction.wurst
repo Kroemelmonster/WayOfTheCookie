@@ -99,7 +99,7 @@ public function subActionAttack(int cost, BoardStack attacker, BoardStack defend
 
     AttackAnimation.create(attacker, defender) () ->
         let subTargets = attacker.stats.getSubAttackTargets(attacker.getCell(), defender)
-        let preview = new DamagePreview(attacker.stats.getDamage(), SourceType.ATTACK, attacker.stats.getDamageType())
+        let preview = new DamagePreview(attacker.stats.getDamageAll(), SourceType.ATTACK, attacker.stats.getDamageType())
         let instance = preview.getRandomInstance()
         destroy preview
         BoardController.dealDamage(attacker, instance, defender) ->
@@ -117,7 +117,7 @@ public function subActionAttack(int cost, BoardStack attacker, BoardStack defend
 public class WalkAndAttackAction extends DefaultStackAction
     static ActionType TYPE
     static function setup()
-        TYPE = new ActionType("Attack", "")
+        TYPE = DefaultStackAction.createType("Attack")
         TYPE.onCreate() entity -> 
             return new WalkAndAttackAction(entity)
         TYPE.onCreateTooltipLines() amount -> 
@@ -173,7 +173,7 @@ public class WalkAndAttackAction extends DefaultStackAction
             UITooltip.hide(stack.getPlayer())
         else
             let tt = createBasicTooltip()
-            let preview = new DamagePreview(stack.stats.getDamage(), SourceType.ATTACK, stack.stats.getDamageType())
+            let preview = new DamagePreview(stack.stats.getDamageAll(), SourceType.ATTACK, stack.stats.getDamageType())
             preview.extendTooltipWithSpecific(tt, stack, cell.getStack())
             destroy preview
             UITooltip.display(stack.getPlayer(), tt)
@@ -246,7 +246,7 @@ public class WalkAndAttackAction extends DefaultStackAction
         var currentHighestRemainingPoints = 0
         Cell currentBest = null
         
-        let possibleCellsItr = target.getCell().eachCellInRangeIterator(stack.stats.getAttackRange())
+        let possibleCellsItr = target.getCell().eachCellInRangeIterator(stack.stats.getRange())
         while possibleCellsItr.hasNext()
             let possibleCellToAttackFrom = possibleCellsItr.next()
             let remainingPoints = getRemainingMoveActionPointsFromCell(possibleCellToAttackFrom, 100)
@@ -281,7 +281,7 @@ public class WalkAndAttackAction extends DefaultStackAction
     private function isInRange(Cell fromPosition, BoardStack otherStack) returns boolean
         if otherStack == null
             return false
-        let attackRange = stack.stats.getAttackRange()
+        let attackRange = stack.stats.getRange()
         let distance = otherStack.getCell().getDistanceTo(fromPosition)
         return distance >= attackRange.min and distance <= attackRange.max
 

@@ -1,6 +1,5 @@
 package TODODeepCuttingPassive
 
-import PassiveAction
 import AttackAnimation
 import BoardController
 import Damage
@@ -57,6 +56,6 @@ public class DeepCuttingPassive extends PassiveAction
         ..addLine("Every time this unit deals phyisical attack damage it will inflict a Stack of "+Tooltip.secondaryString(getStatus().getName()))
         ..addLine("which deals "+Tooltip.primaryPercent(PERCENTAGE)+ " of the triggering base Damage")
         ..addLine("-----")
-        // TODO ..addStatusType(getStatus(), StatusData.create())
+        // ..addStatusType(getStatus(), StatusData.create())
         return tooltip
         */

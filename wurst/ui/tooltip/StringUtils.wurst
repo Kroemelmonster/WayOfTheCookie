@@ -1,5 +1,4 @@
 package StringUtils
-import Tooltip
 import KUtil
 
 public class StringUtils
@@ -12,16 +11,6 @@ public class StringUtils
     static constant DAMAGE_COLOR_MAGICAL = colorA(43, 181, 245, 200).toColorString()
     static constant DAMAGE_COLOR_POISON = colorA(167, 252, 71, 199).toColorString()
     static constant DAMAGE_COLOR_FIRE = colorA(255, 120, 86, 200).toColorString()
-
-        // TODO
-        /*
-    static function insert(LinkedList<string> list, Tooltip tt)
-        for TooltipLine line in tt.lines
-            list.add(line.str)
-
-    static function playerColored(Player p, string str) returns string
-        return p.c.toColorString() + str + "|r"
-        */
 
     static function coloredRange(string color, intRange r) returns string
         var str = color + r.min.toString()
@@ -45,16 +34,6 @@ public class StringUtils
     @inline
     static function secondaryString(string value) returns string
         return COLOR_SECONDARY + value + "|r"
-
-    // TODO 
-    
-    /*@inline
-    static function coloredSpecificDamageInstance(SpecificDamageInstance instance) returns string
-        var str = coloredInt(damageType2Color(instance.damageInstance.damageType), instance.damage)
-        if instance.amount > 0
-            str +=  "   " + coloredInt(COLOR_NEGATIVE, instance.amount)
-        return str 
-        */
 
     @inline
     private static function statInner(string prefix, string data) returns string

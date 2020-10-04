@@ -1,0 +1,25 @@
+package ActionTalentType
+import ActionType
+import initlater Talent
+import Tooltip
+import BoardEntity
+import TalentType
+import ActionTalent
+
+public class ActionTalentType extends TalentType
+    protected ActionType actionType
+    
+    construct(ActionType actionType)
+        super(actionType)
+        this.actionType = actionType
+        
+        onCreate() entity ->
+            return new ActionTalent(this, actionType, entity)
+        onCreateTooltip() -> 
+            return createBasicTooltip()
+            ..addLines(actionType.createTooltipLines(1))
+
+    override function isHidden() returns boolean
+        if not actionType.hasOption(ActionTypeOption.PRIMARY)
+            return true
+        return super.isHidden()

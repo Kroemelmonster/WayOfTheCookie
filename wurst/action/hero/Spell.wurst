@@ -8,13 +8,17 @@ import BoardEntity
 public abstract class Spell extends Action
     protected BoardHero hero
     protected int level
+    protected boolean quickCast = false
+
+    static function createType(string name, string icon) returns ActionType
+        return new ActionType(name, icon)
+        ..enableOption(ActionTypeOption.SPELL)
 
     construct(BoardEntity entity, ActionType actionType, ActionCostPreset cost)
         super(entity, actionType, cost)
         if entity.getType() != EntityType.HERO
             Log.error("Tried to add a Spell to an non Hero")
         this.hero = entity.toHero()
-        presetOption(ActionOption.SPELL)
         activateQuickcast(true)
 
     function setLevel(int i)
@@ -23,12 +27,18 @@ public abstract class Spell extends Action
              + " with a level of " + i.toString())
         this.level = i
 
+    function isQuickcast() returns boolean
+        return quickCast
+
     function toggleQuickcast()
-        activateQuickcast(not hasOption(ActionOption.PRIMARY))
+        activateQuickcast(not quickCast)
 
     function activateQuickcast(boolean flag)
         if flag
             hero.updateQuickcast()
-            presetOption(ActionOption.PRIMARY)
+            quickCast = true
         else
-            removeOption(ActionOption.PRIMARY)
+            quickCast = false
+
+    override function showAsPrimary() returns boolean
+        return quickCast

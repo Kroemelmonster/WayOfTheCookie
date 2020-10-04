@@ -23,21 +23,12 @@ public enum CellResult
     NEUTRAL
     NONE
 
-public enum ActionOption
-    INSTANT
-    DEFAULT
-    PRIMARY
-    SPELL
-    WARCRY
-
 public abstract class Action
     protected BoardEntity entity
 
     protected ActionType actionType
     protected string key = ""
     protected ActionCost cost
-
-    private bitset optionSet = bitset(0)
 
     construct(BoardEntity entity, ActionType actionType, ActionCostPreset cost)
         this.entity = entity
@@ -51,7 +42,7 @@ public abstract class Action
 
     function onAnyStackCellChange()
         recalculatePreview()
-        if OrderSystem.canOrder(entity.getPlayer())
+        if OrderSystem.canOrderAndInteract(entity.getPlayer())
             recalculateHighlight(entity.getPlayer())
 
     protected abstract function recalculatePreview()
@@ -83,33 +74,27 @@ public abstract class Action
         return true
 
     function activate()
-        if hasOption(ActionOption.INSTANT)
+        if hasOption(ActionTypeOption.INSTANT)
             return
 
         entity.setCurrentAction(this)
         UIController.triggerOnActionChange(entity.getPlayer().playingBoard)
 
-    protected function presetOption(ActionOption opt)
-        optionSet = optionSet.set(opt castTo int)
-
-    protected function removeOption(ActionOption opt)
-        optionSet = optionSet.reset(opt castTo int)
-
-    function hasOption(ActionOption option) returns boolean
-        return optionSet.get(option castTo int)
+    function hasOption(ActionTypeOption option) returns boolean
+        return actionType.hasOption(option)
 
     function showAsPrimary() returns boolean
-        return hasOption(ActionOption.PRIMARY)
+        return hasOption(ActionTypeOption.PRIMARY)
 
     function showAsSecondary() returns boolean
-        if hasOption(ActionOption.SPELL)
+        if hasOption(ActionTypeOption.SPELL)
             return false
-        return not hasOption(ActionOption.PRIMARY)
+        return not hasOption(ActionTypeOption.PRIMARY)
     
     function setKey(string key)
         this.key = key
 
-    function createBasicTooltip() returns Tooltip
+    protected function createBasicTooltip() returns Tooltip
         let tt = Tooltip.create(getName())
         cost.setupTooltipCost(tt)
         tt.setKey(key)
@@ -120,6 +105,9 @@ public abstract class Action
 
     function getName() returns string
         return actionType.getName()
+
+    function getType() returns ActionType
+        return actionType
 
     function toString() returns string
         return "Action '"+getName()+"'"

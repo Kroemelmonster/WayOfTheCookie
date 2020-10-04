@@ -33,14 +33,15 @@ public class SummonLesserSkeletonAction extends StackAction
     static ActionType TYPE
 
     static function setup()
-        TYPE = new ActionType("Summon Skeleton", Icons.bTNRaiseDead)
+        TYPE = StackAction.createType("Summon Skeleton", Icons.bTNRaiseDead)
+        ..enableOption(ActionTypeOption.PRIMARY)
         SUMMONED_TYPE = StackTypes.LESSER_SKELETON
         TYPE.onCreate() entity -> 
             return new SummonLesserSkeletonAction(entity)
         TYPE.onCreateTooltipLines() amount -> 
-            return createTooltipLines(amount)
+            return createTooltipLines(amount, true)
 
-    private static constant ActionCostPreset COST = ActionCostPreset.create(2, true, 3)
+    private static constant ActionCostPreset BASE_COST = ActionCostPreset.create(2, true, 3)
     private static constant int MAXRANGE = 1
     private static constant string EFFECT = Abilities.raiseSkeleton
     private static StackType SUMMONED_TYPE
@@ -49,9 +50,14 @@ public class SummonLesserSkeletonAction extends StackAction
         return intRange((SUMMONED_TYPE.leadership * amount * 0.3).ceil(),
                         (SUMMONED_TYPE.leadership * amount * 0.6).ceil())
 
-    private static function createTooltipLines(int amount) returns LinkedList<string>
-        let leadership = getSummonLeadershipAmount(amount)
+    private static function createBaseTooltipLines(boolean addCost) returns LinkedList<string>
+        if addCost
+            return BASE_COST.createTooltipLines()
         return new LinkedList<string>
+
+    private static function createTooltipLines(int amount, boolean addCost) returns LinkedList<string>
+        let leadership = getSummonLeadershipAmount(amount)
+        return createBaseTooltipLines(addCost)
         ..add(StringUtils.stat("Target", "Empty Cell"))
         ..add(StringUtils.stat("Range", MAXRANGE))
         ..add("")
@@ -64,8 +70,7 @@ public class SummonLesserSkeletonAction extends StackAction
     private intRange summonAmount  
 
     construct(BoardEntity entity)
-        super(entity, TYPE, COST)
-        presetOption(ActionOption.PRIMARY)
+        super(entity, TYPE, BASE_COST)
 
     override function getHighlightResultForCell(Player p, Cell cell) returns CellResult
         if area.has(cell)
@@ -119,7 +124,7 @@ public class SummonLesserSkeletonAction extends StackAction
     @inline
     private function showPreview()
         let tt = createBasicTooltip()
-        ..addLines(createTooltipLines(stack.stats.amount))
+        ..addLines(createTooltipLines(stack.stats.amount, false))
         UITooltip.display(stack.getPlayer(), tt)
         // TODO do this in a UiController
         UIMenuActionConsole.updateActionPoints(entity, cost)

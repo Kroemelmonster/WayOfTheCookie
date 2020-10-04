@@ -3,7 +3,7 @@ import UIHandle
 import UIInteractable
 import UITooltip
 import PlayerData
-import DamageType
+import DamageAndResistance
 import StatsModifier
 import StringUtils
 

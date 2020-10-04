@@ -137,7 +137,7 @@ public class UITooltip
             handleIconsHolder.setHeight(ICONS_HEIGHT)
             var index = 0
             for icon in ttIcons
-                icons[index].update(icon.getText(), icon.getIcon())
+                icons[index].update(icon.getName(), icon.getIcon())
                 index++
 
         handleHeaderText.setText(tt.convertUIHeader())

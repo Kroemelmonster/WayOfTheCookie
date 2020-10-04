@@ -1,4 +1,5 @@
 package UIHandle
+import PlayerData
 
 public function createUIFrame(string frameType, framehandle parent) returns framehandle
     return createUIFrame(frameType, parent, false)
@@ -76,6 +77,12 @@ public class UIHandle
     function setLevel(int level)
         self.setLevel(level)
 
+    function preventFocusBug(Player p)
+        if p.isLocal()
+            if self.isEnabled()
+                self.disable()
+                self.enable()
+
     function isVisible() returns boolean
         return self.isVisible()
 
@@ -95,7 +102,7 @@ public function framehandle.setAllPoints(UIHandle relative)
     this.setAllPoints(relative.self)
 
 public function framehandle.toString() returns string
-	var str = "FrameHandle "
-	str += this.getName()
-	str += " enabled " + this.isEnabled().toString()
-	return str
+    var str = "FrameHandle "
+    str += this.getName()
+    str += " enabled " + this.isEnabled().toString()
+    return str

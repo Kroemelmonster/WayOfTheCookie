@@ -13,9 +13,13 @@ import BoardEntity
 
 public abstract class InstantSpell extends Spell
 
+    static function createType(string name, string icon) returns ActionType
+        return new ActionType(name, icon)
+        ..enableOption(ActionTypeOption.SPELL)
+        ..enableOption(ActionTypeOption.INSTANT)
+
     construct(BoardEntity entity, ActionType actionType, ActionCostPreset cost)
         super(entity, actionType, cost)
-        presetOption(ActionOption.INSTANT)
 
     override function getPreviewResultForCell(Cell cell) returns CellResult
         return CellResult.NONE

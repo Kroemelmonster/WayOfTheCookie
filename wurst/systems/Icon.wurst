@@ -1,0 +1,19 @@
+package Icon
+
+public interface HasIcon
+    function getIcon() returns string
+    function getName() returns string
+
+public class Icon implements HasIcon
+    protected string icon
+    protected string name
+
+    construct(string name, string icon)
+        this.icon = icon
+        this.name = name
+
+    override function getIcon() returns string
+        return icon
+    
+    override function getName() returns string
+        return name

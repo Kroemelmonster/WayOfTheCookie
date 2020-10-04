@@ -1,0 +1,24 @@
+package PlayerBoardHelper
+import initlater BoardEntity
+import initlater PlayerData
+import initlater Board
+
+public class PlayerBoardHelper
+
+    static function getPlayerBoard(Player p) returns Board
+        return p.playingBoard
+
+    static function getSelectedEntity(Player p) returns BoardEntity
+        return p.currentSelectedEntity
+
+    static function getCurrentActiveEntity(Board board) returns BoardEntity
+        let currentInitEntity = board.getInitiative().getCurrent()
+        if currentInitEntity == null
+            return null
+        return currentInitEntity.getBoardEntity()
+
+    static function getCurrentActiveEntity(Player p) returns BoardEntity
+        let board = getPlayerBoard(p)
+        if board == null
+            return null
+        return getCurrentActiveEntity(board)

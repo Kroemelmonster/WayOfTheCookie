@@ -9,9 +9,11 @@ import StackType
 import initlater SubTargetList
 import LinkedList
 import initlater Cell
-import DamageType
+import DamageAndResistance
+import Talent
+import TalentType
 
-public class BoardStackStats
+public class BoardStackStats implements HasEntityStats
     private StackStats basis
     private BoardStack stack
     int startAmount
@@ -30,7 +32,9 @@ public class BoardStackStats
     private StatsModifier resultingMoveActionPointModi = new StatsModifier()
 
     int moveCoefficient = 100
-    private Resistance resistance = new Resistance()
+    private Resistance resistance
+
+    private LinkedList<Talent> talents = new LinkedList<Talent>
 
 
     private SubTargetList subAttackList = null
@@ -41,99 +45,109 @@ public class BoardStackStats
         this.amount = amount
         this.hp = basis.getMaxHP()
         this.stack = stack
+        this.resistance = new Resistance(getBasis().getResistance())
 
-        /*
-        setSubAttackTarget() (Cell reference, BoardStack mainTarget) ->
-            let list = new LinkedList<SubTarget>()
-            let itr = mainTarget.getCell().eachCellInRangeIterator(intRange(1, 1))
-            while itr.hasNext()
-                let possibleTarget = itr.next().getStack()
-                if possibleTarget != null and mainTarget.isEnemy(possibleTarget) == false
-                    list.add(new SubTarget(possibleTarget, 0.5))
+        for talent in basis.talents
+            talents.add(talent.create(stack))
 
-            destroy itr
-            return list
-        */
 
-    function getBasis() returns StackStats
+    override function getBasis() returns StackStats
         return basis
+
+    override function getIcon() returns string
+        return getBasis().getIcon()
+
+    function getTalents() returns LinkedList<Talent>
+        return talents
+
+    override function forEachTalentStat(LLItrClosure<TalentStats> itr)
+        talents.forEach() (Talent talent) ->
+            if not talent.isHidden()
+                itr.run(talent)
+        destroy itr
     
-    @inline
-    function getInitiative() returns int
-        return initModi.get(basis.getInitiative()).round()
+    override function getInitiative() returns int
+        return initModi.get(getBasis().getInitiative()).round()
 
-    @inline
-    function getMaxActionPoints() returns int
-        return actionPointModi.get(basis.getMaxAP()).round()
+    override function getMaxAP() returns int
+        return actionPointModi.get(getBasis().getMaxAP()).round()
 
-    @inline
-    function getMaxMoveActionPoints() returns int
+    override function getMaxMoveAP() returns int
         resultingMoveActionPointModi.addBonus = moveActionPointModi.addBonus + actionPointModi.addBonus
         resultingMoveActionPointModi.multi = moveActionPointModi.multi + actionPointModi.multi - 100
-        return resultingMoveActionPointModi.get(basis.getMaxMoveAP()).round()
+        return resultingMoveActionPointModi.get(getBasis().getMaxMoveAP()).round()
     
-    @inline
-    function getMaxHp() returns int
-        return hpModi.get(basis.getMaxHP()).round()
+    override function getMaxHP() returns int
+        return hpModi.get(getBasis().getMaxHP()).round()
 
-    @inline
-    function getDamage() returns realRange
-        return damageModi.getRealRange(basis.getDamage(), amount)
+    function getDamageAll() returns realRange
+        return damageModi.getRealRange(getBasis().getDamage(), amount)
 
-    @inline
-    function getDamageOne() returns realRange
+    override function getDamage() returns realRange
         return damageModi.getRealRange(basis.getDamage(), 1)
 
-    @inline
-    function getAttackRange() returns intRange
-        return basis.getRange()
+    override function getRange() returns intRange
+        return getBasis().getRange()
 
-    @inline
-    function getAttack() returns int
-        return attackModi.get(basis.getAttack()).round()
+    override function getAttack() returns int
+        return attackModi.get(getBasis().getAttack()).round()
 
-    @inline
-    function getDefence() returns int
-        return defenceModi.get(basis.getDefence()).round()
+    override function getDefence() returns int
+        return defenceModi.get(getBasis().getDefence()).round()
 
-    @inline
-    function getDamageType() returns DamageType
-        return basis.stackType.damageType
+    override function getAttackModifier() returns StatsModifier
+        return attackModi
 
-    @inline
+    override function getDefenceModifier() returns StatsModifier
+        return defenceModi
+
+    override function getDamageModifier() returns StatsModifier
+        return damageModi
+
+    override function getAPModifier() returns StatsModifier
+        return actionPointModi
+
+    override function getInitiativeModifier() returns StatsModifier
+        return initModi
+
+    override function getMaxHPModifier() returns StatsModifier
+        return hpModi
+
+    override function getLeadership() returns int
+        return getBasis().getLeadership()
+
+    override function getDamageType() returns DamageType
+        return getBasis().getDamageType()
+
+    override function getResistance() returns Resistance
+        return getBasis().getResistance()
+
     function getResistance(DamageType dType) returns int
-        return basis.getResistance(dType) + resistance.getRes(dType)
+        return resistance.getRes(dType)
 
-    @inline
     function getRemainingActionPoints() returns integer
         return remainingActionPoints
 
-    @inline
     function getRemainingMoveActionPoints() returns integer
         return remainingMoveActionPoints
 
-    @inline
     function getAmount() returns int
         return amount
     
-    @inline
     function getHp() returns int
         return hp
 
-    @inline
     function getStartAmount() returns int
         return startAmount
 
-    @inline
     function getWeight() returns real
         return basis.getWeight()
     
     /** setters  **/
 
-    @inline
     function setHp(int i)
         hp = i
-        stack.setVisualHp(hp / getMaxHp())
+        stack.setVisualHp(hp / getMaxHP())
 
     @inline
     function removeAP(integer amount)
@@ -158,8 +172,8 @@ public class BoardStackStats
 
     @inline
     function resetActionPoints()
-        remainingActionPoints = getMaxActionPoints()
-        remainingMoveActionPoints = getMaxMoveActionPoints()
+        remainingActionPoints = getMaxAP()
+        remainingMoveActionPoints = getMaxMoveAP()
 
     @inline
     function setSubAttackTarget(SubTargetList list)
@@ -180,6 +194,11 @@ public class BoardStackStats
         destroy moveActionPointModi
         destroy resultingMoveActionPointModi
         destroy hpModi
+        destroy resistance
+        if talents != null
+            for talent in talents
+                destroy talent
+            destroy talents
         if subAttackList != null
             destroy subAttackList
             subAttackList = null

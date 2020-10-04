@@ -11,7 +11,6 @@ import initlater UIMenuWorldConsole
 import initlater UIDialog
 import initlater KeyPressSystem
 import initlater BoardEntity
-import initlater UIWindowSpellBook
 import initlater UIWindow
 import initlater UIMenuConsole
 
@@ -41,7 +40,6 @@ public class Player
     DialogInfo dialogInfo = new DialogInfo()
 
     UIMenuWorldConsoleInfo worldConsoleInfo = new UIMenuWorldConsoleInfo()
-    UISpellBookInfo spellBookInfo = new UISpellBookInfo()
     UIMenuConsoleInfo menuConsoleInfo = new UIMenuConsoleInfo()
 
     mousePosition currentMousePosition
@@ -89,7 +87,8 @@ public class Player
         return c.toColorString()
 
     function onAnyKeyPress(KeyPressListener listener)
-        keyPressListener.add(listener)
+        if not isConntrolledByKI
+            keyPressListener.add(listener)
 
     function getRelationshipStatusTo(Player other) returns PlayerRelationship
         if other == null

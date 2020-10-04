@@ -1,0 +1,5 @@
+Frame "TEXT" "SpellBookText" {
+    LayerStyle "IGNORETRACKEVENTS",
+	UseActiveContext,
+	FrameFont "Fonts\ulei00m.ttf", 0.01, "",
+}

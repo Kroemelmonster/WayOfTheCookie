@@ -1,6 +1,6 @@
 package CounterAttackPassive
 
-import PassiveAction
+import Passive
 import AttackAnimation
 import BoardController
 import Damage
@@ -11,16 +11,16 @@ import initlater Cell
 import StackType
 import BoardTrigger
 import WalkAndAttackAction
-import initlater PassiveActionType
+import initlater PassiveType
 import Icons
 import LinkedList
 import BoardEntity
-import initlater StackPassiveAction
+import initlater StackPassive
 
-public class CounterAttackPassive extends StackPassiveAction
-    static PassiveActionType TYPE
+public class CounterAttackPassive extends StackPassive
+    static PassiveType TYPE
     static function setup()
-        TYPE = new PassiveActionType("Counter Attack", "Icons/PASCounterAttack.dds")
+        TYPE = new PassiveType("Counter Attack", "Icons/PASCounterAttack.dds")
         TYPE.onCreate() entity -> 
             return new CounterAttackPassive(entity)
         TYPE.onCreateTooltipLines() amount -> 
@@ -52,6 +52,6 @@ public class CounterAttackPassive extends StackPassiveAction
         if counter <= 0
             return false
 
-        let attackRange = stack.stats.getAttackRange()
+        let attackRange = stack.stats.getRange()
         let distance = fromCell.getDistanceTo(stack.getCell())
         return distance >= attackRange.min and distance <= attackRange.max

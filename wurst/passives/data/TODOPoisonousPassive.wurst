@@ -1,6 +1,5 @@
 package TODOPoisonousPassive
 
-import PassiveAction
 import AttackAnimation
 import BoardController
 import Damage

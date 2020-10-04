@@ -1,0 +1,72 @@
+package TalentType
+import Icon
+import Tooltip
+import BoardEntity
+import Talent
+import StackType
+import initlater WalkAndAttackAction
+import initlater DefendAction
+import initlater WaitAction
+
+interface TalentCreateListener
+    function create(BoardEntity boardEntity) returns Talent
+
+public interface TalentStats extends GeneratesTooltip, HasIcon
+
+public class TalentType extends Icon implements TalentStats
+
+    static function addStackDefaultAction(StackType stackType)
+        stackType.talents.add(WalkAndAttackAction.TYPE.getTalent())
+        stackType.talents.add(DefendAction.TYPE.getTalent())
+        stackType.talents.add(WaitAction.TYPE.getTalent())
+
+    protected TalentCreateListener listener
+    protected GeneratesTooltip tooltipListener
+
+    construct(Icon icon)
+        super(icon.name, icon.icon)
+
+    construct(string name, string icon)
+        super(name, icon)
+    
+    function onCreate(TalentCreateListener listener)
+        this.listener = listener
+
+    function onCreateTooltip(GeneratesTooltip tooltipListener)
+        this.tooltipListener = tooltipListener
+
+    function create(BoardEntity boardEntity) returns Talent
+        return listener.create(boardEntity)
+
+    function toString() returns string
+        return "TalentType '"+name+"'"
+
+    function isHidden() returns boolean
+        return getIcon() == ""
+
+    override function getName() returns string
+        return super.getName()
+
+    override function getIcon() returns string
+        return super.getIcon()
+
+    protected function createBasicTooltip() returns Tooltip
+        return Tooltip.create(getName())
+
+    override function createTooltip() returns Tooltip
+        return tooltipListener.createTooltip()
+
+    static function setup()
+        /*WaitAction.setup()
+        DefendAction.setup()
+        WalkAndAttackAction.setup()
+        SlamAction.setup()
+        ChainLightningAction.setup()
+        SummonLesserSkeletonAction.setup()
+
+
+        HeroSkipAction.setup()
+        HeroAttackAction.setup()
+        ChainLightningSpell.setup()
+        LightningBoltSpell.setup()
+        RallingCrySpell.setup()*/

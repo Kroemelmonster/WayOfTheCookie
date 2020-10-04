@@ -23,6 +23,9 @@ public abstract class UIMouseBlockElement extends UIHandle
             MouseContext.enableMouseMovement(GetTriggerPlayerData(), false)
         self.onMouseLeave() -> 
             MouseContext.enableMouseMovement(GetTriggerPlayerData(), true)
+       
+        self.onMouseUp() -> 
+            preventFocusBug(GetTriggerPlayerData())
 
     function setPointToGameUI(framepointtype point, framepointtype relativePoint)
         setPoint(point, GAME_UI, relativePoint)
@@ -75,7 +78,7 @@ public class UIMenu extends UIMouseBlockElement
 
     function show(Player p)
         if parent != null
-            Log.trace("You cant show a children menu")
+            Log.warn("You cant show a children menu")
             return
         if isVisible(p)
             return
@@ -88,7 +91,7 @@ public class UIMenu extends UIMouseBlockElement
 
     function hide(Player p)
         if parent != null
-            Log.trace("You cant hide a children menu")
+            Log.warn("You cant hide a children menu")
             return
         if not isVisible(p)
             return
@@ -109,14 +112,14 @@ public class UIMenu extends UIMouseBlockElement
 
     override function setVisible(boolean flag)
         super.setVisible(flag)
-        Log.trace("PLEASE dont use set Visible on a Menu, use show / hide instead")
+        Log.warn("PLEASE dont use set Visible on a Menu, use show / hide instead")
 
     function onShow(PlayerListener listener)
         onShowListener = listener
     
     function onHide(PlayerListener listener)
         if onHideListener != null
-            Log.error("You allready added an onHideListener to this Menu")
+            Log.warn("You allready added an onHideListener to this Menu")
         onHideListener = listener
 
 public class UIWindow extends UIMouseBlockElement
@@ -175,7 +178,7 @@ public class UIWindow extends UIMouseBlockElement
 
     override function setVisible(boolean flag)
         super.setVisible(flag)
-        Log.trace("PLEASE dont use set Visible on a Window, use close / open instead")
+        Log.warn("PLEASE dont use set Visible on a Window, use close / open instead")
 
     function onClose(PlayerListener listener)
         onHideListener = listener

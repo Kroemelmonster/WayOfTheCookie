@@ -14,9 +14,12 @@ import ActionType
 public abstract class DefaultStackAction extends DefaultAction
     protected BoardStack stack
 
+    static function createType(string name) returns ActionType
+        return new ActionType(name, "")
+        ..enableOption(ActionTypeOption.DEFAULT)
+
     construct(BoardEntity entity, ActionType actionType, ActionCostPreset cost)
         super(entity, actionType, cost)
         if entity.getType() != EntityType.STACK
             Log.error("Tried to add an Stack Action to an non Stack")
         this.stack = entity.toStack()
-        presetOption(ActionOption.DEFAULT)

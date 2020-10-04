@@ -11,7 +11,7 @@ import PlayerData
 import Action
 import UnitDefinition
 import DefaultAction
-import PassiveAction
+import Passive
 
 import initlater Cell
 import initlater Board
@@ -20,6 +20,7 @@ import StackStats
 import Stack
 import BoardTrigger
 import BoardEntity
+import ActionType
 
 public class BoardStack extends BoardEntity
     private StackType stackType
@@ -33,22 +34,19 @@ public class BoardStack extends BoardEntity
     private DefaultAction defaultAction = null
     private LinkedList<Action> actions
     private integer currentSelectedAction = 0
-    private LinkedList<PassiveAction> passiveActions
+    private LinkedList<Passive> passiveActions
 
     BoardStackStats stats
 
     construct(Player p, ArmyStack stack)
         super(EntityType.STACK, null)
         this.p = p
+        this.actions = new LinkedList<Action>
+        this.passiveActions = new LinkedList<Passive>
         this.stats = new BoardStackStats(this, stack.stats, stack.getAmount())
         this.armyStack = stack
         this.stackType = stack.getStackType()
         stack.representive = this
-
-        this.actions = new LinkedList<Action>
-        this.passiveActions = new LinkedList<PassiveAction>
-
-        stack.stats.triggerOnCreation(this)
 
     @inline
     override function getCell() returns Cell
@@ -97,7 +95,7 @@ public class BoardStack extends BoardEntity
         return actions.iterator()
 
     @inline
-    function passiveActionIterator() returns LLIterator<PassiveAction>
+    function passiveActionIterator() returns LLIterator<Passive>
         return passiveActions.iterator()
 
     @inline
@@ -114,19 +112,19 @@ public class BoardStack extends BoardEntity
         return getAction(currentSelectedAction)
 
     function addAction(Action action)
-        if action.hasOption(ActionOption.DEFAULT)
+        if action.hasOption(ActionTypeOption.DEFAULT)
             if defaultAction != null
                 Log.error("Tried to add an Default Action to "+getName()+" while it allready has one -> opverwriting it")
             defaultAction = action castTo DefaultAction
         else
             actions.add(action)
 
-    function addPassive(PassiveAction passive)
+    function addPassive(Passive passive)
         passiveActions.add(passive)
 
     @inline
     override function getMaxActionPoints() returns int
-        return stats.getMaxActionPoints()
+        return stats.getMaxAP()
 
     @inline
     override function getRemainingActionPoints() returns int

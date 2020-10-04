@@ -1,12 +1,11 @@
 package UIMain
 
 import FramehandleNames
-import UIInitiativeWindow
+import UIMenuBoardConsole
 import UIMenuWorldConsole
 import UIWindowSpellBook
 import UIMenuConsole
 import UITooltip
-import UIMenuActionConsole
 
 boolean fpsDebug = false
 
@@ -33,9 +32,8 @@ class UIMain
 
 	static function load(integer part)
 		if part == 0
-			UIMenuActionConsole.create()
+			UIMenuBoardConsole.create()
 		if part == 1
-			UIInitiativeWindow.setup()
 			UIWindowSpellBook.create()
 		else if part == 2
 			UIMenuConsole.create()

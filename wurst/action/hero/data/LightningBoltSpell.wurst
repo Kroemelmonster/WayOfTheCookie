@@ -32,18 +32,18 @@ import ActionCost
 import StringUtils
 import Tooltip
 import UITooltip
-import DamageType
+import DamageAndResistance
 import ActionType
 
 public class LightningBoltSpell extends Spell
     static ActionType TYPE
     static function setup()
         PURGE_DEBUFF = StatusPurged.TYPE
-        TYPE = new ActionType("Lightning Bolt", "Icons\\BTNLightningBolt.blp")
+        TYPE = Spell.createType("Lightning Bolt", "Icons\\BTNLightningBolt.blp")
         TYPE.onCreate() entity -> 
             return new LightningBoltSpell(entity)
         TYPE.onCreateTooltipLines() level -> 
-            return createTooltipLines(level, 0, 0, 0)
+            return createTooltipLines(level, 0, 0, 0, true)
 
     private static constant ActionCostPreset BASE_COST = ActionCostPreset.create(1, true, 0)
     private static constant int array[5] MANA_COST = [4, 5, 6, 7, 8]
@@ -62,8 +62,13 @@ public class LightningBoltSpell extends Spell
         damagePreview.dmg = realRange(DAMAGE[level] * 0.5 * multi, DAMAGE[level] * 2 * multi)
         return damagePreview
 
-    private static function createTooltipLines(int level, int power, int stunLevel, int purgeLevel) returns LinkedList<string>
-        let lines = new LinkedList<string>
+    private static function createBaseTooltipLines(boolean addCost) returns LinkedList<string>
+        if addCost
+            return BASE_COST.createTooltipLines()
+        return new LinkedList<string>
+
+    private static function createTooltipLines(int level, int power, int stunLevel, int purgeLevel, boolean addCost) returns LinkedList<string>
+        let lines = createBaseTooltipLines(addCost)
         ..add(StringUtils.stat("Target", "Enemy"))
         ..add(StringUtils.stat("Damage", calculateDamage(level, power).toColoredText()))
         ..add("")
@@ -163,7 +168,7 @@ public class LightningBoltSpell extends Spell
         let power = hero.stats.getPower()
         
         let tt = createBasicTooltip()
-        ..addLines(createTooltipLines(level, power, stunLevel, purgeLevel))
+        ..addLines(createTooltipLines(level, power, stunLevel, purgeLevel, false))
         if fromCell != null
             calculateDamage(power, level)
             .extendTooltipWithSpecific(tt, entity, fromCell.getStack())

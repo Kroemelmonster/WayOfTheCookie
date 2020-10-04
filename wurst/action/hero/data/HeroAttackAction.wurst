@@ -31,7 +31,7 @@ import UIMenuActionConsole
 public class HeroAttackAction extends DefaultAction
     static ActionType TYPE
     static function setup()
-        TYPE = new ActionType("Attack", "")
+        TYPE = DefaultAction.createType("Attack")
         TYPE.onCreate() entity -> 
             return new HeroAttackAction(entity)
         TYPE.onCreateTooltipLines() amount -> 

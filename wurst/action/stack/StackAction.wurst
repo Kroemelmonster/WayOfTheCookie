@@ -8,6 +8,9 @@ import ActionType
 public abstract class StackAction extends Action
     protected BoardStack stack
 
+    static function createType(string name, string icon) returns ActionType
+        return new ActionType(name, icon)
+
     construct(BoardEntity stack, ActionType actionType, ActionCostPreset cost)
         super(stack, actionType, cost)
         if entity.getType() != EntityType.STACK

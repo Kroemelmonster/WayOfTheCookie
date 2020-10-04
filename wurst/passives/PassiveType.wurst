@@ -1,0 +1,47 @@
+package PassiveType
+import Icon
+import LinkedList
+import Passive
+import BoardEntity
+import initlater PassiveTalentType
+import CounterAttackPassive
+import CracklePassive
+
+
+interface PassiveCreateListener
+    function create(BoardEntity boardEntity) returns Passive
+
+interface PassiveCreateTooltipLinesListener
+    function create(int value) returns LinkedList<string>
+
+public class PassiveType extends Icon
+    protected PassiveCreateListener listener
+    protected PassiveCreateTooltipLinesListener tooltipLinesListener
+    protected PassiveTalentType creatingTalent
+
+    construct(string name, string icon)
+        super(name, icon)
+    
+    function onCreate(PassiveCreateListener listener)
+        this.listener = listener
+
+    function onCreateTooltipLines(PassiveCreateTooltipLinesListener tooltipLinesListener)
+        this.tooltipLinesListener = tooltipLinesListener
+
+    function create(BoardEntity boardEntity) returns Passive
+        return listener.create(boardEntity)
+
+    function toString() returns string
+        return "PassiveType '"+name+"'"
+
+    function createTooltipLines(int value) returns LinkedList<string>
+        return tooltipLinesListener.create(value)
+
+    function getTalent() returns PassiveTalentType
+        if creatingTalent == null
+            creatingTalent = new PassiveTalentType(this)
+        return creatingTalent
+
+    static function setup()
+        CounterAttackPassive.setup()
+        CracklePassive.setup()

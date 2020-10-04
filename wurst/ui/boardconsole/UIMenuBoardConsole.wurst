@@ -1,0 +1,169 @@
+package UIMenuBoardConsole
+
+import LinkedList
+
+import PlayerData
+import UIButton
+
+import initlater InitiativeList
+import initlater BoardStack
+import initlater MouseContext
+import initlater BoardEntity
+import UIButtonIcon
+import UIHandle
+import UIWindow
+import initlater UIMenuActionConsole
+
+class InitiativeCommandButton extends UIButtonIcon
+    protected framehandle handleTime
+    protected framehandle handleNumber
+    protected framehandle handleInnerIcon
+    protected BoardEntity entity
+
+    construct(UIHandle parent, boolean withTime, real size)
+        super(parent.self, false, true, false)
+        setSize(size, size)
+
+        let padding = 0.002
+        let numberBackdropHeight = 0.009
+        let numberBackdrop = createUIFrame("BACKDROP", self)
+        ..setPoint(FRAMEPOINT_BOTTOMLEFT, self, FRAMEPOINT_BOTTOMLEFT, padding, padding)
+        ..setPoint(FRAMEPOINT_BOTTOMRIGHT, self, FRAMEPOINT_BOTTOMRIGHT, -padding, padding)
+        ..setHeight(numberBackdropHeight)
+        ..setTexture("UI/glues/singleplayer/humancampaign3d/black32.dds")
+        ..setAlpha(190)
+
+        handleNumber = createUIFrame("TEXT", self)
+        ..setAllPoints(numberBackdrop)
+        ..setTextAlignment(TEXT_JUSTIFY_MIDDLE, TEXT_JUSTIFY_RIGHT)
+
+        let innerIconPadding = 0.0
+        handleInnerIcon = createUIFrame("BACKDROP", self)
+        ..setPoint(FRAMEPOINT_TOPRIGHT, numberBackdrop, FRAMEPOINT_TOPRIGHT, -innerIconPadding, -innerIconPadding)
+        ..setPoint(FRAMEPOINT_BOTTOMRIGHT, numberBackdrop, FRAMEPOINT_BOTTOMRIGHT, -innerIconPadding, innerIconPadding)
+        ..setWidth(numberBackdropHeight - (innerIconPadding * 2))
+        ..setTexture("UI/BoardConsole/HeroIcon.dds")
+        ..setVisible(false)
+
+        onClick() () ->
+            onClickInner(GetTriggerPlayerData())
+        onMouseEnter() -> 
+            onEnterInner(GetTriggerPlayerData())
+        onMouseLeave() -> 
+            onLeaveInner(GetTriggerPlayerData())
+        
+
+        if withTime
+            handleTime = createUIFrame("TEXT", self)
+            ..setPoint(FRAMEPOINT_BOTTOMLEFT, self, FRAMEPOINT_TOPLEFT)
+            ..setPoint(FRAMEPOINT_BOTTOMRIGHT, self, FRAMEPOINT_TOPRIGHT)
+            ..setHeight(0.009)
+            ..setTextAlignment(TEXT_JUSTIFY_MIDDLE, TEXT_JUSTIFY_CENTER)
+
+    protected function setEntity(BoardEntity entity, int time)
+        this.entity = entity
+        if time > 0
+            handleTime.setText(time.toString())
+
+        setIcon(entity.getIcon())
+        let player1 = entity.getBoard().getPlayer(0)
+        if player1.isLocal()
+            setBorderBasedOnPlayerRelationship(player1.getRelationshipStatusTo(entity.getPlayer()))
+        let player2 = entity.getBoard().getPlayer(1)
+        if player2.isLocal()
+            setBorderBasedOnPlayerRelationship(player2.getRelationshipStatusTo(entity.getPlayer()))
+
+        switch(entity.getType())
+            case STACK
+                handleNumber.setText(entity.toStack().stats.getAmount().toString())
+                handleInnerIcon.setVisible(false)
+            case HERO
+                handleNumber.setText("")
+                handleInnerIcon.setVisible(true)
+
+    protected function showHighlightBasedOnEntity(BoardEntity entity)
+        showHighlight(entity == this.entity)
+
+    private function onClickInner(Player p)
+        if entity == null
+            return
+        
+        let entityCell = entity.getCell()
+        if entityCell != null
+            MouseContext.forcePlayerSelect(p, entityCell)
+    
+    private function onEnterInner(Player p)
+        if entity == null
+            return
+
+        let entityCell = entity.getCell()
+        if entityCell != null
+            MouseContext.forceMouseEnter(p, entityCell)
+
+    private function onLeaveInner(Player p)
+        MouseContext.forceMouseLeave(p)
+
+
+class UIMenuBoardConsole
+    protected static UIMenu menu
+
+    private static InitiativeCommandButton array[15] btns
+
+    static function create()
+        let iconSize = 0.035
+        let firstIconScale = 1.5
+        let padding = 0.002
+        menu = UIMenu.create()
+        ..setPointToGameUI(FRAMEPOINT_BOTTOMLEFT, FRAMEPOINT_BOTTOMLEFT)
+        ..setSize(0.4, iconSize * firstIconScale + padding)
+
+        UIMenuActionConsole.create()
+
+        btns[0] = new InitiativeCommandButton(menu, false, iconSize)
+        ..setPoint(FRAMEPOINT_TOPLEFT, menu, FRAMEPOINT_TOPLEFT)
+        ..setScale(firstIconScale)
+
+        for i = 1 to btns.length - 1
+            btns[i] = new InitiativeCommandButton(menu, true, iconSize)
+            ..setPoint(FRAMEPOINT_BOTTOMLEFT, btns[i - 1].self, FRAMEPOINT_BOTTOMRIGHT, padding, 0)
+
+    static function refresh(InitiativeList initiative)
+        if not initiative.getBoard().isLocalPlayer()
+            return
+        
+        let cur = initiative.getCurrent()
+        if cur != null
+            btns[0].setEntity(cur.getBoardEntity(), -1)
+
+        let iterator = initiative.iterator()
+        for i = 1 to btns.length - 1
+            let hasEntry = iterator.hasNext()
+            btns[i].setVisible(hasEntry)
+
+            if hasEntry
+                let initEntry = iterator.next()
+                btns[i].setEntity(initEntry.getEnitity().getBoardEntity(), initEntry.getTime())
+
+        destroy iterator
+        
+    static function highlightEntity(Player p, BoardEntity highlightEntit)
+        if not p.isLocal()
+            return
+
+        for i = 0 to btns.length - 1
+            btns[i].showHighlightBasedOnEntity(highlightEntit)
+
+    static function hide(Player p)
+        menu.hide(p)
+        UIMenuActionConsole.hide(p)
+
+    static function show(Player p)
+        menu.show(p)
+        UIMenuActionConsole.show(p)
+    
+    static function resetHighlight(Player p)
+        if not p.isLocal()
+            return
+
+        for i = 0 to btns.length - 1
+            btns[i].showHighlight(false)

@@ -23,18 +23,25 @@ import LinkedList
 public class DefendAction extends InstantStackAction
     static ActionType TYPE
     static function setup()
-        TYPE = new ActionType("Defend", Icons.bTNStop)
+        TYPE = InstantStackAction.createType("Defend", Icons.bTNStop)
         TYPE.onCreate() entity -> 
             return new DefendAction(entity)
         TYPE.onCreateTooltipLines() amount -> 
-            return createTooltipLines(amount)
+            return createTooltipLines(amount, true)
 
-    private static function createTooltipLines(int _amount) returns LinkedList<string>
+    private static constant ActionCostPreset BASE_COST = ActionCostPreset.create(1, true)
+
+    private static function createBaseTooltipLines(boolean addCost) returns LinkedList<string>
+        if addCost
+            return BASE_COST.createTooltipLines()
         return new LinkedList<string>
+
+    private static function createTooltipLines(int _amount, boolean addCost) returns LinkedList<string>
+        return createBaseTooltipLines(addCost)
         ..add("Skips your turn ( thats it for now )")
 
     construct(BoardEntity entity)
-        super(entity, TYPE, ActionCostPreset.create(1, true))
+        super(entity, TYPE, BASE_COST)
         
     override function activate()
         stack.flashEffectOnPos(Abilities.defendCaster)
@@ -42,7 +49,7 @@ public class DefendAction extends InstantStackAction
         
     override function onUIMouseEnter()
         let tt = createBasicTooltip()
-        ..addLines(createTooltipLines(stack.stats.amount))
+        ..addLines(createTooltipLines(stack.stats.amount, false))
         UITooltip.display(entity.getPlayer(), tt)
         UIMenuActionConsole.updateActionPoints(entity, cost)
 

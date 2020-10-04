@@ -6,7 +6,7 @@ import BoardEntity
 import Globals
 import StringUtils
 import Tooltip
-import DamageType
+import DamageAndResistance
 
 public enum SourceType
     ATTACK
@@ -125,7 +125,7 @@ public class SpecificDamageInstance extends SpecificDamage
         damage = (damageInstance.dmg * factor).round()
         amount = calculateStackLostCount(target, damage)
         remainingHp = target.stats.getHp()
-        remainingHp += target.stats.getMaxHp() * amount
+        remainingHp += target.stats.getMaxHP() * amount
         remainingHp -= damage
 
     function toColoredText() returns string
@@ -183,7 +183,7 @@ function calculateStackLostCount(BoardStack target, int damage) returns int
     let remainingDmg = damage - target.stats.getHp()
     if remainingDmg >= 0
         amount ++
-        let maxHp = target.stats.getMaxHp()
+        let maxHp = target.stats.getMaxHP()
         amount += (remainingDmg / maxHp).floor()
     
     if amount > target.stats.getAmount()

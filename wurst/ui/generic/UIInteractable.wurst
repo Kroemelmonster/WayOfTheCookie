@@ -31,6 +31,9 @@ public class UIInteractable extends UIHandle
             if onMouseLeaveListener != null
                 onMouseLeaveListener.onEvent()
 
+        self.onMouseUp() -> 
+            preventFocusBug(GetTriggerPlayerData())
+
     protected function onMouseEnterInner(Player _p)
     protected function onMouseLeaveInner(Player _p)
 

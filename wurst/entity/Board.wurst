@@ -19,6 +19,7 @@ import StackType
 import DummyRecycler
 import ClosureTimers
 import BoardHero
+import BoardTrigger
 
 public class Board
     private static Cell array allCells
@@ -98,7 +99,7 @@ public class Board
     function getHostileArmy() returns HostileArmy
         return hostileArmy
 
-    function placeCombat(Hero hero, HostileArmy army)
+    function placeCombat(Hero hero, HostileArmy army, SequenzListener next)
         p1 = hero.getPlayer()
         p2 = army.getPlayer()
         h1 = hero
@@ -121,6 +122,7 @@ public class Board
             ..start()
             p1.blzPlayer.setCameraTargetControllerNoZ(dummyCam, vec2(0.0, 0.0), false)
             p2.blzPlayer.setCameraTargetControllerNoZ(dummyCam, vec2(0.0, 0.0), false)
+            next.continue()
 
     function endFight()
         initiative.reset()

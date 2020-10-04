@@ -14,7 +14,7 @@ import BoardTrigger
 import initlater DelayAnimation
 import Ailment
 import initlater BoardEntity
-import DamageType
+import DamageAndResistance
 import LinkedList
 import Tooltip
 import StringUtils

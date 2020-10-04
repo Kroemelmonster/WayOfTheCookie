@@ -33,8 +33,6 @@ public class UIButton extends UIInteractable
         super(self)
         this.imgFrame = getFrame("Texture")
         self.onClick() () ->
-            self.setEnabled(false)
-            self.setEnabled(true)
             if onClickListener != null
                 onClickListener.onEvent()
 
@@ -48,6 +46,7 @@ public class UIButton extends UIInteractable
         imgFrame.setTexture(str)
 
     function triggerOnMouseDown()
+        preventFocusBug(GetTriggerPlayerData())
         if onMouseDown != null
             onMouseDown.onEvent()
 

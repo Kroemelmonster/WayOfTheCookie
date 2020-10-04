@@ -7,4 +7,5 @@ UI\Generic\Generic.fdf
 UI\Tooltip\Tooltip.fdf
 UI\Dialog\Dialog.fdf
 UI\Button\Button.fdf
+UI\Console\Console.fdf
 UI\WorldConsole\WorldConsole.fdf

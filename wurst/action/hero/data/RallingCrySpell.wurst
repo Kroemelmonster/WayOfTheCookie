@@ -30,11 +30,11 @@ public class RallingCrySpell extends WarcrySpell
     static function setup()
         STATUS = StatusRallingCryHero.TYPE
         STATUS_STACKS = StatusRallingCryStack.TYPE
-        TYPE = new ActionType("Ralling Cry", "Icons\\BTNAbilityWarriorWarCry.blp")
+        TYPE = WarcrySpell.createType("Ralling Cry", "Icons\\BTNAbilityWarriorWarCry.blp")
         TYPE.onCreate() entity -> 
             return new RallingCrySpell(entity)
         TYPE.onCreateTooltipLines() level -> 
-            return createTooltipLines(level)
+            return createTooltipLines(level, true)
 
     private static constant ActionCostPreset BASE_COST = ActionCostPreset.create(0, false, 3)
     private static constant int array[5] ATTACK_BONUS = [3, 5, 7, 9, 11]
@@ -44,8 +44,13 @@ public class RallingCrySpell extends WarcrySpell
     private static function createStatusData(int level) returns StatusData
         return StatusData.createDurationI(1, ATTACK_BONUS[level])
 
-    private static function createTooltipLines(int level) returns LinkedList<string>
-        let list = new LinkedList<string>
+    private static function createBaseTooltipLines(boolean addCost) returns LinkedList<string>
+        if addCost
+            return BASE_COST.createTooltipLines()
+        return new LinkedList<string>
+
+    private static function createTooltipLines(int level, boolean addCost) returns LinkedList<string>
+        let list = createBaseTooltipLines(addCost)
         ..add(StringUtils.stat("Target", "Allies/Self"))
         ..add("")
         ..add("Gives your self and all your troops a temporary Attack Bonus")
@@ -78,7 +83,7 @@ public class RallingCrySpell extends WarcrySpell
 
     private function showPreview()
         let tt = createBasicTooltip()
-        ..addLines(createTooltipLines(level))
+        ..addLines(createTooltipLines(level, false))
         UITooltip.display(entity.getPlayer(), tt)
         UIMenuActionConsole.updateActionPoints(entity, cost)
 

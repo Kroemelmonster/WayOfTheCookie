@@ -8,7 +8,7 @@ import initlater Cell
 import initlater BoardStack
 import initlater Action
 
-import initlater UIInitiativeWindow
+import initlater UIMenuBoardConsole
 import initlater OrderSystem
 import initlater InitiativeList
 import initlater MouseContext
@@ -21,18 +21,21 @@ import initlater Hero
 import initlater HeroData
 import initlater UIMenuConsole
 import initlater UIMenuActionConsole
+import initlater UIWindowEntity
+import PlayerBoardHelper
 
 class UIController
     static function initHero(Hero hero)
         UIMenuConsole.initHero(hero)
         UIMenuWorldConsole.initHero(hero)
 
-    static function selectEntity(Player p, BoardEntity entity)
-        UIMenuActionConsole.update(p)
-        // TODO p.stackWindowInfo.setBoardEntity(entity)
+    static function selectEntity(Player p, BoardEntity entity, boolean directSelect)
+        OrderSystem.resetCurrentSelectedAction(p)
+        if directSelect
+            UIWindowEntity.open(p, entity)
             
     static function triggerOnActionChange(Board board)
-        let currentEntry = board.getInitiative().getCurrent().getBoardEntity()
+        let currentEntry = PlayerBoardHelper.getCurrentActiveEntity(board)
         currentEntry.getCurrentAction().onAnyStackCellChange()
         let currentPlayer = currentEntry.getPlayer()
 
@@ -42,7 +45,7 @@ class UIController
     static function triggerOnStackCreationOrDeathChange(Board board, SequenzListener next)
         triggerOnAnyStackCellChange(board) -> 
             // TODO this should be hannelded in initiative List
-            UIInitiativeWindow.refresh(board.getInitiative())
+            UIMenuBoardConsole.refresh(board.getInitiative())
             next.continue()
 
     static function triggerOnMaxActionPointChange(BoardEntity entity, SequenzListener next)
@@ -61,13 +64,14 @@ class UIController
     private static function triggerOnAnyStackCellChangeInner(LLIterator<BoardStack> itr, SequenzListener next)
         nullTimer() -> 
             if itr.hasNext()
-                itr.next().getDefaultAction().onAnyStackCellChange()
+                let dude = itr.next()
+                dude.getDefaultAction().onAnyStackCellChange()
                 triggerOnAnyStackCellChangeInner(itr, next)
             else
                 next.continue()
 
     static function triggerOnPlayerCellHighlight(Player p)
-        if OrderSystem.canOrder(p)
+        if OrderSystem.canOrderAndInteract(p)
             // currentSelectStack is also the current stack inintaitve
             p.currentSelectedEntity.getCurrentAction().recalculateHighlight(p)
 
@@ -75,16 +79,17 @@ class UIController
         p.playingBoard.draw(p)
 
     static function triggerOnStackAmountChange(BoardStack stack)
-        UIInitiativeWindow.refresh(stack.getPlayer().playingBoard.getInitiative())
+        UIMenuBoardConsole.refresh(stack.getPlayer().playingBoard.getInitiative())
     
     static function onTurnEnd(BoardEntity entity)
         entity.setHighlight(false)
-        UIMenuActionConsole.hide(entity.getPlayer())
 
     static function onTurnStart(BoardEntity entity)
         MouseContext.forcePlayerSelect(entity.getPlayer(), entity.getCell())
         entity.setHighlight(true)
         entity.getBoard().drawAll()
+        UIMenuActionConsole.update(entity.getBoard().getPlayer(0))
+        UIMenuActionConsole.update(entity.getBoard().getPlayer(1))
 
     static function triggerOnActiveEntityActionPointChange(BoardEntity entity)
         UIMenuActionConsole.update(entity.getPlayer())
@@ -96,9 +101,8 @@ class UIController
 
     private static function switchToCombat(Player p)
         UIWindow.closeAll(p)
-
         UIMenuWorldConsole.hide(p)
-        UIInitiativeWindow.setVisible(p, true)
+        UIMenuBoardConsole.show(p)
 
     static function switchToCombat(Board b)
         switchToCombat(b.getPlayer(0))
@@ -108,10 +112,5 @@ class UIController
         p.blzPlayer.setCameraPosition(p.hero.getCoord())
         
         UIWindow.closeAll(p)
-
-
-        UIInitiativeWindow.setVisible(p, false)
-        // TODO make this UIMenuBoardConsole...
-        UIMenuActionConsole.hide(p)
-        
+        UIMenuBoardConsole.hide(p)
         UIMenuWorldConsole.show(p)

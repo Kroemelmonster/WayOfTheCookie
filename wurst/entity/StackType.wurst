@@ -6,7 +6,8 @@ import StackSoundSet
 import KUtil
 import Talent
 import initlater BoardStack
-import DamageType
+import DamageAndResistance
+import initlater TalentType
 
 public class Family
     string name
@@ -35,7 +36,9 @@ public interface HasEntityBasicStats
     function getDamageType() returns DamageType
     function getResistance() returns Resistance
 
-    function getTalents() returns LinkedList<Talent>
+    function forEachTalentStat(LLItrClosure<TalentStats> itr)
+
+    // function getTalents() returns LinkedList<HasIconAndTooltip>
 
 public class StackType implements HasEntityBasicStats
     integer unitId
@@ -61,7 +64,7 @@ public class StackType implements HasEntityBasicStats
     DamageType damageType = PHYISICAL
     private Resistance resistance = new Resistance()
 
-    LinkedList<Talent> talents = new LinkedList<Talent>()
+    LinkedList<TalentType> talents = new LinkedList<TalentType>()
 
     LinkedList<Family> families = new LinkedList<Family>()
 
@@ -76,7 +79,7 @@ public class StackType implements HasEntityBasicStats
         this.value = value
         this.weight = weight
 
-    function addTalent(Talent talent)
+    function addTalent(TalentType talent)
         talents.add(talent)
 
     function addFamily(Family fam)
@@ -84,9 +87,12 @@ public class StackType implements HasEntityBasicStats
     
     function isFamily(Family fam) returns boolean
         return families.has(fam)
-        
-    override function getTalents() returns LinkedList<Talent>
-        return talents
+
+    override function forEachTalentStat(LLItrClosure<TalentStats> itr)
+        talents.forEach() (TalentType talentType) ->
+            if not talentType.isHidden()
+                itr.run(talentType)
+        destroy itr
 
     function getResistance(DamageType dType) returns int
         return resistance.getRes(dType)
