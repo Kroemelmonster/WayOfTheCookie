@@ -1,6 +1,5 @@
 package TODODeepCuttingPassive
 
-import AttackAnimation
 import BoardController
 import Damage
 import KUtil
@@ -14,7 +13,6 @@ import WalkAndAttackAction
 import StatusController
 import StatusType
 import Status
-import DelayAnimation
 import AttachmentPoints
 import AilmentBleeding
 import DamageType

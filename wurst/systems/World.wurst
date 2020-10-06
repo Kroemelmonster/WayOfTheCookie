@@ -12,7 +12,6 @@ import initlater StackTypesDefinition
 import initlater NPC
 import StackType
 import HeroTypesDefinition
-import initlater ChainLightningSpell
 import ItemSteelHammer
 import ItemSimpleAxe
 import initlater SpellType
@@ -69,6 +68,7 @@ public class World
     static function generateHeroes()
         let h = createHero(playerData[0], HeroTypes.FAR_SEER)
         ..addStackAtFree(StackTypes.FOREST_TROLL_HIGH_PRIEST, 3)
+        ..addStackAtFree(StackTypes.FOOTMAN, 5)
         ..equiqItemAt(0, ItemSteelHammer.TYPE.createNew())
         ..setBackPackItem(0, ItemSimpleAxe.TYPE.createNew())
         ..setBackPackItem(1, ItemSimpleAxe.TYPE.createNew())

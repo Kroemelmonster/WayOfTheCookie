@@ -19,9 +19,9 @@ import initlater BoardStack
 import initlater StackTypesDefinition
 import UIMenuActionConsole
 import Scheduler
-import DelayAnimation
+import AnimationWait
 import Damage
-import CastAnimation
+import AnimationCast
 import BoardTrigger
 import HashMap
 import ClosureTimers
@@ -110,7 +110,7 @@ public class ChainLightningAction extends StackAction
             lightningModel = LIGHTNING_CHAIN_LIGHTNING_PRIMARY
         let bolt = addLightning(lightningModel, true, prev.getPos3Real(), targetPos)
         let e = addEffect(Abilities.boltImpact, targetPos)
-        DelayAnimation.create(stack.getBoard(), 0.3) ->
+        AnimationWait.time(stack.getBoard(), 0.3) ->
             bolt.destr()
             e.setPosition(-100000, -10000, 10000)
             e.destr()
@@ -136,7 +136,7 @@ public class ChainLightningAction extends StackAction
 
     override function sendTargetOrder(Cell cell) returns boolean
         if area.has(cell)
-            CastAnimation.create(stack, cell) () ->
+            AnimationCast.atCell(stack, cell) () ->
                 calculateDamage(stack.stats.amount, 0)
                 let rolledBaseDamage = damagePreview.getRandomInstance()
                 chainToNext(new LinkedList<BoardStack>(), stack, stack.getCell(), rolledBaseDamage, cell.getStack(), 0)

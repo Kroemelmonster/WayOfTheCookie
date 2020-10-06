@@ -1,0 +1,25 @@
+package AnimationMove
+
+import LinkedList
+
+import Animation
+
+import initlater BoardEntity
+import initlater Cell
+
+public class AnimationMove extends Animation
+    static function atCell(BoardEntity entity, Cell target, AnimationListener listener)
+        new AnimationMove(entity, target.getCoord(), listener)
+
+    private vec2 target
+    private BoardEntity entity
+
+    construct(BoardEntity entity, vec2 target, AnimationListener listener)
+        super(entity.getBoard(), listener)
+        this.target = target
+        this.entity = entity
+        entity.issuePointOrder("move", target)
+
+    override function tick(real delta) returns boolean
+        return entity.isInRangeOf(target, 25.0)
+        

@@ -37,8 +37,11 @@ public abstract class InstantSpellAction extends SpellAction
     override function recalculateHighlight(Player p)
         return
 
-    override function sendTargetOrder(Cell cell) returns boolean
+    override function castAt(Cell cell) returns boolean
         return false
 
-    abstract override function activate()
+    override function activate()
+        cast()
+
+    abstract function cast()
         

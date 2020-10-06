@@ -11,7 +11,7 @@ import KUtil
 import StackType
 import Cell
 import BoardTrigger
-import initlater DelayAnimation
+import initlater AnimationWait
 import Ailment
 import initlater BoardEntity
 import DamageAndResistance

@@ -1,4 +1,4 @@
-package HeroAttackAnimation
+package AnimationHeroAttack
 
 import AbilityIds
 
@@ -6,12 +6,12 @@ import Animation
 import initlater BoardEntity
 import initlater BoardStack
 
-public class HeroAttackAnimation extends Animation
+public class AnimationHeroAttack extends Animation
+    static function against(BoardEntity entity, BoardStack enemy, AnimationListener listener)
+        new AnimationHeroAttack(entity, enemy, listener)
+
     private BoardEntity entity
     protected boolean finished = false
-
-    static function create(BoardEntity entity, BoardStack enemy, AnimationListener listener)
-        new HeroAttackAnimation(entity, enemy, listener)
 
     private construct(BoardEntity entity, BoardStack enemy, AnimationListener listener)
         super(entity.getBoard(), listener)

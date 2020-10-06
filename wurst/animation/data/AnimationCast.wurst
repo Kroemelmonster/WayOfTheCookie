@@ -1,4 +1,4 @@
-package CastAnimation
+package AnimationCast
 
 import Animation
 import UnitDefinition
@@ -6,7 +6,13 @@ import UnitDefinition
 import initlater BoardEntity
 import initlater Cell
 
-public class CastAnimation extends Animation
+public class AnimationCast extends Animation
+    static function withoutTarget(BoardEntity entity, AnimationListener listener)
+        new AnimationCast(entity, null, listener)
+
+    static function atCell(BoardEntity entity, Cell target, AnimationListener listener)
+        new AnimationCast(entity, target, listener)
+
     private construct(BoardEntity entity, Cell target, AnimationListener listener)
         super(entity.getBoard(), listener)
         if target == null
@@ -16,11 +22,7 @@ public class CastAnimation extends Animation
         entity.doOnNextCast() ->
             finishAnimation(this)
 
-    static function create(BoardEntity entity, AnimationListener listener)
-        new CastAnimation(entity, null, listener)
-
-    static function create(BoardEntity entity, Cell target, AnimationListener listener)
-        new CastAnimation(entity, target, listener)
+  
         
     override function tick(real delta) returns boolean
         return false // this triggers individually

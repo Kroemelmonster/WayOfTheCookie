@@ -9,11 +9,14 @@ import initlater Spell
 import Tooltip
 import initlater SpellType
 import BoardTrigger
+import Cell
+import BoardController
 
 public abstract class SpellAction extends Action implements HasSpellStats
     protected BoardHero hero
     protected int levelIndex
     protected SpellLevel level
+    protected boolean currentlyActive = false
     protected Spell spell
     protected boolean quickCast = false
 
@@ -32,6 +35,8 @@ public abstract class SpellAction extends Action implements HasSpellStats
         activateQuickcast(true)
 
     function setLevelTo(int newLevel) returns boolean
+        if currentlyActive
+            return false
         if newLevel > spell.getMaxLevel()
             return false
         if newLevel < 0
@@ -75,8 +80,25 @@ public abstract class SpellAction extends Action implements HasSpellStats
     function createTooltip() returns Tooltip
         return spell.createTooltip(levelIndex, false)
 
+    protected function startCast()
+        currentlyActive = true
+
+    protected function finishCast(boolean pay)
+        if pay
+            BoardController.finishOrder(entity, cost)
+        currentlyActive = false
+
     override function getType() returns ActionType
         return spell.getActionTpye()
+    
+    override function sendTargetOrder(Cell cell) returns boolean
+        startCast()
+        let castedCorrectly = castAt(cell)
+        if not castedCorrectly
+            finishCast(false)
+        return castedCorrectly
+        
+    abstract function castAt(Cell cell) returns boolean
 
     override function executeForKI(SequenzListenerStatus listener)
         Log.error("YOU NEED TO WRITE KI FOR "+toString())

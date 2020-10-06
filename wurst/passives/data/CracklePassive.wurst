@@ -1,7 +1,7 @@
 package CracklePassive
 
 import Passive
-import AttackAnimation
+import AnimationAttack
 import BoardController
 import Damage
 import KUtil
@@ -14,7 +14,7 @@ import BoardTrigger
 import WalkAndAttackAction
 import Abilities
 import AttachmentPoints
-import DelayAnimation
+import AnimationWait
 import DamageAndResistance
 import initlater StackPassive
 import initlater PassiveType
@@ -48,13 +48,13 @@ public class CracklePassive extends StackPassive
             else if specificInstance.damageInstance.damageType != DamageType.PHYISICAL
                 next.continue()
             else
-                DelayAnimation.create(stack.getBoard(), 0.6) ->
+                AnimationWait.time(stack.getBoard(), 0.6) ->
                     target.flashAttachEffect(EFFECT, AttachmentPoints.chest)
                     let damage = new DamageInstance(specificInstance.damageInstance.dmg * 0.5, SourceType.ATTACK, DamageType.MAGIC)
                     damage.isTriggered = true
 
                     BoardController.dealDamage(source, damage, target) -> 
                         destroy damage
-                        DelayAnimation.create(stack.getBoard(), 0.1) ->
+                        AnimationWait.time(stack.getBoard(), 0.1) ->
                             next.continue()
 

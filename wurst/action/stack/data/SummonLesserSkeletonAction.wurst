@@ -18,8 +18,8 @@ import initlater BoardStack
 import initlater StackTypesDefinition
 import UIMenuActionConsole
 import Scheduler
-import DelayAnimation
-import CastAnimation
+import AnimationWait
+import AnimationCast
 import BoardTrigger
 import ClosureTimers
 import ActionCost
@@ -91,11 +91,10 @@ public class SummonLesserSkeletonAction extends StackAction
             recalcSummonAmount()
             let summon = cell.getBoard().createSummon(stack.getPlayer(), SUMMONED_TYPE, summonAmount.random())
 
-            CastAnimation.create(stack, cell) () ->
+            AnimationCast.atCell(stack, cell) () ->
                 flashEffect(EFFECT, cell.getCoord())
                 BoardController.placeStackOnBoard(summon, cell, true) ->
-                    let delayTime = Scheduler.getTimeIn(0.5) // this is the backswing for casting
-                    DelayAnimation.create(cell.getBoard(), delayTime) ->
+                    AnimationWait.time(cell.getBoard(), 0.5) ->
                         BoardController.finishOrder(entity, cost)
             
             return true

@@ -4,7 +4,7 @@ import initlater Hero
 
 import Icons
 import LinkedList
-import initlater RallingCrySpell
+import initlater SpellRallingCry
 
 public class SkillTreeChieftain extends SkillTree
     static SkillTreeType TYPE
@@ -17,7 +17,7 @@ public class SkillTreeChieftain extends SkillTree
     construct(Hero hero)
         super(TYPE, hero)
 
-        var spellType = RallingCrySpell.TYPE
+        var spellType = SpellRallingCry.TYPE
         var skill = new Skill(this, spellType.getName(), spellType.getIcon(), 0.2, 0)
         skills.add(skill)
         skill.addLevel(2, 0, 0)

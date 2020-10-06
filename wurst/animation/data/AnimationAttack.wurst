@@ -1,16 +1,16 @@
-package AttackAnimation
+package AnimationAttack
 
 import AbilityIds
 
 import Animation
 import initlater BoardStack
 
-public class AttackAnimation extends Animation
+public class AnimationAttack extends Animation
+    static function against(BoardStack stack, BoardStack enemy, AnimationListener listener)
+        new AnimationAttack(stack, enemy, listener)
+
     private BoardStack stack
     protected boolean finished = false
-
-    static function create(BoardStack stack, BoardStack enemy, AnimationListener listener)
-        new AttackAnimation(stack, enemy, listener)
 
     private construct(BoardStack stack, BoardStack enemy, AnimationListener listener)
         super(stack.getBoard(), listener)

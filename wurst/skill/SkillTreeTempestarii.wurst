@@ -1,9 +1,6 @@
 package SkillTreeTempestarii
 import initlater SkillTree
 import initlater Hero
-import initlater ChainLightningSpell
-import initlater LightningBoltSpell
-
 import Icons
 import LinkedList
 import StringUtils

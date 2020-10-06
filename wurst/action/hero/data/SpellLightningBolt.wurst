@@ -1,4 +1,4 @@
-package LightningBoltSpell
+package SpellLightningBolt
 
 import LinkedList
 import Doodads
@@ -12,9 +12,9 @@ import Action
 import initlater Cell
 import initlater BoardStack
 import UIMenuActionConsole
-import DelayAnimation
+import AnimationWait
 import Damage
-import CastAnimation
+import AnimationCast
 import SpellAction
 import BoardHero
 import BoardEntity
@@ -31,8 +31,9 @@ import DamageAndResistance
 import initlater SpellType
 import HeroData
 import Spell
+import Scheduler
 
-public class LightningBoltSpell extends SpellAction
+public class SpellLightningBolt extends SpellAction
     static SpellType TYPE
     static function setup()
         PURGE_DEBUFF = StatusPurged.TYPE
@@ -47,7 +48,7 @@ public class LightningBoltSpell extends SpellAction
         ..setIntData(DAMAGE, 210)
         ..setIntData(SLOW, 2)
         TYPE.onActionCreate() (entity, spell) -> 
-            return new LightningBoltSpell(entity, spell)
+            return new SpellLightningBolt(entity, spell)
         TYPE.onCreateTooltipLines() (level, spellStats) -> 
             return createTooltipLines(level, spellStats)
 
@@ -80,13 +81,10 @@ public class LightningBoltSpell extends SpellAction
     
     /* -------------------------------------------------------------------------- */
 
-    private LinkedList<Cell> area = new LinkedList<Cell>()
-
-    private construct(BoardEntity entity, Spell spell)
-        super(entity, spell)
+    private LinkedList<Cell> possibleTargets = new LinkedList<Cell>()
 
     override function getHighlightResultForCell(Player p, Cell cell) returns CellResult
-        if area.has(cell)
+        if possibleTargets.has(cell)
             return CellResult.NEGATIVE
         return CellResult.NONE
 
@@ -94,55 +92,51 @@ public class LightningBoltSpell extends SpellAction
         recalculatePossibleTargets()
 
     override function recalculateHighlight(Player p)
-        if area.has(p.currentMousePosition.cell)
+        if possibleTargets.has(p.currentMousePosition.cell)
             showPreview(p.currentMousePosition.cell)
         else
             hidePreview()
 
-    override function onUIMouseEnter()
-        showPreview(null)
-
-    override function onUIMouseLeave()
-        hidePreview()
-
-    override function sendTargetOrder(Cell cell) returns boolean
+    override function castAt(Cell cell) returns boolean
         // can not cast at something that is not targetable
-        if area.has(cell) == false
+        if not possibleTargets.has(cell)
             return false
 
-        CastAnimation.create(hero, cell) () ->
+        AnimationCast.atCell(hero, cell) () ->
             let rolledBaseDamage = calculateDamage(level, this).getRandomInstance()
             let target = cell.getStack()
             let e = addEffect(Doodads.lightningbolt, target.getPos3Real())
-            DelayAnimation.create(entity.getBoard(), 0.3) ->
+            AnimationWait.time(entity.getBoard(), 0.3) ->
                 e.destr()
+                let backSwingUntill = Scheduler.getTimeIn(0.667)
                 BoardController.dealDamage(hero, rolledBaseDamage, target) -> 
                     destroy rolledBaseDamage
-                    afterDamage(target)
+                    applyDebuff(target, backSwingUntill)
         return true
 
-    private function afterDamage(BoardStack target)
-        if target.isAlive() == false
-            finishOrder()
+    private function applyDebuff(BoardStack target, real backSwingUntill)
+        if not target.isAlive()
+            backSwing(backSwingUntill)
             return
-
         StatusController.apply(PURGE_DEBUFF, target, createStatusData(level))
         UIController.triggerOnMaxActionPointChange(target) -> 
-            finishOrder()
+            backSwing(backSwingUntill)
 
-    private function finishOrder()
-        BoardController.finishOrder(entity, cost)
+    private function backSwing(real waitUntill)
+        AnimationWait.untill(entity.getBoard(), waitUntill) -> 
+            finishCast(true)
 
     private function recalculatePossibleTargets()
-        area.clear()
+        possibleTargets.clear()
 
-        entity.getBoard().forEachStack() (BoardStack t) ->
-            if t.getPlayer() != entity.getPlayer()
-                area.add(t.getCell())
+        entity.getBoard().forEachStack() stack ->
+            if stack.getPlayer().isEnemyTo(entity.getPlayer())
+                possibleTargets.add(stack.getCell())
 
     private function showPreview(Cell fromCell)
         let tt = createBasicTooltip()
         ..addLines(createTooltipLines(level, this))
+
         if fromCell != null
             tt.addLine("")
             calculateDamage(level, this)
@@ -155,6 +149,15 @@ public class LightningBoltSpell extends SpellAction
         UITooltip.hide(entity.getPlayer())
         UIMenuActionConsole.updateActionPoints(entity)
 
+    override function onUIMouseEnter()
+        showPreview(null)
+
+    override function onUIMouseLeave()
+        hidePreview()
+
+    private construct(BoardEntity entity, Spell spell)
+        super(entity, spell)
+
     ondestroy
-        if area != null
-            destroy area
+        if possibleTargets != null
+            destroy possibleTargets

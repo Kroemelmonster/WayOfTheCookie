@@ -144,9 +144,6 @@ public class BoardStack extends BoardEntity
     function getCurrentOrder() returns int
         return u.getCurrentOrder()
 
-    function isInRangeOf(vec2 coord, real range) returns boolean
-        return u.getPos().inRange(coord, range)
-
     function setVisualHp(real percent)
         u.setHP(percent * 1000)
 

@@ -122,6 +122,9 @@ public abstract class BoardEntity
     function getPos3Real() returns vec3
         return u.getPos().withTerrainZ(u.getFlyHeight() + 20.0)
 
+    function isInRangeOf(vec2 coord, real range) returns boolean
+        return u.getPos().inRange(coord, range)
+
     function issuePointOrder(string order, Cell cell)
         u.issuePointOrder(order, cell.getCoord())
 

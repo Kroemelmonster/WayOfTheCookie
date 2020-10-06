@@ -16,9 +16,9 @@ import Stack
 import initlater BoardStack
 import StackType
 import Scheduler
-import DelayAnimation
+import AnimationWait
 import Status
-import CastAnimation
+import AnimationCast
 import BoardTrigger
 import HashMap
 import Cell
@@ -89,7 +89,7 @@ public class SlamAction extends InstantStackAction
     private function finish(LLIterator<BoardStack> itr, DamageInstance instance)
         destroy itr
         destroy instance
-        DelayAnimation.create(stack.getBoard(), 0.5) -> // this is the backswing for casting
+        AnimationWait.time(stack.getBoard(), 0.5) -> // this is the backswing for casting
             BoardController.finishOrder(entity, cost)
 
     private function hit(LLIterator<BoardStack> itr, DamageInstance instance)
@@ -104,7 +104,7 @@ public class SlamAction extends InstantStackAction
     override function activate()
         let targets = getTargets()
 
-        CastAnimation.create(stack) () ->
+        AnimationCast.withoutTarget(stack) () ->
             flashEffect(EFFECT, stack.getCell().getCoord())
             calculateDamage(stack.stats.amount)
             hit(targets.iterator(), damagePreview.getRandomInstance())

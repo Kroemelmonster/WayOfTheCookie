@@ -16,36 +16,43 @@ class Scheduler
 
     static private function tick()
         gameTime += 1
-        realTime.start(.1, () -> tick())
+        realTime.start(ANIMATION_PERIOD, () -> tick())
 
-    static function getCurrentTime() returns int
+    static function getCurrentTimeInGame() returns int
         return gameTime
 
-    static function getTimeIn(real seconds) returns int
-        return gameTime + (seconds * 10).floor()
+    static function getTime() returns real
+        return gameTime * ANIMATION_PERIOD
+
+    static function log(string msg)
+        let totalSeconds = getTime()
+        let minutes = ((totalSeconds % 3600) / 60).round()
+        let seconds = (totalSeconds % 60).round()
+        let miliseconds = ((totalSeconds * 100.0) % 100).round()
+        Log.trace(minutes.toString()+":"+seconds.toString()+":"+miliseconds.toString() + " : " + msg)
+
+    static function getTimeIn(real seconds) returns real
+        return getTime() + seconds
 
     static function onTime(SequenzPlayerListener listener)
         registeredListener.add(listener)
 
-    private static function doPeriodicallyInner(Player p, LLIterator<SequenzPlayerListener> listener)
-        if not listener.hasNext()
-            destroy listener
-            return
-        listener.next().onEvent(p)
-        if listener.hasNext()
+    private static function doPeriodicallyInner(Player p, LLIterator<SequenzPlayerListener> listenerItr)
+        if listenerItr.hasNext()
+            listenerItr.next().onEvent(p)
             nullTimer() ->
-                doPeriodicallyInner(p, listener)
+                doPeriodicallyInner(p, listenerItr)
 
     static function setup()
         realTime = getTimer()
-        realTime.start(.1, () -> tick())
+        realTime.start(ANIMATION_PERIOD, () -> tick())
         Player.forEachActive() p ->
             doPeriodically(ANIMATION_PERIOD) cb ->
                 if p.playingBoard != null
                     p.playingBoard.tick(ANIMATION_PERIOD)
 
             doPeriodically(0.2) cb ->
-                doPeriodicallyInner(p, registeredListener.iterator())
+                doPeriodicallyInner(p, registeredListener.staticItr())
                 
                 
                 

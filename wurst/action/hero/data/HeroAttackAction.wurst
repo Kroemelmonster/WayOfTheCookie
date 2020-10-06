@@ -19,7 +19,7 @@ import BoardTrigger
 import KISystem
 import ClosureTimers
 import initlater BoardHero
-import HeroAttackAnimation
+import AnimationHeroAttack
 import StackType
 import ActionCost
 import Tooltip
@@ -97,7 +97,7 @@ public class HeroAttackAction extends DefaultAction
     override function sendTargetOrder(Cell cell) returns boolean
         if isCellAttackable(cell)
             let defender = cell.getStack()
-            HeroAttackAnimation.create(entity, defender) () ->
+            AnimationHeroAttack.against(entity, defender) () ->
                 let preview = new DamagePreview(hero.stats.getDamage(), SourceType.ATTACK, hero.stats.getDamageType())
                 let instance = preview.getRandomInstance()
                 destroy preview

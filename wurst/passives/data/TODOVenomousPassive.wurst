@@ -1,6 +1,5 @@
 package TODOVenomousPassive
 
-import AttackAnimation
 import Damage
 
 import initlater BoardStack
@@ -10,7 +9,6 @@ import StatusController
 import StatusType
 import Status
 import AilmentPoison
-import DelayAnimation
 
 /*
 public class VenomousPassive extends PassiveAction

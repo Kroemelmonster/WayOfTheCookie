@@ -85,7 +85,7 @@ public class BoardHero extends BoardEntity
                 let spell = action castTo SpellAction
                 if spell.isQuickcast()
                     index++
-                    if index >= MAX_QUICKCAST_SPELLS
+                    if index > MAX_QUICKCAST_SPELLS
                         spell.activateQuickcast(false)
 
 

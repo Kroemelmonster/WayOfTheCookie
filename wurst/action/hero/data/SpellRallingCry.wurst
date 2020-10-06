@@ -1,11 +1,11 @@
-package RallingCrySpell
+package SpellRallingCry
 
 import PlayerData
 import BoardController
 
 
 import UIMenuActionConsole
-import CastAnimation
+import AnimationCast
 import BoardTrigger
 import SpellAction
 import BoardHero
@@ -29,7 +29,7 @@ import Spell
 import HeroData
 import KUtil
 
-public class RallingCrySpell extends WarcrySpellAction
+public class SpellRallingCry extends WarcrySpellAction
     static SpellType TYPE
     static function setup()
         STATUS_HERO = StatusRallingCry.HERO_TYPE
@@ -42,7 +42,7 @@ public class RallingCrySpell extends WarcrySpellAction
         TYPE.addLevel(ActionCostPreset.create(0, false, 1), HeroDataChange.create(2, 0, 2))
         ..setIntData(ATTACK_BONUS, 7)
         TYPE.onActionCreate() (entity, spell) -> 
-            return new RallingCrySpell(entity, spell)
+            return new SpellRallingCry(entity, spell)
         TYPE.onCreateTooltipLines() (level, spell) -> 
             return createTooltipLines(level)
 
@@ -71,8 +71,8 @@ public class RallingCrySpell extends WarcrySpellAction
     private construct(BoardEntity entity, Spell spell)
         super(entity, spell)
 
-    override function activate()
-        CastAnimation.create(entity) -> 
+    override function cast()
+        AnimationCast.withoutTarget(entity) -> 
             entity.getBoard().forEachStack() (BoardStack ally) ->
                 if ally.getPlayer() == entity.getPlayer()
                     affectedAllies.add(ally)
@@ -85,7 +85,7 @@ public class RallingCrySpell extends WarcrySpellAction
                         StatusController.remove(STATUS, ally)
                 next.continue()
 
-            BoardController.finishOrder(entity, cost)
+            finishCast(true)
 
     private function showPreview()
         let tt = createBasicTooltip()

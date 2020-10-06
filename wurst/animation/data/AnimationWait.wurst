@@ -1,0 +1,25 @@
+package AnimationWait
+
+import Animation
+import Scheduler
+import initlater Board
+
+public class AnimationWait extends Animation
+    static function untill(Board board, real waitUntill, AnimationListener listener)
+        time(board, (waitUntill - Scheduler.getTime()), listener)
+
+    static function time(Board board, real duration, AnimationListener listener)
+        if duration <= 0.0
+            listener.execute()
+        else
+            new AnimationWait(board, duration, listener)
+
+    private real duration
+    
+    private construct(Board board, real duration, AnimationListener listener) 
+        super(board, listener)
+        this.duration = duration
+
+    override function tick(real delta) returns boolean
+        duration -= delta
+        return duration <= 0.0

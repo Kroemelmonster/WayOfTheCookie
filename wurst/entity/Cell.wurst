@@ -74,39 +74,30 @@ public class Cell
         setStack(stack)
         stack.place(this)
 
-    @inline
     function eachCellInRangeIterator(intRange r) returns CellRangeIterator
         return board.eachCellInRangeIterator(this, r)
 
-    @inline
     function forEachCellsInRange(intRange r, LLItrClosure<Cell> itr)
         board.forEachCellsInRange(this, r, itr)
 
-    @inline
     function getAllCellsInRange(intRange r) returns LinkedList<Cell>
         return board.getAllCellsInRange(this, r)
 
-    @inline
     function forEachNeighbour(LLItrClosure<Cell> itr)
         board.forEachNeighbour(this, itr)
 
-    @inline
     function getNeighbour(int index) returns Cell
         return board.getNeighbour(this, index)
 
-    @inline
     function getNeighbourSecure(int index) returns Cell
         return board.getNeighbourSecure(this, index)
 
-    @inline
     function getNeighbourIndex(Cell otherCell) returns int
         return board.getNeighbourIndex(this, otherCell)
 
-    @inline
     function getDistanceTo(Cell otherCell) returns int
         return board.getDistanceTo(this, otherCell)
     
-    @inline
     function toString() returns string
         return hex.toString()
 

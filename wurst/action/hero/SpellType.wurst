@@ -10,8 +10,10 @@ import SpellAction
 import ActionCost
 import HeroData
 import Tooltip
-import RallingCrySpell
-import LightningBoltSpell
+import SpellRallingCry
+import SpellLightningBolt
+import SpellChainLightning
+import SpellFlameStrike
 
 interface SpellCreateListener
     function create(BoardEntity boardEntity, Spell spell) returns SpellAction
@@ -29,8 +31,10 @@ public class SpellType extends Icon
         return all.iterator()
 
     static function setup()
-        RallingCrySpell.setup()
-        LightningBoltSpell.setup()
+        SpellRallingCry.setup()
+        SpellLightningBolt.setup()
+        SpellChainLightning.setup()
+        SpellFlameStrike.setup()
         
     protected SpellCreateListener listener
     protected SpellTooltipLinesCreateListener tooltipListener

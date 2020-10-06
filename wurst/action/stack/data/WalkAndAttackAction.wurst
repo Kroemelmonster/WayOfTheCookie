@@ -8,7 +8,7 @@ import PathFinding
 import UIController
 
 import PlayerData
-import AttackAnimation
+import AnimationAttack
 import Damage
 import DefaultStackAction
 import BoardController
@@ -19,8 +19,8 @@ import initlater Cell
 import initlater BoardStack
 import initlater Board
 import UIMenuActionConsole
-import MovePositionAnimation
-import DelayAnimation
+import AnimationMove
+import AnimationWait
 import BoardTrigger
 import SubTargetList
 import KISystem
@@ -50,7 +50,7 @@ function subActionMoveInner(StackPathFinding walkableCells, LinkedList<Cell> pat
         else if remainingMoveActionPoints < 0
             subActionMoveEnd(board, stack, remainingMoveActionPoints, next, 0)
         else
-            new MovePositionAnimation(stack, nextCell.getCoord()) () ->
+            AnimationMove.atCell(stack, nextCell) -> 
                 stack.replaceCell(nextCell)
 
                 BoardController.onCellEnter(stack, currentCell, nextCell) ->
@@ -74,7 +74,7 @@ function subActionAttackEnd(int cost, BoardStack attacker, SequenzListenerStatus
     next.continue(status)
 
 function subActionAttackBackSwing(int cost, Board board, BoardStack attacker, BoardStack defender, boolean triggerOnAttack, SequenzListenerStatus next)
-    DelayAnimation.create(board, 0.5) ->
+    AnimationWait.time(board, 0.5) ->
         if triggerOnAttack
             BoardController.onAttackEnd(attacker, defender) ->
                 subActionAttackEnd(cost, attacker, next, 0)
@@ -98,7 +98,7 @@ public function subActionAttack(int cost, BoardStack attacker, BoardStack defend
         next.continue(2) // insufienct Cost
         return
 
-    AttackAnimation.create(attacker, defender) () ->
+    AnimationAttack.against(attacker, defender) () ->
         let subTargets = attacker.stats.getSubAttackTargets(attacker.getCell(), defender)
         let preview = new DamagePreview(attacker.stats.getDamageAll(), SourceType.ATTACK, attacker.stats.getDamageType())
         let instance = preview.getRandomInstance()
