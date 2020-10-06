@@ -22,8 +22,12 @@ public class UIButton extends UIInteractable
 
     static function create(boolean automaticHighlight, UIHandle parent) returns UIButton
         return new UIButton(createBasicButtonFrame(automaticHighlight, parent.self))
+
+    static function createByName(string name, framehandle parent) returns UIButton
+        return new UIButton(createUIFrameByName(name, parent, false))
+
         
-    protected framehandle imgFrame
+    protected framehandle handleBackground
 
     private FrameHandleListener onClickListener
     private FrameHandleListener onMouseDown
@@ -31,7 +35,7 @@ public class UIButton extends UIInteractable
 
     private construct(framehandle self)
         super(self)
-        this.imgFrame = getFrame("Texture")
+        handleBackground = getFrame("Texture")
         self.onClick() () ->
             if onClickListener != null
                 onClickListener.onEvent()
@@ -42,8 +46,8 @@ public class UIButton extends UIInteractable
     protected override function onMouseLeaveInner(Player p)
         p.mouseOverButton = null  
 
-    function setIcon(string str)
-        imgFrame.setTexture(str)
+    function setBackground(string str)
+        handleBackground.setTexture(str)
 
     function triggerOnMouseDown()
         preventFocusBug(GetTriggerPlayerData())
@@ -62,6 +66,6 @@ public class UIButton extends UIInteractable
         if listener != null
             onMouseDown = listener
 
-    function onMouseUp(FrameHandleListener listener)
+    override function onMouseUp(FrameHandleListener listener)
         if listener != null
             onMouseUp = listener

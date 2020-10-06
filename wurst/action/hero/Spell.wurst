@@ -1,44 +1,99 @@
 package Spell
-import Action
-import initlater BoardHero
-import ActionCost
 import ActionType
+import LinkedList
+import initlater SpellType
+import initlater Hero
 import BoardEntity
+import Action
+import SpellAction
+import ActionCost
+import HeroData
+import Tooltip
+import Globals
 
-public abstract class Spell extends Action
-    protected BoardHero hero
-    protected int level
+public class SpellLevel
+    protected ActionCostPreset usageCost
+    protected HeroDataChange levelCost
+    protected int array[10] intData
+
+    construct(ActionCostPreset usageCost, HeroDataChange levelCost)
+        this.usageCost = usageCost
+        this.levelCost = levelCost
+
+    function getUsageCost() returns ActionCostPreset
+        return usageCost
+
+    function getPayCost() returns HeroDataChange
+        return levelCost
+
+    function setIntData(int where, int value)
+        intData[where] = value
+
+    function getIntData(int where) returns int
+        return intData[where]
+
+public interface HasSpellStats
+    function getDamageMulti() returns real
+
+public class Spell implements HasSpellStats
+    protected SpellType spellType
+    protected Hero hero
+
+    protected int level = 0
+    
     protected boolean quickCast = false
 
-    static function createType(string name, string icon) returns ActionType
-        return new ActionType(name, icon)
-        ..enableOption(ActionTypeOption.SPELL)
+    construct(SpellType spellType, Hero hero)
+        this.spellType = spellType
+        this.hero = hero
 
-    construct(BoardEntity entity, ActionType actionType, ActionCostPreset cost)
-        super(entity, actionType, cost)
-        if entity.getType() != EntityType.HERO
-            Log.error("Tried to add a Spell to an non Hero")
-        this.hero = entity.toHero()
-        activateQuickcast(true)
+    function create(BoardEntity boardEntity) returns SpellAction
+        return spellType.createAction(boardEntity, this)
 
-    function setLevel(int i)
-        if i < 0
-            Log.error("Tried to create the Spell " + getName() 
-             + " with a level of " + i.toString())
-        this.level = i
+    function getMaxLevel() returns int
+        return level
 
-    function isQuickcast() returns boolean
-        return quickCast
+    function getLevelData(int level) returns SpellLevel
+        return spellType.getLevel(level)
 
-    function toggleQuickcast()
-        activateQuickcast(not quickCast)
+    function canLevelUp() returns boolean
+        if (level + 1) >= spellType.getMaxLevel()
+            return false
+        return getLevelData(level + 1).levelCost.canPay(hero)
 
-    function activateQuickcast(boolean flag)
-        if flag
-            hero.updateQuickcast()
-            quickCast = true
-        else
-            quickCast = false
+    function levelUp() returns boolean
+        if not canLevelUp()
+            return false
+        level ++
+        getLevelData(level).levelCost.pay(hero)
+        return true
 
-    override function showAsPrimary() returns boolean
-        return quickCast
+    function getName() returns string
+        return spellType.getName()
+
+    function getExtendedName() returns string
+        return getName() + " [" + (level + 1).toString() + "]"
+
+    function getIcon() returns string
+        return spellType.getIcon()
+
+    function getBaseMultiFromPower(int power) returns real
+        return (power * DAMAGE_PER_SPELLPOWER / 100.0)
+
+    override function getDamageMulti() returns real
+        let power = hero.stats.getPower()
+        return (1.0 + getBaseMultiFromPower(power))
+
+    function getActionTpye() returns ActionType
+        return spellType.getActionType()
+
+    function createTooltip(int level, boolean showLevelCost) returns Tooltip
+        return spellType.createTooltip(hero, this, level, showLevelCost)
+
+    function createTooltip(boolean showLevelCost) returns Tooltip
+        return createTooltip(level, showLevelCost)
+
+    function getType() returns SpellType
+        return spellType
+
+        

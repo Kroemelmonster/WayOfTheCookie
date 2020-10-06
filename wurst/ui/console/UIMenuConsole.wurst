@@ -57,34 +57,6 @@ public class UIMenuConsole
 
         let paddingTop = 0.003
 
-        let paddingBtns = 0.003
-        
-        let btnWidth = 0.09
-        let btnHeight = 0.02
-        let menuBtn = UIButtonMenu.create(menu, "Menu")
-        ..setPoint(FRAMEPOINT_TOPLEFT, menu, FRAMEPOINT_TOPLEFT, 0, -paddingTop)
-        ..setSize(btnWidth, btnHeight)
-        ..onClick() -> 
-            UIWindowMenu.toggle(GetTriggerPlayerData())
-
-        let skillTree = UIButtonMenu.create(menu, "SkillTree")
-        ..setPoint(FRAMEPOINT_LEFT, menuBtn, FRAMEPOINT_RIGHT, paddingBtns, 0)
-        ..setSize(btnWidth, btnHeight)
-        ..onClick() -> 
-            UIWindowSkillTree.toggle(GetTriggerPlayerData())
-
-        let statsBtn = UIButtonMenu.create(menu, "Stats")
-        ..setPoint(FRAMEPOINT_LEFT, skillTree, FRAMEPOINT_RIGHT, paddingBtns, 0)
-        ..setSize(btnWidth, btnHeight)
-        ..onClick() -> 
-            UIWindowHero.toggle(GetTriggerPlayerData())
-
-        UIButtonMenu.create(menu, "Spellbook")
-        ..setPoint(FRAMEPOINT_LEFT, statsBtn, FRAMEPOINT_RIGHT, paddingBtns, 0)
-        ..setSize(btnWidth, btnHeight)
-        ..onClick() -> 
-            UIWindowSpellBook.toggle(GetTriggerPlayerData())
-
         let paddingRessource = 0.003
         let ressourceWidth = 0.09
         let ressourceHeight = 0.024
@@ -107,11 +79,29 @@ public class UIMenuConsole
         ..setPoint(FRAMEPOINT_TOPLEFT, menu, FRAMEPOINT_BOTTOMLEFT)
         ..setPoint(FRAMEPOINT_BOTTOMRIGHT, GAME_UI, FRAMEPOINT_BOTTOMRIGHT, 0, -0.1)
 
-        UIWindowMenu.create()
-        UIWindowSkillTree.create()
         UIWindowEntity.create()
-        UIWindowHero.create()
-        UIWindowSpellBook.create()
+
+        let paddingBtns = 0.003
+        let btnWidth = 0.09
+        let btnHeight = 0.02
+
+        var btn = UIButtonMenuToWindow.create(menu, UIWindowMenu.create())
+        ..setPoint(FRAMEPOINT_TOPLEFT, menu, FRAMEPOINT_TOPLEFT, 0, -paddingTop)
+        ..setSize(btnWidth, btnHeight)
+
+        btn = UIButtonMenuToWindow.create(menu, UIWindowSkillTree.create())
+        ..setPoint(FRAMEPOINT_LEFT, btn, FRAMEPOINT_RIGHT, paddingBtns, 0)
+        ..setSize(btnWidth, btnHeight)
+
+
+        btn = UIButtonMenuToWindow.create(menu, UIWindowHero.create())
+        ..setPoint(FRAMEPOINT_LEFT, btn, FRAMEPOINT_RIGHT, paddingBtns, 0)
+        ..setSize(btnWidth, btnHeight)
+
+        UIButtonMenuToWindow.create(menu, UIWindowSpellBook.create())
+        ..setPoint(FRAMEPOINT_LEFT, btn, FRAMEPOINT_RIGHT, paddingBtns, 0)
+        ..setSize(btnWidth, btnHeight)
+
 
     static function initHero(Hero hero)
         menu.show(hero.getPlayer())

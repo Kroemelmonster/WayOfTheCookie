@@ -18,27 +18,28 @@ import DelayAnimation
 import Damage
 import CastAnimation
 import BoardTrigger
-import Spell
+import SpellAction
 import BoardHero
 import BoardEntity
 import SkillTreeTempestarii
 import SkillTree
 import Globals
 import ActionCost
-import StringUtils
+import KStringUtils
 import Tooltip
 import UITooltip
 import DamageAndResistance
 import ActionType
 
-public class ChainLightningSpell extends Spell
+/*
+public class ChainLightningSpell extends SpellAction
     static ActionType TYPE
     static function setup()
-        TYPE = Spell.createType("Chain Lightning", Icons.bTNChainLightning)
+        TYPE = SpellAction.createType("Chain Lightning", Icons.bTNChainLightning)
         TYPE.onCreate() entity -> 
             return new ChainLightningSpell(entity)
         TYPE.onCreateTooltipLines() level -> 
-            return createTooltipLines(level, 0, true)
+            return createAllTooltipLines(level, 0, true)
 
     private static constant ActionCostPreset BASE_COST = ActionCostPreset.create(1, true, 0)
     private static constant int array[3] MANA_COST = [7, 12, 20]
@@ -49,7 +50,6 @@ public class ChainLightningSpell extends Spell
     private static constant real CHAIN_REDUCTION = 0.90
     private static constant DamagePreview damagePreview = createDamagePreview()
     
-    @inline
     private static function createDamagePreview() returns DamagePreview
         return new DamagePreview(realRange(0, 0), SourceType.SPELL, DamageType.MAGIC)
 
@@ -58,15 +58,15 @@ public class ChainLightningSpell extends Spell
             return BASE_COST.createTooltipLines()
         return new LinkedList<string>
 
-    private static function createTooltipLines(int level, int power, boolean addCost) returns LinkedList<string>
+    private static function createAllTooltipLines(int level, int power, boolean addCost) returns LinkedList<string>
         return createBaseTooltipLines(addCost)
-        ..add(StringUtils.stat("Target", "Enemy"))
-        ..add(StringUtils.stat("Damage", calculateDamage(level, power, 0).toColoredText()))
+        ..add(KStringUtils.stat("Target", "Enemy"))
+        ..add(KStringUtils.stat("Damage", calculateDamage(level, power, 0).toColoredText()))
         ..add("")
         ..add("Lightning strikes from one target and chains up to "
-         + StringUtils.primaryString(MAX_CHAINS[level].toString()) + " times")
+         + KStringUtils.primaryString(MAX_CHAINS[level].toString()) + " times")
         ..add("Each time the damage is descreased by "
-         + StringUtils.primaryPercent(1 - CHAIN_REDUCTION))
+         + KStringUtils.primaryPercent(1 - CHAIN_REDUCTION))
 
     private static function adjustCost(ActionCostPreset cost, int level)
         cost.adjustBaseManaCost(MANA_COST[level])
@@ -81,6 +81,7 @@ public class ChainLightningSpell extends Spell
         return damagePreview
 
     /* -------------------------------------------------------------------------- */
+    /*
     
     private LinkedList<Cell> area = new LinkedList<Cell>()
 
@@ -169,9 +170,12 @@ public class ChainLightningSpell extends Spell
             if t.getPlayer() != entity.getPlayer()
                 area.add(t.getCell())
 
+    override function createTooltipLines(boolean showCost) returns LinkedList<string>
+        return createAllTooltipLines(level, hero.stats.getPower(), showCost)
+
     private function showPreview(Cell fromCell)
         let tt = createBasicTooltip()
-        ..addLines(createTooltipLines(level, hero.stats.getPower(), false))
+        ..addLines(createTooltipLines(false))
         if fromCell != null
             let list = new LinkedList<BoardStack>()
             list.add(fromCell.getStack())
@@ -213,4 +217,4 @@ public class ChainLightningSpell extends Spell
     ondestroy
         if area != null
             destroy area
-        
+            */

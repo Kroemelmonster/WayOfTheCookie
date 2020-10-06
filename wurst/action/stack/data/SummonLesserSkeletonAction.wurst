@@ -23,7 +23,7 @@ import CastAnimation
 import BoardTrigger
 import ClosureTimers
 import ActionCost
-import StringUtils
+import KStringUtils
 import Tooltip
 import UITooltip
 import initlater ActionType
@@ -58,13 +58,13 @@ public class SummonLesserSkeletonAction extends StackAction
     private static function createTooltipLines(int amount, boolean addCost) returns LinkedList<string>
         let leadership = getSummonLeadershipAmount(amount)
         return createBaseTooltipLines(addCost)
-        ..add(StringUtils.stat("Target", "Empty Cell"))
-        ..add(StringUtils.stat("Range", MAXRANGE))
+        ..add(KStringUtils.stat("Target", "Empty Cell"))
+        ..add(KStringUtils.stat("Range", MAXRANGE))
         ..add("")
         ..add("Summons a Stack of "
-         + StringUtils.coloredString(StringUtils.COLOR_SECONDARY, SUMMONED_TYPE.name)
+         + KStringUtils.coloredString(KStringUtils.COLOR_SECONDARY, SUMMONED_TYPE.name)
          + " with a Leaderhip of "
-         + StringUtils.coloredRange(StringUtils.COLOR_PRIMARY, leadership))
+         + KStringUtils.coloredRange(KStringUtils.COLOR_PRIMARY, leadership))
 
     private LinkedList<Cell> area = new LinkedList<Cell>()
     private intRange summonAmount  

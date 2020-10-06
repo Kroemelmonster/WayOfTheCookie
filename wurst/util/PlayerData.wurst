@@ -107,7 +107,7 @@ public class Player
         return status == PlayerRelationship.SELF or status == PlayerRelationship.ALLY
 
     @inline
-    function hasBoard() returns boolean
+    function isPlayingOnABoard() returns boolean
         return playingBoard != null
 
     static function setup()

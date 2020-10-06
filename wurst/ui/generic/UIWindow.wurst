@@ -5,6 +5,7 @@ import ClosureFrames
 import initlater MouseContext
 import PlayerData
 import LinkedList
+import initlater UIButtonMenu
 
 public framehandle CONSOLE_UI
 
@@ -123,8 +124,11 @@ public class UIMenu extends UIMouseBlockElement
         onHideListener = listener
 
 public class UIWindow extends UIMouseBlockElement
-    static function create() returns UIWindow
-        return new UIWindow()
+    protected string name
+    protected UIButtonMenuToWindow btnToOpen
+
+    static function create(string name) returns UIWindow
+        return new UIWindow(name)
 
     static function closeCurrent(Player p)
         let lastWindow = p.uiMenuPlayerInfo.currentOpenWindows.peek()
@@ -134,17 +138,31 @@ public class UIWindow extends UIMouseBlockElement
     static function closeAll(Player p)
         let backItr = p.uiMenuPlayerInfo.currentOpenWindows.staticBackItr()
         while backItr.hasNext()
-            let window = backItr.next()
-            window.close(p)
-        destroy backItr
+            backItr.next().close(p)
         
-    private construct()
+        
+    private construct(string name)
         super(GAME_UI)
         super.setVisible(false)
+        this.name = name
         setLevel(100)
+
+    function getName() returns string
+        return name
+
+    function setBtnToOpen(UIButtonMenuToWindow btn)
+        this.btnToOpen = btn
 
     override function isVisible(Player p) returns boolean
         return p.uiMenuPlayerInfo.currentOpenWindows.has(this)
+
+    function enable(Player p)
+        if p.isLocal() and btnToOpen != null
+            btnToOpen.enable()
+
+    function disable(Player p)
+        if p.isLocal() and btnToOpen != null
+            btnToOpen.disable()
 
     function open(Player p)
         if isVisible(p)
@@ -187,13 +205,13 @@ public class UIWindow extends UIMouseBlockElement
         onShowListener = listener
 
 public class UIWindowBasic extends UIWindow
-    static function create(boolean small) returns UIWindowBasic
-        return new UIWindowBasic(small)
+    static function create(string name, boolean small) returns UIWindowBasic
+        return new UIWindowBasic(name, small)
 
     protected framehandle innerFrame
 
-    private construct(boolean small)
-        super()
+    private construct(string name, boolean small)
+        super(name)
         var frameName = "WindowBasic"
         var padding = 0.03
         if small

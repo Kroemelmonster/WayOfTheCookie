@@ -11,7 +11,7 @@ import initlater BoardEntity
 import initlater StatusType
 import BoardTrigger
 import LinkedList
-import StringUtils
+import KStringUtils
 import Tooltip
 
 public class StatusPurged extends Status
@@ -19,30 +19,26 @@ public class StatusPurged extends Status
 
     static function setup()
         TYPE = new StatusType("Purged", Icons.bTNPurge)
-        TYPE.setCreationListener()(BoardEntity entity) ->
-            return new StatusPurged(TYPE, entity)
-        TYPE.setTooltipListener() (StatusData data) ->
+        TYPE.setCreationListener() (boardEntity, data) ->
+            return new StatusPurged(TYPE, boardEntity, data)
+        TYPE.setTooltipListener() data ->
             return createTooltipBaseLines(data)
+
+    protected static constant int SLOW = 1
 
     private static function createTooltipBaseLines(int slowValue) returns LinkedList<string>
         return new LinkedList<string>
         ..add("Reduces the available ActionPoints for moving by "
-         + StringUtils.coloredInt(StringUtils.COLOR_NEGATIVE, slowValue))
+         + KStringUtils.coloredInt(KStringUtils.COLOR_NEGATIVE, slowValue))
         
     private static function createTooltipBaseLines(StatusData data) returns LinkedList<string>
-        let lines = createTooltipBaseLines(getSlowValue(data))
-        if data != null
-            destroy data
-        return lines
+        return createTooltipBaseLines(data.getIntData(SLOW))
 
     private static function createTooltip(StatusPurged b) returns Tooltip
         return Tooltip.create(TYPE.getName())
-        ..addLine(StringUtils.stat("Duration", b.duration))
+        ..addLine(KStringUtils.stat("Duration", b.duration))
         ..addLine("")
         ..addLines(createTooltipBaseLines(b.slow))
-
-    private static function getSlowValue(StatusData data) returns int
-        return data.firstIntValue
 
     /* -------------------------------------------------------------------------- */
 
@@ -51,7 +47,7 @@ public class StatusPurged extends Status
     private int duration
     private int slow = 0
 
-    construct(StatusType statusType, BoardEntity entity)
+    construct(StatusType statusType, BoardEntity entity, StatusData data)
         super(statusType, entity)
         display = entity.addAttachEffect(Abilities.purgeBuffTarget, AttachmentPoints.chest)
 
@@ -61,19 +57,23 @@ public class StatusPurged extends Status
                 kill()
             next.continue()
 
-    override function updateInner(StatusData data)
-        this.duration = data.duration
-        toggle(false)
-        this.slow = getSlowValue(data)
-        toggle(true)
+        refreshStatusData(data)
 
-    override function createCurrentTooltip() returns Tooltip
+    override function refreshInner(StatusData data)
+        applyStats(false)
+        refreshStatusData(data)
+
+    protected function refreshStatusData(StatusData data)
+        duration = data.duration
+        slow = data.getIntData(SLOW)
+        applyStats(true)
+
+    protected function applyStats(boolean add)
+        let multi = add ? -1 : 1
+        entity.toStack().stats.moveActionPointModi.addBonus += slow * multi
+
+    override function createTooltip() returns Tooltip
         return createTooltip(this)
-
-    private function toggle(boolean flag)
-        let multi = flag ? -1 : 1
-        let boardStack = entity.toStack()
-        boardStack.stats.moveActionPointModi.addBonus += slow * multi
 
     override function hide()
         if display != null
@@ -81,6 +81,6 @@ public class StatusPurged extends Status
 
     ondestroy
         if entity.isAlive()
-            toggle(false)
+            applyStats(false)
             entity.getTriggers().removeOnTurnStart(turnStartListener)
         hide()

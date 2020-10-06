@@ -2,6 +2,8 @@ package BoardEntity
 import PlayerData
 import LinkedList
 import Action
+import initlater DefaultAction
+import initlater ActionType
 import initlater Board
 import initlater BoardStack
 import initlater Cell
@@ -34,100 +36,107 @@ public abstract class BoardEntity
 
     private EntityTrigger triggers
 
+    protected DefaultAction defaultAction
+    protected Action currentSelectedAction
+    protected LinkedList<Action> actions
+
     construct(EntityType entityType, Board board)
         this.entityType = entityType
         this.board = board
         this.stati = new LinkedList<Status>
         this.triggers = new EntityTrigger()
+        this.actions = new LinkedList<Action>
+        currentSelectedAction = null
+        defaultAction = null
 
-    @inline
     function getBoard() returns Board
         return board
 
-    @inline
     function getType() returns EntityType
         return entityType
 
     abstract function getCell() returns Cell
-
     abstract function getPlayer() returns Player
-
     abstract function getIcon() returns string
+    abstract function getName() returns string
 
-    abstract function getActions() returns LinkedList<Action>
+    function forEachAction(LLItrClosure<Action> itr)
+        actions.forEach() action ->
+            itr.run(action)
+        destroy itr
     
-    abstract function getAction(int index) returns Action
+    function actionsIterator() returns LLIterator<Action>
+        return actions.iterator()
 
-    abstract function getCurrentAction() returns Action
+    function getCurrentAction() returns Action
+        return currentSelectedAction
 
-    abstract function getDefaultAction() returns Action
+    function getDefaultAction() returns DefaultAction
+        return defaultAction
 
-    abstract function setCurrentAction(Action action)
+    function selectAction(Action action)
+        currentSelectedAction = action
 
-    abstract function resetCurrentSelectedAction() returns boolean
+    function resetCurrentSelectedAction() returns boolean
+        if currentSelectedAction != defaultAction
+            selectAction(defaultAction)
+            return true
+        return false
+
+    function addAction(Action action)
+        if action.hasOption(ActionTypeOption.DEFAULT)
+            if defaultAction != null
+                Log.error("Tried to add an Default Action to "+getName()+" while it allready has one -> overwriting it")
+            defaultAction = action castTo DefaultAction
+        actions.add(action)
 
     abstract function getMaxActionPoints() returns int
-
     abstract function getRemainingActionPoints() returns int
-
     abstract function removeAP(int amount)
-
     abstract function resetActionPoints()
 
     function canStillAct() returns boolean
         return getRemainingActionPoints() > 0
 
     abstract function isAlive() returns boolean
-
     abstract function toString() returns string
-
     abstract function getInitiative() returns int
 
-    @inline
     function getTriggers() returns EntityTrigger
         return triggers
 
-    @inline
+    function forEachStatusStats(LLItrClosure<StatusStats> itr)
+        stati.forEach() status ->
+            itr.run(status)
+        destroy itr
+
     function statusIterator() returns LLIterator<Status>
         return stati.iterator()
 
-    @inline
-    function getStatus(int index) returns Status
-        return stati.get(index)
-        
-    @inline
     function addStatus(Status status)
         stati.add(status)
 
-    @inline
     function removeStatus(Status status)
         stati.remove(status)
 
-    @inline
     function getPos3Real() returns vec3
         return u.getPos().withTerrainZ(u.getFlyHeight() + 20.0)
 
-    @inline
     function issuePointOrder(string order, Cell cell)
         u.issuePointOrder(order, cell.getCoord())
 
-    @inline
     function issueImmediateOrder(string order)
         u.issueImmediateOrder(order)
 
-    @inline
     function issuePointOrder(string order, vec2 pos)
         u.issuePointOrder(order, pos)
     
-    @inline
     function issueTargetOrder(string order, BoardEntity target)
         u.issueTargetOrder(order, target.u)
 
-    @inline
     function enableAbility(int id, boolean flag)
         u.disableAbility(id, flag == false, false)
 
-    @inline
     function doOnNextCast(EventListener listener)
         castListener = listener
 
@@ -206,7 +215,12 @@ public abstract class BoardEntity
                 destroy status
             destroy stati
             stati = null
-        
+
+        if actions != null
+            for action in actions
+                destroy action
+            destroy actions
+    
             
 
     protected function destroyTriggers()

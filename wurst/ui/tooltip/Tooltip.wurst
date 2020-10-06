@@ -3,17 +3,12 @@ import UITooltip
 import LinkedList
 import PlayerData
 import Icon
-import StringUtils
+import KStringUtils
 
 public interface GeneratesTooltip
     function createTooltip() returns Tooltip
 
 public enum TooltipAnchor
-    TOP_LEFT
-    TOP_RIGHT
-    BOTTOM_RIGHT
-    BOTTOM_LEFT
-    BOTTOM_LEFT_UP
     RIGHT_BOTTOM
     LEFT_BOTTOM
 
@@ -101,7 +96,7 @@ public class Tooltip
     function convertUIHeader() returns string
         var str = header
         if key != ""
-            str += " [" + StringUtils.primaryString(key) + "]"
+            str += " [" + KStringUtils.primaryString(key) + "]"
         return str
 
     function getIcons() returns LinkedList<TooltipIcon>

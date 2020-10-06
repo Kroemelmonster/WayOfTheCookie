@@ -99,6 +99,10 @@ public class Board
     function getHostileArmy() returns HostileArmy
         return hostileArmy
 
+    function getBoardHero(Player p) returns BoardHero
+        // TODO this is obv irelavant of player
+        return boardHero1
+
     function placeCombat(Hero hero, HostileArmy army, SequenzListener next)
         p1 = hero.getPlayer()
         p2 = army.getPlayer()

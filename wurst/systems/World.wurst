@@ -15,6 +15,8 @@ import HeroTypesDefinition
 import initlater ChainLightningSpell
 import ItemSteelHammer
 import ItemSimpleAxe
+import initlater SpellType
+import initlater HeroType
 
 public class World
     protected static LinkedList<Board> boards = new LinkedList<Board>
@@ -23,58 +25,82 @@ public class World
     protected static LinkedList<NPC> npcs = new LinkedList<NPC>
 
     static function generateBoards()
-        boards.add(new Board(gg_rct_BoardIsleOne, gg_rct_BoardIsleOneV))
-        boards.add(new Board(gg_rct_BoardIsleTwo, gg_rct_BoardIsleTwoV))
-        boards.add(new Board(gg_rct_BoardIsleThree, gg_rct_BoardIsleThreeV))
+        createBoard(gg_rct_BoardIsleOne, gg_rct_BoardIsleOneV)
+        createBoard(gg_rct_BoardIsleTwo, gg_rct_BoardIsleTwoV)
+        createBoard(gg_rct_BoardIsleThree, gg_rct_BoardIsleThreeV)
 
     static function generateNPCs()
-        let shop = new NPCShop(gg_unit_n000_0002)
-        StackTypes.list.forEach() (StackType t) ->
+        let shop = creatNPCShop(gg_unit_n000_0002)
+        StackTypes.forEach() (StackType t) ->
             shop.addStock(t, GetRandomInt(50, 100))
-        npcs.add(shop)
         
     static function generateArmies()
-        armies.add(new HostileArmy(gg_unit_n001_0003)
+        createArmy()
         ..addStackAtFree(StackTypes.ANCIENT_SASQUATCH, 1)
         ..addStackAtFree(StackTypes.SASQUATCH_ORACLE, 1)
         ..addStackAtFree(StackTypes.GNOLL_POACHER, GetRandomInt(10, 20))
         ..addStackAtFree(StackTypes.GNOLL_POACHER, GetRandomInt(10, 20))
-        ..replaceChicken())
+        ..placeWorld(gg_unit_n001_0003)
 
-        armies.add(new HostileArmy(gg_unit_n001_0008)
+        createArmy()
         ..addStackAtFree(StackTypes.FOREST_TROLL_BERSERKER, GetRandomInt(4, 7))
         ..addStackAtFree(StackTypes.NECROMANCER, GetRandomInt(5, 10))
         ..addStackAtFree(StackTypes.FOREST_TROLL, GetRandomInt(15, 20))
-        ..replaceChicken())
+        ..placeWorld(gg_unit_n001_0008)
 
-        armies.add(new HostileArmy(gg_unit_n001_0009)
+        createArmy()
         ..addStackAtFree(StackTypes.NECROMANCER, GetRandomInt(15, 20))
         ..addStackAtFree(StackTypes.NECROMANCER, GetRandomInt(15, 20))
         ..addStackAtFree(StackTypes.SKELETALORC, GetRandomInt(6, 10))
-        ..replaceChicken())
+        ..placeWorld(gg_unit_n001_0009)
 
-        armies.add(new HostileArmy(gg_unit_n001_0010)
+        createArmy()
         ..addStackAtFree(StackTypes.GNOLL_WARDEN, GetRandomInt(5, 10))
         ..addStackAtFree(StackTypes.GNOLL_POACHER, GetRandomInt(50, 100))
         ..addStackAtFree(StackTypes.GNOLL, GetRandomInt(50, 100))
-        ..replaceChicken())
+        ..placeWorld(gg_unit_n001_0010)
 
-        armies.add(new HostileArmy(gg_unit_n001_0011)
+        createArmy()
         ..addStackAtFree(StackTypes.GNOLL_POACHER, GetRandomInt(120, 200))
         ..addStackAtFree(StackTypes.GNOLL, GetRandomInt(120, 200))
-        ..replaceChicken())
+        ..placeWorld(gg_unit_n001_0011)
+
+
+    static function generateHeroes()
+        let h = createHero(playerData[0], HeroTypes.FAR_SEER)
+        ..addStackAtFree(StackTypes.FOREST_TROLL_HIGH_PRIEST, 3)
+        ..equiqItemAt(0, ItemSteelHammer.TYPE.createNew())
+        ..setBackPackItem(0, ItemSimpleAxe.TYPE.createNew())
+        ..setBackPackItem(1, ItemSimpleAxe.TYPE.createNew())
+
+        SpellType.forEach() spellType -> 
+            h.learnSpell(spellType)
+
+    protected static function createBoard(rect playArea, rect visibleArea) returns Board
+        let board = new Board(playArea, visibleArea)
+        boards.add(board)
+        return board
+
+    protected static function createArmy() returns HostileArmy
+        let army = new HostileArmy()
+        armies.add(army)
+        return army
+
+    protected static function creatNPCShop(unit chicken) returns NPCShop
+        let npc = new NPCShop(chicken)
+        npcs.add(npc)
+        return npc
+
+    protected static function createHero(Player p, HeroType heroType) returns Hero
+        let hero = new Hero(p, heroType)
+        heroes.add(hero)
+        return hero
+ 
+    // TODO all this shuld be a controller
 
     static function getBoardToFightOn(HostileArmy _enemy) returns Board
         return boards.get(GetRandomInt(0, boards.size() - 1))
-        
-    static function generateHeroes()
-        heroes.add(new Hero(playerData[0], HeroTypes.FAR_SEER)
-        ..addStackAtFree(StackTypes.FOREST_TROLL_HIGH_PRIEST, 3)
-        //..addStackAtFree(StackTypes.FOREST_TROLL_BERSERKER, 2)
-        ..equiqItemAt(0, ItemSteelHammer.TYPE.createNew())
-        ..setBackPackItem(0, ItemSimpleAxe.TYPE.createNew())
-        ..setBackPackItem(1, ItemSimpleAxe.TYPE.createNew()))
- 
+
     static function onHeroDamaged(Hero hero, unit u)
         let enemy = HostileArmy.getFromUnit(u)
         if enemy != null

@@ -27,6 +27,7 @@ public class SkillTreeTempestarii extends SkillTree
     construct(Hero hero)
         super(TYPE, hero)
 
+        /*
         var spellType = LightningBoltSpell.TYPE
         let lightningBoltSkill = new Skill(this, spellType.getName(), spellType.getIcon(), 0.2, 0)
         skills.add(lightningBoltSkill)
@@ -137,3 +138,4 @@ public class SkillTreeTempestarii extends SkillTree
         ..addSpellTypeAsLines(spellType, 2)
         ..addLevelListener()  ->
             chainLightningLevel ++
+            */

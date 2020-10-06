@@ -1,0 +1,92 @@
+package SpellType
+import ActionType
+import LinkedList
+import initlater Hero
+import Spell
+import Icon
+import BoardEntity
+import Action
+import SpellAction
+import ActionCost
+import HeroData
+import Tooltip
+import RallingCrySpell
+import LightningBoltSpell
+
+interface SpellCreateListener
+    function create(BoardEntity boardEntity, Spell spell) returns SpellAction
+
+interface SpellTooltipLinesCreateListener
+    function create(SpellLevel level, HasSpellStats spellStats) returns LinkedList<string>
+
+public class SpellType extends Icon
+    protected static LinkedList<SpellType> all = new LinkedList<SpellType>
+
+    static function forEach(LLItrClosure<SpellType> itr)
+        all.forEach(itr)
+
+    static function allIterator() returns LLIterator<SpellType>
+        return all.iterator()
+
+    static function setup()
+        RallingCrySpell.setup()
+        LightningBoltSpell.setup()
+        
+    protected SpellCreateListener listener
+    protected SpellTooltipLinesCreateListener tooltipListener
+    protected ActionType actionType
+
+    protected LinkedList<SpellLevel> levels
+
+    construct(ActionType actionType)
+        super(actionType.name, actionType.icon)
+        this.actionType = actionType
+        levels = new LinkedList<SpellLevel>
+        all.add(this)
+    
+    function onActionCreate(SpellCreateListener listener)
+        this.listener = listener
+
+    function onCreateTooltipLines(SpellTooltipLinesCreateListener tooltipListener)
+        this.tooltipListener = tooltipListener
+
+    function addLevel(ActionCostPreset usageCost, HeroDataChange payCost) returns SpellLevel
+        let level = new SpellLevel(usageCost, payCost)
+        levels.add(level)
+        return level
+
+    function getMaxLevel() returns int
+        return levels.size()
+
+    function getLevel(int level) returns SpellLevel
+        return levels.get(level)
+
+    function createAction(BoardEntity boardEntity, Spell spell) returns SpellAction
+        return listener.create(boardEntity, spell)
+            
+    function create(Hero hero) returns Spell
+        return new Spell(this, hero)
+
+    protected function createTooltipLines(SpellLevel level, HasSpellStats spellStats) returns LinkedList<string>
+        return tooltipListener.create(level, spellStats)
+
+    function createTooltip(Hero hero, Spell spell, int forLevel, boolean showLevelCost) returns Tooltip
+        let tt = Tooltip.create(getName())
+        if forLevel >= getMaxLevel()
+            return null
+        if forLevel < 0
+            return null
+        let level = getLevel(forLevel)
+        if showLevelCost
+            level.getPayCost().setupTooltipCost(tt, hero)
+            tt.addLines(level.getUsageCost().createTooltipLines())
+        else
+            level.getUsageCost().setupTooltipCost(tt)
+        tt.addLines(createTooltipLines(level, spell))
+        return tt
+
+    function createTooltip(Hero hero, boolean showLevelCost) returns Tooltip
+        return createTooltip(hero, null, 0, showLevelCost)
+
+    function getActionType() returns ActionType
+        return actionType

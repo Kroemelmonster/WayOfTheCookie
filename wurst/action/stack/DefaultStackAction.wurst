@@ -14,8 +14,8 @@ import ActionType
 public abstract class DefaultStackAction extends DefaultAction
     protected BoardStack stack
 
-    static function createType(string name) returns ActionType
-        return new ActionType(name, "")
+    static function createType(string name, string icon) returns ActionType
+        return new ActionType(name, icon)
         ..enableOption(ActionTypeOption.DEFAULT)
 
     construct(BoardEntity entity, ActionType actionType, ActionCostPreset cost)

@@ -14,8 +14,9 @@ import initlater HeroSkipAction
 import AbilityIds
 import initlater BoardHeroStats
 import HeroType
-import initlater Spell
+import initlater SpellAction
 import ActionType
+import Spell
 
 public class BoardHero extends BoardEntity
     private static int MAX_QUICKCAST_SPELLS = 3
@@ -23,10 +24,6 @@ public class BoardHero extends BoardEntity
 
     BoardHeroStats stats
     private HeroType heroType
-
-    private LinkedList<Action> actions
-    private DefaultAction defaultAction
-    private integer currentSelectedAction = -1
     
     construct(Hero hero, vec2 coord, Board board, int side)
         super(EntityType.HERO, board)
@@ -36,22 +33,21 @@ public class BoardHero extends BoardEntity
 
         createBLZUnit(coord, side)
 
-        actions = new LinkedList<Action>()
-        defaultAction = new HeroAttackAction(this)
-        actions.add(new HeroSkipAction(this))
+        addAction(new HeroSkipAction(this))
+        addAction(new HeroAttackAction(this))
 
-        for ActionType spell in hero.spells
-            actions.add(spell.create(this))
+        hero.forEachSpell() spell ->
+            addAction(spell.create(this))
 
         resetActionPoints()
+        resetCurrentSelectedAction()
 
     private function createBLZUnit(vec2 coord, int side)
         u = createUnit(DUMMY_PLAYER, heroType.unitId, coord , angle(PI * side))
-        u.setColor(hero.getPlayer().blzPlayer.getColor())
+        ..setColor(hero.getPlayer().blzPlayer.getColor())
 
         placeEntity()
 
-    @inline
     override function getCell() returns Cell
         return null
 
@@ -61,48 +57,24 @@ public class BoardHero extends BoardEntity
     override function getIcon() returns string
         return hero.getType().icon
 
-    @inline
-    override function setCurrentAction(Action action)
-        currentSelectedAction = actions.indexOf(action)
+    override function getName() returns string
+        return hero.getType().name
 
-    @inline
-    override function getActions() returns LinkedList<Action>
-        return actions
-
-    override function getAction(int index) returns Action
-        if index == -1
-            return defaultAction
-        return actions.get(index)
-
-    @inline
-    override function getCurrentAction() returns Action
-        return getAction(currentSelectedAction)
-
-    @inline
-    override function getDefaultAction() returns DefaultAction
-        return defaultAction
-
-    @inline
     override function getInitiative() returns int
         return stats.getInitiative()
 
-    @inline
     override function getMaxActionPoints() returns int
         return stats.getMaxActionPoints()
 
-    @inline
     override function getRemainingActionPoints() returns int
         return stats.getRemainingActionPoints()
 
-    @inline
     override function removeAP(integer amount)
         stats.removeAP(amount)
 
-    @inline
     function getMana() returns int
         return stats.mana
 
-    @inline
     function payMana(int amount)
         stats.payMana(amount)
 
@@ -110,38 +82,25 @@ public class BoardHero extends BoardEntity
         var index = 0
         for action in actions
             if action.hasOption(ActionTypeOption.SPELL)
-                let spell = action castTo Spell
+                let spell = action castTo SpellAction
                 if spell.isQuickcast()
                     index++
                     if index >= MAX_QUICKCAST_SPELLS
                         spell.activateQuickcast(false)
 
 
-    @inline
     override function resetActionPoints()
         stats.resetActionPoints()
 
     override function isAlive() returns boolean
         return true
 
-    @inline
     override function toString() returns string
         return "BoardHero [ level : "+hero.getLevel().toString()+"]"
-
-    override function resetCurrentSelectedAction() returns boolean
-        if currentSelectedAction == -1
-            return false
-        currentSelectedAction = -1
-        return true
 
     ondestroy
         destroyEntity()
         removeEntityRelatedThingsFromBoard()
-            
-        if actions != null
-            for action in actions
-                destroy action
-            destroy actions
-            
+        
         destroyTriggers()
         u.remove()

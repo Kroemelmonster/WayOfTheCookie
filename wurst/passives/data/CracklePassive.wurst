@@ -20,7 +20,7 @@ import initlater StackPassive
 import initlater PassiveType
 import Icons
 import LinkedList
-import StringUtils
+import KStringUtils
 
 public class CracklePassive extends StackPassive
     static PassiveType TYPE
@@ -36,7 +36,7 @@ public class CracklePassive extends StackPassive
     private static function createTooltipLines() returns LinkedList<string>
         return new LinkedList<string>
         ..add("On attack this unit will also strike the enemy with "
-        + StringUtils.primaryPercent(0.5) + " of the damage dealt as additional magic damage")
+        + KStringUtils.primaryPercent(0.5) + " of the damage dealt as additional magic damage")
 
     construct(BoardEntity entity)
         super(entity, TYPE)

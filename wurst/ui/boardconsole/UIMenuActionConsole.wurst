@@ -36,7 +36,7 @@ class UIBoardActionButton extends UIButtonIcon
         let activeEntity = PlayerBoardHelper.getCurrentActiveEntity(p)
         if not OrderSystem.canOrderUnit(p, activeEntity)
             return
-        if  not OrderSystem.isUnitSelected(p, activeEntity)
+        if not OrderSystem.isUnitSelected(p, activeEntity)
             // lets do correct that
             MouseContext.forcePlayerSelect(p, activeEntity.getCell())
         if not OrderSystem.canInteractWithBoard(p)
@@ -45,33 +45,29 @@ class UIBoardActionButton extends UIButtonIcon
             return
         action.activate()
 
-    function setAction(Action action, Action currentAction, string key)
+    function setAction(Action action, boolean showHighlight, string key)
         this.action = action
         setVisible(true)
-        setIcon(action.getIcon())
+        setBackground(action.getIcon())
         action.setKey(key)
 
         let cost = action.getCost()
         setCounter(cost.getCurrentCharges())
+        setGlowVisible(showHighlight)
 
-        if action == currentAction
+        if action.canActivate()
             enable()
-            setGlowVisible(true)
         else
-            setGlowVisible(false)
-            if action.canActivate()
-                enable()
-            else
-                if not cost.hasEnoughMana()
-                    disable("UI/Button/BTNExtensionOverlapDisabledMana.dds")
-                else if cost.isOnCooldown()
-                    let cooldown = cost.getCurrentCooldown()
-                    if cooldown > 0
-                        disable("UI/Button/BTNExtensionOverlapCooldown" + cooldown.toString() + ".dds")
-                    else // a cooldown of 0 means the entity just used it and is not allowed to us it this turn again
-                        disable("UI/Button/BTNExtensionOverlapDisabled.dds")
-                else
+            if not cost.hasEnoughMana()
+                disable("UI/Button/BTNExtensionOverlapDisabledMana.dds")
+            else if cost.isOnCooldown()
+                let cooldown = cost.getCurrentCooldown()
+                if cooldown > 0
+                    disable("UI/Button/BTNExtensionOverlapCooldown" + cooldown.toString() + ".dds")
+                else // a cooldown of 0 means the entity just used it and is not allowed to us it this turn again
                     disable("UI/Button/BTNExtensionOverlapDisabled.dds")
+            else
+                disable("UI/Button/BTNExtensionOverlapDisabled.dds")
 
     function setEmpty()
         action = null
@@ -143,17 +139,12 @@ public class UIMenuActionConsole
         if entity.getBoard().isLocalPlayer()
             updateActionPointsLocal(entity, 0)
 
-    static function updateActionPoints(BoardEntity entity, ActionCostPreset cost)
+    static function updateActionPoints(BoardEntity entity, ActionCostData cost)
         if entity.getBoard().isLocalPlayer()
             var ap = cost.getAP()
             if cost.isApFill()
                 ap = 100
             updateActionPointsLocal(entity, ap)
-
-    private static function updateUninteractableLocal()
-        for i = 0 to handleActionPoints.length - 1
-            handleActionPoints[i].setTexture("UI/glues/singleplayer/humancampaign3d/black32.ds")
-        
     
     static function update(Player p)
         if not p.isLocal() or p.isConntrolledByKI
@@ -167,27 +158,33 @@ public class UIMenuActionConsole
 
         let activeEntity = PlayerBoardHelper.getCurrentActiveEntity(p)
 
+        updateActionPointsLocal(activeEntity, 0)
         if activeEntity.getPlayer() != p
-            updateUninteractableLocal()
             return
 
         let currentAction = activeEntity.getCurrentAction()
-        let actionItr = activeEntity.getActions().iterator()
+        let defaultAction = activeEntity.getDefaultAction()
+        let isCurrentUnitSelected = OrderSystem.isUnitSelected(p, activeEntity)
 
         var primaryIndex = 0
         var secondaryIndex = 0
-        while actionItr.hasNext()
-            let action = actionItr.next()
+        let actionsIterator = activeEntity.actionsIterator()
+        while actionsIterator.hasNext()
+            let action = actionsIterator.next()
+            let showHighlight = isCurrentUnitSelected and (action == currentAction)
             if action.showAsPrimary()
-                primaryBtns[primaryIndex].setAction(action, currentAction, PRIMARY_KEYS[primaryIndex])
+                primaryBtns[primaryIndex].setAction(action, showHighlight, PRIMARY_KEYS[primaryIndex])
                 primaryIndex ++
             if action.showAsSecondary()
-                secondaryBtns[secondaryIndex].setAction(action, currentAction, SECONDARY_KEYS[secondaryIndex])
+                if action != defaultAction
+                    secondaryBtns[secondaryIndex].setAction(action, showHighlight, SECONDARY_KEYS[secondaryIndex])
                 secondaryIndex ++
-            
-        destroy actionItr
 
-        updateActionPointsLocal(activeEntity, 0)
+        destroy actionsIterator
+
+        secondaryBtns[secondaryBtns.length - 1].setAction(defaultAction,
+            isCurrentUnitSelected and (defaultAction == currentAction), SECONDARY_KEYS[secondaryIndex])
+        
 
     static function hide(Player p)
         menu.hide(p)
@@ -217,6 +214,11 @@ public class UIMenuActionConsole
             btn.simulateClick(p)
 
     private static function updateActionPointsLocal(BoardEntity entity, int previewLoosingPoints)
+        if not entity.getPlayer().isLocal()
+            for i = 0 to handleActionPoints.length - 1
+                handleActionPoints[i].setTexture("UI/glues/singleplayer/humancampaign3d/black32.ds")
+            return
+    
         let maxActionPoints = entity.getMaxActionPoints()
         let maxRemainingPoints = entity.getRemainingActionPoints()
         let startPreview = maxRemainingPoints - previewLoosingPoints

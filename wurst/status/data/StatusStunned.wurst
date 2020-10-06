@@ -17,16 +17,14 @@ public class StatusStunned extends Status
 
     static function setup()
         TYPE = new StatusType("Stunned", Icons.bTNStun)
-        TYPE.setCreationListener()(BoardEntity entity) ->
-            return new StatusStunned(TYPE, entity)
-        TYPE.setTooltipListener() (StatusData data) ->
-            return createTooltipLines(data)
+        TYPE.setCreationListener() (boardEntity, data) ->
+            return new StatusStunned(TYPE, boardEntity)
+        TYPE.setTooltipListener() data ->
+            return createTooltipLines()
 
-    private static function createTooltipLines(StatusData data) returns LinkedList<string>
+    private static function createTooltipLines() returns LinkedList<string>
         let lines = new LinkedList<string>
         ..add("You are stuned!")
-        if data != null
-            destroy data
         return lines
 
     /* -------------------------------------------------------------------------- */
@@ -42,9 +40,9 @@ public class StatusStunned extends Status
             kill()
             next.continue()
 
-    override function updateInner(StatusData data)
+    override function refreshInner(StatusData data)
 
-    override function createCurrentTooltip() returns Tooltip
+    override function createTooltip() returns Tooltip
         return TYPE.createTooltip(null)
 
     override function hide()

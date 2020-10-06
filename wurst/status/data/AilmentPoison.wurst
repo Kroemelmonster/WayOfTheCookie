@@ -17,7 +17,9 @@ import initlater BoardEntity
 import DamageAndResistance
 import LinkedList
 import Tooltip
-import StringUtils
+import KStringUtils
+
+/*
 
 public class AilmentPoison extends Status
     static StatusType TYPE
@@ -41,8 +43,8 @@ public class AilmentPoison extends Status
 
     private static function createSpecificTooltip(AilmentPoison b) returns Tooltip
         return Tooltip.create(TYPE.getName())
-        ..addLine(StringUtils.stat("Duration", b.stacks.getMaxDuration()))
-        ..addLine(StringUtils.stat("Stacks", b.stacks.size()))
+        ..addLine(KStringUtils.stat("Duration", b.stacks.getMaxDuration()))
+        ..addLine(KStringUtils.stat("Stacks", b.stacks.size()))
         ..addLine("")
         ..addLine("You are currently poisoned and take "
          + b.calculateDamage().toColoredText()
@@ -90,7 +92,7 @@ public class AilmentPoison extends Status
 
     override protected function hide()
 
-    override function createCurrentTooltip() returns Tooltip
+    override function createTooltip() returns Tooltip
         return createSpecificTooltip(this)
 
     private function dealDamage(SequenzListener next)
@@ -108,3 +110,5 @@ public class AilmentPoison extends Status
         stack.getTriggers().removeOnTurnEnd(turnEndListener)
         stack.getTriggers().removeOnTurnStart(turnStartListener)
         destroy stacks
+
+        */

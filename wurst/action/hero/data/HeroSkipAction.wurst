@@ -26,7 +26,7 @@ public class HeroSkipAction extends InstantAction
         TYPE.onCreate() entity -> 
             return new HeroSkipAction(entity)
         TYPE.onCreateTooltipLines() amount -> 
-            return createTooltipLines(true)
+            return createAllTooltipLines(true)
 
     private static constant ActionCostPreset BASE_COST = ActionCostPreset.create(0, true)
 
@@ -35,7 +35,7 @@ public class HeroSkipAction extends InstantAction
             return BASE_COST.createTooltipLines()
         return new LinkedList<string>
 
-    private static function createTooltipLines(boolean addCost) returns LinkedList<string>
+    private static function createAllTooltipLines(boolean addCost) returns LinkedList<string>
         return createBaseTooltipLines(addCost)
         ..add("This just skips ya turn")
 
@@ -50,7 +50,7 @@ public class HeroSkipAction extends InstantAction
         
     override function onUIMouseEnter()
         let tt = createBasicTooltip()
-        ..addLines(createTooltipLines(false))
+        ..addLines(createAllTooltipLines(false))
         UITooltip.display(entity.getPlayer(), tt)
         UIMenuActionConsole.updateActionPoints(entity, cost)
 

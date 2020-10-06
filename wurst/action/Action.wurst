@@ -30,6 +30,10 @@ public abstract class Action
     protected string key = ""
     protected ActionCost cost
 
+    construct(BoardEntity entity)
+        this.entity = entity
+        this.cost = ActionCost.create(entity)
+
     construct(BoardEntity entity, ActionType actionType, ActionCostPreset cost)
         this.entity = entity
         this.actionType = actionType
@@ -75,13 +79,14 @@ public abstract class Action
 
     function activate()
         if hasOption(ActionTypeOption.INSTANT)
+            Log.error("This function should not be called, as it is instant")
             return
 
-        entity.setCurrentAction(this)
+        entity.selectAction(this)
         UIController.triggerOnActionChange(entity.getPlayer().playingBoard)
 
     function hasOption(ActionTypeOption option) returns boolean
-        return actionType.hasOption(option)
+        return getType().hasOption(option)
 
     function showAsPrimary() returns boolean
         return hasOption(ActionTypeOption.PRIMARY)
@@ -95,16 +100,19 @@ public abstract class Action
         this.key = key
 
     protected function createBasicTooltip() returns Tooltip
-        let tt = Tooltip.create(getName())
+        let tt = Tooltip.create(getExtendedName())
         cost.setupTooltipCost(tt)
         tt.setKey(key)
         return tt
 
     function getIcon() returns string
-        return actionType.getIcon()
+        return getType().getIcon()
 
     function getName() returns string
-        return actionType.getName()
+        return getType().getName()
+
+    function getExtendedName() returns string
+        return getName()
 
     function getType() returns ActionType
         return actionType

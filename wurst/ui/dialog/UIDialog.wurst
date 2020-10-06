@@ -13,14 +13,14 @@ public class DialogInfo
     DialogInfoSplitStack splitInfo = new DialogInfoSplitStack()
 
 public class UIDialog extends UIWindowBasic
-    static function create() returns UIDialog
-        return new UIDialog()
+    static function create(string name) returns UIDialog
+        return new UIDialog(name)
 
     private FrameHandleListener onAccept
     private framehandle handleHeader
 
-    private construct()
-        super(true)
+    private construct(string name)
+        super(name, true)
         setPointToConsoleUI(FRAMEPOINT_CENTER, FRAMEPOINT_CENTER)
         setSize(0.35, 0.15)
         // TODO dynamicly change level depning on last clicked dilaog / window

@@ -23,14 +23,19 @@ import initlater UIMenuConsole
 import initlater UIMenuActionConsole
 import initlater UIWindowEntity
 import PlayerBoardHelper
+import initlater UIWindowSkillTree
+import initlater UIWindowHero
+import initlater UIWindowSpellBook
 
 class UIController
     static function initHero(Hero hero)
         UIMenuConsole.initHero(hero)
         UIMenuWorldConsole.initHero(hero)
+        switchToWorld(hero.getPlayer())
 
     static function selectEntity(Player p, BoardEntity entity, boolean directSelect)
-        OrderSystem.resetCurrentSelectedAction(p)
+        PlayerBoardHelper.getPlayerBoard(p).draw(p)
+        UIMenuActionConsole.update(p)
         if directSelect
             UIWindowEntity.open(p, entity)
             
@@ -103,14 +108,18 @@ class UIController
         UIWindow.closeAll(p)
         UIMenuWorldConsole.hide(p)
         UIMenuBoardConsole.show(p)
+        UIWindowSkillTree.get().disable(p)
+        UIWindowHero.get().disable(p)
 
     static function switchToCombat(Board b)
         switchToCombat(b.getPlayer(0))
         switchToCombat(b.getPlayer(1))
         
     static function switchToWorld(Player p)
-        p.blzPlayer.setCameraPosition(p.hero.getCoord())
+        // TODO mabe still do this : p.blzPlayer.setCameraPosition(p.hero.getCoord())
         
         UIWindow.closeAll(p)
         UIMenuBoardConsole.hide(p)
         UIMenuWorldConsole.show(p)
+        UIWindowSkillTree.get().enable(p)
+        UIWindowHero.get().enable(p)

@@ -77,6 +77,12 @@ public class UIHandle
     function setLevel(int level)
         self.setLevel(level)
 
+    function enable()
+        self.setEnabled(true)
+    
+    function disable()
+        self.setEnabled(false)
+
     function preventFocusBug(Player p)
         if p.isLocal()
             if self.isEnabled()

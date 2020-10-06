@@ -9,102 +9,98 @@ import initlater BoardEntity
 import initlater StatusType
 import BoardTrigger
 import LinkedList
-import StringUtils
+import KStringUtils
 import Tooltip
 
-public class StatusRallingCryStack extends Status
+public class StatusRallingCry extends Status
     static StatusType TYPE
-
+    static StatusType HERO_TYPE
     static function setup()
-        TYPE = new StatusType("Ralling Cry", "Icons\\BTNAbilityWarriorWarCry.blp")
-        TYPE.setCreationListener()(BoardEntity entity) ->
-            return new StatusRallingCryHero(TYPE, entity)
-        TYPE.setTooltipListener() (StatusData data) ->
+        TYPE = new StatusType("Rallying Cry", "Icons\\BTNAbilityWarriorWarCry.blp")
+        TYPE.setCreationListener() (boardEntity, statusData) ->
+            return new StatusRallingCry(TYPE, boardEntity, statusData)
+        TYPE.setTooltipListener() data ->
             return createTooltipBaseLines(data)
+
+        HERO_TYPE = new StatusType("Rallying Cry", "Icons\\BTNAbilityWarriorWarCry.blp")
+        HERO_TYPE.setCreationListener() (boardEntity, statusData) ->
+            return new StatusRallingCryHero(HERO_TYPE, boardEntity, statusData)
+        HERO_TYPE.setTooltipListener() data ->
+            return createTooltipBaseLines(data)
+
+    protected static constant int ATTACK_BONUS = 0
 
     protected static function createTooltipBaseLines(int attackValue) returns LinkedList<string>
         return new LinkedList<string>
         ..add("Increases the Attack by "
-            + StringUtils.coloredInt(StringUtils.COLOR_POSITIVE, attackValue))
+            + KStringUtils.coloredInt(KStringUtils.COLOR_POSITIVE, attackValue))
 
     protected static function createTooltipBaseLines(StatusData data) returns LinkedList<string>
-        let lines = createTooltipBaseLines(getAttackValue(data))
-        if data != null
-            destroy data
-        return lines
+        return createTooltipBaseLines(data.getIntData(ATTACK_BONUS))
 
-    protected static function createTooltip(StatusRallingCryStack b) returns Tooltip
+    protected static function createTooltip(StatusRallingCry b) returns Tooltip
         return Tooltip.create(TYPE.getName())
-        ..addLine(StringUtils.stat("Duration", b.duration))
-        ..addLine("")
         ..addLines(createTooltipBaseLines(b.attack))
-
-    protected static function getAttackValue(StatusData data) returns int
-        return data.firstIntValue
 
     /* -------------------------------------------------------------------------- */
 
-    protected BoardTrigger turnStartListener
-    protected int duration
     protected int attack = 0
 
-    construct(StatusType statusType, BoardEntity entity)
+    construct(StatusType statusType, BoardEntity entity, StatusData data)
         super(statusType, entity)
+
+        refreshStatusData(data)
+
+    override function refreshInner(StatusData data)
+        applyStats(false)
+        refreshStatusData(data)
+
+    protected function refreshStatusData(StatusData data)
+        this.attack = data.getIntData(ATTACK_BONUS)
+        applyStats(true)
+
+    protected function applyStats(boolean add)
+        let multi = add ? 1 : -1
+        entity.toStack().stats.attackModi.addBonus += attack * multi
+
+    override function hide()
+
+    override function createTooltip() returns Tooltip
+        return createTooltip(this)
+
+    ondestroy
+        if entity.isAlive()
+            applyStats(false)
+        hide()
+
+class StatusRallingCryHero extends StatusRallingCry
+    protected BoardTrigger turnStartListener
+    protected effect display
+    protected int duration
+
+    construct(StatusType statusType, BoardEntity entity, StatusData data)
+        super(statusType, entity, data)
+        display = entity.addAttachEffect(Abilities.drumsCasterHeal, AttachmentPoints.origin)
 
         turnStartListener = entity.getTriggers().addTurnStart() (SequenzListener next) ->
             duration--
             if duration <= 0
                 kill()
-                    
-            else
-                next.continue()
+            next.continue()
 
-    override function updateInner(StatusData data)
+    protected override function refreshStatusData(StatusData data)
+        this.attack = data.getIntData(ATTACK_BONUS)
         this.duration = data.duration
-        toggle(false)
-        this.attack = getAttackValue(data)
-        toggle(true)
+        applyStats(true)
 
-
-    override function createCurrentTooltip() returns Tooltip
-        return createTooltip(this)
-
-    protected function toggle(boolean flag)
-        let multi = flag ? 1 : -1
-        entity.toStack().stats.attackModi.addBonus += attack * multi
-
-    override function hide()
-
-    ondestroy
-        if entity.isAlive()
-            toggle(false)
-            entity.getTriggers().removeOnTurnStart(turnStartListener)
-        hide()
-
-        if onEndListener != null
-            destroy onEndListener
-
-public class StatusRallingCryHero extends StatusRallingCryStack
-    static StatusType TYPE
-
-    static function setup()
-        TYPE = new StatusType("Ralling Cry", "Icons\\BTNAbilityWarriorWarCry.blp")
-        TYPE.setCreationListener()(BoardEntity entity) ->
-            return new StatusRallingCryHero(TYPE, entity)
-        TYPE.setTooltipListener() (StatusData data) ->
-            return StatusRallingCryStack.createTooltipBaseLines(data)
-
-    /* -------------------------------------------------------------------------- */
-    protected effect display
-
-    construct(StatusType statusType, BoardEntity entity)
-        super(statusType, entity)
-        display = entity.addAttachEffect(Abilities.drumsCasterHeal, AttachmentPoints.origin)
-
-    protected override function toggle(boolean flag)
-        let multi = flag ? 1 : -1
+    protected override function applyStats(boolean add)
+        let multi = add ? 1 : -1
         entity.toHero().stats.attackModi.addBonus += attack * multi
 
     override function hide()
         if display != null
             display.destr()
+
+    ondestroy
+        if turnStartListener != null
+            entity.getTriggers().removeOnTurnStart(turnStartListener)

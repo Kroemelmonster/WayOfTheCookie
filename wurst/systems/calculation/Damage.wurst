@@ -4,7 +4,7 @@ import KUtil
 import BoardStack
 import BoardEntity
 import Globals
-import StringUtils
+import KStringUtils
 import Tooltip
 import DamageAndResistance
 
@@ -97,13 +97,13 @@ public class DamagePreview extends Damage
 
     function extendTooltipWithSpecific(Tooltip tooltip, BoardEntity source, BoardStack target)
         let preview = new SpecificDamagePreview(this, source, target)
-        tooltip.addLine(StringUtils.coloredString(preview.target.getPlayer().toColor(), preview.target.getName()))
-        tooltip.addLine(StringUtils.stat("Damage", Damage.type2Color(preview.damagePreview.damageType), preview.damage))
-        tooltip.addLine(StringUtils.stat("Kills", StringUtils.COLOR_NEGATIVE, preview.amount))
+        tooltip.addLine(KStringUtils.coloredString(preview.target.getPlayer().toColor(), preview.target.getName()))
+        tooltip.addLine(KStringUtils.stat("Damage", Damage.type2Color(preview.damagePreview.damageType), preview.damage))
+        tooltip.addLine(KStringUtils.stat("Kills", KStringUtils.COLOR_NEGATIVE, preview.amount))
         destroy preview
 
     function toColoredText() returns string
-        return StringUtils.coloredRange(Damage.type2Color(damageType), dmg.round())
+        return KStringUtils.coloredRange(Damage.type2Color(damageType), dmg.round())
         
 
 public abstract class SpecificDamage
@@ -129,9 +129,9 @@ public class SpecificDamageInstance extends SpecificDamage
         remainingHp -= damage
 
     function toColoredText() returns string
-        var str = StringUtils.coloredInt(Damage.type2Color(damageInstance.damageType), damage)
+        var str = KStringUtils.coloredInt(Damage.type2Color(damageInstance.damageType), damage)
         if amount > 0
-            str +=  "   " + StringUtils.coloredInt(StringUtils.COLOR_NEGATIVE, amount)
+            str +=  "   " + KStringUtils.coloredInt(KStringUtils.COLOR_NEGATIVE, amount)
         return str 
 
     ondestroy

@@ -20,7 +20,10 @@ import BoardEntity
 import DamageAndResistance
 import LinkedList
 import Tooltip
-import StringUtils
+import KStringUtils
+
+
+/*
 
 public class AilmentBleeding extends Status
     static StatusType TYPE
@@ -45,8 +48,8 @@ public class AilmentBleeding extends Status
 
     private static function createSpecificTooltip(AilmentBleeding b) returns Tooltip
         return Tooltip.create(TYPE.getName())
-        ..addLine(StringUtils.stat("Duration", b.stacks.getMaxDuration()))
-        ..addLine(StringUtils.stat("Stacks", b.stacks.size()))
+        ..addLine(KStringUtils.stat("Duration", b.stacks.getMaxDuration()))
+        ..addLine(KStringUtils.stat("Stacks", b.stacks.size()))
         ..addLine("")
         ..addLine("You are currently bleeding and suffer "
          + b.calculateDamage(false).toColoredText()
@@ -101,7 +104,7 @@ public class AilmentBleeding extends Status
     override protected function updateInner(StatusData data)
         stacks.add(data.duration, getDamage(data))
 
-    override function createCurrentTooltip() returns Tooltip
+    override function createTooltip() returns Tooltip
         return createSpecificTooltip(this)
 
     override function hide()
@@ -123,3 +126,5 @@ public class AilmentBleeding extends Status
             ..removeOnTurnEnd(turnEndListener)
             ..removeOnTurnStart(turnStartListener)
         destroy stacks
+
+        */

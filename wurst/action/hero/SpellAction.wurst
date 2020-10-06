@@ -1,0 +1,83 @@
+package SpellAction
+import Action
+import initlater BoardHero
+import ActionCost
+import ActionType
+import BoardEntity
+import LinkedList
+import initlater Spell
+import Tooltip
+import initlater SpellType
+import BoardTrigger
+
+public abstract class SpellAction extends Action implements HasSpellStats
+    protected BoardHero hero
+    protected int levelIndex
+    protected SpellLevel level
+    protected Spell spell
+    protected boolean quickCast = false
+
+    static function createType(string name, string icon) returns SpellType
+        let actionType = new ActionType(name, icon)
+        ..enableOption(ActionTypeOption.SPELL)
+        return new SpellType(actionType)
+
+    construct(BoardEntity entity, Spell spell)
+        super(entity)
+        this.spell = spell
+        setLevelTo(spell.getMaxLevel())
+        if entity.getType() != EntityType.HERO
+            Log.error("Tried to add a Spell to an non Hero")
+        this.hero = entity.toHero()
+        activateQuickcast(true)
+
+    function setLevelTo(int newLevel) returns boolean
+        if newLevel > spell.getMaxLevel()
+            return false
+        if newLevel < 0
+            return false
+        this.levelIndex = newLevel
+        level = spell.getLevelData(levelIndex)
+        cost.setBasic(level.getUsageCost())
+        return true
+
+    function getLevelIndex() returns int
+        return levelIndex
+
+    function isQuickcast() returns boolean
+        return quickCast
+
+    function toggleQuickcast()
+        activateQuickcast(not quickCast)
+
+    function activateQuickcast(boolean flag)
+        if flag
+            hero.updateQuickcast()
+            quickCast = true
+        else
+            quickCast = false
+            if entity.getCurrentAction() == this
+                entity.resetCurrentSelectedAction()
+
+    function getBoardHero() returns BoardHero
+        return hero
+
+    override function getDamageMulti() returns real
+        let power = hero.stats.getPower()
+        return 1.0 + spell.getBaseMultiFromPower(power)
+
+    override function showAsPrimary() returns boolean
+        return quickCast
+
+    override function getExtendedName() returns string
+        return getName() + " ["+(levelIndex + 1).toString()+"]"
+
+    function createTooltip() returns Tooltip
+        return spell.createTooltip(levelIndex, false)
+
+    override function getType() returns ActionType
+        return spell.getActionTpye()
+
+    override function executeForKI(SequenzListenerStatus listener)
+        Log.error("YOU NEED TO WRITE KI FOR "+toString())
+        listener.continue(-1)

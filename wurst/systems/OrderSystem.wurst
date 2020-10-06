@@ -35,9 +35,6 @@ class OrderSystem
 
         return canInteractWithBoard(p)
 
-    static function resetCurrentSelectedAction(Player p)
-        resetCurrentSelectedAction(PlayerBoardHelper.getCurrentActiveEntity(p))
-
     static function resetCurrentSelectedAction(BoardEntity entity)
         if entity.resetCurrentSelectedAction()
             UIController.triggerOnActionChange(entity.getBoard())

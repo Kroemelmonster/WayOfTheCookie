@@ -2,11 +2,15 @@ package PlayerBoardHelper
 import initlater BoardEntity
 import initlater PlayerData
 import initlater Board
+import initlater BoardHero
 
 public class PlayerBoardHelper
 
     static function getPlayerBoard(Player p) returns Board
         return p.playingBoard
+
+    static function getPlayerBoardHero(Player p) returns BoardHero
+        return getPlayerBoard(p).getBoardHero(p)
 
     static function getSelectedEntity(Player p) returns BoardEntity
         return p.currentSelectedEntity

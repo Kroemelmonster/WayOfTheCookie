@@ -7,83 +7,89 @@ import BoardController
 import UIMenuActionConsole
 import CastAnimation
 import BoardTrigger
-import Spell
+import SpellAction
 import BoardHero
 import BoardEntity
 import SkillTree
 import StatusType
 import StatusController
 import Status
-import WarcrySpell
+import WarcrySpellAction
 import SkillTreeChieftain
 import StatusRallingCry
 import LinkedList
 import BoardStack
 import ActionCost
-import StringUtils
+import KStringUtils
 import Tooltip
 import UITooltip
 import ActionType
+import initlater SpellType
+import Spell
+import HeroData
+import KUtil
 
-public class RallingCrySpell extends WarcrySpell
-    static ActionType TYPE
+public class RallingCrySpell extends WarcrySpellAction
+    static SpellType TYPE
     static function setup()
-        STATUS = StatusRallingCryHero.TYPE
-        STATUS_STACKS = StatusRallingCryStack.TYPE
-        TYPE = WarcrySpell.createType("Ralling Cry", "Icons\\BTNAbilityWarriorWarCry.blp")
-        TYPE.onCreate() entity -> 
-            return new RallingCrySpell(entity)
-        TYPE.onCreateTooltipLines() level -> 
-            return createTooltipLines(level, true)
+        STATUS_HERO = StatusRallingCry.HERO_TYPE
+        STATUS = StatusRallingCry.TYPE
+        TYPE = WarcrySpellAction.createType("Rallying Cry", "Icons\\BTNAbilityWarriorWarCry.blp")
+        TYPE.addLevel(ActionCostPreset.create(0, false, 3), HeroDataChange.create(1, 0, 1))
+        ..setIntData(ATTACK_BONUS, 3)
+        TYPE.addLevel(ActionCostPreset.create(0, false, 2), HeroDataChange.create(2, 0, 1))
+        ..setIntData(ATTACK_BONUS, 5)
+        TYPE.addLevel(ActionCostPreset.create(0, false, 1), HeroDataChange.create(2, 0, 2))
+        ..setIntData(ATTACK_BONUS, 7)
+        TYPE.onActionCreate() (entity, spell) -> 
+            return new RallingCrySpell(entity, spell)
+        TYPE.onCreateTooltipLines() (level, spell) -> 
+            return createTooltipLines(level)
 
-    private static constant ActionCostPreset BASE_COST = ActionCostPreset.create(0, false, 3)
-    private static constant int array[5] ATTACK_BONUS = [3, 5, 7, 9, 11]
-    static StatusType STATUS
-    static StatusType STATUS_STACKS
+    private static constant int ATTACK_BONUS = 0
 
-    private static function createStatusData(int level) returns StatusData
-        return StatusData.createDurationI(1, ATTACK_BONUS[level])
+    private static StatusType STATUS_HERO
+    private static StatusType STATUS
 
-    private static function createBaseTooltipLines(boolean addCost) returns LinkedList<string>
-        if addCost
-            return BASE_COST.createTooltipLines()
+    private static function createTooltipLines(SpellLevel level) returns LinkedList<string>
         return new LinkedList<string>
-
-    private static function createTooltipLines(int level, boolean addCost) returns LinkedList<string>
-        let list = createBaseTooltipLines(addCost)
-        ..add(StringUtils.stat("Target", "Allies/Self"))
+        ..add(KStringUtils.stat("Target", "Allies/Self"))
         ..add("")
         ..add("Gives your self and all your troops a temporary Attack Bonus")
-        // TODO addStatusType(STATUS, createStatusData(level))
-        return list
+        ..add(KStringUtils.line())
+        ..addAllAndDestroy(STATUS_HERO.createTooltipLines(createStatusData(level)))
     
+    private static function createStatusData(SpellLevel level) returns StatusData
+        return StatusData.create(1)
+        ..setIntData(ATTACK_BONUS, level.getIntData(ATTACK_BONUS))
+
+
     /* -------------------------------------------------------------------------- */
 
     private LinkedList<BoardStack> affectedAllies = new LinkedList<BoardStack>()
 
-    private construct(BoardEntity entity)
-        super(entity, TYPE, BASE_COST)
-        let skillTree = hero.hero.getSkillTree(SkillTreeChieftain.TYPE) castTo SkillTreeChieftain
-        setLevel(skillTree.rallingCryLevel)
+    private construct(BoardEntity entity, Spell spell)
+        super(entity, spell)
 
     override function activate()
         CastAnimation.create(entity) -> 
-            StatusController.add(STATUS, entity, createStatusData(level))
-            ..addOnEndListener() (SequenzListener next) ->
-                affectedAllies.forEach() (BoardStack ally) ->
-                    if ally.isAlive()
-                        StatusController.remove(STATUS_STACKS, ally)
-                next.continue()
-
             entity.getBoard().forEachStack() (BoardStack ally) ->
                 if ally.getPlayer() == entity.getPlayer()
                     affectedAllies.add(ally)
-                    StatusController.add(STATUS_STACKS, ally, createStatusData(level))
+                    StatusController.apply(STATUS, ally, createStatusData(level))
+
+            StatusController.apply(STATUS_HERO, entity, createStatusData(level))
+            ..addOnEndListener() (SequenzListener next) ->
+                affectedAllies.forEach() (BoardStack ally) ->
+                    if ally.isAlive()
+                        StatusController.remove(STATUS, ally)
+                next.continue()
+
             BoardController.finishOrder(entity, cost)
 
     private function showPreview()
         let tt = createBasicTooltip()
-        ..addLines(createTooltipLines(level, false))
+        ..addLines(createTooltipLines(level))
         UITooltip.display(entity.getPlayer(), tt)
         UIMenuActionConsole.updateActionPoints(entity, cost)
 
@@ -98,9 +104,3 @@ public class RallingCrySpell extends WarcrySpell
         hidePreview()
 
     ondestroy
-
-    /* ----------------------------------- KI ----------------------------------- */
-    
-    override function executeForKI(SequenzListenerStatus listener)
-        Log.error("YOU NEED TO WRITE KI FOR RALLING CRY SPELL")
-        listener.continue(-1)

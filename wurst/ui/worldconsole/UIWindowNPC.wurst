@@ -57,7 +57,7 @@ public class UIWindowNPC
 
     static function create()
         let width = UIWindowSkillTree.WIDTH
-        window = UIWindowBasic.create(true)
+        window = UIWindowBasic.create("NPC", true)
         ..setPointToConsoleUI(FRAMEPOINT_TOPLEFT, FRAMEPOINT_TOPLEFT)
         ..setSize(width, 0.35)
 
@@ -93,7 +93,7 @@ public class UIWindowNPC
                 stockUnits[i].setVisible(stockitr.hasNext())
                 if stockitr.hasNext()
                     let stack = stockitr.next()
-                    stockUnits[i].setIcon(stack.getStackType().icon)
+                    stockUnits[i].setBackground(stack.getStackType().icon)
                     stockUnits[i].setText(stack.getAmount().toString(), stack.getStackType().value.toString())
 
             destroy stockitr

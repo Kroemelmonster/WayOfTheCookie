@@ -93,7 +93,7 @@ class UIExtensionArmyButton extends UIButtonIcon
     override function disable()
         super.disable()
         textHandle.setVisible(false)
-        setIcon("Icons/BTNDotted.dds")
+        setBackground("Icons/BTNDotted.dds")
     
     protected function draw(UIExtensionArmyPanelInfo info)
         let stack = info.army.getStack(index)
@@ -103,7 +103,7 @@ class UIExtensionArmyButton extends UIButtonIcon
         if info.dragStart == index
             // zeige das an was auf dragEnd ist an
             if info.stackDragEnd != null
-                setIcon(info.stackDragEnd.getStackType().icon)
+                setBackground(info.stackDragEnd.getStackType().icon)
                 setText(info.stackDragEnd.getAmount().toString())
                 // sind die nicht identisch wird es ein swap ansonten haben wir gerade einfach nur den normalen status angezeigt
                 if info.stackDragEnd != info.stackDragStart
@@ -114,12 +114,12 @@ class UIExtensionArmyButton extends UIButtonIcon
         else if info.dragEnd == index
             // zeige das was auf dragStart ist an außer das sind wir selber
             if info.stackDragStart != info.stackDragEnd
-                setIcon(info.stackDragStart.getStackType().icon)
+                setBackground(info.stackDragStart.getStackType().icon)
                 setText(info.stackDragStart.getAmount().toString())
                 setAlpha(80)
         else if stack != null
             // there is not drag but maybe there is astack to show
-            setIcon(stack.getStackType().icon)
+            setBackground(stack.getStackType().icon)
             setText(stack.getAmount().toString())
         else
             // there is nothing sooo ?

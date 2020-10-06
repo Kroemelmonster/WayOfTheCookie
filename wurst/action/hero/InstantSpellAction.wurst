@@ -1,25 +1,29 @@
-package InstantSpell
+package InstantSpellAction
 
 import PlayerData
 import Action
 
-import Spell
+import SpellAction
 
 import initlater Cell
 import initlater BoardHero
 import ActionCost
 import ActionType
 import BoardEntity
+import initlater SpellType
+import Spell
 
-public abstract class InstantSpell extends Spell
+public abstract class InstantSpellAction extends SpellAction
 
-    static function createType(string name, string icon) returns ActionType
-        return new ActionType(name, icon)
+    static function createType(string name, string icon) returns SpellType
+        let actionType = new ActionType(name, icon)
         ..enableOption(ActionTypeOption.SPELL)
         ..enableOption(ActionTypeOption.INSTANT)
+        return new SpellType(actionType)
 
-    construct(BoardEntity entity, ActionType actionType, ActionCostPreset cost)
-        super(entity, actionType, cost)
+    construct(BoardEntity entity, Spell spell)
+        super(entity, spell)
+
 
     override function getPreviewResultForCell(Cell cell) returns CellResult
         return CellResult.NONE

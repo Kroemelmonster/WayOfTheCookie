@@ -27,7 +27,7 @@ public class UIDialogSplitStack
     private static framehandle handleIconRight
 
     static function create()
-        dia = UIDialog.create()
+        dia = UIDialog.create("Split")
         ..setHeader("Split")
         ..onAccept() -> 
             let p = GetTriggerPlayerData()

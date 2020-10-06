@@ -28,7 +28,7 @@ import ClosureTimers
 import Effect
 import StackAction
 import ActionCost
-import StringUtils
+import KStringUtils
 import Tooltip
 import UITooltip
 import DamageAndResistance
@@ -63,13 +63,13 @@ public class ChainLightningAction extends StackAction
 
     private static function createTooltipLines(int amount, boolean addCost) returns LinkedList<string>
         return createBaseTooltipLines(addCost)
-        ..add(StringUtils.stat("Target", "Enemy"))
-        ..add(StringUtils.stat("Damage", calculateDamage(amount, 0).toColoredText()))
+        ..add(KStringUtils.stat("Target", "Enemy"))
+        ..add(KStringUtils.stat("Damage", calculateDamage(amount, 0).toColoredText()))
         ..add("")
         ..add("Lightning strikes from one target and chains up to "
-         + StringUtils.primaryString(MAX_CHAINS.toString()) + " times")
+         + KStringUtils.primaryString(MAX_CHAINS.toString()) + " times")
         ..add("Each time the damage is descreased by "
-         + StringUtils.primaryPercent(1 - CHAIN_REDUCTION))
+         + KStringUtils.primaryPercent(1 - CHAIN_REDUCTION))
 
     private static function calculateDamage(int amount, int chain) returns DamagePreview
         var multi = 1.0

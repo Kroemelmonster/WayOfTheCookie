@@ -26,7 +26,7 @@ import ClosureTimers
 import Damage
 import Globals
 import ActionCost
-import StringUtils
+import KStringUtils
 import Tooltip
 import UITooltip
 import DamageAndResistance
@@ -50,7 +50,6 @@ public class SlamAction extends InstantStackAction
     private static constant int DAZZED_TIME = 200
     private static constant DamagePreview damagePreview = createDamagePreview()
     
-    @inline
     private static function createDamagePreview() returns DamagePreview
         return new DamagePreview(realRange(0, 0), SourceType.SPELL, DamageType.PHYISICAL)
 
@@ -61,13 +60,14 @@ public class SlamAction extends InstantStackAction
 
     private static function createTooltipLines(int amount, boolean addCost) returns LinkedList<string>
         return createBaseTooltipLines(addCost)
-        ..add(StringUtils.stat("Target", "None"))
-        ..add(StringUtils.stat("Range", MAXRANGE))
-        ..add(StringUtils.stat("Damage", calculateDamage(amount).toColoredText()))
+        ..add(KStringUtils.stat("Target", "None"))
+        ..add(KStringUtils.stat("Range", MAXRANGE))
+        ..add(KStringUtils.stat("Damage", calculateDamage(amount).toColoredText()))
         ..add("")
-        ..add("Slams the Ground around and dealing massive AoE Damage")
-        //  ..addLine("This Slam is so powerfull that enemys get "+Tooltip.secondaryString(StunDebuff.TYPE.getName())+ " and placed back in the initaive by "+Tooltip.primaryString(DAZZED_TIME.toString())+ " "+Tooltip.secondaryString("timeunits"))
-
+        ..add("Slams the Ground around you, curshing your foes.")
+        ..add("Stunning them for "
+         + KStringUtils.primaryString(DAZZED_TIME.toString())
+         + " " + KStringUtils.secondaryString("timeunits"))
 
     private static function calculateDamage(int amount) returns DamagePreview
         damagePreview.dmg = realRange(100.0 * amount, 150.0 * amount)

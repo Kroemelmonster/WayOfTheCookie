@@ -27,11 +27,12 @@ import UITooltip
 import ActionType
 import BoardEntity
 import UIMenuActionConsole
+import Icons
 
 public class HeroAttackAction extends DefaultAction
     static ActionType TYPE
     static function setup()
-        TYPE = DefaultAction.createType("Attack")
+        TYPE = DefaultAction.createType("Attack", Icons.bTNAttack)
         TYPE.onCreate() entity -> 
             return new HeroAttackAction(entity)
         TYPE.onCreateTooltipLines() amount -> 

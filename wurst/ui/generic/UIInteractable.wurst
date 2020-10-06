@@ -15,6 +15,7 @@ public class UIInteractable extends UIHandle
 
     private FrameHandleListener onMouseEnterListener
     private FrameHandleListener onMouseLeaveListener
+    private FrameHandleListener onMouseUpListener
 
     private construct(framehandle self)
         super(self)
@@ -33,6 +34,8 @@ public class UIInteractable extends UIHandle
 
         self.onMouseUp() -> 
             preventFocusBug(GetTriggerPlayerData())
+            if onMouseUpListener != null
+                onMouseUpListener.onEvent()
 
     protected function onMouseEnterInner(Player _p)
     protected function onMouseLeaveInner(Player _p)
@@ -44,3 +47,7 @@ public class UIInteractable extends UIHandle
     function onMouseLeave(FrameHandleListener listener)
         if listener != null
             onMouseLeaveListener = listener
+
+    function onMouseUp(FrameHandleListener listener)
+        if listener != null
+            onMouseUpListener = listener

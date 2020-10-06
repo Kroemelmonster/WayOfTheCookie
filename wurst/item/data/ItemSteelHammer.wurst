@@ -6,7 +6,7 @@ import initlater KItem
 import initlater Hero
 import initlater KItemType
 import LinkedList
-import StringUtils
+import KStringUtils
 
 public class ItemSteelHammer extends KItem
     static KItemType TYPE
@@ -22,7 +22,7 @@ public class ItemSteelHammer extends KItem
 
     private static function createTooltipBaseLines() returns LinkedList<string>
         return new LinkedList<string>
-        ..add("Adds " + StringUtils.primaryString(VALUE.toString()) + " Attack")
+        ..add("Adds " + KStringUtils.primaryString(VALUE.toString()) + " Attack")
 
     construct(KItemType itemType)
         super(itemType)

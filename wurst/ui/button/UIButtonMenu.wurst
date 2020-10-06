@@ -1,18 +1,34 @@
 package UIButtonMenu
 import UIButton
 import UIHandle
+import UIWindow
+import PlayerData
 
 public class UIButtonMenu extends UIButton
-    static function create(UIHandle parent, string text) returns UIButtonMenu
-        return new UIButtonMenu(parent.self, text)
+    static function create(UIHandle parent, string name) returns UIButtonMenu
+        return new UIButtonMenu(parent.self, name)
 
     private framehandle textFrame
 
-    construct(framehandle parent, string text)
+    construct(framehandle parent, string name)
         super(createUIFrameByName("MenuBTN", parent, false))
         textFrame = getFrame("MenuBTNText")
-        textFrame.setText(text)
+        textFrame.setText(name)
 
     function setText(string text)
         textFrame.setText(text)
         
+
+public class UIButtonMenuToWindow extends UIButtonMenu
+    static function create(UIHandle parent, UIWindow window) returns UIButtonMenu
+        return new UIButtonMenuToWindow(parent.self, window)
+    
+    protected UIWindow window
+
+    construct(framehandle parent, UIWindow window)
+        super(parent, window.getName())
+        this.window = window
+        window.setBtnToOpen(this)
+
+        onClick() -> 
+            window.toggle(GetTriggerPlayerData())

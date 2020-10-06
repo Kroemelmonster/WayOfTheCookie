@@ -1,7 +1,7 @@
 package UIWindowSpellBook
 
 import PlayerData
-import Spell
+import SpellAction
 import OrderSystem
 import Action
 import UIHandle
@@ -11,64 +11,155 @@ import UIMenuActionConsole
 import Scheduler
 import UIInteractable
 import ActionType
+import UITooltip
+import Tooltip
+import Spell
+import PlayerBoardHelper
+import KStringUtils
+import UIButton
 
-class UIElementSpell extends UIInteractable
+class UIElementSpell extends UIButton
     static function create(framehandle parent) returns UIElementSpell
         return new UIElementSpell(parent)
 
     protected framehandle handleIcon
     protected framehandle handleSelect
-    protected framehandle handleText
+    protected framehandle handleName
+    protected framehandle handleLevel
+    protected UIButton btnLevel
 
+    protected SpellAction spellAction
     protected Spell spell
     
     private construct(framehandle parent)
-        super(createUIFrame("MENU", parent, true))
+        super(UIButton.createBasicButtonFrame(false, parent))
         setHeight(0.0585)
         setVisible(false)
 
+        let paddingH = 0.01
         handleIcon = createUIFrame("BACKDROP", self)
-        ..setPoint(FRAMEPOINT_TOPLEFT, self, FRAMEPOINT_TOPLEFT, 0.01, -0.008)
+        ..setPoint(FRAMEPOINT_TOPLEFT, self, FRAMEPOINT_TOPLEFT, paddingH, -0.008)
         ..setSize(0.036, 0.0335)
 
-        handleText = createUIFrameByName("SpellBookText", self, false)
+        handleName = createUIFrameByName("SpellBookText", self, false)
         ..setTextColor(colorA(0, 0, 0, 255))
-        ..setPoint(FRAMEPOINT_BOTTOMLEFT, self, FRAMEPOINT_BOTTOMLEFT, 0.01, 0.007)
-        ..setPoint(FRAMEPOINT_BOTTOMRIGHT, self, FRAMEPOINT_BOTTOMRIGHT, -0.01, 0.007)
+        ..setPoint(FRAMEPOINT_BOTTOMLEFT, self, FRAMEPOINT_BOTTOMLEFT, paddingH, 0.007)
+        ..setPoint(FRAMEPOINT_BOTTOMRIGHT, self, FRAMEPOINT_BOTTOMRIGHT, -paddingH, 0.007)
         ..setTextAlignment(TEXT_JUSTIFY_BOTTOM, TEXT_JUSTIFY_LEFT)
 
-        handleSelect = createUIFrame("BACKDROP", self)
-        ..setAllPoints(self)
+        handleLevel = createUIFrameByName("SpellBookBigText", self, false)
+        ..setTextColor(colorA(0, 0, 0, 255))
+        ..setPoint(FRAMEPOINT_TOPLEFT, handleIcon, FRAMEPOINT_TOPRIGHT)
+        ..setPoint(FRAMEPOINT_BOTTOMLEFT, handleIcon, FRAMEPOINT_BOTTOMRIGHT)
+        ..setPoint(FRAMEPOINT_RIGHT, self, FRAMEPOINT_RIGHT, -paddingH, 0)
+        ..setTextAlignment(TEXT_JUSTIFY_CENTER, TEXT_JUSTIFY_MIDDLE)
+
+        btnLevel = UIButton.createByName("LevelUpBTN", self)
+        ..setPoint(FRAMEPOINT_BOTTOMLEFT, self, FRAMEPOINT_TOPRIGHT, -0.015, -0.015)
+        ..setSize(0.02, 0.02)
+        btnLevel.onClick() -> 
+            if spell != null
+                payToNextLevel()
+
+        btnLevel.onMouseEnter() -> 
+            if spell != null
+                mouseEnterLevelUpInner(GetTriggerPlayerData())
+        btnLevel.onMouseLeave() -> 
+            UITooltip.hide(GetTriggerPlayerData())
+                
+
+
+        handleSelect = handleBackground
         ..setAlpha(150)
         ..setTexture("UI/Console/SelectedSpell.dds")
-        ..setVisible(false)
 
-        self.onClick() -> 
-            onClickInner(GetTriggerPlayerData())
+        self.onMouseWheel() -> 
+            if spellAction != null
+                switchLevel(BlzGetTriggerFrameValue() > 0)
+
+
+        onClick() -> 
+            interact(GetTriggerPlayerData())
         onMouseEnter() -> 
-            spell.onUIMouseEnter()
+            mouseEnterInner(GetTriggerPlayerData())
         onMouseLeave() -> 
-            spell.onUIMouseLeave()
+            UITooltip.hide(GetTriggerPlayerData())
+
+    protected function payToNextLevel()
+        if spell.levelUp()
+            updateLevel(spell.getMaxLevel())
+            mouseEnterLevelUpInner(GetTriggerPlayerData())
+
+    protected function switchLevel(boolean add)
+        if spellAction.setLevelTo(spellAction.getLevelIndex() + (add ? 1 : -1))
+            updateLevel(spellAction.getLevelIndex())
+            mouseEnterInner(GetTriggerPlayerData())
+
+    protected function highlightSelect(boolean flag)
+        if flag
+            handleSelect.setAlpha(170)
+        else
+            handleSelect.setAlpha(80)
+
+    protected function updateLevel(int level)
+        handleLevel.setText((level + 1).toRomanLetters())
+        if spell != null and spell.canLevelUp()
+            btnLevel.enable()
+        else
+            btnLevel.disable()
+
+    function setSpellAction(SpellAction spellaction)
+        this.spellAction = spellaction
+        this.spell = null
+        setVisible(true)
+        handleName.setText(spellaction.getName())
+        handleIcon.setTexture(spellaction.getIcon())
+        highlightSelect(spellaction.isQuickcast())
+        updateLevel(spellaction.getLevelIndex())
 
     function setSpell(Spell spell)
+        this.spellAction = null
         this.spell = spell
         setVisible(true)
-        handleText.setText(spell.getName())
+        handleName.setText(spell.getName())
         handleIcon.setTexture(spell.getIcon())
-        handleSelect.setVisible(spell.isQuickcast())
+        
+        highlightSelect(false)
+        updateLevel(spell.getMaxLevel())
 
-    private function onClickInner(Player p)
-        Log.trace("click spell")
-        spell.toggleQuickcast()
-        UIMenuActionConsole.update(p)
-        UIWindowSpellBook.update(p)
+    protected function createTooltip() returns Tooltip
+        if spellAction != null
+            return spellAction.createTooltip()
+        else if spell != null
+            return spell.createTooltip(false)
+        return null
+
+    function mouseEnterLevelUpInner(Player p)
+        if spell != null
+            var tt = spell.createTooltip(spell.getMaxLevel() + 1, true)
+            if tt == null
+                tt = spell.createTooltip(spell.getMaxLevel(), false)
+            if tt != null
+                UITooltip.display(p, tt, TooltipAnchor.RIGHT_BOTTOM, self)
+
+    function mouseEnterInner(Player p)
+        let tt = createTooltip()
+        if tt != null
+            UITooltip.display(p, tt, TooltipAnchor.RIGHT_BOTTOM, self)
+
+    private function interact(Player p)
+        if spellAction != null
+            spellAction.toggleQuickcast()
+            // this just updates this spell
+            setSpellAction(spellAction)
+            UIMenuActionConsole.update(p)
 
 public class UIWindowSpellBook
     private static UIWindow window
     private static UIElementSpell array[10] spells
 
-    static function create()
-        window = UIWindow.create()
+    static function create() returns UIWindow
+        window = UIWindow.create("SpellBook")
         ..setPointToConsoleUI(FRAMEPOINT_TOPLEFT, FRAMEPOINT_TOPLEFT)
         ..setSize(0.5, 0.3)
 
@@ -103,34 +194,47 @@ public class UIWindowSpellBook
         Scheduler.onTime() p ->
             if window.isVisible(p)
                 update(p)
+        
 
-    static function close(Player p)
-        window.close(p)
+        return window
 
-    static function open(Player p)
-        window.open(p)
-
-    static function toggle(Player p)
-        window.toggle(p)
+    static function get() returns UIWindow
+        return window
 
     protected static function update(Player p)
         if not p.isLocal()
             return
             
-        let entity = p.currentSelectedEntity
+        if p.isPlayingOnABoard()
+            updateForBoardLocal(p)
+        else
+            updateForWorldLocal(p)
 
-        let actionItr = entity.getActions().iterator()
-
-        for i = 0 to spells.length - 1
-            spells[i].setVisible(false)
-
+    protected static function updateForBoardLocal(Player p)
+        let boardHero = PlayerBoardHelper.getPlayerBoardHero(p)
+        
         var index = 0
-        while actionItr.hasNext()
-            let action = actionItr.next()
+        let actionsIterator = boardHero.actionsIterator()
+        while actionsIterator.hasNext()
+            let action = actionsIterator.next()
             if action.hasOption(ActionTypeOption.SPELL)
-                let spell = action castTo Spell
-                spells[index].setSpell(spell)
+                let spell = action castTo SpellAction
+                spells[index].setSpellAction(spell)
                 index++
 
-        destroy actionItr
+        for i = index to spells.length - 1
+            spells[i].setVisible(false)
 
+
+    protected static function updateForWorldLocal(Player p)
+        let hero = p.hero
+        
+        var index = 0
+        let spellIterator = hero.spellIterator()
+        while spellIterator.hasNext()
+            let spell = spellIterator.next()
+            spells[index].setSpell(spell)
+            index++
+
+        for i = index to spells.length - 1
+            spells[i].setVisible(false)

@@ -14,8 +14,6 @@ public class SkillTreeChieftain extends SkillTree
         TYPE.addListener() hero -> 
             return new SkillTreeChieftain(hero)
 
-    int rallingCryLevel = -1
-
     construct(Hero hero)
         super(TYPE, hero)
 
@@ -25,24 +23,7 @@ public class SkillTreeChieftain extends SkillTree
         skill.addLevel(2, 0, 0)
         ..addSpellTypeAsLines(spellType, 0)
         ..addLevelListener() ->
-            rallingCryLevel ++
-            hero.addSpell(RallingCrySpell.TYPE)
-        skill.addLevel(3, 0, 0)
-        ..addSpellTypeAsLines(spellType, 1)
-        ..addLevelListener() ->
-            rallingCryLevel ++
-        skill.addLevel(3, 0, 0)
-        ..addSpellTypeAsLines(spellType, 2)
-        ..addLevelListener() ->
-            rallingCryLevel ++
-        skill.addLevel(3, 0, 0)
-        ..addSpellTypeAsLines(spellType, 3)
-        ..addLevelListener() ->
-            rallingCryLevel ++
-        skill.addLevel(3, 0, 0)
-        ..addSpellTypeAsLines(spellType, 4)
-        ..addLevelListener() ->
-            rallingCryLevel ++
+            hero.learnSpell(spellType)
 
         /*
         var skill = new Skill(this, "AttackUpgrade", Icons.bTNIllidanPrisonWagon, 0, 0)

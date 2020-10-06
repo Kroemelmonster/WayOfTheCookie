@@ -2,7 +2,7 @@ package Description
 import HashMap
 import LinkedList
 import Tooltip
-import StringUtils
+import KStringUtils
 import Globals
 
 public class Description
@@ -12,36 +12,36 @@ public class Description
         create("Attack")
         ..addLine("Increases your damage with attacks.")
         ..addLine("")
-        ..addLine("Each " + StringUtils.secondaryString("Attack")
+        ..addLine("Each " + KStringUtils.secondaryString("Attack")
          + " that you have more than your opponents "
-         + StringUtils.secondaryString("Defence")
+         + KStringUtils.secondaryString("Defence")
          + " will increase your damage dealt by "
-         + StringUtils.coloredPercent(DAMAGECALC_ATTACK_VS_DEFENCE_POSITIVE / 100.0)
+         + KStringUtils.coloredPercent(DAMAGECALC_ATTACK_VS_DEFENCE_POSITIVE / 100.0)
          + " up to "
-         + StringUtils.coloredPercent(DAMAGECALC_ATTACK_VS_DEFENCE_POSITIVE_MAX / 100.0))
+         + KStringUtils.coloredPercent(DAMAGECALC_ATTACK_VS_DEFENCE_POSITIVE_MAX / 100.0))
 
         create("AttackHero")
         ..addLine("Increases the attack of all your troops.")
         ..addLine("Also increases your attackdamage by "
-         + StringUtils.coloredPercent(ATTACK_DAMAGE_PER_ATTACK / 100.0))
+         + KStringUtils.coloredPercent(ATTACK_DAMAGE_PER_ATTACK / 100.0))
         ..addLine("")
-        ..addLine("Each " + StringUtils.secondaryString("Attack")
-         + " that your troops have more than your opponents " + StringUtils.secondaryString("Defence")
+        ..addLine("Each " + KStringUtils.secondaryString("Attack")
+         + " that your troops have more than your opponents " + KStringUtils.secondaryString("Defence")
          + " will increase their damage dealt by "
-         + StringUtils.coloredPercent(DAMAGECALC_ATTACK_VS_DEFENCE_POSITIVE / 100.0)
+         + KStringUtils.coloredPercent(DAMAGECALC_ATTACK_VS_DEFENCE_POSITIVE / 100.0)
          + " up to "
-         + StringUtils.coloredPercent(DAMAGECALC_ATTACK_VS_DEFENCE_POSITIVE_MAX / 100.0))
+         + KStringUtils.coloredPercent(DAMAGECALC_ATTACK_VS_DEFENCE_POSITIVE_MAX / 100.0))
 
         create("Defence")
         ..addLine("Decreases the damage of enemies attacks.")
         ..addLine("")
-        ..addLine("Each " + StringUtils.secondaryString("Defence")
+        ..addLine("Each " + KStringUtils.secondaryString("Defence")
          + " that you have more than your opponents "
-         + StringUtils.secondaryString("Attack")
+         + KStringUtils.secondaryString("Attack")
          + " will decreases their damage dealt by "
-         + StringUtils.coloredPercent(DAMAGECALC_ATTACK_VS_DEFENCE_NEGATIVE / 100.0)
+         + KStringUtils.coloredPercent(DAMAGECALC_ATTACK_VS_DEFENCE_NEGATIVE / 100.0)
          + " up to "
-         + StringUtils.coloredPercent(DAMAGECALC_ATTACK_VS_DEFENCE_NEGATIVE_MAX / 100.0))
+         + KStringUtils.coloredPercent(DAMAGECALC_ATTACK_VS_DEFENCE_NEGATIVE_MAX / 100.0))
 
         create("Damage")
         ..addLine("This is the raw damage you would do.")
@@ -57,13 +57,13 @@ public class Description
         ..addLine("")
         ..addLine("Most Action do need theese points to be used.")
         ..addLine("Moving one cell will cost one "
-         + StringUtils.secondaryString("Actionpoint")
+         + KStringUtils.secondaryString("Actionpoint")
          + " unless stated otherwise.")
         ..addLine("Your standard Attack do cost one "
-         + StringUtils.secondaryString("Actionpoint")
+         + KStringUtils.secondaryString("Actionpoint")
          + " to use but it will deplet all remaining.")
         ..addLine("Your turn ends automaticly when you dont have any "
-         + StringUtils.secondaryString("Actionpoints")
+         + KStringUtils.secondaryString("Actionpoints")
          + " left.")
 
         create("HitPoints")
@@ -79,13 +79,13 @@ public class Description
         ..addLine("Increases the potency of most Spells.")
         ..addLine("")
         ..addLine("On default each point increases the damage of your spells by "
-         + StringUtils.coloredPercent(DAMAGE_PER_SPELLPOWER / 100.0))
+         + KStringUtils.coloredPercent(DAMAGE_PER_SPELLPOWER / 100.0))
 
         create("Wisdom")
         ..addLine("Increases the maximum Mana you have.")
         ..addLine("")
-        ..addLine("Each " + StringUtils.secondaryString("Wisdom")
-         + " increases your Mana Pool by " + StringUtils.coloredModiInt(MANA_PER_WISDOWM))
+        ..addLine("Each " + KStringUtils.secondaryString("Wisdom")
+         + " increases your Mana Pool by " + KStringUtils.coloredModiInt(MANA_PER_WISDOWM))
 
     static function extendTooltip(Tooltip tt, string keyword)
         if not bookOfWisdom.has(keyword)

@@ -10,8 +10,8 @@ import UIDialog
 public class UIWindowMenu
     protected static UIWindowBasic window
 
-    static function create()
-        window = UIWindowBasic.create(false)
+    static function create() returns UIWindowBasic
+        window = UIWindowBasic.create("Menu", false)
         ..setPointToConsoleUI(FRAMEPOINT_TOP, FRAMEPOINT_TOP)
         ..setSize(0.29, 0.35)
         ..setLevel(1000)
@@ -35,9 +35,7 @@ public class UIWindowMenu
             else
                 btnFrames.setText("Frames on")
 
+        return window
 
-    static function open(Player p)
-        window.open(p)
-
-    static function toggle(Player p)
-        window.toggle(p)
+    static function get() returns UIWindowBasic
+        return window

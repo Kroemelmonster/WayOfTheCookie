@@ -33,7 +33,7 @@ public class BoardController
         let board = target.getBoard()
         board.getInitiative().pushEntity(target, time)
         if target.getType() == EntityType.STACK
-            StatusController.add(StatusStunned.TYPE, target, StatusData.createDuration(1))
+            StatusController.apply(StatusStunned.TYPE, target, StatusData.create(1))
         next.continue()
 
     /** Use this to summon / create a Stack mid Fight */
@@ -128,11 +128,8 @@ public class BoardController
         UIController.onTurnEnd(entity)
         
         if isWaiting == false and entity.isAlive()
-            let actionItr = entity.getActions().iterator()
-            while actionItr.hasNext()
-                let action = actionItr.next()
+            entity.forEachAction() action ->
                 action.tickCooldown()
-            destroy actionItr
 
             entity.getTriggers().triggerOnTurnEnd() ->
                 next.continue()

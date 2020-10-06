@@ -62,7 +62,7 @@ public class UIButtonIcon extends UIButton
         counterFrame.setVisible(amount > 0)
         counterTextFrame.setText(amount.toString())
 
-    function enable()
+    override function enable()
         self.setEnabled(true)
         blockFrame.setVisible(false)
 
@@ -71,7 +71,7 @@ public class UIButtonIcon extends UIButton
         blockFrame.setTexture(blockingTexture)
         blockFrame.setVisible(true)
 
-    function disable()
+    override function disable()
         self.setEnabled(false)
         blockFrame.setVisible(false)
 

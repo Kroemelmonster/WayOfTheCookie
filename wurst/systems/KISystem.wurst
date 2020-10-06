@@ -9,6 +9,7 @@ import initlater WaitAction
 import initlater DefendAction
 import BoardTrigger
 import BoardEntity
+import ActionType
 
 public class KISystem
     static function getBestTarget(LinkedList<BoardStack> targets) returns BoardStack
@@ -31,56 +32,59 @@ public class KISystem
 
         return result
 
-
-    @inline
     protected static function isActionWait(Action action) returns boolean
         return action instanceof WaitAction
 
-    @inline
     protected static function isActionDefend(Action action) returns boolean
         return action instanceof DefendAction
 
-    @inline
+    protected static function isActionDefault(Action action) returns boolean
+        return action.hasOption(ActionTypeOption.DEFAULT)
+
     protected static function isActionSpecial(Action action) returns boolean
-        return isActionWait(action) == false and isActionDefend(action) == false
+        return not isActionWait(action) and not isActionDefend(action) and not isActionDefault(action)
 
     protected static function executeDefendOrSkipAction(BoardEntity entity)
-        let itr = entity.getActions().iterator()
+        let itr = entity.actionsIterator()
         Action defendOrSkipAction = null
         while itr.hasNext() and defendOrSkipAction == null
             let action = itr.next()
             if isActionDefend(action) and action.canActivate()
                 defendOrSkipAction = action
+
         destroy itr
         defendOrSkipAction.activate()
 
     protected static function executeDefaultAction(BoardEntity entity)
         let defaultAction = entity.getDefaultAction()
-        defaultAction.executeForKI() (status) ->
+        defaultAction.executeForKI() status ->
             if status == 1
                 doAfter(0.2) ->
                     // there is litterly nothing you can doo ?
                     executeDefendOrSkipAction(entity)
 
-    protected static function executeNextAction(LLIterator<Action> itr, BoardEntity entity, SequenzListenerStatus next)
+    /**
+        Tries to execute a primary action
+    */
+    protected static function executeNextPrimaryAction(LLIterator<Action> itr, BoardEntity entity, SequenzListenerStatus next)
         if itr.hasNext()
             let action = itr.next()
-            if isActionSpecial(action) and action.canActivate()
-                action.executeForKI() (int status) ->
+            if action.showAsPrimary() and action.canActivate()
+                action.executeForKI() status ->
                     if status == 1 // he did not do anything
-                        executeNextAction(itr, entity, next)
+                        executeNextPrimaryAction(itr, entity, next)
                     else if status == 0
                         next.continue(1)
             else
-                executeNextAction(itr, entity, next)
+                executeNextPrimaryAction(itr, entity, next)
             
         else
             next.continue(0)
 
     static function executeTurn(BoardEntity entity)
         doAfter(0.2) ->
-            let itr = entity.getActions().iterator()
-            executeNextAction(itr, entity) (status) ->
+            let itr = entity.actionsIterator()
+            executeNextPrimaryAction(itr, entity) (status) ->
                 destroy itr
                 if status == 0
                     executeDefaultAction(entity)

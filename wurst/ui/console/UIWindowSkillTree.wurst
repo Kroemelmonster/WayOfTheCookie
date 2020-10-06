@@ -37,13 +37,16 @@ public class UIWindowSkillTree
     protected static UIButtonIcon array[15] skills
 
 
-    static function create()
+    static function create() returns UIWindowBasic
         let tabHeight = 0.03
         let tabPaddingTop = 0.01
         let width = 0.29
-        window = UIWindowBasic.create(true)
+        window = UIWindowBasic.create("SkillTree", true)
         ..setPointToConsoleUI(FRAMEPOINT_TOPLEFT, FRAMEPOINT_TOPLEFT, 0, -(tabHeight - tabPaddingTop))
         ..setSize(WIDTH, 0.35 -(tabHeight - tabPaddingTop))
+
+        window.onOpen() (Player p) ->
+            update(p)
 
         let backdropPadding = 0.01
         handleBackground = createUIFrame("BACKDROP", window)
@@ -90,6 +93,11 @@ public class UIWindowSkillTree
             if window.isVisible(p)
                 update(p)
 
+        return window
+
+    static function get() returns UIWindowBasic
+        return window
+
     static function initHero(Hero h)
         updateTabs(h)
         if not h.getPlayer().isLocal()
@@ -100,7 +108,7 @@ public class UIWindowSkillTree
     private static function createTab(int index, real width, real height) returns UIButton
         tabs[index] = UIButton.create(true, window)
         ..setSize(width, height)
-        ..setIcon("UI/Console/WoodPlanket.dds")
+        ..setBackground("UI/Console/WoodPlanket.dds")
         ..onClick() -> 
             changeToTab(GetTriggerPlayerData(), index)
 
@@ -138,11 +146,7 @@ public class UIWindowSkillTree
                 skills[i].setPoint(FRAMEPOINT_CENTER, handlInnerFrame, FRAMEPOINT_TOPLEFT, innerWidth * skill.x, innerHeight * -skill.y)
                 skills[i].setVisible(true)
                 skills[i].setCounter(skill.level)
-                skills[i].setIcon(skill.icon)
+                skills[i].setBackground(skill.icon)
                 skills[i].setGlowVisible(skill.canLevelUp())
             else
                 skills[i].setVisible(false)
-        
-
-    static function toggle(Player p)
-        window.toggle(p)

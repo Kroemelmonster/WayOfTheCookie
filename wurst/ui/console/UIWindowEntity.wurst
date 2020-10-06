@@ -4,7 +4,7 @@ import UIHandle
 import Tooltip
 import StackType
 import StatsModifier
-import StringUtils
+import KStringUtils
 import PlayerData
 import Stack
 import Scheduler
@@ -20,8 +20,10 @@ import UIInteractableStatInfo
 import UIInteractable
 import BoardEntity
 import TalentType
+import Status
 
 public class UIWindowEntityInfo
+    private BoardEntity entity
     private HasEntityStats entityStats
 
     protected static function get(Player p) returns UIWindowEntityInfo
@@ -30,9 +32,11 @@ public class UIWindowEntityInfo
     protected static function setEntity(Player p, ArmyStack stack)
         let info = get(p)
         info.entityStats = stack.stats
+        info.entity = null
 
     protected static function setBoardEntity(Player p, BoardEntity entity) returns boolean
         let info = get(p)
+        info.entity = entity
         if entity.getType() == EntityType.STACK
             info.entityStats = entity.toStack().stats
             return true
@@ -40,6 +44,14 @@ public class UIWindowEntityInfo
 
     protected static function getStats(Player p) returns HasEntityStats
         return get(p).entityStats
+
+    protected static function forEachStatus(Player p, LLItrClosure<StatusStats> itr)
+        let entity = get(p).entity
+        if entity != null
+            entity.forEachStatusStats(itr)
+        else
+            destroy itr
+            
 
 class UITalent extends UIInteractable
     protected static function create(UIHandle parent) returns UITalent
@@ -60,12 +72,39 @@ class UITalent extends UIInteractable
         onMouseLeave() ->
             UITooltip.hide(GetTriggerPlayerData())
 
-    protected function setTalent(TalentStats talent)
+    protected function setStat(TalentStats talent)
         setVisible(true)
         hanldeIcon.setTexture(talent.getIcon())
         this.talent = talent
 
-    protected function removeTalent()
+    protected function hide()
+        setVisible(false)
+
+class UIStatus extends UIInteractable
+    protected static function create(UIHandle parent) returns UIStatus
+        return new UIStatus(parent)
+
+    protected framehandle hanldeIcon
+    protected StatusStats status
+
+    private construct(UIHandle parent)  
+        super(createUIFrame("MENU", parent, true))
+        setSize(0.023, 0.023)
+        hanldeIcon = createUIFrame("BACKDROP", self)
+        ..setAllPoints(self)
+
+        onMouseEnter() () ->
+            UITooltip.display(GetTriggerPlayerData(), 
+                status.createTooltip(), TooltipAnchor.LEFT_BOTTOM , self)
+        onMouseLeave() ->
+            UITooltip.hide(GetTriggerPlayerData())
+
+    protected function setStat(StatusStats status)
+        setVisible(true)
+        hanldeIcon.setTexture(status.getIcon())
+        this.status = status
+
+    protected function hide()
         setVisible(false)
 
 public class UIWindowEntity
@@ -82,11 +121,15 @@ public class UIWindowEntity
     protected static UIInteractableStatInfo infoLeadership
 
     protected static UITalent array[10] handleTalents
+    protected static UIStatus array[10] handleStatus
 
     static function create()
-        window = UIWindowBasic.create(true)
+        window = UIWindowBasic.create("EntityStats", true)
         ..setPointToConsoleUI(FRAMEPOINT_TOPRIGHT, FRAMEPOINT_TOPRIGHT)
         ..setSize(0.25, 0.25)
+
+        window.onOpen() (Player p) ->
+            update(p)
     
         let iconSize = 0.04
         handleIcon = createUIFrame("BACKDROP", window)
@@ -183,30 +226,39 @@ public class UIWindowEntity
              + Tooltip.primaryString(p.hero.getMaxAmountOfStackTypeRemainingBasedOnLeadership(stackType).toString())
              + " more Stacks of " + Tooltip.secondaryString(stackType.name) + ".")*/
             UITooltip.display(GetTriggerPlayerData(), tt, TooltipAnchor.LEFT_BOTTOM , infoLeadership)
+        
+        let paddingSmallerIcons = 0.002
 
         handleTalents[0] = UITalent.create(window)
         ..setPoint(FRAMEPOINT_TOPLEFT, infoHP, FRAMEPOINT_BOTTOMLEFT, 0, -infoPadding)
     
-        let paddingSmallerIcons = 0.002
         for i = 1 to handleTalents.length - 1
             handleTalents[i] = UITalent.create(window)
             ..setPoint(FRAMEPOINT_TOPLEFT, handleTalents[i - 1], FRAMEPOINT_TOPRIGHT, paddingSmallerIcons, 0)
+
+        handleStatus[0] = UIStatus.create(window)
+        ..setPoint(FRAMEPOINT_TOPLEFT, handleTalents[0], FRAMEPOINT_BOTTOMLEFT, 0, -infoPadding)
+    
+        for i = 1 to handleStatus.length - 1
+            handleStatus[i] = UIStatus.create(window)
+            ..setPoint(FRAMEPOINT_TOPLEFT, handleStatus[i - 1], FRAMEPOINT_TOPRIGHT, paddingSmallerIcons, 0)
 
         Scheduler.onTime() p ->
             if window.isVisible(p)
                 update(p)
 
+    static function get() returns UIWindowBasic
+        return window
+
     static function open(Player p, ArmyStack armyStack)
         UIWindowEntityInfo.setEntity(p, armyStack)
         window.open(p)
-        update(p)
 
     static function open(Player p, BoardEntity entity)
-        let isAllowed =UIWindowEntityInfo.setBoardEntity(p, entity)
+        let isAllowed = UIWindowEntityInfo.setBoardEntity(p, entity)
         if not isAllowed
             return
         window.open(p)
-        update(p)
 
     private static function update(Player p)
         if not p.isLocal()
@@ -227,18 +279,25 @@ public class UIWindowEntity
         
         
         for i = 0 to handleTalents.length - 1
-            handleTalents[i].removeTalent()
+            handleTalents[i].hide()
         
         var index = 0
-        stats.forEachTalentStat() (TalentStats t) ->
-            handleTalents[index].setTalent(t)
+        stats.forEachTalentStat() talentStat ->
+            handleTalents[index].setStat(talentStat)
             index ++
 
-
+        for i = 0 to handleStatus.length - 1
+            handleStatus[i].hide()
+        
+        index = 0
+        UIWindowEntityInfo.forEachStatus(p) statusStats ->
+            handleStatus[index].setStat(statusStats)
+            index ++
+            
     private static function damageToText(realRange basisDmg, realRange modifiedDmg) returns string
         let dmgDifference = modifiedDmg.avg() - basisDmg.avg()
         let roundedBasisDmg = basisDmg.round()
-        return roundedBasisDmg.min.toString() + " - " + roundedBasisDmg.max.toString() + StringUtils.coloredModiReal(dmgDifference, 1)
+        return roundedBasisDmg.min.toString() + " - " + roundedBasisDmg.max.toString() + KStringUtils.coloredModiReal(dmgDifference, 1)
     
     private static function rangeToText(intRange attackRange) returns string
         if attackRange.max == 1
@@ -248,27 +307,14 @@ public class UIWindowEntity
         return attackRange.min.toString() + " - " + attackRange.max.toString() 
 
     private static function apToText(int basisAP, int modifiedAP, int modifiedMoveAP) returns string
-        var str = basisAP.toString() + StringUtils.coloredModiInt(basisAP - modifiedAP)
+        var str = basisAP.toString() + KStringUtils.coloredModiInt(basisAP - modifiedAP)
         if modifiedMoveAP > 0 and modifiedMoveAP != modifiedAP
             str += " | "
             if modifiedMoveAP > modifiedAP
-                str += StringUtils.coloredString(StringUtils.COLOR_POSITIVE, " " + modifiedMoveAP.toString())
+                str += KStringUtils.coloredString(KStringUtils.COLOR_POSITIVE, " " + modifiedMoveAP.toString())
             else
-                str += StringUtils.coloredString(StringUtils.COLOR_NEGATIVE, " " + modifiedMoveAP.toString())
+                str += KStringUtils.coloredString(KStringUtils.COLOR_NEGATIVE, " " + modifiedMoveAP.toString())
         return str
-
-    private static function updateTalents(LinkedList<Talent> talents)
-        for i = 0 to handleTalents.length - 1
-            handleTalents[i].removeTalent()
-        
-        let itr = talents.iterator()
-        var index = 0
-        while itr.hasNext() and index < handleTalents.length
-            let talent = itr.next()
-            if not talent.isHidden()
-                handleTalents[index].setTalent(talent)
-                index ++
-        destroy itr
 
     /*
 

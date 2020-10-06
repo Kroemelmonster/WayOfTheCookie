@@ -117,7 +117,7 @@ public class UITooltip
         if not p.isLocal()
             return
         self.clearAllPoints()
-        if anchor != null
+        if reference != null
             switch anchor
                 case RIGHT_BOTTOM
                     self.setPoint(FRAMEPOINT_TOPLEFT, reference, FRAMEPOINT_TOPRIGHT)

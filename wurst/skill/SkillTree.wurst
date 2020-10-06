@@ -7,9 +7,11 @@ import SkillTreeSpirit
 import initlater Hero
 import HeroData
 import Tooltip
-import StringUtils
-import Spell
+import KStringUtils
+import SpellAction
 import ActionType
+import initlater SpellType
+import KUtil
 
 public interface SkillStackUpdateListener
     function onStackUpdate(ArmyStack armyStack, boolean add)
@@ -66,7 +68,11 @@ public class SkillLevel
         desc.add(str)
 
     function addSpellTypeAsLines(ActionType actionType, int level)
-        desc.addAll(actionType.createTooltipLines(level))
+        desc.addAllAndDestroy(actionType.createTooltipLines(level))
+
+    function addSpellTypeAsLines(SpellType spellType, int level)
+        // TODO
+        desc.addAllAndDestroy(new LinkedList<string>())
 
     function createTooltipLines() returns LinkedList<string>
         return desc.copy()
@@ -168,31 +174,31 @@ public class Skill
         if level > 0
             tt.addLine("")
 
-        tt.addLine(StringUtils.secondaryString("Next Level"))
+        tt.addLine(KStringUtils.secondaryString("Next Level"))
         let nextLevel = levels.get(level)
         nextLevel.cost.setupTooltipCost(tt, tree.hero)
         
         if nextLevel.skillTreeLevelRequirment > 0
             if tree.level >= nextLevel.skillTreeLevelRequirment 
-                tt.addLine(StringUtils.stat("Requires Level", StringUtils.COLOR_POSITIVE, nextLevel.skillTreeLevelRequirment))
+                tt.addLine(KStringUtils.stat("Requires Level", KStringUtils.COLOR_POSITIVE, nextLevel.skillTreeLevelRequirment))
             else
-                tt.addLine(StringUtils.stat("Requires Level", StringUtils.COLOR_NEGATIVE, nextLevel.skillTreeLevelRequirment))
+                tt.addLine(KStringUtils.stat("Requires Level", KStringUtils.COLOR_NEGATIVE, nextLevel.skillTreeLevelRequirment))
 
         if nextLevel.requirements != null
             for requirement in nextLevel.requirements
                 let txt = requirement.skill.name + " ["+(requirement.level + 1).toString() + "]"
                 if requirement.learned
-                    tt.addLine(StringUtils.stat("Requires", StringUtils.COLOR_POSITIVE, txt))
+                    tt.addLine(KStringUtils.stat("Requires", KStringUtils.COLOR_POSITIVE, txt))
                 else
-                    tt.addLine(StringUtils.stat("Requires", StringUtils.COLOR_NEGATIVE, txt))
+                    tt.addLine(KStringUtils.stat("Requires", KStringUtils.COLOR_NEGATIVE, txt))
 
         if nextLevel.blockedBySkill != null
             for blockingSkill in nextLevel.blockedBySkill
                 let txt = blockingSkill.name
                 if blockingSkill.level == 0
-                    tt.addLine(StringUtils.stat("Blocked by", StringUtils.COLOR_POSITIVE, txt))
+                    tt.addLine(KStringUtils.stat("Blocked by", KStringUtils.COLOR_POSITIVE, txt))
                 else
-                    tt.addLine(StringUtils.stat("Blocked by", StringUtils.COLOR_NEGATIVE, txt))
+                    tt.addLine(KStringUtils.stat("Blocked by", KStringUtils.COLOR_NEGATIVE, txt))
 
         tt.addLine("")
         for line in nextLevel.desc

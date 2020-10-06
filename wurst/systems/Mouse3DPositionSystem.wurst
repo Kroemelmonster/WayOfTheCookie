@@ -14,7 +14,7 @@ class Mouse3DPositionSystem
 
     @inline
     static function setEnabled(Player p, boolean enable)
-        if not enable and canPlayerInteract(p) and p.hasBoard()
+        if not enable and canPlayerInteract(p) and p.isPlayingOnABoard()
             MouseContext.onMouseEnter(p, mousePosition(null, null))
         p.mouse3DEnabled = enable
     
@@ -55,10 +55,13 @@ class Mouse3DPositionSystem
         if not canPlayerInteract(p)
             return
     
+        mousebuttontype btn = null
         if isClickEvent
-            UIWindow.closeCurrent(GetTriggerPlayerData())
+            btn = BlzGetTriggerPlayerMouseButton()
+            if btn == MOUSE_BUTTON_TYPE_LEFT
+                UIWindow.closeAll(GetTriggerPlayerData())
 
-        if not p.hasBoard()
+        if not p.isPlayingOnABoard()
             return
              
         let cell = p.playingBoard.getCellBasedOnCoords(coord)
@@ -68,9 +71,8 @@ class Mouse3DPositionSystem
             let angle = (cell.getCoord().angleTo(coord).degrees() + 390.0) % 360
             nearby = cell.getNeighbour((angle / 60.0).floor())
         
-
         if isClickEvent
-            onMouseClick(mousePosition(cell, nearby), p, BlzGetTriggerPlayerMouseButton())
+            onMouseClick(mousePosition(cell, nearby), p, btn)
         else
             MouseContext.onMouseEnter(p, mousePosition(cell, nearby))
             

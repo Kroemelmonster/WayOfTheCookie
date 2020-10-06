@@ -12,7 +12,7 @@ import Hero
 import UIMenuBoardConsole
 import BoardEntity
 import Tooltip
-import StringUtils
+import KStringUtils
 
 public class InitiativeEntity
     protected BoardEntity boardEntity = null
@@ -265,8 +265,8 @@ public class InitiativeList
 
     static function extendTooltip(Tooltip tt, int initiative)
         tt.addLine("Every time this units ends its turn it has to wait "
-        + StringUtils.primaryString(intiativeToDisplayTime(initiative).toString())
-        + " " + StringUtils.secondaryString("timeunits") + " until it can act again")
+        + KStringUtils.primaryString(intiativeToDisplayTime(initiative).toString())
+        + " " + KStringUtils.secondaryString("timeunits") + " until it can act again")
 
     @inline
     static function intiativeToDisplayTime(int initiative) returns int

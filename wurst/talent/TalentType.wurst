@@ -16,9 +16,9 @@ public interface TalentStats extends GeneratesTooltip, HasIcon
 public class TalentType extends Icon implements TalentStats
 
     static function addStackDefaultAction(StackType stackType)
-        stackType.talents.add(WalkAndAttackAction.TYPE.getTalent())
-        stackType.talents.add(DefendAction.TYPE.getTalent())
         stackType.talents.add(WaitAction.TYPE.getTalent())
+        stackType.talents.add(DefendAction.TYPE.getTalent())
+        stackType.talents.add(WalkAndAttackAction.TYPE.getTalent())
 
     protected TalentCreateListener listener
     protected GeneratesTooltip tooltipListener

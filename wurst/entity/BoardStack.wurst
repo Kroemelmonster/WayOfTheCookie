@@ -30,10 +30,6 @@ public class BoardStack extends BoardEntity
 
     private texttag tt
 
-    
-    private DefaultAction defaultAction = null
-    private LinkedList<Action> actions
-    private integer currentSelectedAction = 0
     private LinkedList<Passive> passiveActions
 
     BoardStackStats stats
@@ -41,83 +37,31 @@ public class BoardStack extends BoardEntity
     construct(Player p, ArmyStack stack)
         super(EntityType.STACK, null)
         this.p = p
-        this.actions = new LinkedList<Action>
         this.passiveActions = new LinkedList<Passive>
         this.stats = new BoardStackStats(this, stack.stats, stack.getAmount())
         this.armyStack = stack
         this.stackType = stack.getStackType()
         stack.representive = this
 
-    @inline
+        resetCurrentSelectedAction()
+
     override function getCell() returns Cell
         return cell
 
-    @inline
     override function getPlayer() returns Player
         return p
 
-    @inline
     override function getIcon() returns string
         return stackType.icon
 
-    @inline
-    function getName() returns string
+    override function getName() returns string
         return stackType.name
 
-    @inline
     function getStackType() returns StackType
         return stackType
 
-    @inline
     function getArmyStack() returns ArmyStack
         return armyStack
-
-    override function resetCurrentSelectedAction() returns boolean
-        if currentSelectedAction == -1
-            return false
-        currentSelectedAction = -1
-        return true
-    
-    @inline
-    override function setCurrentAction(Action action)
-        currentSelectedAction = actions.indexOf(action)
-
-    @inline
-    override function getDefaultAction() returns DefaultAction
-        return defaultAction
-
-    @inline
-    function forEachAction(LLItrClosure<Action> itr)
-        actions.forEach(itr)
-
-    @inline
-    function actionIterator() returns LLIterator<Action>
-        return actions.iterator()
-
-    @inline
-    function passiveActionIterator() returns LLIterator<Passive>
-        return passiveActions.iterator()
-
-    @inline
-    override function getActions() returns LinkedList<Action>
-        return actions
-    
-    override function getAction(int index) returns Action
-        if index == -1
-            return defaultAction
-        return actions.get(index)
-
-    @inline
-    override function getCurrentAction() returns Action
-        return getAction(currentSelectedAction)
-
-    function addAction(Action action)
-        if action.hasOption(ActionTypeOption.DEFAULT)
-            if defaultAction != null
-                Log.error("Tried to add an Default Action to "+getName()+" while it allready has one -> opverwriting it")
-            defaultAction = action castTo DefaultAction
-        else
-            actions.add(action)
 
     function addPassive(Passive passive)
         passiveActions.add(passive)
@@ -233,17 +177,10 @@ public class BoardStack extends BoardEntity
         removeStackRelatedThingsFromBoard()
         destroyEntity()
 
-        if actions != null
-            for action in actions
-                destroy action
-            destroy actions
         if passiveActions != null
             for action in passiveActions
                 destroy action
             destroy passiveActions
-        if defaultAction != null
-            destroy defaultAction
-
         if armyStack.isSummoned()
             destroy armyStack
         destroy stats

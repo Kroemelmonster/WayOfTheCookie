@@ -4,33 +4,30 @@ import initlater BoardEntity
 import initlater StatusType
 import BoardTrigger
 import Tooltip
+import Icon
+
+public interface StatusStats extends GeneratesTooltip, HasIcon
 
 public class StatusData
     int duration
-    int firstIntValue
-    real firstRealValue
+    protected int array[10] intData
 
-    construct(int duration, int firstIntValue, real firstRealValue)
+    construct(int duration)
         this.duration = duration
-        this.firstIntValue = firstIntValue
-        this.firstRealValue = firstRealValue
 
     static function create() returns StatusData
-        return new StatusData(0, 0, 0)
+        return create(0)
 
-    static function createI(int firstValue) returns StatusData
-        return new StatusData(0, firstValue, 0)
+    static function create(int duration) returns StatusData
+        return new StatusData(duration)
 
-    static function createDuration(int duration) returns StatusData
-        return createDurationI(duration, 0)
+    function setIntData(int where, int value)
+        intData[where] = value
 
-    static function createDurationI(int duration, int firstValue) returns StatusData
-        return new StatusData(duration, firstValue, 0)
+    function getIntData(int where) returns int
+        return intData[where]
 
-    static function createDurationR(int duration, real firstValue) returns StatusData
-        return new StatusData(duration, 0, firstValue)
-
-public abstract class Status
+public abstract class Status implements StatusStats
     protected StatusType statusType
     protected BoardEntity entity
     protected BoardTrigger onEndListener
@@ -45,11 +42,14 @@ public abstract class Status
     function getType() returns StatusType
         return statusType
 
-    function getIcon() returns string
+    override function getIcon() returns string
         return statusType.getIcon()
+
+    override function getName() returns string
+        return statusType.getName()
     
-    function update(StatusData data)
-        updateInner(data)
+    function refresh(StatusData data)
+        refreshInner(data)
         destroy data
 
     /** call this only ONCE when you want to purge a buff from a unit that is no longer alive 
@@ -58,10 +58,9 @@ public abstract class Status
         But since you should only call this on a dead stack, it wont trigger anything anyway **/
     abstract function hide()
 
-    abstract function updateInner(StatusData data)
+    abstract function refreshInner(StatusData data)
 
-    /** Always use this tooltip instantly with intend to destroy it **/
-    abstract function createCurrentTooltip() returns Tooltip
+    override abstract function createTooltip() returns Tooltip
 
     function kill()
         let me = this

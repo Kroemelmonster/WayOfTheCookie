@@ -12,7 +12,7 @@ import InitiativeList
 import ActionCost
 import UITooltip
 import Tooltip
-import StringUtils
+import KStringUtils
 import ActionType
 import BoardEntity
 import LinkedList
@@ -56,8 +56,8 @@ public class WaitAction extends InstantStackAction
         let tt = createBasicTooltip()
         if canActivate()
             // TODO maybe fo this better ? idont know
-            let str = StringUtils.primaryString((InitiativeList.intiativeToDisplayTime(stack.stats.getInitiative()) / 2.0).round().toString())
-            + " " + StringUtils.secondaryString("timeunits")
+            let str = KStringUtils.primaryString((InitiativeList.intiativeToDisplayTime(stack.stats.getInitiative()) / 2.0).round().toString())
+            + " " + KStringUtils.secondaryString("timeunits")
             tt.addLine("Postpone the turn by "+str)
         else
             tt.addLine("You cant postpone again")

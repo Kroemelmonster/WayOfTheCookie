@@ -9,9 +9,11 @@ import BoardEntity
 import StatusRallingCry
 import LinkedList
 import Tooltip
+import KStringUtils
+import KUtil
 
 interface StatusCreateListener
-    function create(BoardEntity entity) returns Status
+    function create(BoardEntity entity, StatusData data) returns Status
 
 interface StatusCreateTooltipLinesListener
     function create(StatusData data) returns LinkedList<string>
@@ -27,12 +29,9 @@ public class StatusType
         this.name = name
 
     static function setup()
-        AilmentBleeding.setup()
-        AilmentPoison.setup()
         StatusStunned.setup()
         StatusPurged.setup()
-        StatusRallingCryStack.setup()
-        StatusRallingCryHero.setup()
+        StatusRallingCry.setup()
         
     function setCreationListener(StatusCreateListener listener)
         this.listener = listener
@@ -40,8 +39,13 @@ public class StatusType
     function setTooltipListener(StatusCreateTooltipLinesListener listener)
         this.tooltipLinesListener = listener
 
-    function createNew(BoardEntity entity) returns Status
-        return listener.create(entity)
+    /** Pls use the StatusController to apply and remove stati */
+    function applyNewStatusTo(BoardEntity entity, StatusData data) returns Status
+        let status = listener.create(entity, data)
+        entity.addStatus(status)
+        if data != null
+            destroy data
+        return status
 
     function getIcon() returns string
         return icon
@@ -50,12 +54,15 @@ public class StatusType
         return name
 
     function createTooltipLines() returns LinkedList<string>
-        return tooltipLinesListener.create(null)
-        ..addtoStart(name)
+        return createTooltipLines(null)
 
     function createTooltipLines(StatusData data) returns LinkedList<string>
-        return tooltipLinesListener.create(data)
-        ..addtoStart(name)
+        let lines = new LinkedList<string>()
+        ..add(KStringUtils.stat("Status", KStringUtils.secondaryString(name)))
+        ..addAllAndDestroy(tooltipLinesListener.create(data))
+        if data != null
+            destroy data
+        return lines
 
     function createTooltip() returns Tooltip
         return createTooltip(null)

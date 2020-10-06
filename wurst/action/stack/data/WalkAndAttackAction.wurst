@@ -30,6 +30,7 @@ import UITooltip
 import Tooltip
 import ActionType
 import BoardEntity
+import Icons
 
 function subActionMoveEnd(Board board, BoardStack stack, int remainingMoveActionPoints, SequenzListenerStatus next, int status)
     if status == 0
@@ -117,7 +118,7 @@ public function subActionAttack(int cost, BoardStack attacker, BoardStack defend
 public class WalkAndAttackAction extends DefaultStackAction
     static ActionType TYPE
     static function setup()
-        TYPE = DefaultStackAction.createType("Attack")
+        TYPE = DefaultStackAction.createType("Attack", Icons.bTNAttack)
         TYPE.onCreate() entity -> 
             return new WalkAndAttackAction(entity)
         TYPE.onCreateTooltipLines() amount -> 

@@ -1,6 +1,6 @@
 package DamageAndResistance
 import Tooltip
-import StringUtils
+import KStringUtils
 
 public enum DamageType
     PHYISICAL
@@ -47,7 +47,7 @@ public class Resistance
                 return phyiscal + baseRes 
 
     function extendTooltip(Tooltip tt)
-        tt.addLine("Physical Resistance : " + StringUtils.coloredPercent(getRes(DamageType.PHYISICAL) / 100))
-        tt.addLine("Magic Resistance : " + StringUtils.coloredPercent(getRes(DamageType.MAGIC) / 100))
-        tt.addLine("Fire Resistance : " + StringUtils.coloredPercent(getRes(DamageType.FIRE) / 100))
-        tt.addLine("Poison Resistance : " + StringUtils.coloredPercent(getRes(DamageType.POISON) / 100))
+        tt.addLine("Physical Resistance : " + KStringUtils.coloredPercent(getRes(DamageType.PHYISICAL) / 100))
+        tt.addLine("Magic Resistance : " + KStringUtils.coloredPercent(getRes(DamageType.MAGIC) / 100))
+        tt.addLine("Fire Resistance : " + KStringUtils.coloredPercent(getRes(DamageType.FIRE) / 100))
+        tt.addLine("Poison Resistance : " + KStringUtils.coloredPercent(getRes(DamageType.POISON) / 100))

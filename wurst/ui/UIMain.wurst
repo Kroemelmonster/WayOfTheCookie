@@ -33,8 +33,6 @@ class UIMain
 	static function load(integer part)
 		if part == 0
 			UIMenuBoardConsole.create()
-		if part == 1
-			UIWindowSpellBook.create()
 		else if part == 2
 			UIMenuConsole.create()
 			UITooltip.create()

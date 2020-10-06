@@ -65,7 +65,7 @@ class InitiativeCommandButton extends UIButtonIcon
         if time > 0
             handleTime.setText(time.toString())
 
-        setIcon(entity.getIcon())
+        setBackground(entity.getIcon())
         let player1 = entity.getBoard().getPlayer(0)
         if player1.isLocal()
             setBorderBasedOnPlayerRelationship(player1.getRelationshipStatusTo(entity.getPlayer()))

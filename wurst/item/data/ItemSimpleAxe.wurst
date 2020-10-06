@@ -8,7 +8,7 @@ import StackType
 import initlater KItemType
 import LinkedList
 import Tooltip
-import StringUtils
+import KStringUtils
 
 public class ItemSimpleAxe extends KItem
     static KItemType TYPE
@@ -26,7 +26,7 @@ public class ItemSimpleAxe extends KItem
 
     private static function createSpecificTooltip(ItemSimpleAxe i) returns Tooltip
         return Tooltip.create(TYPE.getName())
-        ..addLine("Adds " + StringUtils.primaryString(i.value.toString())
+        ..addLine("Adds " + KStringUtils.primaryString(i.value.toString())
         + " Damage to all " + i.family.name)
 
     private int value

@@ -38,13 +38,19 @@ public class StackTypes
     static StackType FOREST_TROLL_BERSERKER
     static StackType FOREST_TROLL_HIGH_PRIEST
     
-    static LinkedList<StackType> list = new LinkedList<StackType>
+    protected static LinkedList<StackType> all = new LinkedList<StackType>
+
+    static function forEach(LLItrClosure<StackType> itr)
+        all.forEach(itr)
+
+    static function allIterator() returns LLIterator<StackType>
+        return all.iterator()
 
 class StackTypesDefinition
     private static function createDefault(integer unitId, integer armyId, string icon, StackSoundSet soundSet, int level, int leadership, int weight) returns StackType
         let stackType = new StackType(unitId, armyId, icon, soundSet, GetObjectName(unitId), level, leadership, (leadership * (1 + 0.4 * level)).round(), weight)
         TalentType.addStackDefaultAction(stackType)
-        StackTypes.list.add(stackType)
+        StackTypes.all.add(stackType)
         return stackType
     
     private static function createMelee(integer unitId, integer armyId, string icon, StackSoundSet soundSet, int level, int leadership, int weight) returns StackType

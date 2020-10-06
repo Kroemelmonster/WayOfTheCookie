@@ -8,7 +8,6 @@ import KUtil
 import BoardController
 
 import Action
-import StackType
 
 import initlater Cell
 import initlater BoardStack
@@ -16,90 +15,75 @@ import UIMenuActionConsole
 import DelayAnimation
 import Damage
 import CastAnimation
-import BoardTrigger
-import Spell
+import SpellAction
 import BoardHero
 import BoardEntity
-import SkillTreeTempestarii
-import SkillTree
-import Globals
 import StatusType
 import StatusController
 import Status
 import UIController
 import StatusPurged
 import ActionCost
-import StringUtils
+import KStringUtils
 import Tooltip
 import UITooltip
 import DamageAndResistance
-import ActionType
+import initlater SpellType
+import HeroData
+import Spell
 
-public class LightningBoltSpell extends Spell
-    static ActionType TYPE
+public class LightningBoltSpell extends SpellAction
+    static SpellType TYPE
     static function setup()
         PURGE_DEBUFF = StatusPurged.TYPE
-        TYPE = Spell.createType("Lightning Bolt", "Icons\\BTNLightningBolt.blp")
-        TYPE.onCreate() entity -> 
-            return new LightningBoltSpell(entity)
-        TYPE.onCreateTooltipLines() level -> 
-            return createTooltipLines(level, 0, 0, 0, true)
+        TYPE = SpellAction.createType("Lightning Bolt", "Icons\\BTNLightningBolt.blp")
+        TYPE.addLevel(ActionCostPreset.createWithMana(1, true, 4), HeroDataChange.create(0, 0, 1))
+        ..setIntData(DAMAGE, 60)
+        ..setIntData(SLOW, 1)
+        TYPE.addLevel(ActionCostPreset.createWithMana(1, true, 5), HeroDataChange.create(0, 0, 2))
+        ..setIntData(DAMAGE, 130)
+        ..setIntData(SLOW, 1)
+        TYPE.addLevel(ActionCostPreset.createWithMana(1, true, 6), HeroDataChange.create(0, 0, 3))
+        ..setIntData(DAMAGE, 210)
+        ..setIntData(SLOW, 2)
+        TYPE.onActionCreate() (entity, spell) -> 
+            return new LightningBoltSpell(entity, spell)
+        TYPE.onCreateTooltipLines() (level, spellStats) -> 
+            return createTooltipLines(level, spellStats)
 
-    private static constant ActionCostPreset BASE_COST = ActionCostPreset.create(1, true, 0)
-    private static constant int array[5] MANA_COST = [4, 5, 6, 7, 8]
-    private static constant int array[5] DAMAGE = [60, 130, 210, 300, 500]
+    private static constant int DAMAGE = 0
+    private static constant int SLOW = 1
+    private static StatusType PURGE_DEBUFF
+
     private static constant DamagePreview damagePreview = DamagePreview.create(SourceType.SPELL, DamageType.MAGIC)
-    static constant int array[3] STUN_DURATION = [100, 200, 400]
-    static constant int array[3] PURGE_SLOW = [1, 2, 3]
-    static StatusType PURGE_DEBUFF
-
-    @inline
-    private static function createPurgeStatusData(int purgeLevel) returns StatusData
-        return StatusData.createDurationI(2, PURGE_SLOW[purgeLevel])
-
-    private static function calculateDamage(int level, int power) returns DamagePreview
-        let multi = (1.0 + (power * DAMAGE_PER_SPELLPOWER / 100.0)) 
-        damagePreview.dmg = realRange(DAMAGE[level] * 0.5 * multi, DAMAGE[level] * 2 * multi)
+    
+    private static function calculateDamage(SpellLevel level, HasSpellStats spellStats) returns DamagePreview
+        var multi = 1.0
+        if spellStats != null
+            multi = spellStats.getDamageMulti()
+        let baseDamage = level.getIntData(DAMAGE)
+        damagePreview.dmg = realRange(baseDamage * 0.5 * multi, baseDamage * 2 * multi)
         return damagePreview
 
-    private static function createBaseTooltipLines(boolean addCost) returns LinkedList<string>
-        if addCost
-            return BASE_COST.createTooltipLines()
+    private static function createTooltipLines(SpellLevel level, HasSpellStats spellStats) returns LinkedList<string>
         return new LinkedList<string>
-
-    private static function createTooltipLines(int level, int power, int stunLevel, int purgeLevel, boolean addCost) returns LinkedList<string>
-        let lines = createBaseTooltipLines(addCost)
-        ..add(StringUtils.stat("Target", "Enemy"))
-        ..add(StringUtils.stat("Damage", calculateDamage(level, power).toColoredText()))
+        ..add(KStringUtils.stat("Target", "Enemy"))
+        ..add(KStringUtils.stat("Damage", calculateDamage(level, spellStats).toColoredText()))
         ..add("")
-        var str = "Lightning strikes"
-        if stunLevel >= 0
-            str += " and stuns for " + StringUtils.primaryString(STUN_DURATION[stunLevel].toString()) + " " + StringUtils.secondaryString("timeunits")
-        if purgeLevel >= 0
-            str += " and purges"
-        str +=" one Enemy"
-        lines.add(str)
-        if purgeLevel >= 0
-            lines.add("---")
-            // TODO tt.addStatusType(PURGE_DEBUFF, createPurgeStatusData(purgeLevel))
-        return lines
+        ..add("Lightning strikes from above and purges one Enemy.")
+        ..add(KStringUtils.line())
+        ..addAllAndDestroy(PURGE_DEBUFF.createTooltipLines(createStatusData(level)))
 
-    private static function adjustCost(ActionCostPreset cost, int level)
-        cost.adjustBaseManaCost(MANA_COST[level])
+    private static function createStatusData(SpellLevel level) returns StatusData
+        return StatusData.create(1)
+        ..setIntData(SLOW, level.getIntData(SLOW))
     
     /* -------------------------------------------------------------------------- */
 
     private LinkedList<Cell> area = new LinkedList<Cell>()
-    private int stunLevel
-    private int purgeLevel
 
-    private construct(BoardEntity entity)
-        super(entity, TYPE, BASE_COST)
-        let skillTree = hero.hero.getSkillTree(SkillTreeTempestarii.TYPE) castTo SkillTreeTempestarii
-        setLevel(skillTree.lightningBoltLevel)
-        adjustCost(cost, level)
-        stunLevel = skillTree.lightningBoltStunLevel
-        purgeLevel = skillTree.lightningBoltPurgeLevel
+    private construct(BoardEntity entity, Spell spell)
+        super(entity, spell)
 
     override function getHighlightResultForCell(Player p, Cell cell) returns CellResult
         if area.has(cell)
@@ -127,8 +111,7 @@ public class LightningBoltSpell extends Spell
             return false
 
         CastAnimation.create(hero, cell) () ->
-            calculateDamage(hero.stats.getPower(), level)
-            let rolledBaseDamage = damagePreview.getRandomInstance()
+            let rolledBaseDamage = calculateDamage(level, this).getRandomInstance()
             let target = cell.getStack()
             let e = addEffect(Doodads.lightningbolt, target.getPos3Real())
             DelayAnimation.create(entity.getBoard(), 0.3) ->
@@ -139,20 +122,13 @@ public class LightningBoltSpell extends Spell
         return true
 
     private function afterDamage(BoardStack target)
-        if stunLevel < 0 and purgeLevel < 0
-            finishOrder()
-            return
         if target.isAlive() == false
             finishOrder()
             return
 
-        if stunLevel >= 0
-            BoardController.stunEntity(hero, target, STUN_DURATION[stunLevel]) -> 
-                finishOrder()
-        else if purgeLevel >= 0
-            StatusController.add(PURGE_DEBUFF, target, createPurgeStatusData(purgeLevel))
-            UIController.triggerOnMaxActionPointChange(target) -> 
-                finishOrder()
+        StatusController.apply(PURGE_DEBUFF, target, createStatusData(level))
+        UIController.triggerOnMaxActionPointChange(target) -> 
+            finishOrder()
 
     private function finishOrder()
         BoardController.finishOrder(entity, cost)
@@ -165,12 +141,11 @@ public class LightningBoltSpell extends Spell
                 area.add(t.getCell())
 
     private function showPreview(Cell fromCell)
-        let power = hero.stats.getPower()
-        
         let tt = createBasicTooltip()
-        ..addLines(createTooltipLines(level, power, stunLevel, purgeLevel, false))
+        ..addLines(createTooltipLines(level, this))
         if fromCell != null
-            calculateDamage(power, level)
+            tt.addLine("")
+            calculateDamage(level, this)
             .extendTooltipWithSpecific(tt, entity, fromCell.getStack())
         
         UITooltip.display(entity.getPlayer(), tt)
@@ -183,9 +158,3 @@ public class LightningBoltSpell extends Spell
     ondestroy
         if area != null
             destroy area
-
-    /* ----------------------------------- KI ----------------------------------- */
-    
-    override function executeForKI(SequenzListenerStatus listener)
-        Log.error("YOU NEED TO WRITE KI FOR LIGHTNING BOTL SPSPELL")
-        listener.continue(-1)

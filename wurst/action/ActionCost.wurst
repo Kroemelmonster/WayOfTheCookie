@@ -1,10 +1,23 @@
 package ActionCost
 import initlater BoardEntity
 import Tooltip
-import StringUtils
+import KStringUtils
 import LinkedList
 
-public class ActionCostPreset
+public interface ActionCostData
+    function getAP() returns int
+    function isApFill() returns boolean
+
+public class ActionCostPreset implements ActionCostData
+    static function create(int ap, boolean apFill) returns ActionCostPreset
+        return new ActionCostPreset(ap, apFill, -1, -1, -1)
+
+    static function create(int ap, boolean apFill, int maxCooldown) returns ActionCostPreset
+        return new ActionCostPreset(ap, apFill, maxCooldown, -1, -1)
+
+    static function createWithMana(int ap, boolean apFill, int mana) returns ActionCostPreset
+        return new ActionCostPreset(ap, apFill, -1, -1, mana)
+
     protected int ap
     protected boolean apFill
     protected int maxCooldown
@@ -18,19 +31,10 @@ public class ActionCostPreset
         this.maxCharges = maxCharges
         this.mana = mana
 
-    static function create(int ap, boolean apFill) returns ActionCostPreset
-        return new ActionCostPreset(ap, apFill, -1, -1, -1)
-
-    static function create(int ap, boolean apFill, int maxCooldown) returns ActionCostPreset
-        return new ActionCostPreset(ap, apFill, maxCooldown, -1, -1)
-
-    static function createWithMana(int ap, boolean apFill, int mana) returns ActionCostPreset
-        return new ActionCostPreset(ap, apFill, -1, -1, mana)
-
     function adjustBaseManaCost(int mana)
         this.mana = mana
 
-    function getAP() returns int
+    override function getAP() returns int
         return ap
 
     function getAPAsText() returns string
@@ -38,7 +42,7 @@ public class ActionCostPreset
             return ap.toString() + "+"
         return ap.toString()
 
-    function isApFill() returns boolean
+    override function isApFill() returns boolean
         return apFill
     
     function getMaxCooldown() returns int
@@ -54,53 +58,71 @@ public class ActionCostPreset
         return maxCooldown > 0
 
     function setupTooltipCost(Tooltip tt)
-        tt.addIcon(StringUtils.primaryString(getAPAsText())
+        tt.addIcon(KStringUtils.primaryString(getAPAsText())
         , "UI/Tooltip/TooltipAddonAPIcon.dds")
         if hasMana()
-            tt.addIcon(StringUtils.primaryString(mana.toString())
+            tt.addIcon(KStringUtils.primaryString(mana.toString())
             , "UI/Tooltip/TooltipAddonManaIcon.dds")
         if hasCooldown()
-            tt.addIcon(StringUtils.primaryString(maxCooldown.toString())
+            tt.addIcon(KStringUtils.primaryString(maxCooldown.toString())
             , "UI/Tooltip/TooltipAddonCooldownIcon.dds")
 
     function createTooltipLines() returns LinkedList<string>
         let lines = new LinkedList<string>()
-        ..add(StringUtils.stat("Cost", getAPAsText()))
+        ..add(KStringUtils.stat("Cost", getAPAsText()))
         if hasMana()
-            lines.add(StringUtils.stat("Mana", mana.toString()))
+            lines.add(KStringUtils.stat("Mana", mana.toString()))
         if hasCooldown()
-            lines.add(StringUtils.stat("Cooldown", maxCooldown.toString()))
+            lines.add(KStringUtils.stat("Cooldown", maxCooldown.toString()))
         return lines
 
-public class ActionCost extends ActionCostPreset
-    private static ActionCost TEMP = new ActionCost(null, -1, false, -1, -1, -1)
+public class ActionCost implements ActionCostData
+    private static ActionCost TEMP = new ActionCost(null, ActionCostPreset.create(-1, false))
+
+    static function create(BoardEntity entity) returns ActionCost
+        return new ActionCost(entity, null)
 
     static function create(BoardEntity entity, ActionCostPreset preset) returns ActionCost
-        return new ActionCost(entity, preset.ap, preset.apFill, preset.maxCooldown, preset.maxCharges, preset.mana)
+        return new ActionCost(entity, preset)
 
     static function getTempCost(int ap, boolean apFill) returns ActionCost
         return getTempCost(null, ap, apFill)
 
     static function getTempCost(BoardEntity entity, int ap, boolean apFill) returns ActionCost
+        // TODO MEEEEEH
         TEMP.entity = entity
-        TEMP.ap = ap
-        TEMP.apFill = apFill
+        TEMP.basic.ap = ap
+        TEMP.basic.apFill = apFill
         return TEMP
 
+
     private BoardEntity entity
+    private ActionCostPreset basic
     private int cooldown
     private int charges
 
-    private construct(BoardEntity entity, int ap, boolean apFill, int maxCooldown, int maxCharges, int mana)
-        super(ap, apFill, maxCooldown, maxCharges, mana)
+    private construct(BoardEntity entity, ActionCostPreset basic)
+        this.basic = basic
         this.entity = entity
         this.cooldown = -1
-        this.charges = maxCharges
-        if mana > 0 and entity.getType() != EntityType.HERO
-            Log.error("Tried to create a Action with mana that is owned by a hero")
+        this.charges = basic.maxCharges
+        if basic.mana > 0 and entity.getType() != EntityType.HERO
+            Log.error("Tried to create a Action with mana that is not owned by a hero")
+
+    function setBasic(ActionCostPreset basic)
+        this.basic = basic
+
+    override function getAP() returns int
+        return basic.getAP()
+
+    override function isApFill() returns boolean
+        return basic.isApFill()
+
+    function setupTooltipCost(Tooltip tt)
+        basic.setupTooltipCost(tt)
 
     function canUse() returns boolean
-        if ap > entity.getRemainingActionPoints()
+        if basic.ap > entity.getRemainingActionPoints()
             return false
         if isOnCooldown()
             return false
@@ -111,18 +133,15 @@ public class ActionCost extends ActionCostPreset
         return true
 
     function pay()
-        if apFill
+        if basic.apFill
             entity.removeAP(1000)
         else
-            entity.removeAP(ap)
-        cooldown = maxCooldown + 1
-        if maxCharges > 0
+            entity.removeAP(basic.ap)
+        cooldown = basic.maxCooldown + 1
+        if basic.maxCharges > 0
             charges--
-        if mana >= 0
-            entity.toHero().payMana(mana)
-
-    function setAPFill(boolean flag)
-        this.apFill = flag
+        if basic.mana >= 0
+            entity.toHero().payMana(basic.mana)
 
     function tickCooldown()
         if isOnCooldown()
@@ -135,11 +154,11 @@ public class ActionCost extends ActionCostPreset
         return cooldown
 
     function hasEnoughCharges() returns boolean
-        return maxCharges < 0 or charges > 0
+        return basic.maxCharges < 0 or charges > 0
 
     function hasEnoughMana() returns boolean
-        return mana < 0 or entity.toHero().getMana() >= mana
+        return basic.mana < 0 or entity.toHero().getMana() >= basic.mana
 
     function isOnCooldown() returns boolean
-        return cooldown >= 0
+        return cooldown > 0
         

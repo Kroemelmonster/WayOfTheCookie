@@ -4,7 +4,7 @@ import UIHandle
 import Tooltip
 import StackType
 import StatsModifier
-import StringUtils
+import KStringUtils
 import PlayerData
 import Stack
 import Scheduler
@@ -98,11 +98,11 @@ class UIWindowHeroItem extends UIButtonIcon
 
     protected function updateIcon(KItem kitem, boolean wasDragged)
         if kitem == null
-            setIcon("Icons/BTNDotted.dds")
+            setBackground("Icons/BTNDotted.dds")
             setAlpha(255)
             // TODO disable enable
         else
-            setIcon(kitem.getIcon())
+            setBackground(kitem.getIcon())
             if wasDragged
                 setAlpha(80)
             else
@@ -134,10 +134,13 @@ public class UIWindowHero
     protected static UIWindowHeroItem array[MAX_ACTIVE_ITEMS] activeItems
     // MAX_BACKPACK_ITEMS
 
-    static function create()
-        window = UIWindowBasic.create(true)
+    static function create() returns UIWindowBasic
+        window = UIWindowBasic.create("Stats", true)
         ..setPointToConsoleUI(FRAMEPOINT_TOPLEFT, FRAMEPOINT_TOPLEFT, UIWindowSkillTree.WIDTH + 0.01, 0)
         ..setSize(0.25, 0.35)
+
+        window.onOpen() (Player p) ->
+            update(p)
 
         activeItems[0] = new UIWindowHeroItem(window)
         ..setInnerPoint(FRAMEPOINT_TOPLEFT, window, FRAMEPOINT_TOPLEFT)
@@ -209,9 +212,11 @@ public class UIWindowHero
         Scheduler.onTime() p ->
             if window.isVisible(p)
                 update(p)
-    
-    static function toggle(Player p)
-        window.toggle(p)
+
+        return window
+
+    static function get() returns UIWindowBasic
+        return window
 
     protected static function update(Player p)
         if not p.isLocal()
@@ -242,5 +247,5 @@ public class UIWindowHero
     private static function damageToText(realRange basisDmg, realRange modifiedDmg) returns string
         let dmgDifference = modifiedDmg.avg() - basisDmg.avg()
         let roundedBasisDmg = basisDmg.round()
-        return roundedBasisDmg.min.toString() + " - " + roundedBasisDmg.max.toString() + StringUtils.coloredModiReal(dmgDifference, 1)
+        return roundedBasisDmg.min.toString() + " - " + roundedBasisDmg.max.toString() + KStringUtils.coloredModiReal(dmgDifference, 1)
     

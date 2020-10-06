@@ -3,7 +3,7 @@ package HeroData
 import initlater Hero
 import PlayerData
 import Tooltip
-import StringUtils
+import KStringUtils
 import MainController
 
 public abstract class AbstractHeroData
@@ -32,6 +32,9 @@ public class HeroData extends AbstractHeroData
 
 
 public class HeroDataChange extends AbstractHeroData
+    static function create(int might, int mind, int magic) returns HeroDataChange
+        return new HeroDataChange(might, mind, magic)
+
     construct(int might, int mind, int magic)
         super(might, mind, magic)
 
@@ -57,9 +60,9 @@ public class HeroDataChange extends AbstractHeroData
         if cost <= 0
             return
         if has >= cost
-            tt.addIcon(StringUtils.primaryString(cost.toString()), icon)
+            tt.addIcon(KStringUtils.primaryString(cost.toString()), icon)
         else
-            tt.addIcon(StringUtils.coloredInt(StringUtils.COLOR_NEGATIVE, cost), icon)
+            tt.addIcon(KStringUtils.coloredInt(KStringUtils.COLOR_NEGATIVE, cost), icon)
 
     function setupTooltipCost(Tooltip tt, Hero h)
         let data = h.getData()
