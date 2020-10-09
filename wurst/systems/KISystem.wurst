@@ -5,16 +5,58 @@ import LinkedList
 
 import BoardStack
 import initlater Action
-import initlater WaitAction
-import initlater DefendAction
+import initlater ActionWait
+import initlater ActionDefend
 import BoardTrigger
 import BoardEntity
 import ActionType
+import Cell
+import Targets
+import PlayerData
 
 public class KISystem
+    static function sendKiOrder(Player p, Action action, Cell cell) returns boolean
+        p.currentMousePosition.cell = cell
+        action.recalculateHighlight(p)
+        return action.sendTargetOrder(cell)
+
+    static function orderMoveTo(BoardStack stack, Cell cell) returns boolean
+        let path = stack.getPathToCell(cell, stack.getRemainingMoveAP())
+        let defaultAction = stack.getDefaultAction()
+        return sendKiOrder(stack.getPlayer(), defaultAction, path.getCell())
+
+    static function getBestTarget(Targets targets) returns Target
+        if targets.isEmpty()
+            return null
+
+        var itr = targets.iterator()
+        if not targets.isEmptyForCurrentTurn()
+            itr = targets.iteratorForCurrentTurn()
+
+        var maxWeight = 0.0
+        while itr.hasNext()
+            let stack = itr.next().self()
+            let weight = stack.stats.getWeight()
+            maxWeight += weight
+                
+        let weightedRandom = GetRandomReal(0, maxWeight)
+        var currentWeight = 0.0
+        Target result = null
+        itr.reset()
+        while itr.hasNext() and result == null
+            let target = itr.next()
+            currentWeight += target.self().stats.getWeight()
+            if currentWeight >= weightedRandom
+                result = target
+
+        destroy itr
+
+        return result
+
     static function getBestTarget(LinkedList<BoardStack> targets) returns BoardStack
         if targets.isEmpty()
             return null
+
         var maxWeight = 0.0
         for target in targets
             maxWeight += target.stats.getWeight()
@@ -33,10 +75,10 @@ public class KISystem
         return result
 
     protected static function isActionWait(Action action) returns boolean
-        return action instanceof WaitAction
+        return action instanceof ActionWait
 
     protected static function isActionDefend(Action action) returns boolean
-        return action instanceof DefendAction
+        return action instanceof ActionDefend
 
     protected static function isActionDefault(Action action) returns boolean
         return action.hasOption(ActionTypeOption.DEFAULT)

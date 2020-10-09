@@ -52,14 +52,20 @@ public class Army
     construct(HeroStats heroStats)
         this.heroStats = heroStats
 
-    @inline
     function setStack(int i, ArmyStack stack)
         stacks[i] = stack
 
     function addStackAt(int i, StackType stackType, int amount) returns ArmyStack
         if stacks[i] == null
-            stacks[i] = new ArmyStack(stackType, amount, false, heroStats)
+            var actualAmount = amount
+            if actualAmount <= 0
+                actualAmount = 1
+            stacks[i] = new ArmyStack(stackType, actualAmount, false, heroStats)
         return stacks[i]
+
+    function addStackWithLeadershipAt(int i, StackType stackType, int leadership) returns ArmyStack
+        let amount = (leadership / stackType.leadership).round()
+        return addStackAt(i, stackType, amount)
         
     function remove(int i)
         if stacks[i] != null
@@ -82,6 +88,12 @@ public class Army
         if index == -1
             return null
         return addStackAt(index, stackType, amount)
+
+    function addStackWithLeadershipAtFree(StackType stackType, int leadership) returns ArmyStack
+        let index = getNextFreeIndex()
+        if index == -1
+            return null
+        return addStackWithLeadershipAt(index, stackType, leadership)
     
     function addStack(StackType stackType, int amount) returns ArmyStack
         let targetStack = getNextStackWithStackType(stackType)

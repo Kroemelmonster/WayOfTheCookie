@@ -10,7 +10,6 @@ import StackType
 import PlayerData
 import Action
 import UnitDefinition
-import DefaultAction
 import Passive
 
 import initlater Cell
@@ -57,6 +56,9 @@ public class BoardStack extends BoardEntity
     override function getName() returns string
         return stackType.name
 
+    override protected function hasPath() returns boolean
+        return true
+
     function getStackType() returns StackType
         return stackType
 
@@ -66,32 +68,27 @@ public class BoardStack extends BoardEntity
     function addPassive(Passive passive)
         passiveActions.add(passive)
 
-    @inline
-    override function getMaxActionPoints() returns int
+    override function getMaxAP() returns int
         return stats.getMaxAP()
 
-    @inline
-    override function getRemainingActionPoints() returns int
-        return stats.getRemainingActionPoints()
+    override function getRemainingAP() returns int
+        return stats.getRemainingAP()
+        
+    override function getRemainingMoveAP() returns int
+        return stats.getRemainingMoveAP()
 
-    @inline
-    // TODO mach daraus ein ovveride
-    function getRemainingMoveActionPoints() returns int
-        return stats.getRemainingMoveActionPoints()
-
-    @inline
     override function removeAP(integer amount)
         stats.removeAP(amount)
 
-    @inline
-    override function resetActionPoints()
+    override function resetAP()
         stats.resetActionPoints()
 
-    @inline 
     function isEnemy(BoardEntity other) returns boolean
-        return p != other.getPlayer()
+        return p.isEnemyTo(other.getPlayer())
 
-    @inline
+    function isAlly(BoardEntity other) returns boolean
+        return p.isAllyTo(other.getPlayer())
+
     function canAttack(BoardStack other) returns boolean
         return isEnemy(other)
 
@@ -107,7 +104,7 @@ public class BoardStack extends BoardEntity
         if board.getInitiative().isFirstTurn() == false
             SetUnitAnimation(u, "birth")
 
-        resetActionPoints()
+        resetAP()
 
         tt = createTTEx(getTextTagPos(), stats.getAmount().toString(), 10.0)
 
@@ -128,7 +125,6 @@ public class BoardStack extends BoardEntity
     function isOnBoard() returns boolean
         return this.cell != null
 
-    @inline
     override function getInitiative() returns int
         return stats.getInitiative()
 
@@ -137,7 +133,6 @@ public class BoardStack extends BoardEntity
         removeStackRelatedThingsFromBoard()
         u.kill()
 
-    @inline
     function isSelectByOwnPlayer() returns boolean
         return p.currentSelectedEntity == this
 

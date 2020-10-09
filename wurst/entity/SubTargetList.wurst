@@ -1,7 +1,9 @@
 package SubTargetList
+
 import LinkedList
-import BoardStack
-import Cell
+
+import initlater BoardStack
+import initlater Cell
 
 public class SubTarget
     BoardStack stack

@@ -21,19 +21,15 @@ public class InitiativeEntity
     protected int expiredTime = 0
     protected boolean didWait = false
 
-    @inline
     function getBoardEntity() returns BoardEntity
         return boardEntity
 
-    @inline
     function isWaiting() returns boolean
         return didWait
 
-    @inline
-    function getPlayer() returns Player
-        return boardEntity.getPlayer()
+    function getConntrollingPlayer() returns Player
+        return boardEntity.getConntrollingPlayer()
 
-    @inline
     function getIcon() returns string
         return boardEntity.getIcon()
 

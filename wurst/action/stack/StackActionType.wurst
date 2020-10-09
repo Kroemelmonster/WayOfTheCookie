@@ -1,0 +1,115 @@
+package StackActionType
+
+import Action
+import LinkedList
+import Icon
+import BoardEntity
+import initlater ActionAttackMove
+import initlater ActionWait
+import initlater ActionDefend
+import initlater ActionChainLightning
+import initlater ActionSpiritLink
+import initlater ActionTalentType
+import initlater ActionSummonSkeleton
+import initlater ActionSlam
+import ActionCost
+import KUtil
+import initlater ActionType
+import initlater BoardStack
+import initlater StackAction
+
+interface StackActionCreateListener
+    function create(BoardStack stack, StackActionData data) returns StackAction
+
+public interface StackActionCreateTooltipLinesListener
+    function create(StackActionData data) returns LinkedList<string>
+
+interface StackActionCreateDataListener
+    function create() returns StackActionData
+
+public class StackActionData
+    protected ActionCostPreset cost
+    static function create(ActionCostPreset cost) returns StackActionData
+        return new StackActionData(cost)
+        
+    private construct(ActionCostPreset cost)
+        this.cost = cost
+
+    function getCost() returns ActionCostPreset
+        return cost
+
+    ondestroy
+        if cost != null
+            destroy cost
+            cost = null
+
+public class StackActionType extends ActionType
+
+    static function setup()
+        ActionWait.setup()
+        ActionDefend.setup()
+        ActionAttackMove.setup()
+        ActionSlam.setup()
+        ActionChainLightning.setup()
+        ActionSummonSkeleton.setup()
+        ActionSpiritLink.setup()
+        
+    protected StackActionCreateListener listener
+    protected StackActionCreateTooltipLinesListener tooltipLinesListener
+    protected StackActionCreateDataListener dataListener
+
+    protected ActionTalentType creatingTalent
+
+    protected ActionCostPreset baseCost
+
+    construct(string name, string icon, ActionCostPreset baseCost)
+        super(name, icon)
+        this.baseCost = baseCost
+    
+    function onCreate(StackActionCreateListener listener)
+        this.listener = listener
+
+    function onCreateTooltipLines(StackActionCreateTooltipLinesListener tooltipLinesListener)
+        this.tooltipLinesListener = tooltipLinesListener
+
+    function onCreateData(StackActionCreateDataListener dataListener)
+        this.dataListener = dataListener
+
+    function create(BoardStack boardStack, StackActionData data) returns StackAction
+        return listener.create(boardStack, data)
+
+    function toString() returns string
+        return "StackActionType '"+name+"'"
+
+    function createTooltipLines() returns LinkedList<string>
+        return createTooltipLines(null)
+
+    function createTooltipLines(StackActionData data) returns LinkedList<string>
+        LinkedList<string> lines
+        if data != null
+            lines = data.cost.createTooltipLines()
+            destroy data
+        else
+            lines = baseCost.createTooltipLines()
+        lines.addAllAndDestroy(tooltipLinesListener.create(data))
+        return lines
+
+    function createBaseData() returns StackActionData
+        if dataListener != null
+            return dataListener.create()
+        return StackActionData.create(baseCost)
+
+    function getCost() returns ActionCostPreset
+        return baseCost
+
+    function getTalent() returns ActionTalentType
+        if creatingTalent == null
+            creatingTalent = new ActionTalentType(this)
+        return creatingTalent
+
+    function getTalent(StackActionData data) returns ActionTalentType
+        // TODO use data
+        if creatingTalent == null
+            creatingTalent = new ActionTalentType(this)
+        return creatingTalent
+

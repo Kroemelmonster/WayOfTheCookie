@@ -1,0 +1,18 @@
+package HeroAction
+import Action
+import BoardHero
+import ActionCost
+import HeroActionType
+
+public abstract class HeroAction extends Action
+    protected BoardHero hero
+    protected HeroActionType actionType
+
+    static function createType(string name, string icon, ActionCostPreset cost) returns HeroActionType
+        return new HeroActionType(name, icon, cost)
+
+    construct(BoardHero hero, HeroActionType actionType)
+        super(hero, actionType)
+        this.hero = hero
+        this.actionType = actionType
+        cost.setBasic(actionType.getCost())

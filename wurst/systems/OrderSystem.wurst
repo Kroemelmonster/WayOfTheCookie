@@ -16,7 +16,7 @@ class OrderSystem
         if entity == null
             return false
         // this player does not own the active unit
-        return entity.getPlayer() == p
+        return entity.canBeControlled(p)
     
     static function isUnitSelected(Player p, BoardEntity entity) returns boolean
         if entity == null

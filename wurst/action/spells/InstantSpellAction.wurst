@@ -1,0 +1,43 @@
+package InstantSpellAction
+
+import initlater SpellType
+
+import Cell
+import PlayerData
+import SpellAction
+import ActionType
+import BoardEntity
+import Spell
+import BoardHero
+
+public abstract class InstantSpellAction extends SpellAction
+
+    static function createType(string name, string icon) returns SpellType
+        return new SpellType(name, icon)
+        ..enableOption(ActionTypeOption.SPELL)
+        ..enableOption(ActionTypeOption.INSTANT)
+
+    construct(BoardHero hero, Spell spell)
+        super(hero, spell)
+
+
+    override function getPreviewResultForCell(Cell cell) returns CellResult
+        return CellResult.NONE
+
+    override function getHighlightResultForCell(Player p, Cell cell) returns CellResult
+        return CellResult.NONE
+
+    override function recalculatePreview()
+        return
+
+    override function recalculateHighlight(Player p)
+        return
+
+    override function castAt(Cell cell) returns boolean
+        return false
+
+    override function activate()
+        cast()
+
+    abstract function cast()
+        

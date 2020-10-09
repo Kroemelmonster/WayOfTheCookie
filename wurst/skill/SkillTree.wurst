@@ -12,6 +12,7 @@ import SpellAction
 import ActionType
 import initlater SpellType
 import KUtil
+import StackActionType
 
 public interface SkillStackUpdateListener
     function onStackUpdate(ArmyStack armyStack, boolean add)
@@ -67,8 +68,8 @@ public class SkillLevel
     function addLine(string str)
         desc.add(str)
 
-    function addSpellTypeAsLines(ActionType actionType, int level)
-        desc.addAllAndDestroy(actionType.createTooltipLines(level))
+    function addSpellTypeAsLines(StackActionType actionType, int level)
+        // TODO desc.addAllAndDestroy(actionType.createTooltipLines(level, true))
 
     function addSpellTypeAsLines(SpellType spellType, int level)
         // TODO

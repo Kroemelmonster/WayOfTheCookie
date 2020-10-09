@@ -1,27 +1,28 @@
 package BoardController
 
 import ClosureTimers
+import LinkedList
 
 import KISystem
 import StatusController
 
 import initlater BoardStack
 import initlater Cell
-import initlater UIController
 import initlater Board
 import initlater Damage
 import initlater StandardTextTags
 import initlater Action
 import initlater OrderSystem
-import LinkedList
-import BoardTrigger
+import initlater BoardTrigger
+import initlater BoardEntity
+import initlater Status
+import initlater StatusType
+import initlater ActionCost
+import initlater StatusStunned
+import initlater PathFinding
+
 import initlater MainController
-import BoardEntity
-import Globals
-import Status
-import StatusType
-import ActionCost
-import StatusStunned
+import initlater UIController
 
 public class BoardController
 
@@ -32,16 +33,18 @@ public class BoardController
 
         let board = target.getBoard()
         board.getInitiative().pushEntity(target, time)
-        if target.getType() == EntityType.STACK
-            StatusController.apply(StatusStunned.TYPE, target, StatusData.create(1))
-        next.continue()
+        if target.getType() != EntityType.STACK
+            next.continue()
+            return
+        StatusController.apply(StatusStunned.TYPE, target, StatusData.create(1)) (status) ->
+            next.continue()
 
     /** Use this to summon / create a Stack mid Fight */
     static function placeStackOnBoard(BoardStack stack, Cell cell, boolean isSummoned, SequenzListener next)
         let board = cell.getBoard()
         nullTimer() ->  
             board.placeStack(stack, cell, isSummoned)
-            onCellEnter(stack, cell, cell) -> 
+            onCellEnter(stack, cell, cell) (cost) -> 
                 UIController.triggerOnStackCreationOrDeathChange(board) -> 
                     next.continue()
 
@@ -54,69 +57,78 @@ public class BoardController
                 next.continue()
 
     static function finishOrder(BoardEntity entity, ActionCost cost)
+        finishOrder(entity, cost, 0)
+
+    static function finishOrder(BoardEntity entity, ActionCost cost, int additonalAPCost)
         let board = entity.getBoard()
         OrderSystem.endOrder(board)
         if entity.isAlive()
-            cost.pay()
+            cost.pay(additonalAPCost)
             if entity.canStillAct()
                 entity.resetCurrentSelectedAction()
                 UIController.triggerOnActiveEntityActionPointChange(entity)
-                if entity.getPlayer().isConntrolledByKI
+                if entity.getConntrollingPlayer().isConntrolledByKI()
                     KISystem.executeTurn(entity)
             else
-                entity.resetActionPoints()
+                entity.resetAP()
                 board.getInitiative().next()
         else
             board.getInitiative().next()
-
-    private static function dealDamageContinue(SpecificDamageInstance specificInstance, SequenzListener next)
-        destroy specificInstance
-        next.continue()
-
-    static function dealDamage(BoardEntity source, DamageInstance instance, BoardStack target, SequenzListener next)
-        let specificInstance = instance.getSpecific(source, target)
-        if target.stats.getAmount() <= 0
-            dealDamageContinue(specificInstance, next)
+            
+    static function dealDamage(BoardEntity source, DamageInstance originalDamageInstance, BoardEntity target, SequenzListener next)
+        if target.getType() != EntityType.STACK
+            next.continue()
             return
-        let coord = target.getCell().getCoord()
+        let stackTarget = target.toStack()
+
+        // cant deal damage to what is already dead
+        if stackTarget.stats.getAmount() <= 0
+            next.continue()
+            return
         
-        standardTextTag(coord, specificInstance.toColoredText())
-        target.stats.addAmount(-specificInstance.amount)
-        
-        if target.stats.getAmount() == 0
-            if specificInstance.damageInstance.isTriggered
+        let instance = originalDamageInstance.copy()
+        calculateDamageBefore(source, instance, stackTarget) ->
+            let specificInstance = instance.dealDamageTo(source, stackTarget)
+            dealDamageInner(source, specificInstance, stackTarget) ->
+                destroy instance
                 destroy specificInstance
-                killStack(target, next)
-            else
-                onDamageTaken(source, target, specificInstance) ->
-                    onDamageDealt(source, target, specificInstance) ->
-                        destroy specificInstance
-                        killStack(target, next)
+                if stackTarget.stats.getAmount() == 0
+                    killStack(stackTarget, next)
+                else
+                    next.continue()
+
+    private static function calculateDamageBefore(BoardEntity source, DamageInstance instance, BoardStack target, SequenzListener next)
+        onBeforeDamageTaken(source, target, instance) ->
+            onBeforeDamageDealt(source, target, instance) ->
+                next.continue()
+
+    private static function dealDamageInner(BoardEntity source, SpecificDamageInstance instance, BoardStack target, SequenzListener next)
+        // apply the dmg
+        standardTextTag(target.getCell().getCoord(), instance.toColoredText())
+
+        // after damage trigers
+        if instance.getDamageData().hasFlag(DamageFlags.TRIGGERED)
+            next.continue()
         else
-            target.stats.setHp(specificInstance.remainingHp)
-            if specificInstance.amount > 0
-                UIController.triggerOnStackAmountChange(target)
-
-            if specificInstance.damageInstance.isTriggered
-                dealDamageContinue(specificInstance, next)
-            else
-                onDamageTaken(source, target, specificInstance) ->
-                    onDamageDealt(source, target, specificInstance) ->
-                        dealDamageContinue(specificInstance, next)
-
-    
+            onDamageTaken(source, target, instance) ->
+                onDamageDealt(source, target, instance) ->
+                    next.continue()
     /** triggers **/
 
-    static function onDamageDealt(BoardEntity source, BoardStack target, SpecificDamageInstance specificInstance, SequenzListener next)
-        if source.getType() == EntityType.STACK
-            let stackSource = source.toStack()
-            stackSource.getTriggers().triggerOnDamageDealt(source, target, specificInstance) ->
-                next.continue()
-        else
+    private static function onBeforeDamageDealt(BoardEntity source, BoardStack target, DamageInstance instance, SequenzListener next)
+        source.getTriggers().triggerOnBeforeDamageDealt(source, target, instance) ->
             next.continue()
-        
-    static function onDamageTaken(BoardEntity source, BoardStack target, SpecificDamageInstance specificInstance, SequenzListener next)
+
+    private static function onBeforeDamageTaken(BoardEntity source, BoardStack target, DamageInstance instance, SequenzListener next)
+        target.getTriggers().triggerOnBeforeDamageTaken(source, target, instance) ->
+            next.continue()
+            
+    private static function onDamageTaken(BoardEntity source, BoardStack target, SpecificDamageInstance specificInstance, SequenzListener next)
         target.getTriggers().triggerOnDamageTaken(source, target, specificInstance) ->
+            next.continue()
+
+    private static function onDamageDealt(BoardEntity source, BoardStack target, SpecificDamageInstance specificInstance, SequenzListener next)
+        source.getTriggers().triggerOnDamageDealt(source, target, specificInstance) ->
             next.continue()
 
     static function onAttackEnd(BoardStack attacker, BoardStack defender, SequenzListener next)
@@ -127,7 +139,7 @@ public class BoardController
     static function onTurnEnd(BoardEntity entity, boolean isWaiting, SequenzListener next)
         UIController.onTurnEnd(entity)
         
-        if isWaiting == false and entity.isAlive()
+        if not isWaiting and entity.isAlive()
             entity.forEachAction() action ->
                 action.tickCooldown()
 
@@ -140,7 +152,7 @@ public class BoardController
         entity.resetCurrentSelectedAction()
         UIController.onTurnStart(entity)
 
-        if entity.getPlayer().isConntrolledByKI
+        if entity.getConntrollingPlayer().isConntrolledByKI()
             KISystem.executeTurn(entity)
             
         
@@ -176,40 +188,42 @@ public class BoardController
             else
                 MainController.endFight(board, side)
                     
-
-    private static function onCellLeaveForAllStacks(LLIterator<BoardStack> stackItr, BoardStack stack, Cell fromCell, Cell toCell, SequenzListener next)
-        if stackItr.hasNext()
-            let current = stackItr.next()
-            current.getTriggers().triggerOnAnyCellLeave(stack, fromCell, toCell) -> 
-                onCellLeaveForAllStacks(stackItr, stack, fromCell, toCell, next)
-        else
-            next.continue()
-                
-
-    static function onCellLeave(BoardStack stack, Cell fromCell, Cell toCell, SequenzListener next)
+    /** the sequenz has the cost for leaving the cell **/
+    static function onCellLeave(BoardStack stack, Cell fromCell, Cell toCell, SequenzListenerData<int> next)
         let board = stack.getBoard()
         let copy = board.getAllStacks()
         let stackItr = copy.iterator()
-        onCellLeaveForAllStacks(stackItr, stack, fromCell, toCell) () ->
+        let initlatCost = PathFinding.getCellMoveOutCost(fromCell)
+        onCellLeaveForAllStacks(stackItr, stack, fromCell, toCell, initlatCost) (newCost) ->
             destroy stackItr
             destroy copy
-            next.continue()
+            next.continue(newCost)
 
-            
-    private static function onCellEnterForAllStacks(LLIterator<BoardStack> stackItr, BoardStack stack, Cell fromCell, Cell toCell, SequenzListener next)
-        if stackItr.hasNext()
-            let current = stackItr.next()
-            current.getTriggers().triggerOnAnyCellEnter(stack, fromCell, toCell) -> 
-                onCellEnterForAllStacks(stackItr, stack, fromCell, toCell, next)
-        else
-            next.continue()
-                
-
-    static function onCellEnter(BoardStack stack, Cell fromCell, Cell toCell, SequenzListener next)
+    /** the sequenz has the cost for entering the cell **/
+    static function onCellEnter(BoardStack stack, Cell fromCell, Cell toCell, SequenzListenerData<int> next)
         let board = stack.getBoard()
         let copy = board.getAllStacks()
         let stackItr = copy.iterator()
-        onCellEnterForAllStacks(stackItr, stack, fromCell, toCell) () ->
+        let initlatCost = PathFinding.getCellMoveIntoCost(toCell)
+        onCellEnterForAllStacks(stackItr, stack, fromCell, toCell, initlatCost) (newCost) ->
             destroy stackItr
             destroy copy
-            next.continue()
+            next.continue(newCost)
+
+    /* -------------------------------------------------- */
+
+    private static function onCellLeaveForAllStacks(LLIterator<BoardStack> stackItr, BoardStack stack, Cell fromCell, Cell toCell, int prevCostToMove, SequenzListenerData<int> next)
+        if stackItr.hasNext()
+            let current = stackItr.next()
+            current.getTriggers().triggerOnAnyCellLeave(stack, fromCell, toCell, prevCostToMove) (newCost) ->
+                onCellLeaveForAllStacks(stackItr, stack, fromCell, toCell, newCost, next)
+        else
+            next.continue(prevCostToMove)
+                
+    private static function onCellEnterForAllStacks(LLIterator<BoardStack> stackItr, BoardStack stack, Cell fromCell, Cell toCell, int prevCostToMove, SequenzListenerData<int> next)
+        if stackItr.hasNext()
+            let current = stackItr.next()
+            current.getTriggers().triggerOnAnyCellEnter(stack, fromCell, toCell, prevCostToMove) (newCost) ->
+                onCellEnterForAllStacks(stackItr, stack, fromCell, toCell, newCost, next)
+        else
+            next.continue(prevCostToMove)

@@ -7,16 +7,18 @@ import Tooltip
 import Action
 import BoardStack
 import initlater ActionTalentType
+import StackActionType
+import StackAction
 
 public class ActionTalent extends Talent
-    protected Action action
+    protected StackAction action
     protected BoardStack stack
 
-    construct(ActionTalentType talentType, ActionType actionType, BoardEntity entity)
+    construct(ActionTalentType talentType, StackActionType actionType, BoardEntity entity)
         super(talentType, entity)
         if entity.getType() == EntityType.STACK
             stack = entity.toStack()
-            action = actionType.create(stack)
+            action = actionType.create(stack, actionType.createBaseData())
             stack.addAction(action)
         else
             Log.error(entity.toString() + " has a talent "
@@ -24,7 +26,7 @@ public class ActionTalent extends Talent
 
     override function createTooltip() returns Tooltip
         return createBasicTooltip()
-        ..addLines(action.getType().createTooltipLines(stack.stats.amount))
+        ..addLines(action.createBasicTooltipLines())
 
     override function isHidden() returns boolean
         return talentType.isHidden()

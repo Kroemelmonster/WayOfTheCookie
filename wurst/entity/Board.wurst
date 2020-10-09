@@ -228,7 +228,7 @@ public class Board
 
     function forEachNeighbour(Cell startCell, LLItrClosure<Cell> itr)
         let cube = startCell.getHex().toCube()
-        for int i = 0 to 5
+        for i = 0 to 5
             let cell = getCell((cube + CUBE_NEIGHBOURS[i]).toHex())
             if cell != null
                 itr.run(cell)
@@ -350,12 +350,12 @@ public class Board
         
         
     function realDraw(Player p)
-        if p.isLocal() == false or p.isConntrolledByKI
+        if p.isLocal() == false or p.doesNotNeedVisuals
             return
 
         let currentEntity = initiative.getCurrent()
         //let currentStack = initiative.getCurrent().getStack()
-        let canGiveOrders = (currentEntity != null and p == currentEntity.getPlayer() and p.currentSelectedEntity == currentEntity.getBoardEntity())
+        let canGiveOrders = (currentEntity != null and p == currentEntity.getConntrollingPlayer() and p.currentSelectedEntity == currentEntity.getBoardEntity())
 
         Action action = null
         Cell currentSelectedCell = null
@@ -371,10 +371,14 @@ public class Board
             if stack != null
                 action = stack.getDefaultAction()
 
-        for int i = boundMin to boundMax - 1
+        for i = boundMin to boundMax - 1
             allCells[i].draw(p, action, canGiveOrders, currentSelectedCell)
 
-    
+    function forEachCell(LLItrClosure<Cell> itr)
+        for i = boundMin to boundMax - 1
+            itr.run(allCells[i])
+        destroy itr
+
     function getCellBasedOnCoords(vec2 mouseCoord) returns Cell
         return getCell(coordToHex(mouseCoord - coord))
 

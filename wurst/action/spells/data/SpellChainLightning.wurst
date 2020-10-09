@@ -1,0 +1,191 @@
+package SpellChainLightning
+
+import LinkedList
+import Icons
+import Abilities
+
+import initlater SpellType
+
+import Cell
+import BoardStack
+import PlayerData
+import KUtil
+import BoardController
+import Action
+import UIMenuActionConsole
+import AnimationWait
+import Damage
+import AnimationCast
+import SpellAction
+import BoardHero
+import BoardEntity
+import ActionCost
+import KStringUtils
+import Tooltip
+import UITooltip
+import HeroData
+import Spell
+import BoardTrigger
+
+public class SpellChainLightning extends SpellAction
+    static SpellType TYPE
+    static function setup()
+        TYPE = SpellAction.createType("Chain Lightning", Icons.bTNChainLightning)
+        TYPE.addLevel(ActionCostPreset.createWithMana(1, true, 7), HeroDataChange.create(0, 1, 3))
+        ..setIntData(DAMAGE, 65)
+        ..setIntData(CHAINS, 2)
+        TYPE.addLevel(ActionCostPreset.createWithMana(1, true, 12), HeroDataChange.create(0, 2, 5))
+        ..setIntData(DAMAGE, 125)
+        ..setIntData(CHAINS, 3)
+        TYPE.addLevel(ActionCostPreset.createWithMana(1, true, 20), HeroDataChange.create(0, 3, 7))
+        ..setIntData(DAMAGE, 185)
+        ..setIntData(CHAINS, 4)
+        TYPE.onActionCreate() (hero, spell) -> 
+            return new SpellChainLightning(hero, spell)
+        TYPE.onCreateTooltipLines() (level, spellStats) -> 
+            return createTooltipLines(level, spellStats)
+
+    private static constant int DAMAGE = 0
+    private static constant int CHAINS = 1
+
+    private static constant int CHAIN_RANGE = 3
+    private static constant real CHAIN_REDUCTION = 0.90
+    private static constant DamagePreview damagePreview = DamagePreview.create(SourceType.SPELL, DamageType.MAGIC)
+
+    private static function calculateDamage(SpellLevel level, HasSpellStats spellStats, int amountOfChained) returns DamagePreview
+        var multi = 1.0
+        for i = 1 to amountOfChained
+            multi *= CHAIN_REDUCTION
+        if spellStats != null
+            multi *= spellStats.getDamageMulti()
+        let baseDamage = level.getIntData(DAMAGE)
+        damagePreview.dmg = realRange(baseDamage * 0.65 * multi, baseDamage* 1.85 * multi)
+        return damagePreview
+
+    private static function createTooltipLines(SpellLevel level, HasSpellStats spellStats) returns LinkedList<string>
+        return new LinkedList<string>
+        ..add(KStringUtils.stat("Target", "Enemy"))
+        ..add(KStringUtils.stat("Damage", calculateDamage(level, spellStats, 0).toColoredText()))
+        ..add("")
+        ..add("You strike a Foe with Lightning which chains up to "
+         + KStringUtils.primaryString(level.getIntData(CHAINS).toString()) + " times")
+        ..add("Each time the damage is descreased by "
+         + KStringUtils.primaryPercent(1 - CHAIN_REDUCTION))
+
+    /* -------------------------------------------------------------------------- */
+    
+    private LinkedList<Cell> area = new LinkedList<Cell>()
+
+    override function getHighlightResultForCell(Player p, Cell cell) returns CellResult
+        if area.has(cell)
+            return CellResult.NEGATIVE
+        return CellResult.NONE
+
+    override function recalculatePreview()
+        recalculatePossibleTargets()
+
+    override function recalculateHighlight(Player p)
+        if area.has(p.currentMousePosition.cell)
+            showPreview(p.currentMousePosition.cell)
+        else
+            hidePreview()
+
+    override function castAt(Cell cell) returns boolean
+        if not area.has(cell)
+            return false
+        AnimationCast.atCell(hero, cell) () ->
+            let rolledBaseDamage = calculateDamage(level, this, 0).getRandomInstance()
+            let prevTargets = new LinkedList<BoardStack>()
+            chainToNext(prevTargets, entity, rolledBaseDamage, cell.getStack(), 0) ->
+                destroy prevTargets
+                destroy rolledBaseDamage
+                finishCast(true)
+        return true
+
+    private function chainToNext(LinkedList<BoardStack> prevTargets, BoardEntity prev, 
+        DamageInstance baseDamage, BoardStack target, int chains, SequenzListener next)
+
+        let targetPos = target.getPos3Real()
+        var lightningModel = LIGHTNING_CHAIN_LIGHTNING_SEECONDARY
+        if chains == 0
+            lightningModel = LIGHTNING_CHAIN_LIGHTNING_PRIMARY
+        let bolt = addLightning(lightningModel, true, prev.getPos3Real(), targetPos)
+        let e = addEffect(Abilities.boltImpact, targetPos)
+        AnimationWait.time(entity.getBoard(), 0.3) ->
+            bolt.destr()
+            e.setPosition(-100000, -10000, 10000)
+            e.destr()
+            var targetCell = target.getCell()
+            BoardController.dealDamage(hero, baseDamage, target) -> 
+                if chains < level.getIntData(CHAINS)
+                    prevTargets.add(target)
+                    baseDamage.dmg *= CHAIN_REDUCTION
+
+                    if target.isOnBoard()
+                        // why not just use prevTargetCell ?? because the unit might be moved so the chain now goes off the new position
+                        targetCell = target.getCell()
+                    let nextTarget = getNextTarget(prevTargets, targetCell)
+                    if nextTarget == null
+                        next.continue()
+                    else
+                        chainToNext(prevTargets, target, baseDamage, nextTarget, chains + 1, next)
+                else
+                    next.continue()
+
+    private function getNextTarget(LinkedList<BoardStack> prevTargets, Cell fromCell) returns BoardStack
+        BoardStack nextTarget = null
+        let itr = fromCell.eachCellInRangeIterator(intRange(1, CHAIN_RANGE))
+        while itr.hasNext() and nextTarget == null
+            let cell = itr.next()
+            let possibleTarget = cell.getStack()
+            if possibleTarget != null and possibleTarget.isEnemy(entity) and not prevTargets.has(possibleTarget)
+                nextTarget = possibleTarget
+
+        destroy itr
+        return nextTarget
+
+    private function recalculatePossibleTargets()
+        area.clear()
+
+        entity.getBoard().forEachStack() (BoardStack t) ->
+            if t.getPlayer() != entity.getPlayer()
+                area.add(t.getCell())
+
+    private function showPreview(Cell fromCell)
+        let tt = createBasicTooltip()
+        ..addLines(createTooltipLines(level, this))
+        if fromCell != null
+            tt.addLine("")
+
+            let prevTargets = new LinkedList<BoardStack>()
+            prevTargets.add(fromCell.getStack())
+            var chain = 0
+            while chain < level.getIntData(CHAINS)
+                let currentTarget = prevTargets.peek()
+                if currentTarget == null
+                    break
+                calculateDamage(level, this, chain)
+                .extendTooltipWithSpecific(tt, entity, currentTarget)
+                chain++
+                prevTargets.add(getNextTarget(prevTargets, currentTarget.getCell()))
+            destroy prevTargets
+        
+        UITooltip.display(entity.getConntrollingPlayer(), tt)
+        UIMenuActionConsole.updateActionPoints(entity, cost)
+    
+    private function hidePreview()
+        UITooltip.hide(entity.getConntrollingPlayer())
+        UIMenuActionConsole.updateActionPoints(entity)
+
+    override function onUIMouseEnter()
+        showPreview(null)
+
+    override function onUIMouseLeave()
+        hidePreview()
+       
+    private construct(BoardHero hero, Spell spell)
+        super(hero, spell)
+
+    ondestroy
+        if area != null
+            destroy area

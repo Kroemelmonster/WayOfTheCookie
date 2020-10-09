@@ -1,0 +1,96 @@
+package SpellRallingCry
+
+import LinkedList
+
+import initlater SpellType
+
+import PlayerData
+import UIMenuActionConsole
+import AnimationCast
+import BoardTrigger
+import SpellAction
+import BoardEntity
+import StatusType
+import StatusController
+import Status
+import WarcrySpellAction
+import StatusRallingCry
+import BoardStack
+import ActionCost
+import KStringUtils
+import Tooltip
+import UITooltip
+import Spell
+import HeroData
+import KUtil
+import Scheduler
+import AnimationWait
+import BoardHero
+
+public class SpellRallingCry extends WarcrySpellAction
+    static SpellType TYPE
+    static function setup()
+        STATUS = StatusRallingCry.TYPE
+        TYPE = WarcrySpellAction.createType("Rallying Cry", "Icons\\BTNAbilityWarriorWarCry.blp")
+        TYPE.addLevel(ActionCostPreset.create(0, false, 3), HeroDataChange.create(1, 0, 1))
+        ..setIntData(ATTACK_BONUS, 3)
+        TYPE.addLevel(ActionCostPreset.create(0, false, 2), HeroDataChange.create(2, 0, 1))
+        ..setIntData(ATTACK_BONUS, 5)
+        TYPE.addLevel(ActionCostPreset.create(0, false, 1), HeroDataChange.create(2, 0, 2))
+        ..setIntData(ATTACK_BONUS, 7)
+        TYPE.onActionCreate() (hero, spell) -> 
+            return new SpellRallingCry(hero, spell)
+        TYPE.onCreateTooltipLines() (level, spell) -> 
+            return createTooltipLines(level)
+
+    private static constant int ATTACK_BONUS = 0
+
+    private static StatusType STATUS
+
+    private static function createTooltipLines(SpellLevel level) returns LinkedList<string>
+        return new LinkedList<string>
+        ..add(KStringUtils.stat("Target", "Allies/Self"))
+        ..add("")
+        ..add("Gives your self and all your troops a temporary Attack Bonus")
+        ..add(KStringUtils.line())
+        ..addAllAndDestroy(STATUS.createTooltipLines(createStatusData(level)))
+    
+    private static function createStatusData(SpellLevel level) returns StatusData
+        return StatusData.create(1)
+        ..setIntData(ATTACK_BONUS, level.getIntData(ATTACK_BONUS))
+
+    /* -------------------------------------------------------------------------- */
+
+    override function cast()
+        AnimationCast.withoutTarget(entity) ->
+            let data = createStatusData(level)
+            ..clearEntityData()
+            entity.getBoard().forEachStack() (BoardStack ally) ->
+                if ally.isAlly(entity)
+                    data.addEntityData(ally)
+            
+            let backSwingUntill = Scheduler.getTimeIn(0.2)
+            StatusController.apply(STATUS, entity, data) (status) ->
+                AnimationWait.untill(entity.getBoard(), backSwingUntill) -> 
+                    finishCast(true)
+
+            
+
+    private function showPreview()
+        let tt = createBasicTooltip()
+        ..addLines(createTooltipLines(level))
+        UITooltip.display(entity.getConntrollingPlayer(), tt)
+        UIMenuActionConsole.updateActionPoints(entity, cost)
+
+    private function hidePreview()
+        UITooltip.hide(entity.getConntrollingPlayer())
+        UIMenuActionConsole.updateActionPoints(entity)
+
+    override function onUIMouseEnter()
+        showPreview()
+
+    override function onUIMouseLeave()
+        hidePreview()
+
+    private construct(BoardHero hero, Spell spell)
+        super(hero, spell)

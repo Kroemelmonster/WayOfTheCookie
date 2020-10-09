@@ -1,0 +1,55 @@
+package HeroActionType
+
+import Action
+import LinkedList
+import Icon
+import BoardEntity
+import ActionCost
+import KUtil
+import initlater ActionType
+import initlater BoardStack
+import initlater StackAction
+import initlater BoardHero
+import HeroActionAttack
+import HeroActionSkip
+
+interface HeroActionCreateListener
+    function create(BoardHero hero) returns Action
+
+public interface HeroActionCreateTooltipLinesListener
+    function create() returns LinkedList<string>
+
+public class HeroActionType extends ActionType
+
+    static function setup()
+        // TODO
+        HeroActionAttack.setup()
+        HeroActionSkip.setup()
+        
+    protected HeroActionCreateListener listener
+    protected HeroActionCreateTooltipLinesListener tooltipLinesListener
+
+    protected ActionCostPreset baseCost
+
+    construct(string name, string icon, ActionCostPreset baseCost)
+        super(name, icon)
+        this.baseCost = baseCost
+    
+    function onCreate(HeroActionCreateListener listener)
+        this.listener = listener
+
+    function onCreateTooltipLines(HeroActionCreateTooltipLinesListener tooltipLinesListener)
+        this.tooltipLinesListener = tooltipLinesListener
+
+    function create(BoardHero hero) returns Action
+        return listener.create(hero)
+
+    function toString() returns string
+        return "HeroActionType '"+name+"'"
+
+    function createTooltipLines() returns LinkedList<string>
+        return new LinkedList<string>
+        ..addAllAndDestroy(tooltipLinesListener.create())
+
+    function getCost() returns ActionCostPreset
+        return baseCost

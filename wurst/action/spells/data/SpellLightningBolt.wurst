@@ -1,0 +1,162 @@
+package SpellLightningBolt
+
+import LinkedList
+import Doodads
+
+
+import initlater SpellType
+
+import PlayerData
+import KUtil
+import BoardController
+import Action
+import Cell
+import BoardStack
+import UIMenuActionConsole
+import AnimationWait
+import Damage
+import AnimationCast
+import SpellAction
+import BoardHero
+import BoardEntity
+import StatusType
+import StatusController
+import Status
+import UIController
+import StatusPurged
+import ActionCost
+import KStringUtils
+import Tooltip
+import UITooltip
+import HeroData
+import Spell
+import Scheduler
+
+public class SpellLightningBolt extends SpellAction
+    static SpellType TYPE
+    static function setup()
+        PURGE_DEBUFF = StatusPurged.TYPE
+        TYPE = SpellAction.createType("Lightning Bolt", "Icons\\BTNLightningBolt.blp")
+        TYPE.addLevel(ActionCostPreset.createWithMana(1, true, 4), HeroDataChange.create(0, 0, 1))
+        ..setIntData(DAMAGE, 60)
+        ..setIntData(SLOW, 1)
+        TYPE.addLevel(ActionCostPreset.createWithMana(1, true, 5), HeroDataChange.create(0, 0, 2))
+        ..setIntData(DAMAGE, 130)
+        ..setIntData(SLOW, 1)
+        TYPE.addLevel(ActionCostPreset.createWithMana(1, true, 6), HeroDataChange.create(0, 0, 3))
+        ..setIntData(DAMAGE, 210)
+        ..setIntData(SLOW, 2)
+        TYPE.onActionCreate() (hero, spell) -> 
+            return new SpellLightningBolt(hero, spell)
+        TYPE.onCreateTooltipLines() (level, spellStats) -> 
+            return createTooltipLines(level, spellStats)
+
+    private static constant int DAMAGE = 0
+    private static constant int SLOW = 1
+    private static StatusType PURGE_DEBUFF
+
+    private static constant DamagePreview damagePreview = DamagePreview.create(SourceType.SPELL, DamageType.MAGIC)
+    
+    private static function calculateDamage(SpellLevel level, HasSpellStats spellStats) returns DamagePreview
+        var multi = 1.0
+        if spellStats != null
+            multi = spellStats.getDamageMulti()
+        let baseDamage = level.getIntData(DAMAGE)
+        damagePreview.dmg = realRange(baseDamage * 0.5 * multi, baseDamage * 2 * multi)
+        return damagePreview
+
+    private static function createTooltipLines(SpellLevel level, HasSpellStats spellStats) returns LinkedList<string>
+        return new LinkedList<string>
+        ..add(KStringUtils.stat("Target", "Enemy"))
+        ..add(KStringUtils.stat("Damage", calculateDamage(level, spellStats).toColoredText()))
+        ..add("")
+        ..add("Lightning strikes from above and purges one Enemy.")
+        ..add(KStringUtils.line())
+        ..addAllAndDestroy(PURGE_DEBUFF.createTooltipLines(createStatusData(level)))
+
+    private static function createStatusData(SpellLevel level) returns StatusData
+        return StatusData.create(1)
+        ..setIntData(StatusPurged.SLOW, level.getIntData(SLOW))
+    
+    /* -------------------------------------------------------------------------- */
+
+    private LinkedList<Cell> possibleTargets = new LinkedList<Cell>()
+
+    override function getHighlightResultForCell(Player p, Cell cell) returns CellResult
+        if possibleTargets.has(cell)
+            return CellResult.NEGATIVE
+        return CellResult.NONE
+
+    override function recalculatePreview()
+        recalculatePossibleTargets()
+
+    override function recalculateHighlight(Player p)
+        if possibleTargets.has(p.currentMousePosition.cell)
+            showPreview(p.currentMousePosition.cell)
+        else
+            hidePreview()
+
+    override function castAt(Cell cell) returns boolean
+        // can not cast at something that is not targetable
+        if not possibleTargets.has(cell)
+            return false
+
+        AnimationCast.atCell(hero, cell) () ->
+            let rolledBaseDamage = calculateDamage(level, this).getRandomInstance()
+            let target = cell.getStack()
+            let e = addEffect(Doodads.lightningbolt, target.getPos3Real())
+            AnimationWait.time(entity.getBoard(), 0.3) ->
+                e.destr()
+                let backSwingUntill = Scheduler.getTimeIn(0.667)
+                BoardController.dealDamage(hero, rolledBaseDamage, target) -> 
+                    destroy rolledBaseDamage
+                    applyDebuff(target, backSwingUntill)
+        return true
+
+    private function applyDebuff(BoardStack target, real backSwingUntill)
+        if not target.isAlive()
+            backSwing(backSwingUntill)
+            return
+        StatusController.apply(PURGE_DEBUFF, target, createStatusData(level)) (status) ->
+            UIController.triggerOnMaxActionPointChange(target) -> 
+                backSwing(backSwingUntill)
+
+    private function backSwing(real waitUntill)
+        AnimationWait.untill(entity.getBoard(), waitUntill) -> 
+            finishCast(true)
+
+    private function recalculatePossibleTargets()
+        possibleTargets.clear()
+
+        entity.getBoard().forEachStack() stack ->
+            if stack.getPlayer().isEnemyTo(entity.getPlayer())
+                possibleTargets.add(stack.getCell())
+
+    private function showPreview(Cell fromCell)
+        let tt = createBasicTooltip()
+        ..addLines(createTooltipLines(level, this))
+
+        if fromCell != null
+            tt.addLine("")
+            calculateDamage(level, this)
+            .extendTooltipWithSpecific(tt, entity, fromCell.getStack())
+        
+        UITooltip.display(entity.getConntrollingPlayer(), tt)
+        UIMenuActionConsole.updateActionPoints(entity, cost)
+    
+    private function hidePreview()
+        UITooltip.hide(entity.getConntrollingPlayer())
+        UIMenuActionConsole.updateActionPoints(entity)
+
+    override function onUIMouseEnter()
+        showPreview(null)
+
+    override function onUIMouseLeave()
+        hidePreview()
+
+    private construct(BoardHero hero, Spell spell)
+        super(hero, spell)
+
+    ondestroy
+        if possibleTargets != null
+            destroy possibleTargets

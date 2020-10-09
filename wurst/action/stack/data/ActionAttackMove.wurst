@@ -1,0 +1,62 @@
+package ActionAttackMove
+
+import LinkedList
+
+import Action
+
+import PlayerData
+import Damage
+import KUtil
+
+import initlater BoardStack
+import UIMenuActionConsole
+import ActionCost
+import UITooltip
+import Tooltip
+import ActionType
+import BoardEntity
+import Icons
+import SubStackActions
+import StackActionTarget
+import StackActionType
+
+public class ActionAttackMove extends StackActionTarget
+    static StackActionType TYPE
+    static function setup()
+        TYPE = StackActionTarget.createType("Attack", Icons.bTNAttack, ActionCostPreset.create(1, true))
+        ..enableOption(ActionTypeOption.DEFAULT)
+        TYPE.onCreate() (BoardStack stack, StackActionData data) ->
+            return new ActionAttackMove(stack, data)
+        TYPE.onCreateTooltipLines() data -> 
+            return new LinkedList<string>
+
+    construct(BoardStack stack, StackActionData data)
+        super(stack, TYPE, data)
+
+    protected override function canTarget(BoardStack potentialTarget) returns boolean
+        return stack.canAttack(potentialTarget)
+
+    protected override function getTargetRange() returns intRange
+        return stack.stats.getRange()
+
+    protected override function previewTarget(int prevUsedApForMove, BoardStack target)
+        if target == null
+            // happens when you only mouse over
+            return
+
+        let tt = createBasicTooltip()
+        let preview = DamagePreview.create(SourceType.ATTACK, stack.stats.getDamageType())
+        ..setDamage(stack.stats.getDamageAll())
+
+        preview.extendTooltipWithSpecific(tt, stack, target)
+        destroy preview
+        UITooltip.display(stack.getConntrollingPlayer(), tt)
+        UIMenuActionConsole.updateActionPoints(entity, cost, prevUsedApForMove)
+
+    protected override function executeOrder(boolean didMove, int prevUsedApForMove, BoardStack target) returns boolean
+        SubStackActions.attack(stack, target, true) (attackStatus) ->
+            finish(didMove, prevUsedApForMove)
+        return true
+
+    override function createBasicTooltipLines() returns LinkedList<string>
+        return new LinkedList<string>

@@ -5,12 +5,11 @@ import BoardEntity
 import LinkedList
 import Action
 import Cell
-import DefaultAction
 import Abilities
 import AttachmentPoints
 import initlater Board
-import initlater HeroAttackAction
-import initlater HeroSkipAction
+import initlater HeroActionAttack
+import initlater HeroActionSkip
 import AbilityIds
 import initlater BoardHeroStats
 import HeroType
@@ -33,13 +32,13 @@ public class BoardHero extends BoardEntity
 
         createBLZUnit(coord, side)
 
-        addAction(new HeroSkipAction(this))
-        addAction(new HeroAttackAction(this))
+        addAction(HeroActionSkip.TYPE.create(this))
+        addAction(HeroActionAttack.TYPE.create(this))
 
         hero.forEachSpell() spell ->
             addAction(spell.create(this))
 
-        resetActionPoints()
+        resetAP()
         resetCurrentSelectedAction()
 
     private function createBLZUnit(vec2 coord, int side)
@@ -60,14 +59,20 @@ public class BoardHero extends BoardEntity
     override function getName() returns string
         return hero.getType().name
 
+    override protected function hasPath() returns boolean
+        return false
+
     override function getInitiative() returns int
         return stats.getInitiative()
 
-    override function getMaxActionPoints() returns int
+    override function getMaxAP() returns int
         return stats.getMaxActionPoints()
 
-    override function getRemainingActionPoints() returns int
+    override function getRemainingAP() returns int
         return stats.getRemainingActionPoints()
+
+    override function getRemainingMoveAP() returns int
+        return getRemainingAP()
 
     override function removeAP(integer amount)
         stats.removeAP(amount)
@@ -89,7 +94,7 @@ public class BoardHero extends BoardEntity
                         spell.activateQuickcast(false)
 
 
-    override function resetActionPoints()
+    override function resetAP()
         stats.resetActionPoints()
 
     override function isAlive() returns boolean

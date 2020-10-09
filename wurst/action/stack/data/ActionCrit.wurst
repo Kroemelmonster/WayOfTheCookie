@@ -1,0 +1,69 @@
+package ActionCrit
+
+import LinkedList
+
+import Action
+
+import PlayerData
+import Damage
+import KUtil
+
+import initlater BoardStack
+import UIMenuActionConsole
+import ActionCost
+import UITooltip
+import Tooltip
+import ActionType
+import BoardEntity
+import Icons
+import SubStackActions
+import StackActionTarget
+
+/*
+public class ActionCrit extends StackActionTarget
+    static StackActionType TYPE
+    static function setup()
+        TYPE = StackActionTarget.createType("Critical Strike", Icons.bTNCriticalStrike, ActionCostPreset.create(1, true, 3))
+        ..enableOption(ActionTypeOption.DEFAULT)
+        TYPE.onCreate() entity -> 
+            return new ActionCrit(entity)
+        TYPE.onCreateTooltipLines() amount -> 
+            return new LinkedList<string>
+
+    private static function calculateDamage(int amount, int chain) returns DamagePreview
+        var multi = 1.0
+        for i = 1 to chain
+            multi *= CHAIN_REDUCTION
+        multi *= amount
+        damagePreview.dmg = realRange(42.0 * multi, 55.0 * multi)
+        return damagePreview
+
+    construct(BoardEntity entity)
+        super(entity, TYPE)
+
+    protected override function canTarget(BoardStack potentialTarget) returns boolean
+        return stack.canAttack(potentialTarget)
+
+    protected override function getTargetRange() returns intRange
+        return stack.stats.getRange()
+
+    protected override function previewTarget(int prevUsedApForMove, BoardStack target)
+        if target == null
+            // happens when you only mouse over
+            return
+
+        let tt = createBasicTooltip()
+        let preview = DamagePreview.create(SourceType.ATTACK, stack.stats.getDamageType())
+        ..setDamage(stack.stats.getDamageAll() * 2.2)
+
+        preview.extendTooltipWithSpecific(tt, stack, target)
+        destroy preview
+        UITooltip.display(stack.getConntrollingPlayer(), tt)
+        UIMenuActionConsole.updateActionPoints(entity, cost, prevUsedApForMove)
+
+    protected override function executeOrder(boolean didMove, int prevUsedApForMove, BoardStack target) returns boolean
+        
+        SubActions.attack(stack, target, true) (attackStatus) ->
+            finish(didMove, prevUsedApForMove)
+        return true
+        */

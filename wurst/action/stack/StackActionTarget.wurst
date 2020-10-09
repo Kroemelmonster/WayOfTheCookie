@@ -1,0 +1,239 @@
+package StackActionTarget
+import StackAction
+import ActionType
+import BoardEntity
+import ActionCost
+import Targets
+import Cell
+import BoardStack
+import LinkedList
+import Action
+import PlayerData
+import KUtil
+import SubStackActions
+import BoardController
+import UITooltip
+import UIMenuActionConsole
+import PathFinding
+import BoardTrigger
+import KISystem
+import ClosureTimers
+import UIController
+import StackActionType
+
+public abstract class StackActionTarget extends StackAction
+
+    static function createType(string name, string icon, ActionCostPreset cost) returns StackActionType
+        return new StackActionType(name, icon, cost)
+
+    protected Targets targets
+    protected LinkedList<Cell> highlightedPath
+    protected intRange range
+    protected CellResult cellResultForHit
+
+    construct(BoardStack stack, StackActionType actionType, StackActionData data)
+        super(stack, actionType, data)
+        cellResultForHit = CellResult.NEGATIVE
+        targets = new Targets(stack) (potentialTarget) ->
+            return getBestCellToTargetFrom(potentialTarget)
+        targets.checkThisTurnAsWell() (Target target) ->
+            return getAPAfterWalkToCell(target.fromCell()) >= cost.getAP()
+        highlightedPath = new LinkedList<Cell>
+
+    override function recalculatePreview()
+        targets.recalculate()
+
+    protected abstract function canTarget(BoardStack potentialTarget) returns boolean
+    protected abstract function getTargetRange() returns intRange
+    protected abstract function previewTarget(int usedApForMove, BoardStack target)
+    protected abstract function executeOrder(boolean didMove, int prevUsedApForMove, BoardStack target) returns boolean
+
+    protected function getBestCellToTargetFrom(BoardStack potentialTarget) returns Cell
+        if not canTarget(potentialTarget)
+            return null
+        // now go through every Cell that would be in range
+        var currentHighestRemainingPoints = 0
+        Cell currentBest = null
+        let range = getTargetRange()
+        
+        let possibleCellsItr = potentialTarget.getCell().eachCellInRangeIterator(range)
+        while possibleCellsItr.hasNext()
+            let possibleCellToAttackFrom = possibleCellsItr.next()
+            let remainingPoints = getRemainingMoveAPFromCell(possibleCellToAttackFrom, 100)
+            if remainingPoints > currentHighestRemainingPoints
+                currentHighestRemainingPoints = remainingPoints
+                currentBest = possibleCellToAttackFrom
+        destroy possibleCellsItr
+        return currentBest
+
+    protected function getAPAfterWalkToCell(Cell target) returns int
+        let remainingMoveActionPoints = stack.getRemainingMoveAP()
+        let remainingActionPoints = stack.getRemainingAP()
+        let remainingMoveActionPointsFromCell = getRemainingMoveAPFromCell(target, remainingMoveActionPoints)
+        
+        if remainingActionPoints <= remainingMoveActionPoints
+            if remainingMoveActionPointsFromCell < remainingActionPoints
+                return remainingMoveActionPointsFromCell
+            else
+                return remainingActionPoints
+        else
+            return remainingActionPoints - (remainingMoveActionPoints - remainingMoveActionPointsFromCell)
+
+    override function getPreviewResultForCell(Cell cell) returns CellResult
+        let previewStack = cell.getStack()
+        if previewStack != null and targets.hasForCurrentTurn(previewStack)
+            return cellResultForHit
+        else if cell != stack.getCell()
+            let remainingAPAfterMove =  getRemainingMoveAPFromCellSave(cell, stack.getRemainingMoveAP())
+            if remainingAPAfterMove >= cost.getAP()
+                return CellResult.PREVIEW
+            else if remainingAPAfterMove >= 0 // at leats you can walk there
+                return CellResult.PREVIEW_MINOR
+        return CellResult.NONE
+
+    override function getHighlightResultForCell(Player p, Cell cell) returns CellResult
+        if highlightedPath.has(cell)
+            return CellResult.POSITIVE
+        return CellResult.NONE
+
+    override function sendTargetOrder(Cell cell) returns boolean
+        if highlightedPath.has(cell)
+            SubStackActions.move(stack, highlightedPath) (couldReachTarget, potentialUsedAp) ->
+                finishOnlyMove(potentialUsedAp)
+            return true
+        let enemy = cell.getStack()
+        if enemy != null and targets.hasForCurrentTurn(enemy)
+            if highlightedPath.isEmpty()
+                return executeOrder(false, 0, enemy)
+            SubStackActions.move(stack, highlightedPath) (couldReachTarget, potentialUsedAp) ->
+                executeOrder(true, potentialUsedAp, enemy)
+            return true
+        return false
+
+    private function finishOnlyMove(int usedAP)
+        UIController.triggerOnAnyStackCellChange(entity.getBoard()) -> 
+            BoardController.finishOrder(entity, ActionCost.getTempCost(stack, usedAP, false))
+            
+    protected function finish(boolean changedCell, int withAdditionAP)
+        if changedCell
+            UIController.triggerOnAnyStackCellChange(entity.getBoard()) -> 
+                BoardController.finishOrder(entity, cost, withAdditionAP)
+        else
+            BoardController.finishOrder(entity, cost, withAdditionAP)
+
+    override function recalculateHighlight(Player p)
+        recalculatePreviewPathTo(p.currentMousePosition.cell, false)
+
+    protected function recalculatePreviewPathTo(Cell cell, boolean calculateForKi) returns Cell
+        highlightedPath.clear()
+        if cell == null
+            hideTooltipAndUpdateAP(0, calculateForKi)
+            return null
+        var movetoCell = cell
+        var additionalAPMoveCost = 0
+        Target target = null
+        // is it a target ?
+        if cell.getStack() != null
+            if calculateForKi
+                target = targets.get(cell.getStack())
+            else
+                target = targets.getForCurrentTurn(cell.getStack())
+            if target == null
+                // we target someone BUT it is not targetable right now
+                hideTooltipAndUpdateAP(0, calculateForKi)
+                return null
+            movetoCell = target.fromCell()
+            
+        // we already here no need to get a path
+        if movetoCell != stack.getCell()
+            PathCell pathCell
+            if target != null
+                let remainingAP = getAPAfterWalkToCell(movetoCell)
+                // you could act after MOVE ?
+                if remainingAP >= cost.getAP()
+                    pathCell = entity.getPathToCell(movetoCell)
+                else if calculateForKi
+                    // just calculate the move 
+                    pathCell = entity.getPathToCell(movetoCell, stack.getRemainingMoveAP())
+                    // you cant reach him this time
+                    target = null
+                else
+                    Log.error("Tried to calculate path to valid Tragte BUT you could not reach it this turn")
+                    hideTooltipAndUpdateAP(0, calculateForKi)
+                    return null
+            else
+                if calculateForKi
+                    // ki does not care that it should only show IF you can walk to highlighted Cell
+                    pathCell = entity.getPathToCell(movetoCell, stack.getRemainingMoveAP())
+                else
+                    pathCell = entity.getPathToCell(movetoCell)
+                    if pathCell.getCost() > stack.getRemainingMoveAP()
+                        pathCell = null
+
+            // maybe there is no path to run ?
+            if pathCell == null
+                if target != null
+                    // THIS SHOULD NOT BE POSSIBLE SO diplay it
+                    Log.error("Tried to highlight on a valid Target, but failed to get a Path to it")
+                hideTooltipAndUpdateAP(0, calculateForKi)
+                return null
+
+            additionalAPMoveCost = pathCell.getCost()
+            let path = pathCell.getBackwardPath()
+            while path.hasNext()
+                let pathingCell = path.next().getCell()
+                highlightedPath.addtoStart(pathingCell)
+        
+        
+        if target != null
+            if not calculateForKi
+                previewTarget(additionalAPMoveCost, target.self())
+
+            return cell
+        else
+            hideTooltipAndUpdateAP(additionalAPMoveCost, calculateForKi)
+            return highlightedPath.peek()
+
+    protected function hideTooltipAndUpdateAP(int usedAP, boolean calculateForKi)
+        if calculateForKi
+            return
+        UITooltip.hide(stack.getConntrollingPlayer())
+        UIMenuActionConsole.updateActionPoints(entity, ActionCost.getTempCost(usedAP, false))
+
+    override function onUIMouseEnter()
+        previewTarget(0, null)
+
+    override function onUIMouseLeave()
+        hideTooltipAndUpdateAP(0, false)
+
+    private function getRemainingMoveAPFromCellSave(Cell cell, int limitingMoveAP) returns int
+        let path = entity.getPathToCell(cell)
+        if path != null
+            return path.getRemainingMoveAP(limitingMoveAP)
+        return -1
+
+    protected function getRemainingMoveAPFromCell(Cell cell, int limitingMoveAP) returns int
+        if cell == null
+            return -1
+        if cell == stack.getCell()
+            return 999
+        return getRemainingMoveAPFromCellSave(cell, limitingMoveAP)
+
+    override function executeForKI(SequenzListenerStatus listener)
+        // calculate Best targets
+        recalculatePreview()
+        let bestTarget = KISystem.getBestTarget(targets)
+        if bestTarget == null
+            listener.continue(1)
+            return
+        nullTimer() ->
+            let bestTargetStack = bestTarget.self()
+            let orderingCell = recalculatePreviewPathTo(bestTargetStack.getCell(), true)
+            if sendTargetOrder(orderingCell)
+                listener.continue(0)
+            else
+                listener.continue(1)
+
+    ondestroy
+        destroy targets
+        destroy highlightedPath

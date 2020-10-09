@@ -5,40 +5,88 @@ import HashMap
 import initlater Board
 import initlater Cell
 import initlater BoardStack
+import BoardStackStats
+import BoardEntity
+import LinkedList
 
-constant real MAX_MOVE_COST = 1000.0
+constant int MOVE_COST_BLOCKED = 1000
 
-function getCellMoveCost(Cell c, real moveCoefficient) returns real
-    let stack = c.getStack()
-    if stack != null
-        return MAX_MOVE_COST
-    return moveCoefficient
+public interface PathCell
+    function getRemainingMoveAP(HasBoardEntityStats stats) returns int
+    function getRemainingMoveAP(int moveAp) returns int
+    function getCost() returns int
+    function getCell() returns Cell
+    function getPrev() returns Cell
+    function getForwardPath() returns Path
+    function getBackwardPath() returns Path
 
-public class PathCell
+class PathCellInner implements PathCell
     Cell cell
-    real cost
-    int costI
-    PathCell prev
+    int cost = MOVE_COST_BLOCKED
+    PathCellInner prev
+    int calcIndex = -1
 
-    construct(Cell cell, real cost, PathCell prev)
+    construct(Cell cell)
         this.cell = cell
+
+    @inline
+    protected function getCost(int calcIndex) returns int
+        if this.calcIndex == calcIndex
+            return cost
+        return MOVE_COST_BLOCKED
+
+    @inline
+    protected function setupFirst(int calcIndex)
+        this.calcIndex = calcIndex
+        this.cost = 0
+        this.prev = null
+
+    @inline
+    protected function update(int calcIndex, int cost, PathCellInner prev, PathCellInner startingPath)
+        this.calcIndex = calcIndex
         this.cost = cost
-        this.prev = prev
-        this.costI = cost.floor()
+        if startingPath != prev
+            this.prev = prev
+        else
+            this.prev = null
 
-    function getRaminingMoveActionPoints(BoardStack stack) returns int
-        return getRemainingMoveActionPoints(stack.stats.getRemainingMoveActionPoints())
+    @inline
+    protected function block(int calcIndex)
+        if this.calcIndex != calcIndex
+            this.calcIndex = calcIndex
+            this.cost = MOVE_COST_BLOCKED
+            this.prev = null
+            
+    override function getRemainingMoveAP(HasBoardEntityStats stats) returns int
+        return getRemainingMoveAP(stats.getRemainingMoveAP())
 
-    function getRemainingMoveActionPoints(int ms) returns int
-        return ms - costI
+    override function getRemainingMoveAP(int moveAp) returns int
+        return moveAp - cost
 
-    function iterator() returns PathIterator
-        return new PathIterator(this)
+    override function getCost() returns int
+        return cost
+    
+    override function getCell() returns Cell
+        return cell
+    
+    override function getPrev() returns Cell
+        if prev != null
+            return prev.cell
+        return null
 
-public class PathIterator
-    PathCell current
+    /** this is essential an iterator, so you have to close / destroy it */
+    override function getForwardPath() returns Path
+            // TODO
+        Log.error("need to do a forwardPAthing thing")
+        return null
 
-    construct(PathCell current)
+    /** this is essential an iterator, so you have to close / destroy it */
+    override function getBackwardPath() returns Path
+        return new Path(this)
+
+public class Path
+    private PathCellInner current
+    construct(PathCellInner current)
         this.current = current
 
     function hasNext() returns boolean
@@ -52,27 +100,30 @@ public class PathIterator
     function close()
         destroy this
 
-public class StackPathFinding
-    private IterableMap<Cell, PathCell> paths
-    private BoardStack stack
+public class PathFinding
+    private IterableMap<Cell, PathCellInner> paths
+    private BoardEntity entity
     private boolean needToRecalc = true
-    private real moveCoefficient
+    private int calcIndex = 0
+    private LinkedList<PathCellInner> openCells
 
-    construct(BoardStack stack)
-        this.stack = stack
-        this.moveCoefficient = 1.0
-        this.paths = new IterableMap<Cell, PathCell>()
+    @inline
+    static function getCellMoveIntoCost(Cell c) returns int
+        let stack = c.getStack()
+        if stack != null
+            return MOVE_COST_BLOCKED
+        return 1
 
-    construct(BoardStack stack, real moveCoefficient)
-        this.stack = stack
-        this.moveCoefficient = moveCoefficient
-        this.paths = new IterableMap<Cell, PathCell>()
+    @inline
+    static function getCellMoveOutCost(Cell c) returns int
+        return 0
+
+    construct(BoardEntity entity)
+        this.entity = entity
+        openCells = new LinkedList<PathCellInner>
 
     function recalculate()
         needToRecalc = true
-    
-    function getStack() returns BoardStack
-        return stack
 
     function has(Cell cell) returns boolean
         recalcIfNeeded()
@@ -80,57 +131,65 @@ public class StackPathFinding
         return paths.has(cell)
     
     function get(Cell cell) returns PathCell
-        if has(cell) == false
+        if not has(cell)
             return null
         return paths.get(cell)
 
-    // You need to destroy every PathCell after use !
-    function getReversedPathToCell(Cell destination) returns PathCell
-        let destionationPath = get(destination)
-        var last = new PathCell(destionationPath.cell, 0.0, null)
-        for PathCell path in destionationPath
-            if (path.prev != null and path.prev.prev != null)
-                last = new PathCell(path.prev.cell, 0.0, last)
+    function getPathTo(Cell cell, int limitingAP) returns PathCell
+        var currentPath = paths.get(cell)
+        // as long as you cant pay this path -> go one step back
+        while currentPath != null and currentPath.getRemainingMoveAP(limitingAP) < 0
+            currentPath = currentPath.prev
 
-        return last
+        return currentPath
+        
 
     private function recalcIfNeeded()
         if needToRecalc
-            calculateStackWalkableCells()
-            needToRecalc = false
+            calculateInner()
 
-    private function calculateStackWalkableCells()
-        for Cell cell in paths
-            destroy paths.get(cell)
-        paths.flush()
-    
-        let start = stack.getCell()
-        let b = start.getBoard()
-    
-        let startPCell = new PathCell(start, 0.0, null)
-        paths.put(start, startPCell)
-        let iterator = paths.iterator()
-        let resultMoveCoefficient = moveCoefficient * stack.stats.moveCoefficient / 100.0
-        while iterator.hasNext()
-            let currentCell = iterator.next()
-            let current = paths.get(currentCell)
+    private function resetPaths()
+        if paths == null
+            paths = new IterableMap<Cell, PathCellInner>()
+            entity.getBoard().forEachCell() cell ->
+                paths.put(cell, new PathCellInner(cell))
+
+        openCells.clear()
+        calcIndex ++
+        
+                
+
+    private function calculateInner()
+        resetPaths()
+        
+        let pathStart = paths.get(entity.getCell())
+        pathStart.setupFirst(calcIndex)
+        openCells.add(pathStart)
+
+        while not openCells.isEmpty()
+            let current = openCells.dequeue()
+            let currentCost = current.getCost(calcIndex)
             
-            b.forEachNeighbour(currentCell) (Cell neighbourCell) ->
-                PathCell neighbour = paths.get(neighbourCell)
-                let cost = getCellMoveCost(neighbourCell, resultMoveCoefficient)
+            current.cell.forEachNeighbour() neighbourCell ->
+                let neighbour = paths.get(neighbourCell)
+                let costInto = getCellMoveIntoCost(neighbourCell)
+                if costInto == MOVE_COST_BLOCKED
+                    neighbour.block(calcIndex)
+                else
+                    let cost = costInto + getCellMoveOutCost(neighbourCell)
+                    let newCost = currentCost + cost
+                    // did we find a more efficent path ? go there
+                    if newCost < neighbour.getCost(calcIndex)
+                        neighbour.update(calcIndex, newCost, current, pathStart)
+                        openCells.add(neighbour)
+        
+        //reset that you "block" yourself
+        pathStart.cost = MOVE_COST_BLOCKED
+        needToRecalc = false
     
-                if neighbour == null
-                    neighbour = new PathCell(neighbourCell, MAX_MOVE_COST * 2, null)
-                let newCost = current.cost + cost
-                if newCost < neighbour.cost
-                    neighbour.cost = newCost
-                    neighbour.costI = newCost.floor()
-                    if current != startPCell
-                        neighbour.prev = current
-                    paths.put(neighbourCell, neighbour)
-    
-        iterator.close()
-    
-        // now remove the start as you cant move there obv
-        destroy paths.get(start)
-        paths.remove(start)
+    ondestroy
+        if paths != null
+            for path in paths
+                destroy path
+            destroy paths
+            paths = null

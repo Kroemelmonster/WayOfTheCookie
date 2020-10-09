@@ -1,0 +1,57 @@
+package PlayerTrigger
+import PlayerData
+import KUtil
+import LinkedList
+
+public abstract class KeyPressListener
+    abstract function onEvent(Player p, string key)
+
+public abstract class PlayerUnitListener
+    abstract function onEvent(Player p, unit u)
+
+class PlayerTrigger
+    protected static constant int START_NUMBER = 0x30
+    protected static constant int START_ALPHABET = 0x41
+    protected static constant int END = 0x5A
+    
+    protected static string array[END] KEY2STRING 
+
+    protected static constant KEY_TRIGGER = CreateTrigger()..addAction(function onKeyPress)
+    protected static constant SELECT_TRIGGER = CreateTrigger()..addAction(function onSelect)
+
+    static function registerKeyPress(Player p)
+        p.keyPressListeners = new LinkedList<KeyPressListener>()
+        if KEY2STRING[0x1B] != "Escape"
+            KEY2STRING[0x1B] = "Escape"
+            for i = 0 to 10
+                KEY2STRING[START_NUMBER + i] = i.toString()
+            for i = 0 to CHARSET.length + 1
+                KEY2STRING[START_ALPHABET + i] = CHARSET[i]
+
+        for  k = 0 to END
+            let key = ConvertOsKeyType(k)
+            // only register meta key shift
+            BlzTriggerRegisterPlayerKeyEvent(KEY_TRIGGER, p.blzPlayer, key, 0, true)
+            BlzTriggerRegisterPlayerKeyEvent(KEY_TRIGGER, p.blzPlayer, key, 1, true)
+
+    static function registerSelect(Player p)
+        p.selectListeners = new LinkedList<PlayerUnitListener>()
+        SELECT_TRIGGER.registerPlayerUnitEvent(p.blzPlayer, EVENT_PLAYER_UNIT_SELECTED, null)
+
+    private static function onKeyPress()
+        let p = GetTriggerPlayerData()
+        let key = BlzGetTriggerPlayerKey().getHandleId()
+        let isDown = BlzGetTriggerPlayerIsKeyDown()
+
+        let keyString = KEY2STRING[key]
+
+        if isDown and p.keyPressListeners.size() > 0
+            for listener in p.keyPressListeners
+                listener.onEvent(p, keyString)
+            
+    private static function onSelect()
+        let p = GetTriggerPlayerData()
+        let selectedUnit = GetTriggerUnit()
+        for listener in p.selectListeners
+            listener.onEvent(p, selectedUnit)
+    

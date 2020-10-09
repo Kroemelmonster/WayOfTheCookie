@@ -1,19 +1,23 @@
 package BoardStackStats
 
+import initlater Cell
+import initlater BoardStack
+
 import KUtil
 import StatsModifier
-
-import initlater BoardStack
-import StackStats
-import StackType
-import initlater SubTargetList
 import LinkedList
-import initlater Cell
 import DamageAndResistance
 import Talent
 import TalentType
+import StackStats
+import SubTargetList
+import Damage
 
-public class BoardStackStats implements HasEntityStats
+public interface HasBoardEntityStats
+    function getRemainingAP() returns int
+    function getRemainingMoveAP() returns int
+
+public class BoardStackStats implements HasEntityStats, HasBoardEntityStats
     private StackStats basis
     private BoardStack stack
     int startAmount
@@ -125,10 +129,10 @@ public class BoardStackStats implements HasEntityStats
     function getResistance(DamageType dType) returns int
         return resistance.getRes(dType)
 
-    function getRemainingActionPoints() returns integer
+    override function getRemainingAP() returns integer
         return remainingActionPoints
 
-    function getRemainingMoveActionPoints() returns integer
+    override function getRemainingMoveAP() returns integer
         return remainingMoveActionPoints
 
     function getAmount() returns int

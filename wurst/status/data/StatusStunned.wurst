@@ -37,10 +37,13 @@ public class StatusStunned extends Status
         display = entity.addAttachEffect(Abilities.thunderclapTarget, AttachmentPoints.overhead)
 
         turnStartListener = entity.getTriggers().addTurnStart() (SequenzListener next) ->
-            kill()
+            removeWithoutTrigger()
             next.continue()
 
-    override function refreshInner(StatusData data)
+    override function onRefresh(StatusData data)
+
+    override function canPurge() returns boolean
+        return false
 
     override function createTooltip() returns Tooltip
         return TYPE.createTooltip(null)
@@ -50,6 +53,5 @@ public class StatusStunned extends Status
             display.destr()
 
     ondestroy
-        if entity.isAlive() // TODO is this really necesery ?
+        if entity.isAlive()
             entity.getTriggers().removeOnTurnStart(turnStartListener)
-        hide()

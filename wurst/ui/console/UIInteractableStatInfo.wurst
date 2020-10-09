@@ -1,11 +1,12 @@
 package UIInteractableStatInfo
+
 import UIHandle
 import UIInteractable
 import UITooltip
 import PlayerData
-import DamageAndResistance
 import StatsModifier
 import KStringUtils
+import Damage
 
 public class UIInteractableStatInfo extends UIInteractable
     static function create(UIHandle parent) returns UIInteractableStatInfo
@@ -43,6 +44,7 @@ public class UIInteractableStatInfo extends UIInteractable
                 handleIcon.setTexture("ICONS/STATDmgPoison.dds")
             default
                 handleIcon.setTexture("ICONS/STATDmgPhysical.dds")
+                // TODO there is no PURE icon ?
 
     function setText(string txt)
         handleText.setText(txt)

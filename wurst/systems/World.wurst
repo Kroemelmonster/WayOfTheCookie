@@ -25,8 +25,8 @@ public class World
 
     static function generateBoards()
         createBoard(gg_rct_BoardIsleOne, gg_rct_BoardIsleOneV)
-        createBoard(gg_rct_BoardIsleTwo, gg_rct_BoardIsleTwoV)
-        createBoard(gg_rct_BoardIsleThree, gg_rct_BoardIsleThreeV)
+        //createBoard(gg_rct_BoardIsleTwo, gg_rct_BoardIsleTwoV)
+        //createBoard(gg_rct_BoardIsleThree, gg_rct_BoardIsleThreeV)
 
     static function generateNPCs()
         let shop = creatNPCShop(gg_unit_n000_0002)
@@ -34,41 +34,61 @@ public class World
             shop.addStock(t, GetRandomInt(50, 100))
         
     static function generateArmies()
+        let group5 = StackTypes.getFilteredList() (StackType stackType) ->
+            return stackType.level == 5
+
+        let group4 = StackTypes.getFilteredList() (StackType stackType) ->
+            return stackType.level == 4
+
+        let group3 = StackTypes.getFilteredList() (StackType stackType) ->
+            return stackType.level == 3
+
+        let group2 = StackTypes.getFilteredList() (StackType stackType) ->
+            return stackType.level == 2
+
+        let group1 = StackTypes.getFilteredList() (StackType stackType) ->
+            return stackType.level == 1
+
         createArmy()
-        ..addStackAtFree(StackTypes.ANCIENT_SASQUATCH, 1)
-        ..addStackAtFree(StackTypes.SASQUATCH_ORACLE, 1)
-        ..addStackAtFree(StackTypes.GNOLL_POACHER, GetRandomInt(10, 20))
-        ..addStackAtFree(StackTypes.GNOLL_POACHER, GetRandomInt(10, 20))
+        ..addStackAtFree(group5.getRandom(), 1)
+        ..addStackWithLeadershipAtFree(group4.getRandom(), GetRandomInt(600, 1200))
+        ..addStackWithLeadershipAtFree(group1.getRandom(), GetRandomInt(400, 600))
+        ..addStackWithLeadershipAtFree(group1.getRandom(), GetRandomInt(400, 600))
         ..placeWorld(gg_unit_n001_0003)
 
         createArmy()
-        ..addStackAtFree(StackTypes.FOREST_TROLL_BERSERKER, GetRandomInt(4, 7))
-        ..addStackAtFree(StackTypes.NECROMANCER, GetRandomInt(5, 10))
-        ..addStackAtFree(StackTypes.FOREST_TROLL, GetRandomInt(15, 20))
+        ..addStackWithLeadershipAtFree(group3.getRandom(), GetRandomInt(600, 1200))
+        ..addStackWithLeadershipAtFree(group2.getRandom(), GetRandomInt(400, 600))
+        ..addStackWithLeadershipAtFree(group2.getRandom(), GetRandomInt(400, 600))
         ..placeWorld(gg_unit_n001_0008)
 
         createArmy()
-        ..addStackAtFree(StackTypes.NECROMANCER, GetRandomInt(15, 20))
-        ..addStackAtFree(StackTypes.NECROMANCER, GetRandomInt(15, 20))
-        ..addStackAtFree(StackTypes.SKELETALORC, GetRandomInt(6, 10))
+        ..addStackWithLeadershipAtFree(StackTypes.find("Necromancer"), GetRandomInt(300, 500))
+        ..addStackWithLeadershipAtFree(StackTypes.find("Necromancer"), GetRandomInt(300, 500))
+        ..addStackWithLeadershipAtFree(StackTypes.find("Skeletal Orc"), GetRandomInt(300, 500))
         ..placeWorld(gg_unit_n001_0009)
 
         createArmy()
-        ..addStackAtFree(StackTypes.GNOLL_WARDEN, GetRandomInt(5, 10))
-        ..addStackAtFree(StackTypes.GNOLL_POACHER, GetRandomInt(50, 100))
-        ..addStackAtFree(StackTypes.GNOLL, GetRandomInt(50, 100))
+        ..addStackWithLeadershipAtFree(StackTypes.find("Gnoll Warden"), GetRandomInt(300, 500))
+        ..addStackWithLeadershipAtFree(StackTypes.find("Gnoll Poacher"), GetRandomInt(300, 500))
+        ..addStackWithLeadershipAtFree(StackTypes.find("Gnoll"), GetRandomInt(300, 600))
         ..placeWorld(gg_unit_n001_0010)
 
         createArmy()
-        ..addStackAtFree(StackTypes.GNOLL_POACHER, GetRandomInt(120, 200))
-        ..addStackAtFree(StackTypes.GNOLL, GetRandomInt(120, 200))
+        ..addStackWithLeadershipAtFree(group1.getRandom(), GetRandomInt(600, 1200))
+        ..addStackWithLeadershipAtFree(group1.getRandom(), GetRandomInt(600, 1200))
         ..placeWorld(gg_unit_n001_0011)
 
 
     static function generateHeroes()
+        let somedudes = StackTypes.getFilteredList() (StackType stackType) ->
+            return stackType.level <= 2
+
         let h = createHero(playerData[0], HeroTypes.FAR_SEER)
-        ..addStackAtFree(StackTypes.FOREST_TROLL_HIGH_PRIEST, 3)
-        ..addStackAtFree(StackTypes.FOOTMAN, 5)
+        ..addStackWithLeadershipAtFree(StackTypes.find("Forest Troll High Priest"), GetRandomInt(500, 700))
+        ..addStackWithLeadershipAtFree(StackTypes.find("Spirit Walker"), GetRandomInt(500, 700))
+        ..addStackWithLeadershipAtFree(somedudes.getRandom(), GetRandomInt(50, 100))
+        ..addStackWithLeadershipAtFree(somedudes.getRandom(), GetRandomInt(50, 100))
         ..equiqItemAt(0, ItemSteelHammer.TYPE.createNew())
         ..setBackPackItem(0, ItemSimpleAxe.TYPE.createNew())
         ..setBackPackItem(1, ItemSimpleAxe.TYPE.createNew())

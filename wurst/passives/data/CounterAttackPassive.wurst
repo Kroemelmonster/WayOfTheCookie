@@ -1,21 +1,16 @@
 package CounterAttackPassive
 
-import Passive
-import AnimationAttack
-import BoardController
-import Damage
-import KUtil
+import LinkedList
 
 import initlater BoardStack
 import initlater Cell
-import StackType
-import BoardTrigger
-import WalkAndAttackAction
-import initlater PassiveType
-import Icons
-import LinkedList
-import BoardEntity
 import initlater StackPassive
+import initlater PassiveType
+
+import BoardTrigger
+import BoardEntity
+import SubStackActions
+import KUtil
 
 public class CounterAttackPassive extends StackPassive
     static PassiveType TYPE
@@ -42,7 +37,7 @@ public class CounterAttackPassive extends StackPassive
 
         stack.getTriggers().addOnAttacked() (BoardStack attacker, BoardStack defender, SequenzListener next) ->
             if attacker.isAlive() and defender.isAlive() and checkForCounterAttack(attacker, attacker.getCell())
-                subActionAttack(0, stack, attacker, false) (attackStatus) ->
+                SubStackActions.attack(stack, attacker, false) (attackStatus) ->
                     counter --
                     next.continue()
             else
@@ -52,6 +47,5 @@ public class CounterAttackPassive extends StackPassive
         if counter <= 0
             return false
 
-        let attackRange = stack.stats.getRange()
         let distance = fromCell.getDistanceTo(stack.getCell())
-        return distance >= attackRange.min and distance <= attackRange.max
+        return distance.isBetween(stack.stats.getRange())

@@ -5,11 +5,12 @@ import Tooltip
 import BoardEntity
 import TalentType
 import ActionTalent
+import StackActionType
 
 public class ActionTalentType extends TalentType
-    protected ActionType actionType
+    protected StackActionType actionType
     
-    construct(ActionType actionType)
+    construct(StackActionType actionType)
         super(actionType)
         this.actionType = actionType
         
@@ -17,7 +18,7 @@ public class ActionTalentType extends TalentType
             return new ActionTalent(this, actionType, entity)
         onCreateTooltip() -> 
             return createBasicTooltip()
-            ..addLines(actionType.createTooltipLines(1))
+            ..addLines(actionType.createTooltipLines())
 
     override function isHidden() returns boolean
         if not actionType.hasOption(ActionTypeOption.PRIMARY)

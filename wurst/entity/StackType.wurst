@@ -4,10 +4,9 @@ import LinkedList
 
 import StackSoundSet
 import KUtil
-import Talent
-import initlater BoardStack
 import DamageAndResistance
 import initlater TalentType
+import Damage
 
 public class Family
     string name
@@ -61,7 +60,7 @@ public class StackType implements HasEntityBasicStats
     int attack
     int defence
 
-    DamageType damageType = PHYISICAL
+    DamageType damageType = PHYSICAL
     private Resistance resistance = new Resistance()
 
     LinkedList<TalentType> talents = new LinkedList<TalentType>()

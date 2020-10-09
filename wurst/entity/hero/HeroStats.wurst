@@ -6,8 +6,7 @@ import StatsModifier
 import initlater Hero
 import initlater HeroType
 import Globals
-import StackType
-import DamageAndResistance
+import Damage
 
 public class HeroStats
     private Hero hero

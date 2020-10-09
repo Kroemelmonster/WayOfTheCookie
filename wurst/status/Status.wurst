@@ -2,18 +2,25 @@ package Status
 
 import initlater BoardEntity
 import initlater StatusType
-import BoardTrigger
+import initlater BoardTrigger
+import initlater SharedStatus
 import Tooltip
 import Icon
+import LinkedList
 
 public interface StatusStats extends GeneratesTooltip, HasIcon
 
 public class StatusData
     int duration
+    SharedStatus linkToPrimary
     protected int array[10] intData
+    protected real array[10] realData
+    protected boolean array[10] boolData
+    protected LinkedList<BoardEntity> entityData
 
     construct(int duration)
         this.duration = duration
+        linkToPrimary = null
 
     static function create() returns StatusData
         return create(0)
@@ -27,17 +34,46 @@ public class StatusData
     function getIntData(int where) returns int
         return intData[where]
 
+    function setSecondary(SharedStatus main)
+        this.linkToPrimary = main
+
+    function setBoolData(int where, boolean value)
+        boolData[where] = value
+
+    function getBoolData(int where) returns boolean
+        return boolData[where]
+
+    function setRealData(int where, real value)
+        realData[where] = value
+
+    function getRealData(int where) returns real
+        return realData[where]    
+
+    function setEntityData(BoardEntity value)
+        clearEntityData()
+        addEntityData(value)
+
+    function clearEntityData()
+        if entityData == null
+            entityData = new LinkedList<BoardEntity>
+        entityData.clear()
+
+    function addEntityData(BoardEntity value)
+        entityData.add(value)
+
+    function getEntityData() returns BoardEntity
+        return entityData.getFirst()
+
+    function getAllEntityData() returns LinkedList<BoardEntity>
+        return entityData
+
 public abstract class Status implements StatusStats
     protected StatusType statusType
     protected BoardEntity entity
-    protected BoardTrigger onEndListener
 
     construct(StatusType statusType, BoardEntity entity)
         this.statusType = statusType
         this.entity = entity
-
-    function addOnEndListener(BoardTrigger listener)
-        this.onEndListener = listener
 
     function getType() returns StatusType
         return statusType
@@ -49,7 +85,7 @@ public abstract class Status implements StatusStats
         return statusType.getName()
     
     function refresh(StatusData data)
-        refreshInner(data)
+        onRefresh(data)
         destroy data
 
     /** call this only ONCE when you want to purge a buff from a unit that is no longer alive 
@@ -57,20 +93,22 @@ public abstract class Status implements StatusStats
 
         But since you should only call this on a dead stack, it wont trigger anything anyway **/
     abstract function hide()
-
-    abstract function refreshInner(StatusData data)
-
+    abstract function onRefresh(StatusData data)
+    abstract function canPurge() returns boolean
     override abstract function createTooltip() returns Tooltip
 
-    function kill()
-        let me = this
-        entity.removeStatus(this)
-        if onEndListener != null
-            onEndListener.onEvent() -> 
-                destroy onEndListener
-                onEndListener = null
-                destroy me
-            
-        else
-            destroy me
+    function purge(SequenzListener next)
+        if canPurge()
+            remove(next)
 
+    protected function remove(SequenzListener next)
+        next.continue()
+        removeWithoutTrigger()
+
+    protected function removeWithoutTrigger()
+        destroy this
+
+    ondestroy
+        if entity != null
+            entity.removeStatus(this)
+        hide()

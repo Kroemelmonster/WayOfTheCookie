@@ -1,47 +1,61 @@
 package Damage
-import StackType
+
+import initlater BoardStack
+import initlater BoardEntity
+
 import KUtil
-import BoardStack
-import BoardEntity
 import Globals
 import KStringUtils
 import Tooltip
-import DamageAndResistance
+import BitSet
 
 public enum SourceType
     ATTACK
     SPELL
     UNSPECIFIC
 
-public abstract class Damage
-    DamageType damageType
-    boolean isDot = false
-    boolean isTriggered = false
-    SourceType sourceType = ATTACK
+public enum DamageFlags
+    DOT
+    TRIGGERED
 
-    static constant COLOR_PHYISICAL = colorA(200, 200, 200, 200).toColorString()
-    static constant COLOR_MAGICAL = colorA(43, 181, 245, 200).toColorString()
-    static constant COLOR_POISON = colorA(167, 252, 71, 199).toColorString()
-    static constant COLOR_FIRE = colorA(255, 120, 86, 200).toColorString()
+public enum DamageType
+    PHYSICAL
+    MAGIC
+    FIRE
+    POISON
+    PURE
+
+public abstract class Damage
+    protected DamageType damageType
+    protected bitset flags = bitset(8)
+    protected SourceType sourceType
+
+    static constant colorA array COLOR = [
+        colorA(200, 200, 200, 200),
+        colorA(43, 181, 245, 200),
+        colorA(255, 120, 86, 200),
+        colorA(167, 252, 71, 199),
+        colorA(50, 0, 97, 199)
+    ]
 
     construct(SourceType sourceType, DamageType damageType)
         this.damageType = damageType
         this.sourceType = sourceType
 
+    function getType() returns DamageType
+        return damageType
+
+    function getSourceType() returns SourceType
+        return sourceType
+
+    function hasFlag(DamageFlags flag) returns boolean
+        return flags.get(flag castTo int)
+
     function copyTo(Damage copy)
-        copy.isDot = this.isDot
-        copy.isTriggered = this.isTriggered
+        copy.flags = this.flags
 
     static function type2Color(DamageType dType) returns string
-        switch dType
-            case MAGIC
-                return COLOR_MAGICAL
-            case POISON
-                return COLOR_POISON
-            case FIRE
-                return COLOR_FIRE
-            default
-                return COLOR_PHYISICAL
+        return COLOR[dType castTo int].toColorString()
 
 public class DamageInstance extends Damage
     real dmg
@@ -55,38 +69,28 @@ public class DamageInstance extends Damage
         this.copyTo(copy)
         return copy
 
-    function getSpecific(BoardEntity source, BoardStack target) returns SpecificDamageInstance
+    function dealDamageTo(BoardEntity source, BoardStack target) returns SpecificDamageInstance
         return new SpecificDamageInstance(this, source, target)
 
 public class DamagePreview extends Damage
     realRange dmg
 
-    construct(realRange dmg, SourceType sourceType, DamageType damageType)
+    construct(SourceType sourceType, DamageType damageType)
         super(sourceType, damageType)
+        this.dmg = realRange(0, 0)
+
+    static function create(SourceType sourceType, DamageType damageType) returns DamagePreview
+        return new DamagePreview(sourceType, damageType)
+
+    function addFlag(DamageFlags flag)
+        flags = flags.set(flag castTo int)
+
+    function setDamage(realRange dmg)
         this.dmg = dmg
 
-    @inline
-    static function create(SourceType sourceType, DamageType damageType) returns DamagePreview
-        return create(sourceType, damageType, false)
-
-    static function create(SourceType sourceType, DamageType damageType, boolean triggered) returns DamagePreview
-        let preview = new DamagePreview(realRange(0, 0), sourceType, damageType)
-        preview.isTriggered = triggered
-        return preview
-
-    @inline
-    static function createDot(SourceType sourceType, DamageType damageType) returns DamagePreview
-        return createDot(sourceType, damageType, false)
-
-    @inline
-    static function createDot(SourceType sourceType, DamageType damageType, boolean triggered) returns DamagePreview
-        let preview = new DamagePreview(realRange(0, 0), sourceType, damageType)
-        preview.isTriggered = triggered
-        preview.isDot = true
-        return preview
-
     function copy() returns DamagePreview
-        let copy = new DamagePreview(this.dmg, this.sourceType, this.damageType)
+        let copy = new DamagePreview(this.sourceType, this.damageType)
+        copy.dmg = this.dmg
         this.copyTo(copy)
         return copy
     
@@ -97,53 +101,58 @@ public class DamagePreview extends Damage
 
     function extendTooltipWithSpecific(Tooltip tooltip, BoardEntity source, BoardStack target)
         let preview = new SpecificDamagePreview(this, source, target)
-        tooltip.addLine(KStringUtils.coloredString(preview.target.getPlayer().toColor(), preview.target.getName()))
+        tooltip.addLine(KStringUtils.coloredString(target.getPlayer().toColor(), target.getName()))
         tooltip.addLine(KStringUtils.stat("Damage", Damage.type2Color(preview.damagePreview.damageType), preview.damage))
         tooltip.addLine(KStringUtils.stat("Kills", KStringUtils.COLOR_NEGATIVE, preview.amount))
         destroy preview
 
     function toColoredText() returns string
         return KStringUtils.coloredRange(Damage.type2Color(damageType), dmg.round())
-        
 
-public abstract class SpecificDamage
-    BoardStack target
-
-    construct(BoardStack target)
-        this.target = target
-
-public class SpecificDamageInstance extends SpecificDamage
-    int damage
-    int amount
-    int remainingHp
-    DamageInstance damageInstance
+public class SpecificDamageInstance
+    protected int damage
+    protected int kills
+    protected DamageInstance damageInstance
 
     construct(DamageInstance baseDamage, BoardEntity source, BoardStack target)
-        super(target)
         damageInstance = baseDamage.copy()
         let factor = calculateDamageFactor(source, damageInstance, target)
         damage = (damageInstance.dmg * factor).round()
-        amount = calculateStackLostCount(target, damage)
-        remainingHp = target.stats.getHp()
-        remainingHp += target.stats.getMaxHP() * amount
+        kills = calculateStackLostCount(target, damage)
+        var remainingHp = target.stats.getHp()
+        remainingHp += target.stats.getMaxHP() * kills
         remainingHp -= damage
+        
+        target.stats.addAmount(-kills)
+        target.stats.setHp(remainingHp)
+
+    function getDamage() returns int
+        return damage
+
+    function getKills() returns int
+        return kills
+
+    function getDamageData() returns Damage
+        return damageInstance
+
+    function getBaseDamage() returns int
+        return damageInstance.dmg.round()
 
     function toColoredText() returns string
         var str = KStringUtils.coloredInt(Damage.type2Color(damageInstance.damageType), damage)
-        if amount > 0
-            str +=  "   " + KStringUtils.coloredInt(KStringUtils.COLOR_NEGATIVE, amount)
+        if kills > 0
+            str +=  "   " + KStringUtils.coloredInt(KStringUtils.COLOR_NEGATIVE, kills)
         return str 
 
     ondestroy
         destroy damageInstance
 
-public class SpecificDamagePreview extends SpecificDamage
+public class SpecificDamagePreview
     intRange damage
     intRange amount
     DamagePreview damagePreview
 
     construct(DamagePreview baseDamage, BoardEntity source, BoardStack target)
-        super(target)
         damagePreview = baseDamage.copy()
         let factor = calculateDamageFactor(source, damagePreview, target)
         damage = (damagePreview.dmg * factor).round()

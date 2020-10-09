@@ -10,15 +10,26 @@ import KUtil
 
 import initlater Board
 
+public enum CellResult
+    NONE
+    PREVIEW
+    PREVIEW_MINOR
+    POSITIVE
+    NEGATIVE
+    NEUTRAL
+
 public class Cell
     private static constant MODEL_FILE_INNER = "HexicModularInner.mdl"
     private static constant MODEL_FILE_OUTER = "HexicModularOuter.mdl"
-    private static constant INNER_DEFAULT_COLOR = color(20, 20, 20)
-    private static constant INNER_SELECT_COLOR = color(139, 15, 240)
-    private static constant INNER_INTERACTABLE_COLOR = color(136, 136, 136)
-    private static constant INNER_INTERACTABLE_NEGATIVE_COLOR = color(200, 20, 20)
-    private static constant INNER_INTERACTABLE_POSITIVE_COLOR = color(20, 200, 20)
-    private static constant INNER_INTERACTABLE_NEUTRAL_COLOR = color(255, 218, 53)
+    
+    private static constant color array INNER_CELL_RESULT_COLOR = [
+        color(20, 20, 20),
+        color(136, 136, 136),
+        color(70, 70, 70),
+        color(20, 200, 20),
+        color(200, 20, 20),
+        color(255, 218, 53)
+    ]
 
     private static constant OUTER_DEFAULT_COLOR = color(255, 255, 255)
     private static constant OUTER_ALPHA = 90
@@ -31,6 +42,8 @@ public class Cell
     private hex hex
     private BoardStack stack
 
+    private texttag test
+
     construct(Board board, hex hex)
         this.board = board
         this.hex = hex
@@ -39,13 +52,15 @@ public class Cell
         let z = center.getTerrainZ()
         
         this.innerModel = addEffect(MODEL_FILE_INNER, vec3(center.x, center.y, z + 7))
-        ..setColor(INNER_DEFAULT_COLOR)
+        ..setColor(INNER_CELL_RESULT_COLOR[0])
         ..setScale(SCALING)
 
         this.outerModel = addEffect(MODEL_FILE_OUTER, vec3(center.x, center.y, z + 8))
         ..setColor(OUTER_DEFAULT_COLOR)
         ..setAlpha(OUTER_ALPHA)
         ..setScale(SCALING)
+
+        // test = createTTEx(vec3(center.x, center.y, z - 5), "?", 13)
 
     /** GETTER / SETTER **/
     function getHex() returns hex
@@ -104,8 +119,28 @@ public class Cell
     /**  VISUALS  **/
      // ! this method is already behind localPlayer
     function draw(Player p, Action action, boolean canGiveOrders, Cell currentSelectedCell)
-        var innerColor = INNER_DEFAULT_COLOR
-        var alpha = 20
+        var innerColor = INNER_CELL_RESULT_COLOR[0]
+        var alpha = 100
+
+        
+        /*
+        let entity = p.currentSelectedEntity
+        if entity != null 
+            let path = entity.getPathToCell(this)
+            if path != null
+                var text = ""
+                if path.getCost() > 100
+                    text = "# "
+                let prev = path.getPrev()
+                if prev != null
+                    text += prev.getHex().col.toString() + " | " + prev.getHex().row.toString()
+                test.setText(text, 13)
+            else
+                test.setText("--", 13)
+        else
+            test.setText("NA", 13)
+            */
+            
 
         
         if action != null
@@ -115,27 +150,11 @@ public class Cell
             if cellResult == CellResult.NONE
                 cellResult = action.getPreviewResultForCell(this)
 
-            if this == currentSelectedCell
-                innerColor = INNER_SELECT_COLOR
-
-            switch(cellResult)
-                case CellResult.DEFAULT
-                    innerColor = INNER_INTERACTABLE_COLOR
-                    alpha = 100
-                case CellResult.NEGATIVE
-                    innerColor = INNER_INTERACTABLE_NEGATIVE_COLOR
-                    alpha = 100
-                case CellResult.POSITIVE
-                    innerColor = INNER_INTERACTABLE_POSITIVE_COLOR
-                    alpha = 100
-                case CellResult.NEUTRAL
-                    innerColor = INNER_INTERACTABLE_NEUTRAL_COLOR
-                    alpha = 100
-                default
+            innerColor = INNER_CELL_RESULT_COLOR[cellResult castTo int]
         
         
         if this == p.currentMousePosition.cell or this == currentSelectedCell
-            alpha += 50
+            alpha += 100
 
         innerModel.setColor(innerColor)
         innerModel.setAlpha(alpha)

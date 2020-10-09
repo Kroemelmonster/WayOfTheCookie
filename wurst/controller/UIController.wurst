@@ -42,7 +42,7 @@ class UIController
     static function triggerOnActionChange(Board board)
         let currentEntry = PlayerBoardHelper.getCurrentActiveEntity(board)
         currentEntry.getCurrentAction().onAnyStackCellChange()
-        let currentPlayer = currentEntry.getPlayer()
+        let currentPlayer = currentEntry.getConntrollingPlayer()
 
         board.draw(currentPlayer)
         UIMenuActionConsole.update(currentPlayer)
@@ -54,7 +54,7 @@ class UIController
             next.continue()
 
     static function triggerOnMaxActionPointChange(BoardEntity entity, SequenzListener next)
-        entity.resetActionPoints()
+        entity.resetAP()
         triggerOnAnyStackCellChange(entity.getBoard(), next)
         
     static function triggerOnAnyStackCellChange(Board board, SequenzListener next)
@@ -69,8 +69,9 @@ class UIController
     private static function triggerOnAnyStackCellChangeInner(LLIterator<BoardStack> itr, SequenzListener next)
         nullTimer() -> 
             if itr.hasNext()
-                let dude = itr.next()
-                dude.getDefaultAction().onAnyStackCellChange()
+                let stack = itr.next()
+                stack.recalcualtePath()
+                stack.getDefaultAction().onAnyStackCellChange()
                 triggerOnAnyStackCellChangeInner(itr, next)
             else
                 next.continue()
@@ -84,20 +85,21 @@ class UIController
         p.playingBoard.draw(p)
 
     static function triggerOnStackAmountChange(BoardStack stack)
-        UIMenuBoardConsole.refresh(stack.getPlayer().playingBoard.getInitiative())
+        UIMenuBoardConsole.refresh(stack.getConntrollingPlayer().playingBoard.getInitiative())
     
     static function onTurnEnd(BoardEntity entity)
         entity.setHighlight(false)
 
     static function onTurnStart(BoardEntity entity)
-        MouseContext.forcePlayerSelect(entity.getPlayer(), entity.getCell())
+        MouseContext.forcePlayerSelect(entity.getConntrollingPlayer(), entity.getCell())
         entity.setHighlight(true)
         entity.getBoard().drawAll()
         UIMenuActionConsole.update(entity.getBoard().getPlayer(0))
         UIMenuActionConsole.update(entity.getBoard().getPlayer(1))
 
     static function triggerOnActiveEntityActionPointChange(BoardEntity entity)
-        UIMenuActionConsole.update(entity.getPlayer())
+        UIMenuActionConsole.update(entity.getConntrollingPlayer())
+        entity.recalcualtePath()
         entity.getDefaultAction().onAnyStackCellChange()
         entity.getBoard().drawAll()
 

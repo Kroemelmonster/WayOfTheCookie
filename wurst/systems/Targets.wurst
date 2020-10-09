@@ -1,0 +1,128 @@
+package Targets
+
+import LinkedList
+
+import initlater Board
+import initlater Cell
+import initlater BoardStack
+
+public interface TargetListListener
+    /** return null if you cant attack this unit **/
+    function getCellToActFrom(BoardStack target) returns Cell
+
+public interface TargetThisTurnAsWell
+    function canTragetThisTurnAsWell(Target target) returns boolean
+
+public class Target
+    protected BoardStack self
+    protected Cell fromCell
+
+    construct(BoardStack self, Cell fromCell)
+        this.self = self
+        this.fromCell = fromCell
+
+    function fromCell() returns Cell
+        return fromCell
+
+    function self() returns BoardStack
+        return self
+
+public class Targets
+    private BoardStack initator
+    private LinkedList<Target> allPossibleTargets
+    private LinkedList<Target> currentTurnTargets
+
+    private boolean needToRecalc = true
+    private TargetListListener filter
+    private TargetThisTurnAsWell thisTurnFilter
+
+    construct(BoardStack initator, TargetListListener filter)
+        this.initator = initator
+        this.allPossibleTargets = new LinkedList<Target>()
+        this.filter = filter
+    
+    function checkThisTurnAsWell(TargetThisTurnAsWell thisTurnFilter)
+        this.thisTurnFilter = thisTurnFilter
+        this.currentTurnTargets = new LinkedList<Target>()
+
+    function recalculate()
+        needToRecalc = true
+
+    function get(BoardStack searchStack) returns Target
+        return getInner(searchStack, allPossibleTargets.iterator())
+
+
+    function getForCurrentTurn(BoardStack searchStack) returns Target
+        return getInner(searchStack, currentTurnTargets.iterator())
+        
+    private function getInner(BoardStack searchStack, LLIterator<Target> itr) returns Target
+        if searchStack == null
+            return null
+        recalcIfNeeded()
+        Target found = null
+        while itr.hasNext() and found == null
+            let current = itr.next()
+            if current.self == searchStack
+                found = current
+        
+        destroy itr
+        return found
+    
+    function has(BoardStack stack) returns boolean
+        return get(stack) != null
+
+    function hasForCurrentTurn(BoardStack stack) returns boolean
+        return getForCurrentTurn(stack) != null
+
+    function isEmpty() returns boolean
+        recalcIfNeeded()
+        return allPossibleTargets.isEmpty()
+
+    function isEmptyForCurrentTurn() returns boolean
+        recalcIfNeeded()
+        return currentTurnTargets.isEmpty()
+
+    function iterator() returns LLIterator<Target>
+        recalcIfNeeded()
+        return allPossibleTargets.iterator()
+
+    function iteratorForCurrentTurn() returns LLIterator<Target>
+        recalcIfNeeded()
+        return currentTurnTargets.iterator()
+
+    private function recalcIfNeeded()
+        if needToRecalc
+            calculateInner()
+            needToRecalc = false
+
+    private function calculateInner()
+        clear()
+        initator.getBoard().forEachStack() eventuellTarget ->
+            let fromCell = filter.getCellToActFrom(eventuellTarget)
+            if fromCell != null
+                let target = new Target(eventuellTarget, fromCell)
+                allPossibleTargets.add(target)
+                if thisTurnFilter != null and thisTurnFilter.canTragetThisTurnAsWell(target)
+                    currentTurnTargets.add(target)
+
+    private function clear()
+        for target in allPossibleTargets
+            destroy target
+        allPossibleTargets.clear()
+        if currentTurnTargets != null
+            currentTurnTargets.clear()
+
+    ondestroy
+        if filter != null
+            destroy filter
+        if allPossibleTargets != null
+            clear()
+            destroy allPossibleTargets
+        if thisTurnFilter != null
+            destroy thisTurnFilter
+            thisTurnFilter = null
+        if currentTurnTargets != null
+            destroy currentTurnTargets
+            currentTurnTargets = null
+            
+            

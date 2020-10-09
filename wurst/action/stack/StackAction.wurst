@@ -4,15 +4,24 @@ import BoardStack
 import ActionCost
 import BoardEntity
 import ActionType
+import LinkedList
+import KUtil
+import StackActionType
 
 public abstract class StackAction extends Action
     protected BoardStack stack
+    protected StackActionType actionType
 
-    static function createType(string name, string icon) returns ActionType
-        return new ActionType(name, icon)
+    static function createType(string name, string icon, ActionCostPreset cost) returns StackActionType
+        return new StackActionType(name, icon, cost)
 
-    construct(BoardEntity stack, ActionType actionType, ActionCostPreset cost)
-        super(stack, actionType, cost)
-        if entity.getType() != EntityType.STACK
-            Log.error("Tried to add an Stack Action to an non Stack")
-        this.stack = entity.toStack()
+    construct(BoardStack stack, StackActionType actionType, StackActionData data)
+        super(stack, actionType)
+        this.stack = stack
+        this.actionType = actionType
+        if data.getCost() != null
+            cost.setBasic(data.getCost())
+        else
+            cost.setBasic(actionType.getCost())
+
+    abstract function createBasicTooltipLines() returns LinkedList<string>

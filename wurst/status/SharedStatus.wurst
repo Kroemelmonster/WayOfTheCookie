@@ -1,0 +1,49 @@
+package SharedStatus
+import LinkedList
+
+import initlater StatusType
+import Status
+import BoardEntity
+import BoardTrigger
+
+public abstract class SharedStatus extends Status
+
+    protected LinkedList<SharedStatus> secondaryStati
+    protected SharedStatus primary
+
+    construct(StatusType statusType, BoardEntity entity, StatusData data)
+        super(statusType, entity)
+
+        primary = data.linkToPrimary
+
+        if isPrimary()
+            secondaryStati = new LinkedList<SharedStatus>
+            setupPrimary(data)
+        else
+            primary.secondaryStati.add(this)
+            setupSecondary(data)
+
+    protected function isPrimary() returns boolean
+        return primary == null
+
+    protected abstract function setupPrimary(StatusData data)
+    protected abstract function setupSecondary(StatusData data)
+
+    protected function removePrimary(SequenzListener next)
+        for secondary in secondaryStati
+            secondary.removeWithoutTrigger()
+        remove(next)
+
+    protected function removeSecondary(SequenzListener next)
+        primary.secondaryStati.remove(this)
+        remove(next)
+
+    /** this will !not destroy the statusData **/
+    protected function applySecondary(BoardEntity target, StatusData data)
+        data.setSecondary(this)
+        statusType.applyNewStatusAndKeepData(target, data)
+
+    ondestroy
+        if secondaryStati != null
+            destroy secondaryStati
+            secondaryStati = null

@@ -4,18 +4,15 @@ import LinkedList
 
 import initlater Cell
 import initlater Board
-import initlater BoardStack
 import initlater Hero
 import initlater UIButton
 import initlater UIMenuWorldConsole
 import initlater UIDialog
-import initlater KeyPressSystem
+import initlater PlayerTrigger
 import initlater BoardEntity
 import initlater UIWindow
 import initlater UIMenuConsole
-
-public abstract class KeyPressListener
-    abstract function onEvent(Player p, string key)
+import Globals
 
 public abstract class PlayerListener
     abstract function onEvent(Player p)
@@ -41,6 +38,7 @@ public class Player
 
     UIMenuWorldConsoleInfo worldConsoleInfo = new UIMenuWorldConsoleInfo()
     UIMenuConsoleInfo menuConsoleInfo = new UIMenuConsoleInfo()
+    UIMenuPlayerInfo uiMenuPlayerInfo = new UIMenuPlayerInfo()
 
     mousePosition currentMousePosition
 
@@ -49,33 +47,40 @@ public class Player
     Board playingBoard
     Hero hero
     boolean mouse3DEnabled = true
-    boolean isConntrolledByKI
+    boolean doesNotNeedVisuals
     color c
 
-    LinkedList<KeyPressListener> keyPressListener = new LinkedList<KeyPressListener>()
-    UIMenuPlayerInfo uiMenuPlayerInfo = new UIMenuPlayerInfo()
+    LinkedList<KeyPressListener> keyPressListeners
+    LinkedList<PlayerUnitListener> selectListeners
 
     player blzPlayer
 
     static Player NEUTRAL_AGGRESIVE
     static Player NEUTRAL_PASSIVE
+    static Player ME
 
     private construct(player p)
         blzPlayer = p
-        isConntrolledByKI = p.isIngame() == false
+        doesNotNeedVisuals = not p.isIngame()
         
         var playerColor = PLAYER_COLOR_RED
         if p == players[PLAYER_NEUTRAL_PASSIVE]
             playerColor = PLAYER_COLOR_SNOW
-        if this.isLocal()
+        if isLocal()
             playerColor = PLAYER_COLOR_GREEN
             
-        this.c = playerColor.toColor()
+        c = playerColor.toColor()
         blzPlayer.setColor(playerColor)
 
-        if isConntrolledByKI == false
-            registerPlayerOnAnyKeyPresses(p)
+        if not doesNotNeedVisuals
+            PlayerTrigger.registerKeyPress(this)
+            PlayerTrigger.registerSelect(this)
             activePlayers.add(this)
+
+    function isConntrolledByKI() returns boolean
+        if canControllKI
+            return false
+        return doesNotNeedVisuals
 
     function isLocal() returns boolean
         return blzPlayer == localPlayer
@@ -87,8 +92,8 @@ public class Player
         return c.toColorString()
 
     function onAnyKeyPress(KeyPressListener listener)
-        if not isConntrolledByKI
-            keyPressListener.add(listener)
+        if not doesNotNeedVisuals
+            keyPressListeners.add(listener)
 
     function getRelationshipStatusTo(Player other) returns PlayerRelationship
         if other == null
@@ -106,7 +111,6 @@ public class Player
         let status = getRelationshipStatusTo(other)
         return status == PlayerRelationship.SELF or status == PlayerRelationship.ALLY
 
-    @inline
     function isPlayingOnABoard() returns boolean
         return playingBoard != null
 
@@ -115,6 +119,7 @@ public class Player
         playerData[players[1].getId()] = new Player(players[1])
         NEUTRAL_AGGRESIVE = new Player(players[PLAYER_NEUTRAL_AGGRESSIVE])
         NEUTRAL_PASSIVE = new Player(players[PLAYER_NEUTRAL_PASSIVE])
+        ME = playerData[players[0].getId()]
         
         playerData[players[PLAYER_NEUTRAL_AGGRESSIVE].getId()] = NEUTRAL_AGGRESIVE
         playerData[players[PLAYER_NEUTRAL_PASSIVE].getId()] = NEUTRAL_PASSIVE

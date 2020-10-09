@@ -1,10 +1,8 @@
 package HeroType
 
 import KUtil
-import StackType
-import LinkedList
 import SkillTree
-import DamageAndResistance
+import Damage
 
 public class HeroType
     integer unitId
@@ -21,7 +19,7 @@ public class HeroType
 
     intRange damage
     
-    DamageType damageType = PHYISICAL
+    DamageType damageType = PHYSICAL
 
     SkillTreeType array[3] skillTrees
 

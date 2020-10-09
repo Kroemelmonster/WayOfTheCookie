@@ -47,6 +47,9 @@ public class HostileArmy
     function addStackAtFree(StackType stackType, int amount)
         army.addStackAtFree(stackType, amount)
 
+    function addStackWithLeadershipAtFree(StackType stackType, int leaderhsip)
+        army.addStackWithLeadershipAtFree(stackType, leaderhsip)
+
     function addStack(StackType stackType, int amount)
         army.addStack(stackType, amount)
 

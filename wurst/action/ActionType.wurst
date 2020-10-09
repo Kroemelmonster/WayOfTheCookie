@@ -4,17 +4,10 @@ import Action
 import LinkedList
 import Icon
 import BoardEntity
-import initlater SummonLesserSkeletonAction
-import initlater WaitAction
-import initlater DefendAction
-import initlater SlamAction
-import initlater ChainLightningAction
-import initlater WalkAndAttackAction
-import initlater HeroSkipAction
-import initlater HeroAttackAction
-import initlater ActionTalentType
 import BitSet
 import initlater SpellType
+import initlater StackActionType
+import initlater HeroActionType
 
 public enum ActionTypeOption
     INSTANT
@@ -23,57 +16,26 @@ public enum ActionTypeOption
     SPELL
     WARCRY
 
-interface ActionCreateListener
-    function create(BoardEntity boardEntity) returns Action
+public abstract class ActionType extends Icon
 
-public interface ActionCreateTooltipLinesListener
-    function create(int value) returns LinkedList<string>
-
-public class ActionType extends Icon
-    protected ActionCreateListener listener
-    protected ActionCreateTooltipLinesListener tooltipLinesListener
-    protected ActionTalentType creatingTalent
+    static function setup()
+        SpellType.setup()
+        StackActionType.setup()
+        HeroActionType.setup()
 
     protected bitset optionSet = bitset(0)
 
     construct(string name, string icon)
         super(name, icon)
-    
-    function onCreate(ActionCreateListener listener)
-        this.listener = listener
-
-    function onCreateTooltipLines(ActionCreateTooltipLinesListener tooltipLinesListener)
-        this.tooltipLinesListener = tooltipLinesListener
-
-    function create(BoardEntity boardEntity) returns Action
-        return listener.create(boardEntity)
-
-    function toString() returns string
-        return "ActionType '"+name+"'"
 
     function enableOption(ActionTypeOption opt)
         optionSet = optionSet.set(opt castTo int)
 
     function hasOption(ActionTypeOption option) returns boolean
         return optionSet.get(option castTo int)
+    
+    override function getName() returns string
+        return super.getName()
 
-    function createTooltipLines(int value) returns LinkedList<string>
-        return tooltipLinesListener.create(value)
-
-    function getTalent() returns ActionTalentType
-        if creatingTalent == null
-            creatingTalent = new ActionTalentType(this)
-        return creatingTalent
-
-    static function setup()
-        WaitAction.setup()
-        DefendAction.setup()
-        WalkAndAttackAction.setup()
-        SlamAction.setup()
-        ChainLightningAction.setup()
-        SummonLesserSkeletonAction.setup()
-
-
-        HeroSkipAction.setup()
-        HeroAttackAction.setup()
-        SpellType.setup()
+    override function getIcon() returns string
+        return super.getIcon()

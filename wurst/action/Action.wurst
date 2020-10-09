@@ -6,22 +6,16 @@ import initlater Cell
 import initlater BoardEntity
 import initlater OrderSystem
 
-import initlater BoardStack
 import BoardTrigger
 import UIController
 import ActionCost
-import BitSet
-import initlater BoardHero
 import Icon
 import initlater ActionType
 import Tooltip
+import LinkedList
+import KUtil
 
-public enum CellResult
-    DEFAULT
-    POSITIVE
-    NEGATIVE
-    NEUTRAL
-    NONE
+
 
 public abstract class Action
     protected BoardEntity entity
@@ -30,33 +24,24 @@ public abstract class Action
     protected string key = ""
     protected ActionCost cost
 
-    construct(BoardEntity entity)
-        this.entity = entity
-        this.cost = ActionCost.create(entity)
-
-    construct(BoardEntity entity, ActionType actionType, ActionCostPreset cost)
+    construct(BoardEntity entity, ActionType actionType)
         this.entity = entity
         this.actionType = actionType
-        this.cost = ActionCost.create(entity, cost)
+        cost = ActionCost.create(entity)
 
     function getPreviewResultForCell(Cell _cell) returns CellResult
         return CellResult.NONE
 
-    abstract function getHighlightResultForCell(Player p, Cell cell) returns CellResult
-
     function onAnyStackCellChange()
         recalculatePreview()
-        if OrderSystem.canOrderAndInteract(entity.getPlayer())
-            recalculateHighlight(entity.getPlayer())
+        if OrderSystem.canOrderAndInteract(entity.getConntrollingPlayer())
+            recalculateHighlight(entity.getConntrollingPlayer())
 
     protected abstract function recalculatePreview()
-
+    abstract function getHighlightResultForCell(Player p, Cell cell) returns CellResult
     abstract function onUIMouseEnter()
-
     abstract function onUIMouseLeave()
-
     abstract function recalculateHighlight(Player p)
-
     abstract function sendTargetOrder(Cell cell) returns boolean
     abstract function executeForKI(SequenzListenerStatus listener)
 
@@ -83,10 +68,10 @@ public abstract class Action
             return
 
         entity.selectAction(this)
-        UIController.triggerOnActionChange(entity.getPlayer().playingBoard)
+        UIController.triggerOnActionChange(entity.getConntrollingPlayer().playingBoard)
 
     function hasOption(ActionTypeOption option) returns boolean
-        return getType().hasOption(option)
+        return actionType.hasOption(option)
 
     function showAsPrimary() returns boolean
         return hasOption(ActionTypeOption.PRIMARY)
@@ -106,16 +91,13 @@ public abstract class Action
         return tt
 
     function getIcon() returns string
-        return getType().getIcon()
+        return actionType.getIcon()
 
     function getName() returns string
-        return getType().getName()
+        return actionType.getName()
 
     function getExtendedName() returns string
         return getName()
-
-    function getType() returns ActionType
-        return actionType
 
     function toString() returns string
         return "Action '"+getName()+"'"

@@ -1,0 +1,106 @@
+package SubStackActions
+
+import LinkedList
+
+import AnimationAttack
+import Damage
+import BoardController
+import KUtil
+import Cell
+import BoardStack
+import Board
+import AnimationMove
+import AnimationWait
+import BoardTrigger
+import SubTargetList
+import BoardEntity
+import Scheduler
+
+public interface SubActionCostSequenzListener
+    function continue(boolean couldReachTarget, int potentialUsedAp)
+
+
+public class SubStackActions
+
+    static function attack(BoardStack attacker, BoardStack defender, boolean triggerOnAttack, SequenzListenerStatus next)
+        // TODO maybe stream line this
+        let preview = DamagePreview.create(SourceType.ATTACK, attacker.stats.getDamageType())
+        ..setDamage(attacker.stats.getDamageAll())
+        let instance = preview.getRandomInstance()
+        destroy preview
+        attack(attacker, defender, instance, triggerOnAttack, next)
+
+    static function attack(BoardStack attacker, BoardStack defender, DamageInstance instance, boolean triggerOnAttack, SequenzListenerStatus next)
+        // save it AS it might happen that the attacker DIES while attacking..
+        // resulting in not beeing on the board anymore ? :)
+        let board = attacker.getBoard()
+
+        AnimationAttack.against(attacker, defender) () ->
+            let attackPosition = attacker.getCell()
+            let timeToBackSwing = Scheduler.getTimeIn(0.5)
+            BoardController.dealDamage(attacker, instance, defender) ->
+                let subTargets = attacker.stats.getSubAttackTargets(attackPosition, defender)
+                if subTargets != null
+                    let itr = subTargets.iterator()
+                    subActionAttackDealDamageToSubTargets(itr, attacker, instance) ->
+                        destroy itr
+                        destroy instance
+                        subActionAttackBackSwing(board, attacker, defender, triggerOnAttack, timeToBackSwing, next)
+                else
+                    destroy instance
+                    subActionAttackBackSwing(board, attacker, defender, triggerOnAttack, timeToBackSwing, next)
+        
+    static function move(BoardStack stack, LinkedList<Cell> path, int limitingMoveAP, SubActionCostSequenzListener next)
+        let itr = path.iterator()
+        subActionMoveInner(stack, path.iterator(), 0, limitingMoveAP) (couldReach, usedAP) ->
+            destroy itr
+            next.continue(couldReach, usedAP)
+            
+
+    static function move(BoardStack stack, LinkedList<Cell> path, SubActionCostSequenzListener next)
+        move(stack, path, stack.getRemainingMoveAP(), next)
+
+    /* -------------------------------------------------------------------------- */
+
+    protected static function subActionAttackDealDamageToSubTargets(LLIterator<SubTarget> itr, BoardStack attacker, DamageInstance instance, SequenzListener next)
+        if itr.hasNext()
+            let subTarget = itr.next()
+            let subInstance = instance.copy()
+            subInstance.dmg *= subTarget.multi
+            BoardController.dealDamage(attacker, subInstance, subTarget.stack) ->
+                destroy subInstance
+                subActionAttackDealDamageToSubTargets(itr, attacker, instance, next)
+        else
+            next.continue()
+
+    protected static function subActionAttackBackSwing(Board board, BoardStack attacker, BoardStack defender, boolean triggerOnAttack, real timeToBackSwing, SequenzListenerStatus next)
+        AnimationWait.untill(board, timeToBackSwing) ->
+            if triggerOnAttack
+                BoardController.onAttackEnd(attacker, defender) ->
+                    next.continue(0)
+            else
+                next.continue(0)
+
+    protected static function subActionMoveInner(BoardStack stack, LLIterator<Cell> pathItr, int prevCost, int limitingMoveAP, SubActionCostSequenzListener next)
+        let nextCell = pathItr.next()
+        let currentCell = stack.getCell()
+        var usedAP = prevCost
+        BoardController.onCellLeave(stack, currentCell, nextCell) (cost) ->
+            usedAP += cost
+            if stack.isAlive() == false
+                next.continue(false, usedAP)
+            else if usedAP > limitingMoveAP
+                next.continue(false, usedAP)
+            else
+                AnimationMove.atCell(stack, nextCell) -> 
+                    BoardController.onCellEnter(stack, currentCell, nextCell) (cost) ->
+                        stack.replaceCell(nextCell)
+                        usedAP += cost
+                        if stack.isAlive() == false
+                            next.continue(false, usedAP)
+                        else if usedAP > limitingMoveAP
+                            next.continue(false, usedAP)
+                        else if pathItr.hasNext()
+                            subActionMoveInner(stack, pathItr, usedAP, limitingMoveAP, next)
+                        else
+                            next.continue(true, usedAP)

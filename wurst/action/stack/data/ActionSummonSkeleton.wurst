@@ -1,0 +1,161 @@
+package ActionSummonSkeleton
+
+import LinkedList
+import Icons
+import Abilities
+
+import PlayerData
+import KUtil
+import initlater BoardController
+
+import Action
+import initlater StackAction
+import StackType
+
+import initlater Cell
+import initlater BoardStack
+import StackTypesDefinition
+import initlater UIMenuActionConsole
+import AnimationWait
+import AnimationCast
+import BoardTrigger
+import ClosureTimers
+import ActionCost
+import KStringUtils
+import Tooltip
+import UITooltip
+import initlater ActionType
+import BoardEntity
+import initlater StackActionType
+
+public class ActionSummonSkeleton extends StackAction
+    static StackActionType TYPE
+
+    static function setup()
+        TYPE = StackAction.createType("Summon Skeleton", Icons.bTNRaiseDead, ActionCostPreset.create(1, true, 3))
+        ..enableOption(ActionTypeOption.PRIMARY)
+        TYPE.onCreate() (BoardStack stack, StackActionData data) ->
+            return new ActionSummonSkeleton(stack, data)
+        TYPE.onCreateTooltipLines() data -> 
+            return createTooltipLines(data)
+
+    private static constant int MAXRANGE = 1
+    private static constant string EFFECT = Abilities.raiseSkeleton
+    private static StackType SUMMONED_TYPE
+
+    private static function getSummonLeadershipLeadershipAmount(int amount) returns intRange
+        return intRange((SUMMONED_TYPE.leadership * amount * 0.8).ceil(),
+                        (SUMMONED_TYPE.leadership * amount * 1.2).ceil())
+
+    private static function createTooltipLines(int amount) returns LinkedList<string>
+        let leadership = getSummonLeadershipLeadershipAmount(amount)
+        return new LinkedList<string>
+        ..add(KStringUtils.stat("Target", "Empty Cell"))
+        ..add(KStringUtils.stat("Range", MAXRANGE))
+        ..add("")
+        ..add("Summons a Stack of "
+        + KStringUtils.coloredString(KStringUtils.COLOR_SECONDARY, SUMMONED_TYPE.name)
+        + " with a Leaderhip of "
+        + KStringUtils.coloredRange(KStringUtils.COLOR_PRIMARY, leadership))
+
+    private static function createTooltipLines(StackActionData _data) returns LinkedList<string>
+        return createTooltipLines(1)
+      
+    private static function createTooltipLines(ActionSummonSkeleton action) returns LinkedList<string>
+        return createTooltipLines(action.stack.stats.amount)
+
+
+    
+
+    private LinkedList<Cell> area = new LinkedList<Cell>()
+    private intRange summonAmount  
+
+    construct(BoardStack stack, StackActionData data)
+        super(stack, TYPE, data)
+        SUMMONED_TYPE = StackTypes.find("Lesser Skeleton")
+
+    override function getHighlightResultForCell(Player p, Cell cell) returns CellResult
+        if area.has(cell)
+            return CellResult.NEUTRAL
+        return CellResult.NONE
+
+    override function recalculatePreview()
+        recalculate()
+
+    override function recalculateHighlight(Player p)
+        if area.has(p.currentMousePosition.cell)
+            showPreview()
+        else
+            hidePreview()
+
+    override function sendTargetOrder(Cell cell) returns boolean
+        if area.has(cell)
+            recalcSummonAmount()
+            let summon = cell.getBoard().createSummon(stack.getPlayer(), SUMMONED_TYPE, summonAmount.random())
+
+            AnimationCast.atCell(stack, cell) () ->
+                flashEffect(EFFECT, cell.getCoord())
+                BoardController.placeStackOnBoard(summon, cell, true) ->
+                    AnimationWait.time(cell.getBoard(), 0.5) ->
+                        BoardController.finishOrder(entity, cost)
+            
+            return true
+        
+        return false
+
+    private function recalcSummonAmount()
+        let amount = stack.stats.getAmount()
+        let leadershipAmount = getSummonLeadershipLeadershipAmount(stack.stats.amount)
+        summonAmount = intRange((leadershipAmount.min * amount / SUMMONED_TYPE.leadership).ceil(), (leadershipAmount.max * amount / SUMMONED_TYPE.leadership).ceil())
+
+        // TODO
+        /*
+        var str = "Summons a Stack of "+ Tooltip.coloredRange(Tooltip.COLOR_PRIMARY, summonAmount)
+        str += " " + Tooltip.coloredString(Tooltip.COLOR_SECONDARY, SUMMONED_TYPE.name)
+        tooltip.setLine(3, str)*/
+
+    private function recalculate()
+        area.clear()
+        recalcSummonAmount()
+
+        stack.getCell().forEachCellsInRange(intRange(1, MAXRANGE)) (Cell cell) ->
+            if cell.getStack() == null
+                area.add(cell)
+
+    private function showPreview()
+        let tt = createBasicTooltip()
+        ..addLines(createBasicTooltipLines())
+        UITooltip.display(entity.getConntrollingPlayer(), tt)
+        // TODO do this in a UiController
+        UIMenuActionConsole.updateActionPoints(entity, cost)
+
+    private function hidePreview()
+        UITooltip.hide(entity.getConntrollingPlayer())
+        UIMenuActionConsole.updateActionPoints(entity)
+
+    override function onUIMouseEnter()
+        recalcSummonAmount()
+        showPreview()
+
+    override function onUIMouseLeave()
+        hidePreview()
+
+    override function createBasicTooltipLines() returns LinkedList<string>
+        return createTooltipLines(this)
+
+    override function executeForKI(SequenzListenerStatus listener)
+        // just someone it when there is a place
+        recalculate()
+        if area.isEmpty()
+            listener.continue(1)
+        else
+            activate()
+            nullTimer() ->
+                let random = area.get(GetRandomInt(0, area.size() - 1))
+                sendTargetOrder(random)
+
+
+    ondestroy
+        if area != null
+            destroy area
+        

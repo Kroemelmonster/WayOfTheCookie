@@ -1,12 +1,11 @@
 package StatusType
 
 import Status
-import AilmentBleeding
-import AilmentPoison
 import StatusStunned
 import StatusPurged
 import BoardEntity
 import StatusRallingCry
+import StatusSpiritLink
 import LinkedList
 import Tooltip
 import KStringUtils
@@ -18,11 +17,15 @@ interface StatusCreateListener
 interface StatusCreateTooltipLinesListener
     function create(StatusData data) returns LinkedList<string>
 
+interface StatusCanApplyListener
+    function canApply(BoardEntity entity, StatusData data) returns boolean
+
 public class StatusType
     protected string name
     protected string icon
     protected StatusCreateListener listener
     protected StatusCreateTooltipLinesListener tooltipLinesListener
+    protected StatusCanApplyListener canApplyListener
 
     construct(string name, string icon)
         this.icon = icon
@@ -32,19 +35,33 @@ public class StatusType
         StatusStunned.setup()
         StatusPurged.setup()
         StatusRallingCry.setup()
+        StatusSpiritLink.setup()
         
     function setCreationListener(StatusCreateListener listener)
         this.listener = listener
 
+    function setCanApplyListener(StatusCanApplyListener listener)
+        canApplyListener = listener
+
     function setTooltipListener(StatusCreateTooltipLinesListener listener)
         this.tooltipLinesListener = listener
 
-    /** Pls use the StatusController to apply and remove stati */
+    function canApplyTo(BoardEntity entity, StatusData data) returns boolean
+        if canApplyListener == null
+            return true
+        return canApplyListener.canApply(entity, data)
+
+    /** Pls use the StatusController to apply and remove stati **/
     function applyNewStatusTo(BoardEntity entity, StatusData data) returns Status
-        let status = listener.create(entity, data)
-        entity.addStatus(status)
+        let status = applyNewStatusAndKeepData(entity, data)
         if data != null
             destroy data
+        return status
+
+    /** only use this if you reaaaly know what you are doing **/
+    function applyNewStatusAndKeepData(BoardEntity entity, StatusData data) returns Status
+        let status = listener.create(entity, data)
+        entity.addStatus(status)
         return status
 
     function getIcon() returns string

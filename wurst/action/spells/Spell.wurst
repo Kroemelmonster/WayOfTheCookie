@@ -1,0 +1,101 @@
+package Spell
+
+import initlater SpellType
+import initlater Hero
+
+import ActionType
+import BoardEntity
+import SpellAction
+import ActionCost
+import HeroData
+import Tooltip
+import Globals
+import LinkedList
+import initlater BoardHero
+
+public class SpellLevel
+    protected ActionCostPreset usageCost
+    protected HeroDataChange levelCost
+    protected int array[10] intData
+
+    construct(ActionCostPreset usageCost, HeroDataChange levelCost)
+        this.usageCost = usageCost
+        this.levelCost = levelCost
+
+    function getUsageCost() returns ActionCostPreset
+        return usageCost
+
+    function getPayCost() returns HeroDataChange
+        return levelCost
+
+    function setIntData(int where, int value)
+        intData[where] = value
+
+    function getIntData(int where) returns int
+        return intData[where]
+
+public interface HasSpellStats
+    function getDamageMulti() returns real
+
+public class Spell implements HasSpellStats
+    protected SpellType spellType
+    protected Hero hero
+
+    protected int level = 0
+    
+    protected boolean quickCast = false
+
+    construct(SpellType spellType, Hero hero)
+        this.spellType = spellType
+        this.hero = hero
+
+    function create(BoardHero hero) returns SpellAction
+        return spellType.createAction(hero, this)
+
+    function getMaxLevel() returns int
+        return level
+
+    function getLevelData(int level) returns SpellLevel
+        return spellType.getLevel(level)
+
+    function canLevelUp() returns boolean
+        if level >= spellType.getMaxLevel()
+            return false
+        return getLevelData(level + 1).levelCost.canPay(hero)
+
+    function levelUp() returns boolean
+        if not canLevelUp()
+            return false
+        level ++
+        getLevelData(level).levelCost.pay(hero)
+        return true
+
+    function getName() returns string
+        return spellType.getName()
+
+    function getIcon() returns string
+        return spellType.getIcon()
+
+    function getExtendedName() returns string
+        return getName() + " [" + (level + 1).toString() + "]"
+
+    function getBaseMultiFromPower(int power) returns real
+        return (power * DAMAGE_PER_SPELLPOWER / 100.0)
+
+    override function getDamageMulti() returns real
+        let power = hero.stats.getPower()
+        return (1.0 + getBaseMultiFromPower(power))
+
+    function createTooltip(int level, boolean showLevelCost) returns Tooltip
+        return spellType.createTooltip(hero, this, level, showLevelCost)
+
+    function createTooltip(boolean showLevelCost) returns Tooltip
+        return createTooltip(level, showLevelCost)
+
+    function createTooltipLines(SpellLevel level) returns LinkedList<string>
+        return spellType.createTooltipLines(level,  this)
+
+    function getType() returns SpellType
+        return spellType
+
+        

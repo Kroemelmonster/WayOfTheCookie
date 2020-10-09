@@ -24,7 +24,7 @@ public class StatusPurged extends Status
         TYPE.setTooltipListener() data ->
             return createTooltipBaseLines(data)
 
-    protected static constant int SLOW = 1
+    static constant int SLOW = 1
 
     private static function createTooltipBaseLines(int slowValue) returns LinkedList<string>
         return new LinkedList<string>
@@ -54,14 +54,18 @@ public class StatusPurged extends Status
         turnStartListener = entity.getTriggers().addTurnStart() (SequenzListener next) ->
             duration--
             if duration <= 0
-                kill()
-            next.continue()
+                remove(next)
+            else
+                next.continue()
 
         refreshStatusData(data)
 
-    override function refreshInner(StatusData data)
+    override function onRefresh(StatusData data)
         applyStats(false)
         refreshStatusData(data)
+
+    override function canPurge() returns boolean
+        return true
 
     protected function refreshStatusData(StatusData data)
         duration = data.duration
@@ -83,4 +87,3 @@ public class StatusPurged extends Status
         if entity.isAlive()
             applyStats(false)
             entity.getTriggers().removeOnTurnStart(turnStartListener)
-        hide()

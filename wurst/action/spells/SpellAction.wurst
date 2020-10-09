@@ -1,0 +1,103 @@
+package SpellAction
+
+import initlater BoardHero
+import initlater Spell
+import initlater SpellType
+
+import ActionCost
+import Action
+import ActionType
+import BoardEntity
+import Tooltip
+import BoardTrigger
+import Cell
+import BoardController
+import LinkedList
+import KUtil
+
+public abstract class SpellAction extends Action implements HasSpellStats
+    protected BoardHero hero
+    protected int levelIndex
+    protected SpellLevel level
+    protected boolean currentlyActive = false
+    protected Spell spell
+    protected boolean quickCast = false
+
+    static function createType(string name, string icon) returns SpellType
+        return new SpellType(name, icon)
+        ..enableOption(ActionTypeOption.SPELL)
+
+    construct(BoardHero hero, Spell spell)
+        super(hero, spell.getType())
+        this.spell = spell
+        setLevelTo(spell.getMaxLevel())
+        this.hero = hero
+        activateQuickcast(true)
+
+    function setLevelTo(int newLevel) returns boolean
+        if currentlyActive
+            return false
+        if not newLevel.isBetween(0, spell.getMaxLevel())
+            return false
+        levelIndex = newLevel
+        level = spell.getLevelData(levelIndex)
+        cost.setBasic(level.getUsageCost())
+        return true
+
+    function getLevelIndex() returns int
+        return levelIndex
+
+    function isQuickcast() returns boolean
+        return quickCast
+
+    function toggleQuickcast()
+        activateQuickcast(not quickCast)
+
+    function activateQuickcast(boolean flag)
+        quickCast = flag
+        if flag
+            hero.updateQuickcast()
+        else
+            if entity.getCurrentAction() == this
+                entity.resetCurrentSelectedAction()
+
+    function getBoardHero() returns BoardHero
+        return hero
+
+    override function getDamageMulti() returns real
+        let power = hero.stats.getPower()
+        return 1.0 + spell.getBaseMultiFromPower(power)
+
+    override function showAsPrimary() returns boolean
+        return quickCast
+
+    override function getExtendedName() returns string
+        return getName() + " ["+(levelIndex + 1).toString()+"]"
+
+    function createTooltip() returns Tooltip
+        return spell.createTooltip(levelIndex, false)
+
+    protected function startCast()
+        currentlyActive = true
+
+    protected function finishCast(boolean pay)
+        if pay
+            BoardController.finishOrder(entity, cost)
+        currentlyActive = false
+    
+    override function sendTargetOrder(Cell cell) returns boolean
+        startCast()
+        let castedCorrectly = castAt(cell)
+        if not castedCorrectly
+            finishCast(false)
+        return castedCorrectly
+
+    function createBasicTooltipLines() returns LinkedList<string>
+        return cost.createTooltipLines()
+        ..addAllAndDestroy(spell.createTooltipLines(level))
+        
+    abstract function castAt(Cell cell) returns boolean
+
+    override function executeForKI(SequenzListenerStatus listener)
+        Log.error("YOU NEED TO WRITE KI FOR "+toString())
+        listener.continue(-1)

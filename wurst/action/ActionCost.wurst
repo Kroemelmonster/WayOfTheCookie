@@ -31,8 +31,11 @@ public class ActionCostPreset implements ActionCostData
         this.maxCharges = maxCharges
         this.mana = mana
 
-    function adjustBaseManaCost(int mana)
-        this.mana = mana
+    function addCharges(int charges)
+        if maxCharges == -1
+            maxCharges = charges
+        else
+            maxCharges += charges
 
     override function getAP() returns int
         return ap
@@ -57,6 +60,9 @@ public class ActionCostPreset implements ActionCostData
     function hasCooldown() returns boolean
         return maxCooldown > 0
 
+    function hasCharges() returns boolean
+        return maxCharges > 0
+
     function setupTooltipCost(Tooltip tt)
         tt.addIcon(KStringUtils.primaryString(getAPAsText())
         , "UI/Tooltip/TooltipAddonAPIcon.dds")
@@ -68,12 +74,30 @@ public class ActionCostPreset implements ActionCostData
             , "UI/Tooltip/TooltipAddonCooldownIcon.dds")
 
     function createTooltipLines() returns LinkedList<string>
+        return createTooltipLines(null)
+
+    protected function createTooltipLines(ActionCost used) returns LinkedList<string>
         let lines = new LinkedList<string>()
         ..add(KStringUtils.stat("Cost", getAPAsText()))
         if hasMana()
             lines.add(KStringUtils.stat("Mana", mana.toString()))
         if hasCooldown()
-            lines.add(KStringUtils.stat("Cooldown", maxCooldown.toString()))
+            var str = ""
+            if used != null
+                if used.cooldown <= 0
+                    str = "Ready"
+                else
+                    str = used.cooldown.toString()
+                str += " | "
+            str += maxCooldown.toString()
+            lines.add(KStringUtils.stat("Cooldown", str))
+        if hasCharges()
+            var str = ""
+            if used != null
+                str = used.charges.toString()
+                str += " / "
+            str += maxCharges.toString()
+            lines.add(KStringUtils.stat("Charges", str))
         return lines
 
 public class ActionCost implements ActionCostData
@@ -98,8 +122,8 @@ public class ActionCost implements ActionCostData
 
     private BoardEntity entity
     private ActionCostPreset basic
-    private int cooldown
-    private int charges
+    protected int cooldown
+    protected int charges
 
     private construct(BoardEntity entity, ActionCostPreset basic)
         this.basic = basic
@@ -121,8 +145,11 @@ public class ActionCost implements ActionCostData
     function setupTooltipCost(Tooltip tt)
         basic.setupTooltipCost(tt)
 
+    function createTooltipLines() returns LinkedList<string>
+        return basic.createTooltipLines(this)
+
     function canUse() returns boolean
-        if basic.ap > entity.getRemainingActionPoints()
+        if basic.ap > entity.getRemainingAP()
             return false
         if isOnCooldown()
             return false
@@ -132,11 +159,11 @@ public class ActionCost implements ActionCostData
             return false
         return true
 
-    function pay()
+    function pay(int additionalAP)
         if basic.apFill
             entity.removeAP(1000)
         else
-            entity.removeAP(basic.ap)
+            entity.removeAP(basic.ap + additionalAP)
         cooldown = basic.maxCooldown + 1
         if basic.maxCharges > 0
             charges--

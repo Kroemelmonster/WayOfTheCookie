@@ -1,0 +1,164 @@
+package StatusSpiritLink
+
+import AttachmentPoints
+import Icons
+import Abilities
+
+import Status
+
+import initlater BoardStack
+import initlater BoardEntity
+import initlater StatusType
+import BoardController
+import BoardTrigger
+import LinkedList
+import KStringUtils
+import Tooltip
+import Damage
+import AnimationWait
+import KUtil
+import SharedStatus
+import StatusController
+
+public class StatusSpiritLink extends SharedStatus
+    static StatusType TYPE
+    static function setup()
+        TYPE = new StatusType("Spirit Link", Icons.bTNSpiritLink)
+        TYPE.setCreationListener() (boardEntity, data) ->
+            return new StatusSpiritLink(TYPE, boardEntity, data)
+        TYPE.setTooltipListener() data ->
+            return createTooltipBaseLines(data)
+        TYPE.setCanApplyListener() (BoardEntity entity, StatusData data) ->
+            return canApplyTo(entity, data)
+        
+        damagePreview = DamagePreview.create(SourceType.UNSPECIFIC, DamageType.PURE)
+        ..addFlag(DamageFlags.TRIGGERED)
+
+    static constant int DAMAGE_TRANSFER = 0
+    static constant int DAMAGE_REDUCE = 1
+
+    private static DamagePreview damagePreview
+
+    private static function canApplyTo(BoardEntity entity, StatusData data) returns boolean
+        let status = StatusController.get(TYPE, entity) castTo StatusSpiritLink
+        if status != null and not status.isPrimary()
+            return false
+        let target = data.getEntityData()
+        return target != null and not StatusController.has(TYPE, target)
+
+    private static function createTooltipBaseLinesPrimary(real transferPerc, real reducePerc) returns LinkedList<string>
+        return new LinkedList<string>
+        ..add(KStringUtils.primaryPercent(transferPerc) + " of any Damage your linked Allies take gets transfered to you.")
+        ..add("You only take " + KStringUtils.primaryPercent(reducePerc) + " of the transfered Damage.")
+
+    private static function createTooltipBaseLines(StatusData data) returns LinkedList<string>
+        return createTooltipBaseLinesPrimary(data.getRealData(DAMAGE_TRANSFER), data.getRealData(DAMAGE_REDUCE))
+
+    private static function createTooltip(StatusSpiritLink b) returns Tooltip
+        let tt = Tooltip.create(TYPE.getName())
+        if b.isPrimary()
+            tt.addLine(KStringUtils.stat("Duration", b.duration))
+            var targetStr = ""
+            let size = b.secondaryStati.size()
+            if size == 1
+                targetStr = b.secondaryStati.getFirst().entity.getName()
+            else if size > 1
+                targetStr = size.toString() + " Allies"
+            tt.addLine(KStringUtils.stat("LinkedTo", targetStr))
+            tt.addLine("")
+            tt.addLines(createTooltipBaseLinesPrimary(b.transferPerc, b.reducePerc))
+        else
+            tt.addLine(KStringUtils.stat("LinkedTo", b.primary.entity.getName()))
+            tt.addLine("")
+            tt.addLine(KStringUtils.primaryPercent(b.transferPerc) + " of any Damage you take gets transfered to the caster.")
+        return tt
+
+    /* -------------------------------------------------------------------------- */
+
+    private BoardTrigger turnStartListener
+    private BoardTriggerOnBeforeDamage damageTakenTrigger
+    
+    private effect display
+    private int duration
+    private real reducePerc
+    private real transferPerc
+
+    construct(StatusType statusType, BoardEntity entity, StatusData data)
+        super(statusType, entity, data)
+
+    protected override function setupPrimary(StatusData data)
+        reducePerc = data.getRealData(DAMAGE_REDUCE)
+        transferPerc = data.getRealData(DAMAGE_TRANSFER)
+        display = entity.addAttachEffect(Abilities.spiritLinkTarget, AttachmentPoints.chest)
+
+        applySecondaryInner(data)
+
+        duration = data.duration
+        turnStartListener = entity.getTriggers().addTurnStart() next ->
+            duration--
+            if duration <= 0
+                removePrimary(next)
+            else
+                next.continue()
+
+    protected function applySecondaryInner(StatusData data)
+        let secondaryData = StatusData.create()
+        ..setRealData(DAMAGE_REDUCE, reducePerc)
+        ..setRealData(DAMAGE_TRANSFER, transferPerc)
+        applySecondary(data.getEntityData(), secondaryData)
+        destroy secondaryData
+        
+                
+    protected override function setupSecondary(StatusData data)
+        reducePerc = data.getRealData(DAMAGE_REDUCE)
+        transferPerc = data.getRealData(DAMAGE_TRANSFER)
+        display = entity.addAttachEffect(Abilities.spiritLinkTarget, AttachmentPoints.chest)
+
+
+        damageTakenTrigger = entity.getTriggers().addOnBeforeDamageTaken() (BoardEntity source, BoardStack target, DamageInstance instance, SequenzListener next) ->
+            if instance.hasFlag(DamageFlags.TRIGGERED)
+                next.continue()
+            else
+                absorbDamage(instance, next)
+
+            
+    
+    private function absorbDamage(DamageInstance instance, SequenzListener next)
+        AnimationWait.time(entity.getBoard(), 0.2) ->
+            let transferDmg = instance.dmg * (transferPerc * reducePerc)
+            instance.dmg *= transferPerc
+        
+            damagePreview.dmg = realRange(transferDmg, transferDmg)
+            let linkDamageSpecfic = damagePreview.getRandomInstance()
+                
+            BoardController.dealDamage(entity, linkDamageSpecfic, primary.entity) ->
+                destroy linkDamageSpecfic
+                AnimationWait.time(entity.getBoard(), 0.2) ->
+                    next.continue()
+
+    override function onRefresh(StatusData data)
+        if not canApplyTo(entity, data)
+            return
+        // refresh duration
+        duration = data.duration
+        applySecondaryInner(data)
+
+    override function canPurge() returns boolean
+        return false
+
+    override function createTooltip() returns Tooltip
+        return createTooltip(this)
+
+    override function hide()
+        if display != null
+            display.destr()
+
+    ondestroy
+        if entity.isAlive()
+            let triggers = entity.getTriggers()
+            if turnStartListener != null
+                triggers.removeOnTurnStart(turnStartListener)
+                turnStartListener = null
+            if damageTakenTrigger != null
+                triggers.removeOnBeforeDamageTaken(damageTakenTrigger)
+                damageTakenTrigger = null

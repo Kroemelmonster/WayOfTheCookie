@@ -1,0 +1,138 @@
+package HeroActionAttack
+
+import LinkedList
+import Icons
+
+
+import initlater Cell
+import initlater BoardStack
+import initlater Board
+import initlater BoardHero
+import Action
+import PlayerData
+import Damage
+import initlater BoardController
+import KUtil
+import BoardTrigger
+import initlater KISystem
+import ClosureTimers
+import AnimationHeroAttack
+import ActionCost
+import Tooltip
+import UITooltip
+import initlater ActionType
+import BoardEntity
+import initlater UIMenuActionConsole
+import initlater HeroAction
+import initlater HeroActionType
+
+public class HeroActionAttack extends HeroAction
+    static HeroActionType TYPE
+    static function setup()
+        TYPE = HeroAction.createType("Attack", Icons.bTNAttack, ActionCostPreset.create(1, true))
+        ..enableOption(ActionTypeOption.DEFAULT)
+        TYPE.onCreate() hero -> 
+            return new HeroActionAttack(hero)
+        TYPE.onCreateTooltipLines() -> 
+            return new LinkedList<string>
+
+    override function getPreviewResultForCell(Cell cell) returns CellResult
+        if isCellAttackable(cell)
+            return CellResult.NEGATIVE
+        return CellResult.NONE
+
+    override function getHighlightResultForCell(Player p, Cell cell) returns CellResult
+        if isCellAttackable(cell)
+            return CellResult.NEGATIVE
+        return CellResult.NONE
+
+    override function onUIMouseEnter()
+
+    override function onUIMouseLeave()
+
+    override function canBeActivatedByKey(string key) returns boolean
+        return false
+
+    override function recalculatePreview()
+
+    override function recalculateHighlight(Player p)
+        let cell = p.currentMousePosition.cell
+        if isCellAttackable(cell)
+            let tt = createBasicTooltip()
+            // TODO stream line--
+            let preview = DamagePreview.create(SourceType.ATTACK, hero.stats.getDamageType())
+            ..setDamage(hero.stats.getDamage())
+            preview.extendTooltipWithSpecific(tt, entity, cell.getStack())
+            destroy preview
+
+            UITooltip.display(entity.getConntrollingPlayer(), tt)
+            UIMenuActionConsole.updateActionPoints(entity, cost)
+        else
+            UITooltip.hide(entity.getConntrollingPlayer())
+            UIMenuActionConsole.updateActionPoints(entity)
+        /*
+        let cell = p.currentMousePosition.cell
+        caclulatePath(cell, p.currentMousePosition.nearbyCell)
+        if hasValidTarget == false
+            UITooltip.hide(stack.getPlayer())
+        else
+            let tt = Tooltip.create(name)
+            let preview = new DamagePreview(stack.stats.getDamage(), SourceType.ATTACK, stack.stats.getDamageType())
+            preview.addSpecificToTooltip(stack, cell.getStack(), tt)
+            destroy preview
+            tt.display(stack.getPlayer(), true)
+        
+        var showCost = 0
+        if cell != null
+            if canAttackTargetThisTurn(cell.getStack())
+                showCost = 99
+            else if cell != stack.getCell()
+                let remaining = getRemainingActionPointsFromCell(cell, stack.stats.getMoveSpeed())
+                if remaining >= 0
+                    showCost = stack.stats.getMoveSpeed().floor() - remaining
+            
+        UIActionWindow.updateActionPoints(stack, showCost)
+        */
+
+    override function sendTargetOrder(Cell cell) returns boolean
+        if isCellAttackable(cell)
+            let defender = cell.getStack()
+            AnimationHeroAttack.against(entity, defender) () ->
+                let preview = DamagePreview.create(SourceType.ATTACK, hero.stats.getDamageType())
+                ..setDamage(hero.stats.getDamage())
+                let instance = preview.getRandomInstance()
+                destroy preview
+                BoardController.dealDamage(hero, instance, defender) ->
+                    BoardController.finishOrder(entity, cost)
+            return true
+        return false
+
+    private function isCellAttackable(Cell cell) returns boolean
+        if cell == null
+            return false
+        let target = cell.getStack()
+        return target != null and entity.getPlayer().isEnemyTo(target.getPlayer())
+
+
+    protected function getTargets() returns LinkedList<BoardStack>
+        return entity.getBoard().getAllStacks()
+
+        // TODO
+    /*
+    override function createBasicTooltipLines() returns LinkedList<string>
+        return cost.createTooltipLines()
+        */
+
+    private construct(BoardHero hero)
+        super(hero, TYPE)
+
+    override function executeForKI(SequenzListenerStatus listener)
+        let enemy = KISystem.getBestTarget(getTargets())
+        
+        nullTimer() ->
+            if enemy == null
+                listener.continue(1)
+            else
+                sendTargetOrder(enemy.getCell())
+                listener.continue(0)
+        

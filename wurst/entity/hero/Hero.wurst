@@ -23,10 +23,11 @@ import ActionType
 import initlater SpellType
 import Spell
 
-constant HashMap<unit, Hero> map = new HashMap<unit, Hero>
+
 
 public class Hero
     static constant int array LEVELS = [1000, 2000, 3500, 6000]
+    protected static constant HashMap<unit, Hero> unitHash = new HashMap<unit, Hero>
 
     protected unit u
     protected HeroType heroType
@@ -72,7 +73,7 @@ public class Hero
         u = createUnit(playerData[0].blzPlayer, heroType.armyUnitId, playerData[0].blzPlayer.getStartLocation(), angle(0))
         army = new Army(stats)
         data = new HeroData(10, 10, 10)
-        map.put(u, this)
+        unitHash.put(u, this)
         for i = 0 to skillTrees.length - 1
             skillTrees[i] = heroType.skillTrees[i].createNew(this)
 
@@ -108,7 +109,7 @@ public class Hero
         p.blzPlayer.setCameraTargetControllerNoZ(u, vec2(0.0, 0.0), false)    
 
     static function getFromUnit(unit u) returns Hero
-        return map.get(u)
+        return unitHash.get(u)
 
     function createSummon(StackType stackType, int amount) returns ArmyStack
         let summon = new ArmyStack(stackType, amount, true, stats)
@@ -121,6 +122,10 @@ public class Hero
 
     function addStackAtFree(StackType stackType, int amount)
         let armyStack = army.addStackAtFree(stackType, amount)
+        updateArmyStackStats(armyStack)
+
+    function addStackWithLeadershipAtFree(StackType stackType, int amount)
+        let armyStack = army.addStackWithLeadershipAtFree(stackType, amount)
         updateArmyStackStats(armyStack)
 
     function forEachSpell(LLItrClosure<Spell> itr)
@@ -296,4 +301,4 @@ public class Hero
         destroy orderPointListener
         destroy interactWithNPCListener
         destroy army
-        map.remove(u)
+        unitHash.remove(u)

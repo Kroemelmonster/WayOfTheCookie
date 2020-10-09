@@ -1,10 +1,11 @@
 package StatusController
 
-import StatusType
-
+import initlater StatusType
 import initlater Status
 import initlater BoardStack
+
 import BoardEntity
+import BoardTrigger
 
 public class StatusController 
 
@@ -21,17 +22,29 @@ public class StatusController
         destroy itr
         return result
 
-    static function apply(StatusType statusType, BoardEntity entity, StatusData data) returns Status
+    static function canApply(StatusType statusType, BoardEntity entity, StatusData data) returns boolean
+        let result = statusType.canApplyTo(entity, data)
+        if data != null
+            destroy data
+        return result
+
+    /** the sequenz gives you the resulting status **/
+    static function apply(StatusType statusType, BoardEntity entity, StatusData data, SequenzListenerData<Status> next)
         let oldStatus = get(statusType, entity)
         if oldStatus != null
             oldStatus.refresh(data)
-            return oldStatus
-        return statusType.applyNewStatusTo(entity, data)
+            next.continue(oldStatus)
+        else if statusType.canApplyTo(entity, data)
+            next.continue(statusType.applyNewStatusTo(entity, data))
+        else
+            next.continue(oldStatus)
 
-    static function remove(StatusType statusType, BoardEntity entity)
+    static function purge(StatusType statusType, BoardEntity entity, SequenzListener next)
         let b = get(statusType, entity)
-        if b != null
-            b.kill()
+        if b == null
+            next.continue()
+            return
+        b.purge(next)
 
     static function hideAll(BoardStack stack)
         let itr = stack.statusIterator()

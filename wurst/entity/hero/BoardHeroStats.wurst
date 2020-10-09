@@ -4,10 +4,9 @@ import KUtil
 import StatsModifier
 
 import HeroStats
-import StackType
 import BoardHero
 import Globals
-import DamageAndResistance
+import Damage
 
 public class BoardHeroStats
     private HeroStats basis
@@ -34,37 +33,29 @@ public class BoardHeroStats
     function getBasis() returns HeroStats
         return basis
     
-    @inline
     function getInitiative() returns int
         return initModi.get(basis.getInitiative()).round()
 
-    @inline
     function getMaxActionPoints() returns int
         return actionPointModi.get(basis.getMaxActionPoints()).round()
 
-    @inline
     function getAttack() returns int
         return attackModi.get(basis.getAttack()).round()
 
-    @inline
     function getDefence() returns int
         return basis.getDefence()
 
-    @inline
     function getPower() returns int
         return powerModi.get(basis.getPower()).round()
 
-    @inline
     function getWisdom() returns int
         return wisdomModi.get(basis.getWisdom()).round()
 
-    @inline
     function getMaxMana() returns int
         let wis = getWisdom()
         let additionalMana = additionalManaModi.get(basis.getAdditionalMana()).round()
         return wis * MANA_PER_WISDOWM + additionalMana
 
-    @inline
     function getDamage() returns realRange
         return damageModi.getRealRange(getRawDamage(), 1)
 
@@ -74,29 +65,24 @@ public class BoardHeroStats
         realAttackModi.multi = 100 + (getAttack() * ATTACK_DAMAGE_PER_ATTACK).toInt()
         return realAttackModi.getRealRange(basis.heroType.getDamage(hero.hero.getLevel()), 1)
 
-    @inline
     function getDamageType() returns DamageType
         return basis.damageType
 
-    @inline
     function getMana() returns int
         return mana
 
     function payMana(int amount)
         this.mana -= amount
 
-    @inline
     function getRemainingActionPoints() returns integer
         return remainingActionPoints
     
     /** setters  **/
-    @inline
     function removeAP(integer amount)
         remainingActionPoints -= amount
         if remainingActionPoints < 0
             remainingActionPoints = 0
 
-    @inline
     function resetActionPoints()
         remainingActionPoints = getMaxActionPoints()
 

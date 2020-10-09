@@ -5,6 +5,7 @@ import UIHandle
 import UIButtonMenu
 import FramehandleNames
 import UIDialog
+import Globals
 
 
 public class UIWindowMenu
@@ -34,6 +35,16 @@ public class UIWindowMenu
                 btnFrames.setText("Frames off")
             else
                 btnFrames.setText("Frames on")
+
+        let btnKi = UIButtonMenu.create(window, "KI Controlled")
+        ..setPoint(FRAMEPOINT_BOTTOMLEFT, btnFrames, FRAMEPOINT_TOPLEFT, 0, 0.01)
+        ..setPoint(FRAMEPOINT_BOTTOMRIGHT, btnFrames, FRAMEPOINT_TOPRIGHT, 0, 0.01)
+        btnKi.onClick() ->
+            canControllKI = not canControllKI
+            if canControllKI
+                btnKi.setText("User Controlled")
+            else
+                btnKi.setText("KI Controlled")
 
         return window
 

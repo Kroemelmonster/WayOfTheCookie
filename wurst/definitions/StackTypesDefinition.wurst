@@ -1,56 +1,61 @@
 package StackTypesDefinition
 
 import Icons
+import LinkedList
+import HashMap
+import KUtil
 
-import StackType
 import StackSoundSet
 import UnitDefinition
 import StackSoundTypesDefinition
-import KUtil
-import Talent
-import LinkedList
-import DamageAndResistance
-import CounterAttackPassive
-import SummonLesserSkeletonAction
-import SlamAction
-import CracklePassive
-import ChainLightningAction
-import TalentType
 
+import initlater StackType
+import initlater ActionSlam
+import initlater CracklePassive
+import initlater TalentType
+import initlater ActionChainLightning
+import initlater ActionSpiritLink
+import initlater ActionSummonSkeleton
+import initlater CounterAttackPassive
+import initlater Damage
+
+public interface StackTypeFilter
+    function filter(StackType stackType) returns boolean
+
+public function LinkedList<StackType>.getRandom() returns StackType
+    return this.get(GetRandomInt(0, this.size() - 1))
 
 public class StackTypes
-    static StackType ABOMINATION
-    static StackType FOOTMAN
-    static StackType SKELETALORC
-    static StackType NECROMANCER
-    static StackType LESSER_SKELETON
+    protected static IterableMap<string, StackType> all = new IterableMap<string, StackType>
 
-    static StackType SASQUATCH_ORACLE
-    static StackType ANCIENT_SASQUATCH
+    static function getFilteredList(StackTypeFilter filter) returns LinkedList<StackType>
+        let itr = all.iterator()
+        let list = new LinkedList<StackType>
+        while itr.hasNext()
+            let sType = find(itr.next())
+            if filter.filter(sType)
+                list.add(sType)
+
+        destroy itr
+        return list
     
-    static StackType GNOLL
-    static StackType GNOLL_POACHER
-    static StackType GNOLL_WARDEN
-
-    static StackType WIDOW_SPIDER
-
-    static StackType FOREST_TROLL
-    static StackType FOREST_TROLL_BERSERKER
-    static StackType FOREST_TROLL_HIGH_PRIEST
-    
-    protected static LinkedList<StackType> all = new LinkedList<StackType>
+    static function find(string name) returns StackType
+        let found = all.get(name)
+        if found == null
+            Log.error("tried to find a stackType of : "+name)
+        return found
 
     static function forEach(LLItrClosure<StackType> itr)
-        all.forEach(itr)
+        all.forEach() (string key, StackType value) ->
+            itr.run(value)
+        destroy itr
 
-    static function allIterator() returns LLIterator<StackType>
-        return all.iterator()
 
 class StackTypesDefinition
     private static function createDefault(integer unitId, integer armyId, string icon, StackSoundSet soundSet, int level, int leadership, int weight) returns StackType
         let stackType = new StackType(unitId, armyId, icon, soundSet, GetObjectName(unitId), level, leadership, (leadership * (1 + 0.4 * level)).round(), weight)
         TalentType.addStackDefaultAction(stackType)
-        StackTypes.all.add(stackType)
+        StackTypes.all.put(stackType.name, stackType)
         return stackType
     
     private static function createMelee(integer unitId, integer armyId, string icon, StackSoundSet soundSet, int level, int leadership, int weight) returns StackType
@@ -70,7 +75,7 @@ class StackTypesDefinition
             setupTwo()
 
     private static function setupOne()
-        StackTypes.FOOTMAN = createMelee(UnitTypesIds.FOOTMAN, UnitTypesIds.ARMY_FOOTMAN, Icons.bTNFootman, StackSoundSets.FOOTMAN, 2, 20, 100)
+        createMelee(UnitTypesIds.FOOTMAN, UnitTypesIds.ARMY_FOOTMAN, Icons.bTNFootman, StackSoundSets.FOOTMAN, 2, 20, 100)
         ..setInitiative(6)
         ..setActionPoints(3)
         ..setMaxHp(22)
@@ -78,7 +83,7 @@ class StackTypesDefinition
         ..setAttack(10)
         ..setDefence(14)
 
-        StackTypes.SKELETALORC = createMelee(UnitTypesIds.SKELTAL_ORC, UnitTypesIds.ARMY_SKELTAL_ORC,Icons.bTNSkeletalOrc, StackSoundSets.SKELETON, 2, 30, 100)
+        createMelee(UnitTypesIds.SKELTAL_ORC, UnitTypesIds.ARMY_SKELTAL_ORC,Icons.bTNSkeletalOrc, StackSoundSets.SKELETON, 2, 30, 100)
         ..addFamily(Family.SKELTON)
         ..setInitiative(6)
         ..setActionPoints(4)
@@ -87,8 +92,8 @@ class StackTypesDefinition
         ..setAttack(16)
         ..setDefence(5)
 
-        StackTypes.NECROMANCER = createRange(UnitTypesIds.NECROMANCER, UnitTypesIds.ARMY_NECROMANCER, Icons.bTNNecromancer, StackSoundSets.NECROMANCER, 2, 25, 200)
-        ..addTalent(SummonLesserSkeletonAction.TYPE.getTalent())
+        createRange(UnitTypesIds.NECROMANCER, UnitTypesIds.ARMY_NECROMANCER, Icons.bTNNecromancer, StackSoundSets.NECROMANCER, 2, 25, 200)
+        ..addTalent(ActionSummonSkeleton.TYPE.getTalent())
         ..setInitiative(7)
         ..setActionPoints(2)
         ..setMaxHp(20)
@@ -98,7 +103,7 @@ class StackTypesDefinition
         ..setDefence(3)
         ..setDamageType(DamageType.MAGIC)
 
-        StackTypes.LESSER_SKELETON = createMelee(UnitTypesIds.SKELETON_LESSER, UnitTypesIds.ARMY_SKELETON_LESSER, 
+        createMelee(UnitTypesIds.SKELETON_LESSER, UnitTypesIds.ARMY_SKELETON_LESSER, 
         "ReplaceableTextures\\CommandButtons\\BTNLesserDarkMinion.blp", StackSoundSets.SKELETON, 1, 10, 50)
         ..addFamily(Family.SKELTON)
         ..setInitiative(3)
@@ -108,7 +113,7 @@ class StackTypesDefinition
         ..setAttack(6)
         ..setDefence(0)
 
-        StackTypes.SASQUATCH_ORACLE = createMelee(UnitTypesIds.SASQUATCH_ORACLE, UnitTypesIds.ARMY_SASQUATCH_ORACLE, 
+        createMelee(UnitTypesIds.SASQUATCH_ORACLE, UnitTypesIds.ARMY_SASQUATCH_ORACLE, 
         "ReplaceableTextures\\CommandButtons\\BTNSasquatchOracle.blp", StackSoundSets.SKELETON, 4, 350, 120)
         ..addFamily(Family.SASQUATCH)
         ..setInitiative(6)
@@ -118,10 +123,10 @@ class StackTypesDefinition
         ..setAttack(35)
         ..setDefence(30)
 
-        StackTypes.ANCIENT_SASQUATCH = createMelee(UnitTypesIds.ANCIENT_SASQUATCH, UnitTypesIds.ARMY_ANCIENT_SASQUATCH, 
+        createMelee(UnitTypesIds.ANCIENT_SASQUATCH, UnitTypesIds.ARMY_ANCIENT_SASQUATCH, 
         "ReplaceableTextures\\CommandButtons\\BTNSasquatchAncient.blp", StackSoundSets.SKELETON, 5, 950, 100)
         ..addFamily(Family.SASQUATCH)
-        ..addTalent(SlamAction.TYPE.getTalent())
+        ..addTalent(ActionSlam.TYPE.getTalent())
         // TODO ..addTalent(TalentSet.CLEAVE50)
         ..setInitiative(6)
         ..setActionPoints(6)
@@ -130,7 +135,7 @@ class StackTypesDefinition
         ..setAttack(44)
         ..setDefence(39)
 
-        StackTypes.GNOLL = createMelee(UnitTypesIds.GNOLL, UnitTypesIds.ARMY_GNOLL, Icons.bTNGnoll, StackSoundSets.SKELETON, 1, 10, 100)
+        createMelee(UnitTypesIds.GNOLL, UnitTypesIds.ARMY_GNOLL, Icons.bTNGnoll, StackSoundSets.SKELETON, 1, 10, 100)
         ..addFamily(Family.GNOLL)
         ..setInitiative(3)
         ..setActionPoints(3)
@@ -139,7 +144,7 @@ class StackTypesDefinition
         ..setAttack(4)
         ..setDefence(7)
 
-        StackTypes.GNOLL_POACHER = createRange(UnitTypesIds.GNOLL_POACHER, UnitTypesIds.ARMY_GNOLL_POACHER, Icons.bTNGnollArcher, StackSoundSets.SKELETON, 1, 10, 180)
+        createRange(UnitTypesIds.GNOLL_POACHER, UnitTypesIds.ARMY_GNOLL_POACHER, Icons.bTNGnollArcher, StackSoundSets.SKELETON, 1, 10, 180)
         ..addFamily(Family.GNOLL)
         ..setInitiative(3)
         ..setActionPoints(3)
@@ -149,7 +154,7 @@ class StackTypesDefinition
         ..setAttack(7)
         ..setDefence(4)
 
-        StackTypes.GNOLL_WARDEN = createMelee(UnitTypesIds.GNOLL_WARDEN, UnitTypesIds.ARMY_GNOLL_WARDEN, Icons.bTNGnollWarden, StackSoundSets.SKELETON, 3, 170, 100)
+        createMelee(UnitTypesIds.GNOLL_WARDEN, UnitTypesIds.ARMY_GNOLL_WARDEN, Icons.bTNGnollWarden, StackSoundSets.SKELETON, 3, 170, 100)
         ..addFamily(Family.GNOLL)
         ..addTalent(CracklePassive.TYPE.getTalent())
         ..setInitiative(5)
@@ -160,7 +165,7 @@ class StackTypesDefinition
         ..setDefence(28)
 
     private static function setupTwo()
-        StackTypes.WIDOW_SPIDER = createMelee(UnitTypesIds.WIDOW_SPIDER, UnitTypesIds.ARMY_WIDOW_SPIDER, Icons.bTNSpiderBlack, StackSoundSets.SKELETON, 2, 30, 100)
+        createMelee(UnitTypesIds.WIDOW_SPIDER, UnitTypesIds.ARMY_WIDOW_SPIDER, Icons.bTNSpiderBlack, StackSoundSets.SKELETON, 2, 30, 100)
         ..setInitiative(3)
         ..setActionPoints(3)
         ..setMaxHp(60)
@@ -172,7 +177,7 @@ class StackTypesDefinition
         ..addResistanceAgainst(DamageType.FIRE, -25)
             
 
-        StackTypes.FOREST_TROLL = createRange(UnitTypesIds.FOREST_TROLL, UnitTypesIds.ARMY_FOREST_TROLL, Icons.bTNForestTroll, StackSoundSets.FOOTMAN, 2, 20, 100)
+        createRange(UnitTypesIds.FOREST_TROLL, UnitTypesIds.ARMY_FOREST_TROLL, Icons.bTNForestTroll, StackSoundSets.FOOTMAN, 2, 20, 100)
         ..addFamily(Family.TROLL)
         ..addTalent(CounterAttackPassive.TYPE.getTalent())
         ..setInitiative(4)
@@ -183,7 +188,7 @@ class StackTypesDefinition
         ..setAttack(14)
         ..setDefence(12)
 
-        StackTypes.FOREST_TROLL_BERSERKER = createRange(UnitTypesIds.FOREST_TROLL_BERSERKER, UnitTypesIds.ARMY_FOREST_TROLL_BERSERKER, Icons.bTNForestTrollTrapper1, StackSoundSets.FOOTMAN, 3, 150, 110)
+        createRange(UnitTypesIds.FOREST_TROLL_BERSERKER, UnitTypesIds.ARMY_FOREST_TROLL_BERSERKER, Icons.bTNForestTrollTrapper1, StackSoundSets.FOOTMAN, 3, 150, 110)
         ..addFamily(Family.TROLL)
         ..addTalent(CounterAttackPassive.TYPE.getTalent())
         ..setInitiative(5)
@@ -194,9 +199,9 @@ class StackTypesDefinition
         ..setAttack(24)
         ..setDefence(12)
 
-        StackTypes.FOREST_TROLL_HIGH_PRIEST = createRange(UnitTypesIds.FOREST_TROLL_HIGH_PRIEST, UnitTypesIds.ARMY_FOREST_TROLL_HIGH_PRIEST, "ReplaceableTextures\\CommandButtons\\BTNForestTrollHighPriest.blp", StackSoundSets.NECROMANCER, 3, 200, 200)
+        createRange(UnitTypesIds.FOREST_TROLL_HIGH_PRIEST, UnitTypesIds.ARMY_FOREST_TROLL_HIGH_PRIEST, "ReplaceableTextures\\CommandButtons\\BTNForestTrollHighPriest.blp", StackSoundSets.NECROMANCER, 3, 200, 200)
         ..addFamily(Family.TROLL)
-        ..addTalent(ChainLightningAction.TYPE.getTalent())
+        ..addTalent(ActionChainLightning.TYPE.getTalent())
         ..setInitiative(5)
         ..setActionPoints(2)
         ..setMaxHp(130)
@@ -207,3 +212,14 @@ class StackTypesDefinition
         ..setDamageType(DamageType.FIRE)
         ..addResistanceAgainst(DamageType.FIRE, 20)
         ..addResistanceAgainst(DamageType.MAGIC, 20)
+
+        createRange(UnitTypesIds.SPIRIT_WALKER, UnitTypesIds.ARMY_SPIRIT_WALKER, Icons.bTNSpiritWalker, StackSoundSets.NECROMANCER, 3, 200, 200)
+        ..addTalent(ActionSpiritLink.TYPE.getTalent())
+        ..setInitiative(5)
+        ..setActionPoints(3)
+        ..setMaxHp(300)
+        ..setDamage(intRange(8, 12))
+        ..setAttackRange(intRange(1, 4))
+        ..setAttack(13)
+        ..setDefence(9)
+        ..setDamageType(DamageType.MAGIC)

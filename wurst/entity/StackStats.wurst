@@ -6,11 +6,10 @@ import StatsModifier
 
 import initlater Stack
 import LinkedList
-import Talent
-import initlater BoardStack
 import HeroStats
 import DamageAndResistance
 import initlater TalentType
+import Damage
 
 public interface HasEntityStats extends HasEntityBasicStats
     function getBasis() returns HasEntityBasicStats

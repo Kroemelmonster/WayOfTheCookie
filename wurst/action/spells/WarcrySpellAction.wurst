@@ -1,0 +1,31 @@
+package WarcrySpellAction
+
+import initlater SpellType
+
+import InstantSpellAction
+import ActionType
+import BoardEntity
+import Spell
+import BoardHero
+
+public abstract class WarcrySpellAction extends InstantSpellAction
+
+    static function createType(string name, string icon) returns SpellType
+        return new SpellType(name, icon)
+        ..enableOption(ActionTypeOption.SPELL)
+        ..enableOption(ActionTypeOption.INSTANT)
+        ..enableOption(ActionTypeOption.WARCRY)
+
+    construct(BoardHero hero, Spell spell)
+        super(hero, spell)
+
+        /*
+        TODO make it so warcrys share a cooldown
+    function payCostAndStartCooldown(int cooldown)
+        hero.stats.addMana(-manacost)
+        for Action action in hero.getActions()
+            if action.isWarcy
+                let otherWarcy = action castTo WarcrySpell
+                otherWarcy.cooldown = cooldown
+                */
+        

@@ -9,7 +9,6 @@ import initlater Cell
 import initlater BoardEntity
 import StackType
 import BoardTrigger
-import WalkAndAttackAction
 import StatusController
 import StatusType
 import Status

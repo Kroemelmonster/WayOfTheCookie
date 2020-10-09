@@ -1,14 +1,13 @@
 package DamageAndResistance
 import Tooltip
 import KStringUtils
+import initlater Damage
 
-public enum DamageType
-    PHYISICAL
-    MAGIC
-    FIRE
-    POISON
+
 
 public class Resistance
+    
+
     private Resistance basis
 
     private int phyiscal = 0
@@ -29,8 +28,10 @@ public class Resistance
                 fire += value
             case POISON
                 poison += value
-            default
+            case PHYSICAL
                 phyiscal += value
+            default
+                // yap you cant get PURE resistance!
     
     function getRes(DamageType dType) returns int
         var baseRes = 0
@@ -43,11 +44,14 @@ public class Resistance
                 return fire + baseRes
             case POISON
                 return poison + baseRes
-            default
+            case PHYSICAL
                 return phyiscal + baseRes 
+            default
+                // NO RESISTANCE AGAINST PURE
+                return 0 
 
     function extendTooltip(Tooltip tt)
-        tt.addLine("Physical Resistance : " + KStringUtils.coloredPercent(getRes(DamageType.PHYISICAL) / 100))
+        tt.addLine("Physical Resistance : " + KStringUtils.coloredPercent(getRes(DamageType.PHYSICAL) / 100))
         tt.addLine("Magic Resistance : " + KStringUtils.coloredPercent(getRes(DamageType.MAGIC) / 100))
         tt.addLine("Fire Resistance : " + KStringUtils.coloredPercent(getRes(DamageType.FIRE) / 100))
         tt.addLine("Poison Resistance : " + KStringUtils.coloredPercent(getRes(DamageType.POISON) / 100))
