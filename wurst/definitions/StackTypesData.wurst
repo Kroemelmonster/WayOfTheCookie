@@ -1,0 +1,42 @@
+package StackTypesData
+import StackType
+import HashMap
+
+public interface StackTypeFilter
+    function filter(StackType stackType) returns boolean
+
+public function LinkedList<StackType>.getRandom() returns StackType
+    return this.get(GetRandomInt(0, this.size() - 1))
+
+public class StackTypes
+    static IterableMap<string, StackType> all = new IterableMap<string, StackType>
+
+    protected static LinkedList<StackType> array groupedByLevel
+
+    static function getAllOfLevel(int level) returns LinkedList<StackType>
+        if groupedByLevel[level] == null
+            groupedByLevel[level] = getFilteredList() (StackType stackType) ->
+                return stackType.level == level
+        return groupedByLevel[level]
+
+    static function getFilteredList(StackTypeFilter filter) returns LinkedList<StackType>
+        let itr = all.iterator()
+        let list = new LinkedList<StackType>
+        while itr.hasNext()
+            let sType = find(itr.next())
+            if filter.filter(sType)
+                list.add(sType)
+
+        destroy itr
+        return list
+    
+    static function find(string name) returns StackType
+        let found = all.get(name)
+        if found == null
+            Log.error("tried to find a stackType of : "+name)
+        return found
+
+    static function forEach(LLItrClosure<StackType> itr)
+        all.forEach() (string key, StackType value) ->
+            itr.run(value)
+        destroy itr

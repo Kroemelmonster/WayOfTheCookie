@@ -2,13 +2,14 @@ package SkillTreeSpirit
 import initlater SkillTree
 import initlater Hero
 
-import Icons
-import LinkedList
+init
+    Initializer.register(InitializerNames.SKILLTREES) -> 
+        SkillTreeSpirit.setup()
 
 public class SkillTreeSpirit extends SkillTree
     static SkillTreeType TYPE
 
-    static function setup()
+    protected static function setup()
         TYPE = new SkillTreeType("Spirit")
         TYPE.addListener() hero -> 
             return new SkillTreeSpirit(hero)

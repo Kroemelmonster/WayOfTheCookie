@@ -1,13 +1,10 @@
 package SpellRallingCry
 
-import LinkedList
-
 import initlater SpellType
 
 import PlayerData
 import UIMenuActionConsole
 import AnimationCast
-import BoardTrigger
 import SpellAction
 import BoardEntity
 import StatusType
@@ -17,19 +14,21 @@ import WarcrySpellAction
 import StatusRallingCry
 import BoardStack
 import ActionCost
-import KStringUtils
 import Tooltip
 import UITooltip
 import Spell
 import HeroData
-import KUtil
 import Scheduler
 import AnimationWait
 import BoardHero
 
+init
+    Initializer.register(InitializerNames.SPELLS) -> 
+        SpellRallingCry.setup()
+
 public class SpellRallingCry extends WarcrySpellAction
     static SpellType TYPE
-    static function setup()
+    protected static function setup()
         STATUS = StatusRallingCry.TYPE
         TYPE = WarcrySpellAction.createType("Rallying Cry", "Icons\\BTNAbilityWarriorWarCry.blp")
         TYPE.addLevel(ActionCostPreset.create(0, false, 3), HeroDataChange.create(1, 0, 1))

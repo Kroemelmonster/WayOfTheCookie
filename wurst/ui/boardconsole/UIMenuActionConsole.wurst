@@ -136,8 +136,7 @@ public class UIMenuActionConsole
 
 
     static function updateActionPoints(BoardEntity entity)
-        if entity.getBoard().isLocalPlayer()
-            updateActionPointsLocal(entity, 0)
+        updateActionPoints(entity, 0)
 
     static function updateActionPoints(BoardEntity entity, ActionCostData cost)
         updateActionPoints(entity, cost, 0)
@@ -148,6 +147,11 @@ public class UIMenuActionConsole
             if cost.isApFill()
                 ap = 100
             updateActionPointsLocal(entity, ap)
+
+    static function updateActionPoints(BoardEntity entity, int ap)
+        if entity.getBoard().isLocalPlayer()
+            updateActionPointsLocal(entity, ap)
+                
     
     static function update(Player p)
         if not p.isLocal() or p.doesNotNeedVisuals
@@ -216,7 +220,7 @@ public class UIMenuActionConsole
         if btn != null
             btn.simulateClick(p)
 
-    private static function updateActionPointsLocal(BoardEntity entity, int previewLoosingPoints)
+    private static function updateActionPointsLocal(BoardEntity entity, int ap)
         if not entity.getConntrollingPlayer().isLocal()
             for i = 0 to handleActionPoints.length - 1
                 handleActionPoints[i].setTexture("UI/glues/singleplayer/humancampaign3d/black32.ds")
@@ -224,7 +228,7 @@ public class UIMenuActionConsole
     
         let maxActionPoints = entity.getMaxAP()
         let maxRemainingPoints = entity.getRemainingAP()
-        let startPreview = maxRemainingPoints - previewLoosingPoints
+        let startPreview = maxRemainingPoints - ap
         for i = 0 to handleActionPoints.length - 1
             if i < maxActionPoints
                 if i >= maxRemainingPoints

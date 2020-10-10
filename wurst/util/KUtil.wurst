@@ -1,5 +1,8 @@
 package KUtil
-import LinkedList
+
+import NoWurst
+import Integer
+import Real
 
 public constant CHARSET = ["A","B", "C", "D", "E", "F", "G", "H", "I", "J","K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z"]
 
@@ -37,10 +40,6 @@ public abstract class SetupListener
         destroy this
 
     abstract function continueInner()
-
-public function LinkedList<string>.addAllAndDestroy(LinkedList<string> elems)
-    this.addAll(elems)
-    destroy elems
 
 public function int.isBetween(intRange range) returns boolean
     return this.isBetween(range.min, range.max)

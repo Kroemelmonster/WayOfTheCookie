@@ -1,13 +1,14 @@
 package InstantStackAction
 
+import initlater ActionType
+import initlater StackActionType
+
 import PlayerData
 import Cell
 import ActionCost
 import StackAction
-import BoardEntity
-import ActionType
-import StackActionType
 import BoardStack
+
 
 public abstract class InstantStackAction extends StackAction
 

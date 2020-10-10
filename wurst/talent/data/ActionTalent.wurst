@@ -14,11 +14,11 @@ public class ActionTalent extends Talent
     protected StackAction action
     protected BoardStack stack
 
-    construct(ActionTalentType talentType, StackActionType actionType, BoardEntity entity)
+    construct(ActionTalentType talentType, StackActionType actionType, StackActionData data, BoardEntity entity)
         super(talentType, entity)
         if entity.getType() == EntityType.STACK
             stack = entity.toStack()
-            action = actionType.create(stack, actionType.createBaseData())
+            action = actionType.create(stack, data)
             stack.addAction(action)
         else
             Log.error(entity.toString() + " has a talent "
@@ -26,7 +26,7 @@ public class ActionTalent extends Talent
 
     override function createTooltip() returns Tooltip
         return createBasicTooltip()
-        ..addLines(action.createBasicTooltipLines())
+        ..addLines(action.createTooltipLines())
 
     override function isHidden() returns boolean
         return talentType.isHidden()

@@ -1,27 +1,26 @@
 package ActionWait
 
-import Action
+import initlater StackActionType
+import initlater Action
 import initlater InstantStackAction
-import Icons
 
-import initlater OrderSystem
-
-import initlater BoardStack
+import OrderSystem
+import BoardStack
 import BoardTrigger
-import initlater InitiativeList
+import InitiativeList
 import ActionCost
 import UITooltip
 import Tooltip
-import KStringUtils
-import initlater ActionType
 import BoardEntity
-import LinkedList
-import StackActionType
+
+init
+    Initializer.register(InitializerNames.ACTIONS) -> 
+        ActionWait.setup()
 
 public class ActionWait extends InstantStackAction
     static StackActionType TYPE
 
-    static function setup()
+    protected static function setup()
         TYPE = InstantStackAction.createType("Wait", Icons.bTNPatrol, ActionCostPreset.create(0, false))
         TYPE.onCreate() (BoardStack stack, StackActionData data) ->
             return new ActionWait(stack, data)
@@ -54,7 +53,7 @@ public class ActionWait extends InstantStackAction
     override function onUIMouseEnter()
         let tt = createBasicTooltip()
         if canActivate()
-            // TODO maybe fo this better ? idont know
+            // TODO maybe do this better ? idont know
             let str = KStringUtils.primaryString((InitiativeList.intiativeToDisplayTime(stack.stats.getInitiative()) / 2.0).round().toString())
             + " " + KStringUtils.secondaryString("timeunits")
             tt.addLine("Postpone the turn by "+str)

@@ -1,28 +1,28 @@
 package ActionAttackMove
 
-import LinkedList
-
 import Action
-
-import PlayerData
-import Damage
-import KUtil
-
-import initlater BoardStack
-import UIMenuActionConsole
-import ActionCost
-import UITooltip
-import Tooltip
 import ActionType
-import BoardEntity
-import Icons
 import SubStackActions
 import StackActionTarget
 import StackActionType
 
+import PlayerData
+import Damage
+import BoardStack
+import UIMenuActionConsole
+import ActionCost
+import UITooltip
+import Tooltip
+import BoardEntity
+
+init
+    Initializer.register(InitializerNames.ACTIONS) -> 
+        ActionAttackMove.setup()
+
 public class ActionAttackMove extends StackActionTarget
     static StackActionType TYPE
-    static function setup()
+
+    protected static function setup()
         TYPE = StackActionTarget.createType("Attack", Icons.bTNAttack, ActionCostPreset.create(1, true))
         ..enableOption(ActionTypeOption.DEFAULT)
         TYPE.onCreate() (BoardStack stack, StackActionData data) ->
@@ -30,8 +30,7 @@ public class ActionAttackMove extends StackActionTarget
         TYPE.onCreateTooltipLines() data -> 
             return new LinkedList<string>
 
-    construct(BoardStack stack, StackActionData data)
-        super(stack, TYPE, data)
+/* -------------------------------------------------------------------------- */
 
     protected override function canTarget(BoardStack potentialTarget) returns boolean
         return stack.canAttack(potentialTarget)
@@ -41,7 +40,7 @@ public class ActionAttackMove extends StackActionTarget
 
     protected override function previewTarget(int prevUsedApForMove, BoardStack target)
         if target == null
-            // happens when you only mouse over
+            // dont show anything when only mouse over button
             return
 
         let tt = createBasicTooltip()
@@ -60,3 +59,6 @@ public class ActionAttackMove extends StackActionTarget
 
     override function createBasicTooltipLines() returns LinkedList<string>
         return new LinkedList<string>
+
+    private construct(BoardStack stack, StackActionData data)
+        super(stack, TYPE, data)

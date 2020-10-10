@@ -1,18 +1,10 @@
 package SkillTree
 import Stack
-import LinkedList
-import SkillTreeChieftain
-import SkillTreeTempestarii
-import SkillTreeSpirit
 import initlater Hero
 import HeroData
 import Tooltip
-import KStringUtils
-import SpellAction
-import ActionType
 import initlater SpellType
-import KUtil
-import StackActionType
+import initlater StackActionType
 
 public interface SkillStackUpdateListener
     function onStackUpdate(ArmyStack armyStack, boolean add)
@@ -220,19 +212,11 @@ public class SkillTreeType
     function addListener(SkillTreeCreateListener listener)
         this.listener = listener
 
-    @inline
     function getName() returns string
         return name
 
-    @inline
     function createNew(Hero hero) returns SkillTree
         return listener.create(hero)
-
-    static function setup()
-        SkillTreeChieftain.setup()
-        SkillTreeTempestarii.setup()
-        SkillTreeSpirit.setup()
-    
 
 public abstract class SkillTree
     protected SkillTreeType skillTreeType

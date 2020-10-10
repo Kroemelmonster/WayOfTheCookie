@@ -1,19 +1,20 @@
 package ItemSimpleAxe
 
-import Icons
 import initlater Stack
 import initlater KItem
 import initlater Hero
 import StackType
 import initlater KItemType
-import LinkedList
 import Tooltip
-import KStringUtils
+
+init
+    Initializer.register(InitializerNames.ITEMS) -> 
+        ItemSimpleAxe.setup()
 
 public class ItemSimpleAxe extends KItem
     static KItemType TYPE
 
-    static function setup()
+    protected static function setup()
         TYPE = new KItemType("Simple Axe",  Icons.bTNOrcMeleeUpOne)
         TYPE.setCreationListener()() ->
             return new ItemSimpleAxe(TYPE)

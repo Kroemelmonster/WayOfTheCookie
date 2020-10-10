@@ -1,7 +1,5 @@
 package SpellFlameStrike
 
-import LinkedList
-import Icons
 import Abilities
 
 import initlater SpellType
@@ -9,7 +7,6 @@ import initlater SpellType
 import Cell
 import BoardStack
 import PlayerData
-import KUtil
 import BoardController
 import Action
 import UIMenuActionConsole
@@ -20,16 +17,19 @@ import SpellAction
 import BoardHero
 import BoardEntity
 import ActionCost
-import KStringUtils
 import Tooltip
 import UITooltip
 import HeroData
 import Spell
 import Scheduler
 
+init
+    Initializer.register(InitializerNames.SPELLS) -> 
+        SpellFlameStrike.setup()
+
 public class SpellFlameStrike extends SpellAction
     static SpellType TYPE
-    static function setup()
+    protected static function setup()
         TYPE = SpellAction.createType("Flame Strike", Icons.bTNWallOfFire)
         TYPE.addLevel(ActionCostPreset.createWithMana(1, true, 6), HeroDataChange.create(1, 0, 3))
         ..setIntData(DAMAGE, 90)

@@ -1,0 +1,21 @@
+package WorldNPCs
+import StackTypesData
+import NPC
+import StackType
+
+init
+    WorldNPCs.initialize()
+
+class WorldNPCs
+    protected static LinkedList<NPC> all = new LinkedList<NPC>
+
+    protected static function create(unit chicken) returns NPCShop
+        let npc = new NPCShop(chicken)
+        all.add(npc)
+        return npc
+
+    protected static function initialize() 
+        Initializer.register(InitializerNames.WORLD_NPC) -> 
+            let shop = create(gg_unit_n000_0002)
+            StackTypes.forEach() (StackType t) ->
+                shop.addStock(t, GetRandomInt(50, 100))

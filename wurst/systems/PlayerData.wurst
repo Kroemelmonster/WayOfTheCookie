@@ -1,7 +1,5 @@
 package PlayerData
 
-import LinkedList
-
 import initlater Cell
 import initlater Board
 import initlater Hero
@@ -13,6 +11,10 @@ import initlater BoardEntity
 import initlater UIWindow
 import initlater UIMenuConsole
 import Globals
+
+init
+    Initializer.register(InitializerNames.SYSTEM) -> 
+        Player.setup()
 
 public abstract class PlayerListener
     abstract function onEvent(Player p)
@@ -28,8 +30,17 @@ public enum PlayerRelationship
     ENEMY
     NEUTRAL
 
-
 public class Player
+    static function setup()
+        playerData[players[0].getId()] = new Player(players[0])
+        playerData[players[1].getId()] = new Player(players[1])
+        NEUTRAL_AGGRESIVE = new Player(players[PLAYER_NEUTRAL_AGGRESSIVE])
+        NEUTRAL_PASSIVE = new Player(players[PLAYER_NEUTRAL_PASSIVE])
+        ME = playerData[players[0].getId()]
+
+        playerData[players[PLAYER_NEUTRAL_AGGRESSIVE].getId()] = NEUTRAL_AGGRESIVE
+        playerData[players[PLAYER_NEUTRAL_PASSIVE].getId()] = NEUTRAL_PASSIVE
+
     boolean mousePressed = false
     int mousePressedIndex = 0
     UIButton mouseOverButton = null
@@ -113,16 +124,6 @@ public class Player
 
     function isPlayingOnABoard() returns boolean
         return playingBoard != null
-
-    static function setup()
-        playerData[players[0].getId()] = new Player(players[0])
-        playerData[players[1].getId()] = new Player(players[1])
-        NEUTRAL_AGGRESIVE = new Player(players[PLAYER_NEUTRAL_AGGRESSIVE])
-        NEUTRAL_PASSIVE = new Player(players[PLAYER_NEUTRAL_PASSIVE])
-        ME = playerData[players[0].getId()]
-        
-        playerData[players[PLAYER_NEUTRAL_AGGRESSIVE].getId()] = NEUTRAL_AGGRESIVE
-        playerData[players[PLAYER_NEUTRAL_PASSIVE].getId()] = NEUTRAL_PASSIVE
 
     static function forEachActive(LLItrClosure<Player> itr)
         activePlayers.forEach(itr)

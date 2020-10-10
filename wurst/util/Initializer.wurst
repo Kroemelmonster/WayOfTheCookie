@@ -1,0 +1,73 @@
+package Initializer
+import NoWurst
+
+import LinkedList
+import Listener
+import ClosureTimers
+import Printing
+import Integer
+
+public enum InitializerNames
+    SYSTEM
+    UI
+    STATI
+    SPELLS
+    ACTIONS
+    PASSIVES
+    STACKS
+    ITEMS
+    SKILLTREES
+    HEROES
+    WORLD_ARMIES
+    WORLD_NPC
+    WORLD_BOARDS
+    WORLD_HEROES
+    WORLD
+
+constant NAMES = [
+    "Start Systems",
+    "Draw User Interface",
+    "Test Buffs'n Debuffs",
+    "Prepare Spells",
+    "Muster Actions",
+    "Train Passives",
+    "Write Unit Stats",
+    "Forge Items",
+    "Think about Skilltrees",
+    "Come up with unique Heroes",
+    "Drop Enemies",
+    "Open Shops",
+    "Plane Battlefields",
+    "Wake up Heroes",
+    "Start"
+]
+
+init
+    nullTimer() ->
+        Initializer.start()
+
+public class Initializer
+    private static LinkedList<SequenzListener> array initializers
+
+    static function register(InitializerNames name, SequenzListener next)
+        if initializers[name castTo int] == null
+            initializers[name castTo int] = new LinkedList<SequenzListener>
+        initializers[name castTo int].add(next)
+
+    protected static function start()
+        run(0)
+        
+    protected static function run(int i)
+        if initializers[i] != null and not initializers[i].isEmpty()
+            Log.info(NAMES[i] + " (" + initializers[i].size().toString()+")")
+            while not initializers[i].isEmpty()
+                initializers[i].dequeue().continue()
+            destroy initializers[i]
+        else
+            Log.error("Initilizer " + NAMES[i] + " is Empty")
+
+        if (i + 1) < NAMES.length
+            doAfter(0.1) ->
+                run(i + 1)
+            
+

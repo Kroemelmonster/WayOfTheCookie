@@ -1,27 +1,33 @@
 package StackAction
-import Action
-import BoardStack
-import ActionCost
-import BoardEntity
-import ActionType
+
 import LinkedList
+
+import initlater ActionCost
+import initlater Action
+import initlater StackActionType
+
 import KUtil
-import StackActionType
+import BoardStack
 
 public abstract class StackAction extends Action
     protected BoardStack stack
     protected StackActionType actionType
+    protected StackActionData data
 
     static function createType(string name, string icon, ActionCostPreset cost) returns StackActionType
         return new StackActionType(name, icon, cost)
 
-    construct(BoardStack stack, StackActionType actionType, StackActionData data)
+    private construct(BoardStack stack, StackActionType actionType, StackActionData data)
         super(stack, actionType)
         this.stack = stack
         this.actionType = actionType
-        if data.getCost() != null
+        this.data = data
+        if data != null
             cost.setBasic(data.getCost())
         else
             cost.setBasic(actionType.getCost())
 
-    abstract function createBasicTooltipLines() returns LinkedList<string>
+    function createTooltipLines() returns LinkedList<string>
+        return cost.createTooltipLines()
+        ..addAllAndDestroy(createBasicTooltipLines())
+    protected abstract function createBasicTooltipLines() returns LinkedList<string>

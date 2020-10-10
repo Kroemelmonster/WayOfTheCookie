@@ -2,14 +2,16 @@ package SkillTreeChieftain
 import initlater SkillTree
 import initlater Hero
 
-import Icons
-import LinkedList
 import initlater SpellRallingCry
+
+init
+    Initializer.register(InitializerNames.SKILLTREES) -> 
+        SkillTreeChieftain.setup()
 
 public class SkillTreeChieftain extends SkillTree
     static SkillTreeType TYPE
 
-    static function setup()
+    protected static function setup()
         TYPE = new SkillTreeType("Chieftain")
         TYPE.addListener() hero -> 
             return new SkillTreeChieftain(hero)

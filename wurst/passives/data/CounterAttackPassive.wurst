@@ -1,7 +1,5 @@
 package CounterAttackPassive
 
-import LinkedList
-
 import initlater BoardStack
 import initlater Cell
 import initlater StackPassive
@@ -10,11 +8,14 @@ import initlater PassiveType
 import BoardTrigger
 import BoardEntity
 import SubStackActions
-import KUtil
+
+init
+    Initializer.register(InitializerNames.PASSIVES) -> 
+        CounterAttackPassive.setup()
 
 public class CounterAttackPassive extends StackPassive
     static PassiveType TYPE
-    static function setup()
+    protected static function setup()
         TYPE = new PassiveType("Counter Attack", "Icons/PASCounterAttack.dds")
         TYPE.onCreate() entity -> 
             return new CounterAttackPassive(entity)

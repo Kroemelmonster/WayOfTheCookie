@@ -1,5 +1,11 @@
 package KStringUtils
+import NoWurst
+
+import Colors
 import KUtil
+import Integer
+import Real
+
 
 public class KStringUtils
     static constant COLOR_PRIMARY = colorA(255, 204, 0, 255).toColorString()

@@ -1,14 +1,14 @@
 package SkillTreeTempestarii
 import initlater SkillTree
 import initlater Hero
-import Icons
-import LinkedList
-import StringUtils
+init
+    Initializer.register(InitializerNames.SKILLTREES) -> 
+        SkillTreeTempestarii.setup()
 
 public class SkillTreeTempestarii extends SkillTree
     static SkillTreeType TYPE
 
-    static function setup()
+    protected static function setup()
         TYPE = new SkillTreeType("Tempestarii")
         TYPE.addListener() hero -> 
             return new SkillTreeTempestarii(hero)

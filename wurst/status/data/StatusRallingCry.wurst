@@ -8,15 +8,17 @@ import Status
 import initlater BoardEntity
 import initlater StatusType
 import BoardTrigger
-import LinkedList
-import KStringUtils
 import Tooltip
 import BoardStack
 import SharedStatus
 
+init
+    Initializer.register(InitializerNames.STATI) -> 
+        StatusRallingCry.setup()
+
 public class StatusRallingCry extends SharedStatus
     static StatusType TYPE
-    static function setup()
+    protected static function setup()
         TYPE = new StatusType("Rallying Cry", "Icons\\BTNAbilityWarriorWarCry.blp")
         TYPE.setCreationListener() (boardEntity, statusData) ->
             return new StatusRallingCry(TYPE, boardEntity, statusData)

@@ -1,6 +1,5 @@
 package ActionSlam
 
-import Icons
 import Abilities
 
 import BoardStack
@@ -8,17 +7,13 @@ import Action
 import InstantStackAction
 import BoardController
 import UIMenuActionConsole
-import KUtil
-import LinkedList
 import AnimationWait
 import AnimationCast
 import BoardTrigger
 import HashMap
 import Cell
-import ClosureTimers
 import Damage
 import ActionCost
-import KStringUtils
 import Tooltip
 import UITooltip
 import ActionType
@@ -26,9 +21,14 @@ import BoardEntity
 import KISystem
 import StackActionType
 
+init
+    Initializer.register(InitializerNames.ACTIONS) -> 
+        ActionSlam.setup()
+
+// TODO streamline
 public class ActionSlam extends InstantStackAction
     static StackActionType TYPE
-    static function setup()
+    protected static function setup()
         TYPE = InstantStackAction.createType("Slam", Icons.bTNGolemThunderClap, ActionCostPreset.create(1, false, 2))
         ..enableOption(ActionTypeOption.PRIMARY)
         TYPE.onCreate() (BoardStack stack, StackActionData data) ->

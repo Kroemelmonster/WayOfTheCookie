@@ -1,34 +1,35 @@
 package ActionChainLightning
 
-import LinkedList
-import Icons
-import Abilities
-
-import PlayerData
-import KUtil
-import BoardController
+import StackAction
+import ActionCost
 import Action
+import ActionType
+import StackActionTarget
+import StackActionType
+
+import Abilities
+import PlayerData
+import BoardController
 import Cell
 import BoardStack
 import UIMenuActionConsole
 import AnimationWait
 import Damage
 import AnimationCast
-import BoardTrigger
-import StackAction
-import ActionCost
-import KStringUtils
 import Tooltip
 import UITooltip
 import BoardEntity
-import initlater ActionType
-import initlater StackActionTarget
-import initlater StackActionType
+
+init
+    Initializer.register(InitializerNames.ACTIONS) -> 
+        ActionChainLightning.setup()
 
 public class ActionChainLightning extends StackActionTarget
     static StackActionType TYPE
-    static function setup()
-        TYPE = StackAction.createType("Chain Lightning", Icons.bTNChainLightning, ActionCostPreset.create(1, true, 3))
+
+    protected static function setup()
+        let cost = ActionCostPreset.create(1, true, 3)
+        TYPE = StackActionTarget.createType("Chain Lightning", Icons.bTNChainLightning, cost)
         ..enableOption(ActionTypeOption.PRIMARY)
         TYPE.onCreate() (BoardStack stack, StackActionData data) ->
             return new ActionChainLightning(stack, data)
@@ -42,6 +43,14 @@ public class ActionChainLightning extends StackActionTarget
     private static constant CHAIN_REDUCTION = 0.90
     
     private static DamagePreview damagePreview
+
+    private static function calculateDamage(int amount, int chain) returns DamagePreview
+        var multi = 1.0
+        for i = 1 to chain
+            multi *= CHAIN_REDUCTION
+        multi *= amount
+        damagePreview.dmg = realRange(42.0 * multi, 55.0 * multi)
+        return damagePreview
 
     private static function createTooltipLines(int amount) returns LinkedList<string>
         return new LinkedList<string>
@@ -59,18 +68,7 @@ public class ActionChainLightning extends StackActionTarget
     private static function createTooltipLines(ActionChainLightning action) returns LinkedList<string>
         return createTooltipLines(action.stack.stats.amount)
 
-    private static function calculateDamage(int amount, int chain) returns DamagePreview
-        var multi = 1.0
-        for i = 1 to chain
-            multi *= CHAIN_REDUCTION
-        multi *= amount
-        damagePreview.dmg = realRange(42.0 * multi, 55.0 * multi)
-        return damagePreview
-
-    
-    
-    construct(BoardStack stack, StackActionData data)
-        super(stack, TYPE, data)
+/* -------------------------------------------------------------------------- */
 
     protected override function canTarget(BoardStack potentialTarget) returns boolean
         return stack.isEnemy(potentialTarget)
@@ -154,3 +152,6 @@ public class ActionChainLightning extends StackActionTarget
 
     override function createBasicTooltipLines() returns LinkedList<string>
         return createTooltipLines(this)
+
+    private construct(BoardStack stack, StackActionData data)
+        super(stack, TYPE, data)

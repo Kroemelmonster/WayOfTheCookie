@@ -1,11 +1,8 @@
 package SubStackActions
 
-import LinkedList
-
 import AnimationAttack
 import Damage
 import BoardController
-import KUtil
 import Cell
 import BoardStack
 import Board
@@ -28,7 +25,9 @@ public class SubStackActions
         ..setDamage(attacker.stats.getDamageAll())
         let instance = preview.getRandomInstance()
         destroy preview
-        attack(attacker, defender, instance, triggerOnAttack, next)
+        attack(attacker, defender, instance, triggerOnAttack) (status) ->
+            destroy instance
+            next.continue(status)
 
     static function attack(BoardStack attacker, BoardStack defender, DamageInstance instance, boolean triggerOnAttack, SequenzListenerStatus next)
         // save it AS it might happen that the attacker DIES while attacking..
@@ -44,10 +43,8 @@ public class SubStackActions
                     let itr = subTargets.iterator()
                     subActionAttackDealDamageToSubTargets(itr, attacker, instance) ->
                         destroy itr
-                        destroy instance
                         subActionAttackBackSwing(board, attacker, defender, triggerOnAttack, timeToBackSwing, next)
                 else
-                    destroy instance
                     subActionAttackBackSwing(board, attacker, defender, triggerOnAttack, timeToBackSwing, next)
         
     static function move(BoardStack stack, LinkedList<Cell> path, int limitingMoveAP, SubActionCostSequenzListener next)
@@ -87,18 +84,14 @@ public class SubStackActions
         var usedAP = prevCost
         BoardController.onCellLeave(stack, currentCell, nextCell) (cost) ->
             usedAP += cost
-            if stack.isAlive() == false
-                next.continue(false, usedAP)
-            else if usedAP > limitingMoveAP
+            if not stack.isAlive() or usedAP > limitingMoveAP
                 next.continue(false, usedAP)
             else
                 AnimationMove.atCell(stack, nextCell) -> 
                     BoardController.onCellEnter(stack, currentCell, nextCell) (cost) ->
                         stack.replaceCell(nextCell)
                         usedAP += cost
-                        if stack.isAlive() == false
-                            next.continue(false, usedAP)
-                        else if usedAP > limitingMoveAP
+                        if not stack.isAlive() or usedAP > limitingMoveAP
                             next.continue(false, usedAP)
                         else if pathItr.hasNext()
                             subActionMoveInner(stack, pathItr, usedAP, limitingMoveAP, next)

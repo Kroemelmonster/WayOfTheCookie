@@ -41,6 +41,10 @@ class UIRessource extends UIHandle
     protected function setValue(int value)
         handleText.setText(value.toString())
 
+init
+    Initializer.register(InitializerNames.UI) -> 
+        UIMenuConsole.create()
+
 public class UIMenuConsole
     protected static UIMenu menu
 
@@ -50,7 +54,7 @@ public class UIMenuConsole
     protected static UIRessource ressourceMind
     protected static UIRessource ressourceMagic
 
-    static function create()
+    protected static function create()
         menu = UIMenu.create()
         ..setPointToGameUI(FRAMEPOINT_TOPLEFT, FRAMEPOINT_TOPLEFT)
         ..setPointToGameUI(FRAMEPOINT_TOPRIGHT, FRAMEPOINT_TOPRIGHT)

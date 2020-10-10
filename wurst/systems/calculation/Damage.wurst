@@ -17,6 +17,7 @@ public enum SourceType
 public enum DamageFlags
     DOT
     TRIGGERED
+    CRIT
 
 public enum DamageType
     PHYSICAL
@@ -140,8 +141,10 @@ public class SpecificDamageInstance
 
     function toColoredText() returns string
         var str = KStringUtils.coloredInt(Damage.type2Color(damageInstance.damageType), damage)
+        if damageInstance.hasFlag(DamageFlags.CRIT)
+            str += "!"
         if kills > 0
-            str +=  "   " + KStringUtils.coloredInt(KStringUtils.COLOR_NEGATIVE, kills)
+            str +=  "\n" + KStringUtils.coloredInt(KStringUtils.COLOR_NEGATIVE, kills)
         return str 
 
     ondestroy
@@ -199,51 +202,3 @@ function calculateStackLostCount(BoardStack target, int damage) returns int
         amount = target.stats.getAmount()
 
     return amount
-
-
-
-/*
-
-    protected function getUnitLostCount(int dmg) returns int
-        var amount = 0
-        let remainingDmg = dmg - defender.stats.getHp()
-        if remainingDmg >= 0
-            amount ++
-            let maxHp = defender.stats.getMaxHp()
-            amount += (remainingDmg / maxHp).floor()
-        
-        if amount > defender.stats.getAmount()
-            amount = defender.stats.getAmount()
-
-        return amount
-
-    function getOneResult() returns DamageResult
-        var result = new DamageResult()
-        result.damage = this.damage.random()
-        result.amount = getUnitLostCount(result.damage)
-        result.remainingHP = defender.stats.getHp()
-        result.remainingHP += defender.stats.getMaxHp() * result.amount
-        result.remainingHP -= result.damage
-
-        result.baseDamage = this.baseDamage.copy()
-
-        return result
-
-    protected abstract function getBaseDamage() returns Damage
-
-    /** should always return 100 if you dont want to change the damage at all **/
-    /*
-    protected abstract function getBaseEffectivness() returns real
-
-    function calculate(BoardStack defender)
-        this.defender = defender
-        if baseDamage != null
-            destroy baseDamage
-        baseDamage = getBaseDamage()
-        effectivness = getBaseEffectivness() * (1 - (defender.stats.getResistance(baseDamage.damageType) / 100.0))
-        let realDamage = baseDamage.value * (effectivness / 100.0)
-        damage.min = realDamage.min.round()
-        damage.max = realDamage.max.round()
-        amount.min = getUnitLostCount(damage.min)
-        amount.max = getUnitLostCount(damage.max)
-*/

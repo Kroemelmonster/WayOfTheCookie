@@ -37,11 +37,7 @@ public class PassiveType extends Icon
     function createTooltipLines(int value) returns LinkedList<string>
         return tooltipLinesListener.create(value)
 
-    function getTalent() returns PassiveTalentType
+    function createTalent() returns PassiveTalentType
         if creatingTalent == null
             creatingTalent = new PassiveTalentType(this)
         return creatingTalent
-
-    static function setup()
-        CounterAttackPassive.setup()
-        CracklePassive.setup()

@@ -11,18 +11,19 @@ import initlater BoardEntity
 import initlater StatusType
 import BoardController
 import BoardTrigger
-import LinkedList
-import KStringUtils
 import Tooltip
 import Damage
 import AnimationWait
-import KUtil
 import SharedStatus
 import StatusController
 
+init
+    Initializer.register(InitializerNames.STATI) -> 
+        StatusSpiritLink.setup()
+
 public class StatusSpiritLink extends SharedStatus
     static StatusType TYPE
-    static function setup()
+    protected static function setup()
         TYPE = new StatusType("Spirit Link", Icons.bTNSpiritLink)
         TYPE.setCreationListener() (boardEntity, data) ->
             return new StatusSpiritLink(TYPE, boardEntity, data)

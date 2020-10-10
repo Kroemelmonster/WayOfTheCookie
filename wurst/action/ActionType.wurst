@@ -1,14 +1,7 @@
 package ActionType
 
-import Action
-import LinkedList
 import Icon
-import BoardEntity
 import BitSet
-import initlater SpellType
-import initlater StackActionType
-import initlater HeroActionType
-
 public enum ActionTypeOption
     INSTANT
     PRIMARY
@@ -17,11 +10,6 @@ public enum ActionTypeOption
     WARCRY
 
 public abstract class ActionType extends Icon
-
-    static function setup()
-        SpellType.setup()
-        StackActionType.setup()
-        HeroActionType.setup()
 
     protected bitset optionSet = bitset(0)
 

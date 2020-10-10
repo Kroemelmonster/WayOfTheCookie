@@ -1,0 +1,45 @@
+package World
+
+import MainController
+
+import initlater Board
+import initlater HostileArmy
+import initlater Hero
+import initlater NPC
+
+import initlater WorldBoards
+import Scheduler
+
+init
+    Initializer.register(InitializerNames.WORLD) -> 
+        World.setup()
+
+class World
+
+    protected static function setup()
+        Scheduler.setup()
+        MainController.startGame()
+        
+    // TODO all this shuld be a controller
+    static function onHeroDamaged(Hero hero, unit u)
+        let enemy = HostileArmy.getFromUnit(u)
+        if enemy != null
+            MainController.startFight(hero, enemy, WorldBoards.getBoardToFightOn(enemy))
+
+    static function onHostileArmyDamaged(HostileArmy enemy, unit u)
+        let hero = Hero.getFromUnit(u)
+        if hero != null
+            MainController.startFight(hero, enemy, WorldBoards.getBoardToFightOn(enemy))
+
+    static function onHeroSmartOrder(Hero hero, unit u)
+        let npc = NPC.getFromUnit(u)
+        if npc != null
+            hero.issueNPC(npc)
+
+    static function onHeroSmartOrder(Hero hero)
+        hero.stopInteract()
+
+    static function onHeroInteractWithNPC(Hero hero, unit u)
+        let npc = NPC.getFromUnit(u)
+        if npc != null
+            MainController.interact(hero, npc)

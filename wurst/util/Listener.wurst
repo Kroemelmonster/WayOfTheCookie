@@ -1,0 +1,16 @@
+package Listener
+import NoWurst
+
+public abstract class SequenzListener
+    function continue()
+        continueInner()
+        destroy this
+
+    abstract function continueInner()
+
+public abstract class SequenzListenerData<T>
+    function continue(T data)
+        continueInner(data)
+        destroy this
+
+    abstract function continueInner(T data)

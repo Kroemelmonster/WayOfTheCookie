@@ -1,13 +1,8 @@
 package HeroTypesDefinition
 
-import Icons
-
 import UnitDefinition
-import KUtil
-import LinkedList
 import HeroType
 import SkillTree
-import SpellAction
 import SkillTreeChieftain
 import SkillTreeTempestarii
 import SkillTreeSpirit
@@ -17,17 +12,17 @@ public class HeroTypes
     
     static LinkedList<HeroType> list = new LinkedList<HeroType>
 
+init
+    Initializer.register(InitializerNames.HEROES) -> 
+        HeroTypesDefinition.setup()
+
 class HeroTypesDefinition
     private static function createDefault(integer unitId, integer armyId, string icon) returns HeroType
         let heroType = new HeroType(unitId, armyId, icon, GetObjectName(unitId))
         HeroTypes.list.add(heroType)
         return heroType
 
-    static function setup()
-        SkillTreeType.setup()
-        setupOne()
-
-    private static function setupOne()
+    protected static function setup()
         HeroTypes.FAR_SEER = createDefault(UnitTypesIds.BOARD_HERO_FAR_SEER, UnitTypesIds.HERO_FAR_SEER, Icons.bTNHeroFarseer)
         ..setInitiative(7)
         ..setActionPoints(3)

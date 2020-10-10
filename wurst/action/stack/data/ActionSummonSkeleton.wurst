@@ -1,37 +1,35 @@
 package ActionSummonSkeleton
 
-import LinkedList
-import Icons
-import Abilities
 
-import PlayerData
-import KUtil
-import initlater BoardController
-
-import Action
+import initlater ActionCost
+import initlater ActionType
+import initlater StackActionType
+import initlater Action
 import initlater StackAction
-import StackType
 
-import initlater Cell
-import initlater BoardStack
-import StackTypesDefinition
-import initlater UIMenuActionConsole
+import Abilities
+import PlayerData
+import BoardController
+import StackType
+import Cell
+import BoardStack
+import UIMenuActionConsole
 import AnimationWait
 import AnimationCast
 import BoardTrigger
-import ClosureTimers
-import ActionCost
-import KStringUtils
 import Tooltip
 import UITooltip
-import initlater ActionType
 import BoardEntity
-import initlater StackActionType
+import StackTypesData
+
+init
+    Initializer.register(InitializerNames.ACTIONS) -> 
+        ActionSummonSkeleton.setup()
 
 public class ActionSummonSkeleton extends StackAction
     static StackActionType TYPE
 
-    static function setup()
+    protected static function setup()
         TYPE = StackAction.createType("Summon Skeleton", Icons.bTNRaiseDead, ActionCostPreset.create(1, true, 3))
         ..enableOption(ActionTypeOption.PRIMARY)
         TYPE.onCreate() (BoardStack stack, StackActionData data) ->
@@ -63,14 +61,13 @@ public class ActionSummonSkeleton extends StackAction
       
     private static function createTooltipLines(ActionSummonSkeleton action) returns LinkedList<string>
         return createTooltipLines(action.stack.stats.amount)
-
-
     
+/* -------------------------------------------------------------------------- */
 
     private LinkedList<Cell> area = new LinkedList<Cell>()
     private intRange summonAmount  
 
-    construct(BoardStack stack, StackActionData data)
+    private construct(BoardStack stack, StackActionData data)
         super(stack, TYPE, data)
         SUMMONED_TYPE = StackTypes.find("Lesser Skeleton")
 

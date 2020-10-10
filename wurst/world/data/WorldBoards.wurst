@@ -1,0 +1,27 @@
+package WorldBoards
+import HostileArmy
+import Board
+
+init
+    WorldBoards.initialize()
+
+class WorldBoards
+    protected static LinkedList<Board> all = new LinkedList<Board>
+
+    protected static function create(rect playArea, rect visibleArea) returns Board
+        let board = new Board(playArea, visibleArea)
+        all.add(board)
+        return board
+
+    protected static function initialize() 
+        Initializer.register(InitializerNames.WORLD_BOARDS) -> 
+            create(gg_rct_BoardIsleOne, gg_rct_BoardIsleOneV)
+
+        Initializer.register(InitializerNames.WORLD_BOARDS) -> 
+            create(gg_rct_BoardIsleTwo, gg_rct_BoardIsleTwoV)
+
+        Initializer.register(InitializerNames.WORLD_BOARDS) -> 
+            create(gg_rct_BoardIsleThree, gg_rct_BoardIsleThreeV)
+
+    static function getBoardToFightOn(HostileArmy _enemy) returns Board
+        return all.get(GetRandomInt(0, all.size() - 1))

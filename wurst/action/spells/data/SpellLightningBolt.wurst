@@ -1,13 +1,10 @@
 package SpellLightningBolt
 
-import LinkedList
 import Doodads
-
 
 import initlater SpellType
 
 import PlayerData
-import KUtil
 import BoardController
 import Action
 import Cell
@@ -25,16 +22,19 @@ import Status
 import UIController
 import StatusPurged
 import ActionCost
-import KStringUtils
 import Tooltip
 import UITooltip
 import HeroData
 import Spell
 import Scheduler
 
+init
+    Initializer.register(InitializerNames.SPELLS) -> 
+        SpellLightningBolt.setup()
+
 public class SpellLightningBolt extends SpellAction
     static SpellType TYPE
-    static function setup()
+    protected static function setup()
         PURGE_DEBUFF = StatusPurged.TYPE
         TYPE = SpellAction.createType("Lightning Bolt", "Icons\\BTNLightningBolt.blp")
         TYPE.addLevel(ActionCostPreset.createWithMana(1, true, 4), HeroDataChange.create(0, 0, 1))

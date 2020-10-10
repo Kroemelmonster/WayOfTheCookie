@@ -1,15 +1,8 @@
 package StatusType
 
 import Status
-import StatusStunned
-import StatusPurged
 import BoardEntity
-import StatusRallingCry
-import StatusSpiritLink
-import LinkedList
 import Tooltip
-import KStringUtils
-import KUtil
 
 interface StatusCreateListener
     function create(BoardEntity entity, StatusData data) returns Status
@@ -30,12 +23,6 @@ public class StatusType
     construct(string name, string icon)
         this.icon = icon
         this.name = name
-
-    static function setup()
-        StatusStunned.setup()
-        StatusPurged.setup()
-        StatusRallingCry.setup()
-        StatusSpiritLink.setup()
         
     function setCreationListener(StatusCreateListener listener)
         this.listener = listener

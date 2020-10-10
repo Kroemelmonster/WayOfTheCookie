@@ -1,17 +1,10 @@
 package HeroActionType
 
 import Action
-import LinkedList
 import Icon
-import BoardEntity
 import ActionCost
-import KUtil
 import initlater ActionType
-import initlater BoardStack
-import initlater StackAction
 import initlater BoardHero
-import HeroActionAttack
-import HeroActionSkip
 
 interface HeroActionCreateListener
     function create(BoardHero hero) returns Action
@@ -21,11 +14,6 @@ public interface HeroActionCreateTooltipLinesListener
 
 public class HeroActionType extends ActionType
 
-    static function setup()
-        // TODO
-        HeroActionAttack.setup()
-        HeroActionSkip.setup()
-        
     protected HeroActionCreateListener listener
     protected HeroActionCreateTooltipLinesListener tooltipLinesListener
 

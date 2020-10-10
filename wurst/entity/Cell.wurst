@@ -1,12 +1,9 @@
 package Cell
 
-import LinkedList
-
 import HexagonalGridUtil
 import BoardStack
 import PlayerData
 import Action
-import KUtil
 
 import initlater Board
 
@@ -31,16 +28,18 @@ public class Cell
         color(255, 218, 53)
     ]
 
-    private static constant OUTER_DEFAULT_COLOR = color(255, 255, 255)
-    private static constant OUTER_ALPHA = 90
+    private static constant OUTER_DEFAULT_COLOR = colorA(255, 255, 255, 150)
     
 
     private vec2 center
-    private effect innerModel
-    private effect outerModel
+    //private effect innerModel
+    //private effect outerModel
     private Board board
     private hex hex
     private BoardStack stack
+
+    private image imageOuter
+    private image imageInner
 
     private texttag test
 
@@ -51,14 +50,26 @@ public class Cell
 
         let z = center.getTerrainZ()
         
-        this.innerModel = addEffect(MODEL_FILE_INNER, vec3(center.x, center.y, z + 7))
+        /*
+        this.innerModel = addEffect(MODEL_FILE_INNER, vec3(center.x, center.y, z + 700))
         ..setColor(INNER_CELL_RESULT_COLOR[0])
         ..setScale(SCALING)
 
-        this.outerModel = addEffect(MODEL_FILE_OUTER, vec3(center.x, center.y, z + 8))
+       this.outerModel = addEffect(MODEL_FILE_OUTER, vec3(center.x, center.y, z + 800))
         ..setColor(OUTER_DEFAULT_COLOR)
         ..setAlpha(OUTER_ALPHA)
-        ..setScale(SCALING)
+        ..setScale(SCALING)*/
+
+        let size = 159.0
+        imageInner = createImage("Splats/innerCell.dds", center, size, size)
+        ..wrap()
+        ..show()
+
+        imageOuter = createImage("Spalts/outerCell.dds", center, size, size)
+        ..wrap()
+        ..show()
+        ..setColor(OUTER_DEFAULT_COLOR)
+
 
         // test = createTTEx(vec3(center.x, center.y, z - 5), "?", 13)
 
@@ -79,11 +90,13 @@ public class Cell
     /** FUNCTIONALS **/
     function removeStack()
         this.stack = null
-        this.outerModel.setColor(OUTER_DEFAULT_COLOR)
+        //this.outerModel.setColor(OUTER_DEFAULT_COLOR)
+        imageOuter.setColor(OUTER_DEFAULT_COLOR)
     
     function setStack(BoardStack stack)
         this.stack = stack
-        this.outerModel.setColor(stack.getPlayer().c)
+        //this.outerModel.setColor(stack.getPlayer().c)
+        imageOuter.setColor(stack.getPlayer().c)
 
     function placeStack(BoardStack stack)
         setStack(stack)
@@ -156,5 +169,7 @@ public class Cell
         if this == p.currentMousePosition.cell or this == currentSelectedCell
             alpha += 100
 
-        innerModel.setColor(innerColor)
-        innerModel.setAlpha(alpha)
+       // innerModel.setColor(innerColor)
+        //innerModel.setAlpha(alpha)
+
+        imageInner.setColor(innerColor.withAlpha(alpha))

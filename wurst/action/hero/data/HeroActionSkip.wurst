@@ -1,8 +1,5 @@
 package HeroActionSkip
 
-import Icons
-import LinkedList
-
 import BoardEntity
 import Action
 import BoardController
@@ -11,16 +8,19 @@ import BoardTrigger
 import ActionCost
 import UITooltip
 import Tooltip
-import ActionType
 import initlater HeroActionType
 import initlater HeroAction
 import BoardHero
 import Cell
 import PlayerData
 
+init
+    Initializer.register(InitializerNames.ACTIONS) -> 
+        HeroActionSkip.setup()
+
 public class HeroActionSkip extends HeroAction
     static HeroActionType TYPE
-    static function setup()
+    protected static function setup()
         TYPE = HeroAction.createType("Skip", Icons.bTNCancel, ActionCostPreset.create(0, true))
         TYPE.onCreate() hero -> 
             return new HeroActionSkip(hero)

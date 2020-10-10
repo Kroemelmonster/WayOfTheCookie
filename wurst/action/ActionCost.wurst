@@ -9,6 +9,9 @@ public interface ActionCostData
     function isApFill() returns boolean
 
 public class ActionCostPreset implements ActionCostData
+    static function create(ActionCostPreset copy) returns ActionCostPreset
+        return new ActionCostPreset(copy.ap, copy.apFill, copy.maxCooldown, copy.maxCharges, copy.mana)
+
     static function create(int ap, boolean apFill) returns ActionCostPreset
         return new ActionCostPreset(ap, apFill, -1, -1, -1)
 
@@ -37,6 +40,12 @@ public class ActionCostPreset implements ActionCostData
         else
             maxCharges += charges
 
+    function change(int ap, boolean apFill, int maxCooldown, int maxCharges)
+        this.ap = ap
+        this.apFill = apFill
+        this.maxCooldown = maxCooldown
+        this.maxCharges = maxCharges
+
     override function getAP() returns int
         return ap
 
@@ -47,7 +56,10 @@ public class ActionCostPreset implements ActionCostData
 
     override function isApFill() returns boolean
         return apFill
-    
+            
+    function getMaxCharges() returns int
+        return maxCharges
+
     function getMaxCooldown() returns int
         return maxCooldown
     
@@ -94,7 +106,7 @@ public class ActionCostPreset implements ActionCostData
         if hasCharges()
             var str = ""
             if used != null
-                str = used.charges.toString()
+                str = used.getCurrentCharges().toString()
                 str += " / "
             str += maxCharges.toString()
             lines.add(KStringUtils.stat("Charges", str))
@@ -109,9 +121,6 @@ public class ActionCost implements ActionCostData
     static function create(BoardEntity entity, ActionCostPreset preset) returns ActionCost
         return new ActionCost(entity, preset)
 
-    static function getTempCost(int ap, boolean apFill) returns ActionCost
-        return getTempCost(null, ap, apFill)
-
     static function getTempCost(BoardEntity entity, int ap, boolean apFill) returns ActionCost
         // TODO MEEEEEH
         TEMP.entity = entity
@@ -119,17 +128,16 @@ public class ActionCost implements ActionCostData
         TEMP.basic.apFill = apFill
         return TEMP
 
-
     private BoardEntity entity
     private ActionCostPreset basic
     protected int cooldown
-    protected int charges
+    protected int usedCharges
 
     private construct(BoardEntity entity, ActionCostPreset basic)
         this.basic = basic
         this.entity = entity
         this.cooldown = -1
-        this.charges = basic.maxCharges
+        this.usedCharges = 0
         if basic.mana > 0 and entity.getType() != EntityType.HERO
             Log.error("Tried to create a Action with mana that is not owned by a hero")
 
@@ -166,7 +174,7 @@ public class ActionCost implements ActionCostData
             entity.removeAP(basic.ap + additionalAP)
         cooldown = basic.maxCooldown + 1
         if basic.maxCharges > 0
-            charges--
+            usedCharges++
         if basic.mana >= 0
             entity.toHero().payMana(basic.mana)
 
@@ -175,13 +183,13 @@ public class ActionCost implements ActionCostData
             cooldown -= 1
 
     function getCurrentCharges() returns int
-        return charges
+        return basic.maxCharges - usedCharges
 
     function getCurrentCooldown() returns int
         return cooldown
 
     function hasEnoughCharges() returns boolean
-        return basic.maxCharges < 0 or charges > 0
+        return basic.maxCharges < 0 or usedCharges < basic.maxCharges
 
     function hasEnoughMana() returns boolean
         return basic.mana < 0 or entity.toHero().getMana() >= basic.mana

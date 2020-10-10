@@ -1,7 +1,6 @@
 package StatusStunned
 
 import AttachmentPoints
-import Icons
 import Abilities
 
 import Status
@@ -10,12 +9,16 @@ import initlater StatusType
 import initlater BoardEntity
 import BoardTrigger
 import Tooltip
-import LinkedList
+
+init
+    Initializer.register(InitializerNames.STATI) -> 
+        StatusStunned.setup()
+
 
 public class StatusStunned extends Status
     static StatusType TYPE
 
-    static function setup()
+    protected static function setup()
         TYPE = new StatusType("Stunned", Icons.bTNStun)
         TYPE.setCreationListener() (boardEntity, data) ->
             return new StatusStunned(TYPE, boardEntity)

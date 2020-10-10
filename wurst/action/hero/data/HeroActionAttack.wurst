@@ -1,9 +1,5 @@
 package HeroActionAttack
 
-import LinkedList
-import Icons
-
-
 import initlater Cell
 import initlater BoardStack
 import initlater Board
@@ -12,10 +8,8 @@ import Action
 import PlayerData
 import Damage
 import initlater BoardController
-import KUtil
 import BoardTrigger
 import initlater KISystem
-import ClosureTimers
 import AnimationHeroAttack
 import ActionCost
 import Tooltip
@@ -26,9 +20,13 @@ import initlater UIMenuActionConsole
 import initlater HeroAction
 import initlater HeroActionType
 
+init
+    Initializer.register(InitializerNames.ACTIONS) -> 
+        HeroActionAttack.setup()
+
 public class HeroActionAttack extends HeroAction
     static HeroActionType TYPE
-    static function setup()
+    protected static function setup()
         TYPE = HeroAction.createType("Attack", Icons.bTNAttack, ActionCostPreset.create(1, true))
         ..enableOption(ActionTypeOption.DEFAULT)
         TYPE.onCreate() hero -> 

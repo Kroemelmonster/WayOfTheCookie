@@ -1,54 +1,27 @@
 package DamageAndResistance
+
 import Tooltip
-import KStringUtils
-import initlater Damage
-
-
+import Damage
 
 public class Resistance
-    
-
     private Resistance basis
 
-    private int phyiscal = 0
-    private int magic = 0
-    private int fire = 0
-    private int poison = 0
+    private int array[4] res
 
     construct()
-
     construct(Resistance basis)
         this.basis = basis
 
     function addRes(DamageType dType, int value)
-        switch dType
-            case MAGIC
-                magic += value
-            case FIRE
-                fire += value
-            case POISON
-                poison += value
-            case PHYSICAL
-                phyiscal += value
-            default
-                // yap you cant get PURE resistance!
+        res[dType castTo int] += value
     
     function getRes(DamageType dType) returns int
         var baseRes = 0
         if basis != null
             baseRes = basis.getRes(dType)
-        switch dType
-            case MAGIC
-                return magic + baseRes
-            case FIRE
-                return fire + baseRes
-            case POISON
-                return poison + baseRes
-            case PHYSICAL
-                return phyiscal + baseRes 
-            default
-                // NO RESISTANCE AGAINST PURE
-                return 0 
+        if dType == DamageType.PURE
+            return 0 // YOU jsut cant have any...
+        return baseRes + res[dType castTo int]
 
     function extendTooltip(Tooltip tt)
         tt.addLine("Physical Resistance : " + KStringUtils.coloredPercent(getRes(DamageType.PHYSICAL) / 100))

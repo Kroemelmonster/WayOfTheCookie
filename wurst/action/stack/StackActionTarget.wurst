@@ -1,4 +1,5 @@
 package StackActionTarget
+
 import StackAction
 import ActionType
 import BoardEntity
@@ -10,7 +11,7 @@ import LinkedList
 import Action
 import PlayerData
 import KUtil
-import SubStackActions
+import initlater SubStackActions
 import BoardController
 import UITooltip
 import UIMenuActionConsole
@@ -198,7 +199,7 @@ public abstract class StackActionTarget extends StackAction
         if calculateForKi
             return
         UITooltip.hide(stack.getConntrollingPlayer())
-        UIMenuActionConsole.updateActionPoints(entity, ActionCost.getTempCost(usedAP, false))
+        UIMenuActionConsole.updateActionPoints(entity, usedAP)
 
     override function onUIMouseEnter()
         previewTarget(0, null)

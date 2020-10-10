@@ -7,15 +7,13 @@ import initlater SharedStatus
 import Tooltip
 import Icon
 import LinkedList
+import Data
 
 public interface StatusStats extends GeneratesTooltip, HasIcon
 
-public class StatusData
+public class StatusData extends Data
     int duration
     SharedStatus linkToPrimary
-    protected int array[10] intData
-    protected real array[10] realData
-    protected boolean array[10] boolData
     protected LinkedList<BoardEntity> entityData
 
     construct(int duration)
@@ -28,26 +26,8 @@ public class StatusData
     static function create(int duration) returns StatusData
         return new StatusData(duration)
 
-    function setIntData(int where, int value)
-        intData[where] = value
-
-    function getIntData(int where) returns int
-        return intData[where]
-
     function setSecondary(SharedStatus main)
         this.linkToPrimary = main
-
-    function setBoolData(int where, boolean value)
-        boolData[where] = value
-
-    function getBoolData(int where) returns boolean
-        return boolData[where]
-
-    function setRealData(int where, real value)
-        realData[where] = value
-
-    function getRealData(int where) returns real
-        return realData[where]    
 
     function setEntityData(BoardEntity value)
         clearEntityData()

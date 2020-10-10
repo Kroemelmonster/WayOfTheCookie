@@ -5,7 +5,6 @@ import UIInteractable
 import UITooltip
 import PlayerData
 import StatsModifier
-import KStringUtils
 import Damage
 
 public class UIInteractableStatInfo extends UIInteractable

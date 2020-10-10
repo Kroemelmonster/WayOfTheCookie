@@ -12,11 +12,11 @@ import Tooltip
 import Globals
 import LinkedList
 import initlater BoardHero
+import Data
 
-public class SpellLevel
+public class SpellLevel extends Data
     protected ActionCostPreset usageCost
     protected HeroDataChange levelCost
-    protected int array[10] intData
 
     construct(ActionCostPreset usageCost, HeroDataChange levelCost)
         this.usageCost = usageCost
@@ -27,12 +27,6 @@ public class SpellLevel
 
     function getPayCost() returns HeroDataChange
         return levelCost
-
-    function setIntData(int where, int value)
-        intData[where] = value
-
-    function getIntData(int where) returns int
-        return intData[where]
 
 public interface HasSpellStats
     function getDamageMulti() returns real

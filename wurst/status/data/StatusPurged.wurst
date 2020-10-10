@@ -1,7 +1,6 @@
 package StatusPurged
 
 import AttachmentPoints
-import Icons
 import Abilities
 
 import Status
@@ -10,9 +9,11 @@ import initlater BoardStack
 import initlater BoardEntity
 import initlater StatusType
 import BoardTrigger
-import LinkedList
-import KStringUtils
 import Tooltip
+
+init
+    Initializer.register(InitializerNames.STATI) -> 
+        StatusPurged.setup()
 
 public class StatusPurged extends Status
     static StatusType TYPE

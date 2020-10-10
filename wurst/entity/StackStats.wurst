@@ -34,7 +34,7 @@ public class StackStats implements HasEntityStats
     StatsModifier moveActionPointModi = new StatsModifier()
     private StatsModifier resultingMoveActionPointModi = new StatsModifier()
 
-    private Resistance resistance = new Resistance()
+    private Resistance resistance
 
     LinkedList<TalentType> talents = new LinkedList<TalentType>()
 
@@ -64,6 +64,7 @@ public class StackStats implements HasEntityStats
         this.stack = stack
         this.heroStats = heroStats
         this.talents.addAll(stackType.talents)
+        resistance = new Resistance(stackType.getResistance())
 
     override function getMaxHP() returns int
         return hpModi.get(getBasis().getMaxHP()).round()

@@ -6,8 +6,11 @@ import Board
 import Cell
 
 import MouseContext
-import ClosureTimers
 import UIWindow
+
+init
+    Initializer.register(InitializerNames.SYSTEM) -> 
+        Mouse3DPositionSystem.setup()
 
 class Mouse3DPositionSystem
     static boolean currentlyProcessing = false

@@ -8,20 +8,6 @@ import initlater Damage
 import initlater BoardEntity
 import initlater PlayerData
 
-public abstract class SequenzListener
-    function continue()
-        continueInner()
-        destroy this
-
-    abstract function continueInner()
-
-public abstract class SequenzListenerData<T>
-    function continue(T data)
-        continueInner(data)
-        destroy this
-
-    abstract function continueInner(T data)
-
 public abstract class SequenzListenerStatus
     function continue(int status)
         continueInner(status)

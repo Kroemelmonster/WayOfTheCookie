@@ -1,7 +1,5 @@
 package SpellChainLightning
 
-import LinkedList
-import Icons
 import Abilities
 
 import initlater SpellType
@@ -9,7 +7,6 @@ import initlater SpellType
 import Cell
 import BoardStack
 import PlayerData
-import KUtil
 import BoardController
 import Action
 import UIMenuActionConsole
@@ -20,16 +17,18 @@ import SpellAction
 import BoardHero
 import BoardEntity
 import ActionCost
-import KStringUtils
 import Tooltip
 import UITooltip
 import HeroData
 import Spell
-import BoardTrigger
+
+init
+    Initializer.register(InitializerNames.SPELLS) -> 
+        SpellChainLightning.setup()
 
 public class SpellChainLightning extends SpellAction
     static SpellType TYPE
-    static function setup()
+    protected static function setup()
         TYPE = SpellAction.createType("Chain Lightning", Icons.bTNChainLightning)
         TYPE.addLevel(ActionCostPreset.createWithMana(1, true, 7), HeroDataChange.create(0, 1, 3))
         ..setIntData(DAMAGE, 65)

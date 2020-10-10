@@ -1,22 +1,13 @@
 package StackActionType
 
-import Action
-import LinkedList
 import Icon
-import BoardEntity
-import initlater ActionAttackMove
-import initlater ActionWait
-import initlater ActionDefend
-import initlater ActionChainLightning
-import initlater ActionSpiritLink
-import initlater ActionTalentType
-import initlater ActionSummonSkeleton
-import initlater ActionSlam
 import ActionCost
-import KUtil
 import initlater ActionType
 import initlater BoardStack
 import initlater StackAction
+import Data
+
+import initlater ActionTalentType
 
 interface StackActionCreateListener
     function create(BoardStack stack, StackActionData data) returns StackAction
@@ -27,33 +18,27 @@ public interface StackActionCreateTooltipLinesListener
 interface StackActionCreateDataListener
     function create() returns StackActionData
 
-public class StackActionData
-    protected ActionCostPreset cost
+public class StackActionData extends Data
+    private ActionCostPreset cost
+
     static function create(ActionCostPreset cost) returns StackActionData
         return new StackActionData(cost)
         
     private construct(ActionCostPreset cost)
-        this.cost = cost
+        setCost(cost)
+
+    function setCost(ActionCostPreset cost)
+        if this.cost != null
+            destroy this.cost
+        this.cost = ActionCostPreset.create(cost)
 
     function getCost() returns ActionCostPreset
         return cost
 
     ondestroy
-        if cost != null
-            destroy cost
-            cost = null
+        Log.error("you should never destroy Stack Action Data")
 
 public class StackActionType extends ActionType
-
-    static function setup()
-        ActionWait.setup()
-        ActionDefend.setup()
-        ActionAttackMove.setup()
-        ActionSlam.setup()
-        ActionChainLightning.setup()
-        ActionSummonSkeleton.setup()
-        ActionSpiritLink.setup()
-        
     protected StackActionCreateListener listener
     protected StackActionCreateTooltipLinesListener tooltipLinesListener
     protected StackActionCreateDataListener dataListener
@@ -87,8 +72,7 @@ public class StackActionType extends ActionType
     function createTooltipLines(StackActionData data) returns LinkedList<string>
         LinkedList<string> lines
         if data != null
-            lines = data.cost.createTooltipLines()
-            destroy data
+            lines = data.getCost().createTooltipLines()
         else
             lines = baseCost.createTooltipLines()
         lines.addAllAndDestroy(tooltipLinesListener.create(data))
@@ -96,20 +80,17 @@ public class StackActionType extends ActionType
 
     function createBaseData() returns StackActionData
         if dataListener != null
-            return dataListener.create()
+            let specific = dataListener.create()
+            specific.setCost(baseCost)
+            return specific
         return StackActionData.create(baseCost)
 
     function getCost() returns ActionCostPreset
         return baseCost
 
-    function getTalent() returns ActionTalentType
-        if creatingTalent == null
-            creatingTalent = new ActionTalentType(this)
+    function createTalent() returns ActionTalentType
+        if hasOption(ActionTypeOption.PRIMARY)
+            return new ActionTalentType(this, createBaseData())
+        else if creatingTalent == null
+            creatingTalent = new ActionTalentType(this, null)
         return creatingTalent
-
-    function getTalent(StackActionData data) returns ActionTalentType
-        // TODO use data
-        if creatingTalent == null
-            creatingTalent = new ActionTalentType(this)
-        return creatingTalent
-

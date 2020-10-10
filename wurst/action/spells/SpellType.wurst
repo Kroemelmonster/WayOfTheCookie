@@ -1,21 +1,12 @@
 package SpellType
 
-import LinkedList
-
 import Hero
 import ActionType
 import Spell
-import Icon
-import BoardEntity
 import SpellAction
 import ActionCost
 import HeroData
 import Tooltip
-import SpellRallingCry
-import SpellLightningBolt
-import SpellChainLightning
-import SpellFlameStrike
-import BitSet
 import BoardHero
 
 interface SpellCreateListener
@@ -32,12 +23,6 @@ public class SpellType extends ActionType
 
     static function allIterator() returns LLIterator<SpellType>
         return all.iterator()
-
-    static function setup()
-        SpellRallingCry.setup()
-        SpellLightningBolt.setup()
-        SpellChainLightning.setup()
-        SpellFlameStrike.setup()
         
     protected SpellCreateListener listener
     protected SpellTooltipLinesCreateListener tooltipListener

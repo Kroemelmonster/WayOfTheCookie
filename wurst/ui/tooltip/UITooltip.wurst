@@ -43,6 +43,11 @@ class UITooltipIcon extends UIHandle
     function hide()
         setVisible(false)
 
+
+init
+    Initializer.register(InitializerNames.UI) -> 
+        UITooltip.create()
+
 public class UITooltip
     private static constant LINE_HEIGHT = 0.0122
     private static constant HEIGHT_OFFSET = 0.03

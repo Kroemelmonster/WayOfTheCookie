@@ -3,8 +3,6 @@ package UIMenuWorldConsole
 import PlayerData
 
 import initlater Hero
-import UIFightResultDialog
-import BoardTrigger
 import FightResult
 import UIWindow
 import UIHandle
@@ -17,6 +15,10 @@ public class UIMenuWorldConsoleInfo
     UIExtensionArmyPanelInfo armyInfo = new UIExtensionArmyPanelInfo()
     UIWindowNPCInfo npcInfo = new UIWindowNPCInfo()
 
+init
+    Initializer.register(InitializerNames.UI) -> 
+        UIMenuWorldConsole.create()
+
 public class UIMenuWorldConsole
     protected static UIMenu menu
 
@@ -26,7 +28,7 @@ public class UIMenuWorldConsole
 
     //protected static UIFightResultDialog fightResultDialog
 
-    static function create()
+    protected static function create()
         menu = UIMenu.create()
         ..setPointToGameUI(FRAMEPOINT_BOTTOMLEFT, FRAMEPOINT_BOTTOMLEFT, 0.02, 0)
         ..setSize(0.142, 0.177)

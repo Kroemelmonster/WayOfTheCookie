@@ -1,14 +1,16 @@
 package Description
 import HashMap
-import LinkedList
 import Tooltip
-import KStringUtils
 import Globals
+
+init
+    Initializer.register(InitializerNames.SYSTEM) -> 
+        Description.setup()
 
 public class Description
     private static constant HashMap<string, Description> bookOfWisdom = new HashMap<string, Description>
 
-    static function setup()
+    protected static function setup()
         create("Attack")
         ..addLine("Increases your damage with attacks.")
         ..addLine("")

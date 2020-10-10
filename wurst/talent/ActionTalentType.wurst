@@ -6,19 +6,41 @@ import BoardEntity
 import TalentType
 import ActionTalent
 import StackActionType
+import ActionCost
+import Data
 
-public class ActionTalentType extends TalentType
+public class ActionTalentType extends TalentType implements HasData
     protected StackActionType actionType
+    protected StackActionData data
     
-    construct(StackActionType actionType)
+    construct(StackActionType actionType, StackActionData data)
         super(actionType)
         this.actionType = actionType
+        this.data = data
         
         onCreate() entity ->
-            return new ActionTalent(this, actionType, entity)
+            return new ActionTalent(this, actionType, data, entity)
         onCreateTooltip() -> 
             return createBasicTooltip()
-            ..addLines(actionType.createTooltipLines())
+            ..addLines(actionType.createTooltipLines(data))
+
+    override function setIntData(int where, int value)
+        data.setIntData(where, value)
+
+    override function getIntData(int where) returns int
+        return data.getIntData(where)
+
+    override function setBoolData(int where, boolean value)
+        data.setBoolData(where, value)
+
+    override function getBoolData(int where) returns boolean
+        return getBoolData(where)
+
+    override function setRealData(int where, real value)
+        data.setRealData(where, value)
+
+    override function getRealData(int where) returns real
+        return data.getRealData(where)
 
     override function isHidden() returns boolean
         if not actionType.hasOption(ActionTypeOption.PRIMARY)

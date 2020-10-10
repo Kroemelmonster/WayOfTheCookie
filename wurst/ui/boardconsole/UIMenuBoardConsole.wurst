@@ -1,7 +1,5 @@
 package UIMenuBoardConsole
 
-import LinkedList
-
 import PlayerData
 import UIButton
 
@@ -103,13 +101,16 @@ class InitiativeCommandButton extends UIButtonIcon
     private function onLeaveInner(Player p)
         MouseContext.forceMouseLeave(p)
 
+init
+    Initializer.register(InitializerNames.UI) -> 
+        UIMenuBoardConsole.create()
 
 class UIMenuBoardConsole
     protected static UIMenu menu
 
     private static InitiativeCommandButton array[15] btns
 
-    static function create()
+    protected static function create()
         let iconSize = 0.035
         let firstIconScale = 1.5
         let padding = 0.002
