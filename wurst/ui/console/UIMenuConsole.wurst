@@ -10,6 +10,7 @@ import UIWindowSkillTree
 import UIWindowEntity
 import UIWindowHero
 import UIWindowSpellBook
+import UIWindowConfiguration
 
 public class UIMenuConsoleInfo
     UIWindowSkillTreeInfo skillTreeInfo = new UIWindowSkillTreeInfo()
@@ -102,7 +103,11 @@ public class UIMenuConsole
         ..setPoint(FRAMEPOINT_LEFT, btn, FRAMEPOINT_RIGHT, paddingBtns, 0)
         ..setSize(btnWidth, btnHeight)
 
-        UIButtonMenuToWindow.create(menu, UIWindowSpellBook.create())
+        btn = UIButtonMenuToWindow.create(menu, UIWindowSpellBook.create())
+        ..setPoint(FRAMEPOINT_LEFT, btn, FRAMEPOINT_RIGHT, paddingBtns, 0)
+        ..setSize(btnWidth, btnHeight)
+
+        UIButtonMenuToWindow.create(menu, UIWindowConfiguration.create())
         ..setPoint(FRAMEPOINT_LEFT, btn, FRAMEPOINT_RIGHT, paddingBtns, 0)
         ..setSize(btnWidth, btnHeight)
 

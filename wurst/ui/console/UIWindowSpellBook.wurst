@@ -2,20 +2,13 @@ package UIWindowSpellBook
 
 import PlayerData
 import SpellAction
-import OrderSystem
-import Action
 import UIHandle
 import ClosureFrames
 import UIWindow
 import UIMenuActionConsole
 import Scheduler
 import UIInteractable
-import ActionType
-import UITooltip
-import Tooltip
-import Spell
 import PlayerBoardHelper
-import KStringUtils
 import UIButton
 
 class UIElementSpell extends UIButton
@@ -114,7 +107,7 @@ class UIElementSpell extends UIButton
         setVisible(true)
         handleName.setText(spellaction.getName())
         handleIcon.setTexture(spellaction.getIcon())
-        highlightSelect(spellaction.isQuickcast())
+        highlightSelect(spellAction.getBoardHero().isQuickCast(spellaction))
         updateLevel(spellaction.getLevelIndex())
 
     function setSpell(Spell spell)

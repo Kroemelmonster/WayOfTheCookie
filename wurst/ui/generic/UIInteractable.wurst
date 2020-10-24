@@ -11,13 +11,13 @@ import UIHandle
 
 public class UIInteractable extends UIHandle
     static function create(framehandle self) returns UIInteractable
-        return new UIInteractable(self)
+        return new UIInteractable(self, true)
 
     private FrameHandleListener onMouseEnterListener
     private FrameHandleListener onMouseLeaveListener
     private FrameHandleListener onMouseUpListener
 
-    private construct(framehandle self)
+    private construct(framehandle self, boolean preventBug)
         super(self)
         self.onMouseEnter() () ->
             let p = GetTriggerPlayerData()
@@ -32,8 +32,10 @@ public class UIInteractable extends UIHandle
             if onMouseLeaveListener != null
                 onMouseLeaveListener.onEvent()
 
+        
         self.onMouseUp() -> 
-            preventFocusBug(GetTriggerPlayerData())
+            if preventBug
+                preventFocusBug(GetTriggerPlayerData())
             if onMouseUpListener != null
                 onMouseUpListener.onEvent()
 

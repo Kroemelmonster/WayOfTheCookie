@@ -1,23 +1,20 @@
 package PassiveTalent
-import BoardEntity
+
 import TalentType
-import ActionType
 import Talent
-import Tooltip
 import Action
-import BoardStack
-import Passive
-import PassiveType
+import StackPassive
+import initlater PassiveTalentType
 
 public class PassiveTalent extends Talent
-    protected Passive passive
+    protected StackPassive passive
     protected BoardStack stack
 
-    construct(TalentType talentType, PassiveType passiveType, BoardEntity entity)
+    construct(PassiveTalentType talentType, StackPassiveType passiveType, StackPassiveData data, BoardEntity entity)
         super(talentType, entity)
         if entity.getType() == EntityType.STACK
             stack = entity.toStack()
-            passive = passiveType.create(stack)
+            passive = passiveType.create(stack, data)
             stack.addPassive(passive)
         else
             Log.error(entity.toString() + " has a talent "
@@ -25,7 +22,7 @@ public class PassiveTalent extends Talent
 
     override function createTooltip() returns Tooltip
         return createBasicTooltip()
-        ..addLines(passive.getType().createTooltipLines(stack.stats.amount))
+        ..addLines(passive.createTooltipLines())
 
     override function isHidden() returns boolean
         return talentType.isHidden()

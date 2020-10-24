@@ -3,9 +3,7 @@ package BoardStackStats
 import initlater Cell
 import initlater BoardStack
 
-import KUtil
 import StatsModifier
-import LinkedList
 import DamageAndResistance
 import Talent
 import TalentType
@@ -153,7 +151,6 @@ public class BoardStackStats implements HasEntityStats, HasBoardEntityStats
         hp = i
         stack.setVisualHp(hp / getMaxHP())
 
-    @inline
     function removeAP(integer amount)
         remainingActionPoints -= amount
         if remainingActionPoints < 0
@@ -170,20 +167,16 @@ public class BoardStackStats implements HasEntityStats, HasBoardEntityStats
             remainingActionPoints = remainingActionPoints - (remainingMoveActionPoints - amount)
         remainingMoveActionPoints = amount
 
-    @inline
     function addAmount(int i)
         amount += i
 
-    @inline
-    function resetActionPoints()
+    function resetAP()
         remainingActionPoints = getMaxAP()
         remainingMoveActionPoints = getMaxMoveAP()
 
-    @inline
     function setSubAttackTarget(SubTargetList list)
         subAttackList = list
 
-    @inline
     function getSubAttackTargets(Cell reference, BoardStack mainTarget) returns LinkedList<SubTarget>
         if subAttackList != null
             return subAttackList.calculate(reference, mainTarget)

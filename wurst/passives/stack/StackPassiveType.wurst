@@ -1,0 +1,63 @@
+package StackPassiveType
+import Icon
+import Passive
+import BoardEntity
+import initlater PassiveTalentType
+import BoardStack
+import Data
+import StackPassive
+
+interface StackPassiveCreateListener
+    function create(BoardStack stack, StackPassiveData data) returns StackPassive
+
+public interface StackPassiveCreateTooltipLinesListener
+    function create(StackPassiveData data) returns LinkedList<string>
+
+interface StackPassiveCreateDataListener
+    function create() returns StackPassiveData
+
+public class StackPassiveData extends Data
+
+    static function create() returns StackPassiveData
+        return new StackPassiveData()
+
+    ondestroy
+        Log.error("you should never destroy Stack Passive Data")
+
+public class StackPassiveType extends PassiveType
+    protected StackPassiveCreateListener listener
+    protected StackPassiveCreateTooltipLinesListener tooltipLinesListener
+    protected StackPassiveCreateDataListener dataListener
+
+    construct(string name, string icon)
+        super(name, icon)
+    
+    function onCreate(StackPassiveCreateListener listener)
+        this.listener = listener
+
+    function onCreateTooltipLines(StackPassiveCreateTooltipLinesListener tooltipLinesListener)
+        this.tooltipLinesListener = tooltipLinesListener
+
+    function onCreateData(StackPassiveCreateDataListener dataListener)
+        this.dataListener = dataListener
+
+    function create(BoardStack boardStack, StackPassiveData data) returns StackPassive
+        return listener.create(boardStack, data)
+
+    function toString() returns string
+        return "StackPassiveType '"+name+"'"
+
+    function createTooltipLines() returns LinkedList<string>
+        return createTooltipLines(null)
+
+    function createTooltipLines(StackPassiveData data) returns LinkedList<string>
+        return new LinkedList<string>()
+        ..addAllAndDestroy(tooltipLinesListener.create(data))
+
+    function createBaseData() returns StackPassiveData
+        if dataListener != null
+            return dataListener.create()
+        return StackPassiveData.create()
+
+    function createTalent() returns PassiveTalentType
+        return new PassiveTalentType(this, createBaseData())

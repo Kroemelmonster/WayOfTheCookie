@@ -29,19 +29,30 @@ public abstract class SharedStatus extends Status
     protected abstract function setupPrimary(StatusData data)
     protected abstract function setupSecondary(StatusData data)
 
-    protected function removePrimary(SequenzListener next)
-        for secondary in secondaryStati
-            secondary.removeWithoutTrigger()
-        remove(next)
+    protected function removePrimary()
+        let copied = secondaryStati.copy()
+        secondaryStati.clear()
+        for secondary in copied
+            secondary.remove()
+        destroy this
 
-    protected function removeSecondary(SequenzListener next)
-        primary.secondaryStati.remove(this)
-        remove(next)
+    protected function removeSecondary()
+        if primary.secondaryStati.has(this)
+            primary.secondaryStati.remove(this)
+        destroy this
 
     /** this will !not destroy the statusData **/
     protected function applySecondary(BoardEntity target, StatusData data)
         data.setSecondary(this)
         statusType.applyNewStatusAndKeepData(target, data)
+
+    override protected function removeInner(SequenzListener next)
+        if isPrimary()
+            removePrimary()
+        else
+            removeSecondary()
+        if next != null
+            next.continue()
 
     ondestroy
         if secondaryStati != null

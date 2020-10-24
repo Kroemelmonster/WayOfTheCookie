@@ -1,26 +1,14 @@
 package StackActionTarget
 
-import StackAction
-import ActionType
-import BoardEntity
-import ActionCost
+import public StackAction
 import Targets
-import Cell
-import BoardStack
-import LinkedList
-import Action
 import PlayerData
-import KUtil
-import initlater SubStackActions
 import BoardController
-import UITooltip
 import UIMenuActionConsole
 import PathFinding
 import BoardTrigger
 import KISystem
-import ClosureTimers
 import UIController
-import StackActionType
 
 public abstract class StackActionTarget extends StackAction
 
@@ -30,12 +18,12 @@ public abstract class StackActionTarget extends StackAction
     protected Targets targets
     protected LinkedList<Cell> highlightedPath
     protected intRange range
-    protected CellResult cellResultForHit
+    protected CellPreviewColor cellResultForHit
 
     construct(BoardStack stack, StackActionType actionType, StackActionData data)
         super(stack, actionType, data)
-        cellResultForHit = CellResult.NEGATIVE
-        targets = new Targets(stack) (potentialTarget) ->
+        cellResultForHit = CellPreviewColor.NEGATIVE
+        targets = new Targets(stack.getBoard()) (potentialTarget) ->
             return getBestCellToTargetFrom(potentialTarget)
         targets.checkThisTurnAsWell() (Target target) ->
             return getAPAfterWalkToCell(target.fromCell()) >= cost.getAP()
@@ -80,22 +68,22 @@ public abstract class StackActionTarget extends StackAction
         else
             return remainingActionPoints - (remainingMoveActionPoints - remainingMoveActionPointsFromCell)
 
-    override function getPreviewResultForCell(Cell cell) returns CellResult
+    override function getPreviewColorForCell(Cell cell) returns CellPreviewColor
         let previewStack = cell.getStack()
         if previewStack != null and targets.hasForCurrentTurn(previewStack)
             return cellResultForHit
         else if cell != stack.getCell()
             let remainingAPAfterMove =  getRemainingMoveAPFromCellSave(cell, stack.getRemainingMoveAP())
             if remainingAPAfterMove >= cost.getAP()
-                return CellResult.PREVIEW
+                return CellPreviewColor.ACTABLE
             else if remainingAPAfterMove >= 0 // at leats you can walk there
-                return CellResult.PREVIEW_MINOR
-        return CellResult.NONE
+                return CellPreviewColor.WALKABLE
+        return CellPreviewColor.NONE
 
-    override function getHighlightResultForCell(Player p, Cell cell) returns CellResult
+    override function getHighlightColorForCell(Player p, Cell cell) returns CellHighlightColor
         if highlightedPath.has(cell)
-            return CellResult.POSITIVE
-        return CellResult.NONE
+            return CellHighlightColor.PATH
+        return CellHighlightColor.NONE
 
     override function sendTargetOrder(Cell cell) returns boolean
         if highlightedPath.has(cell)
@@ -123,9 +111,9 @@ public abstract class StackActionTarget extends StackAction
             BoardController.finishOrder(entity, cost, withAdditionAP)
 
     override function recalculateHighlight(Player p)
-        recalculatePreviewPathTo(p.currentMousePosition.cell, false)
+        recalculateHighlighPathTo(p.currentMousePosition.cell, false)
 
-    protected function recalculatePreviewPathTo(Cell cell, boolean calculateForKi) returns Cell
+    protected function recalculateHighlighPathTo(Cell cell, boolean calculateForKi) returns Cell
         highlightedPath.clear()
         if cell == null
             hideTooltipAndUpdateAP(0, calculateForKi)
@@ -229,8 +217,10 @@ public abstract class StackActionTarget extends StackAction
             return
         nullTimer() ->
             let bestTargetStack = bestTarget.self()
-            let orderingCell = recalculatePreviewPathTo(bestTargetStack.getCell(), true)
-            if sendTargetOrder(orderingCell)
+            let orderingCell = recalculateHighlighPathTo(bestTargetStack.getCell(), true)
+            if orderingCell == null // this could be true because you cant walk anymore but still act
+                listener.continue(1)
+            else if sendTargetOrder(orderingCell)
                 listener.continue(0)
             else
                 listener.continue(1)

@@ -1,20 +1,11 @@
 package ActionDefend
 
-
-
-import initlater Action
-import initlater InstantStackAction
-import initlater StackActionType
-import initlater ActionCost
+import InstantStackAction
 
 import Abilities
 import BoardController
 import UIMenuActionConsole
-import BoardStack
 import BoardTrigger
-import Tooltip
-import UITooltip
-import BoardEntity
 
 init
     Initializer.register(InitializerNames.ACTIONS) -> 

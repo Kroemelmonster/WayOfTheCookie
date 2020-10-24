@@ -3,9 +3,7 @@ package Damage
 import initlater BoardStack
 import initlater BoardEntity
 
-import KUtil
 import Globals
-import KStringUtils
 import Tooltip
 import BitSet
 
@@ -16,27 +14,28 @@ public enum SourceType
 
 public enum DamageFlags
     DOT
-    TRIGGERED
     CRIT
+    TRIGGERED // marks the Damage Instance as coming from a trigger thus not chain any other triggers
+    UNMITIGATABLE // ignore armor and resistance
 
 public enum DamageType
     PHYSICAL
     MAGIC
     FIRE
-    POISON
-    PURE
+    COLD
+    CHAOS
 
 public abstract class Damage
     protected DamageType damageType
-    protected bitset flags = bitset(8)
+    protected bitset flags = emptyBitset()
     protected SourceType sourceType
 
-    static constant colorA array COLOR = [
-        colorA(200, 200, 200, 200),
-        colorA(43, 181, 245, 200),
-        colorA(255, 120, 86, 200),
-        colorA(167, 252, 71, 199),
-        colorA(50, 0, 97, 199)
+    static constant IconName array ICONS = [
+        IconName.PHYSICAL,
+        IconName.MAGIC,
+        IconName.FIRE,
+        IconName.ICE,
+        IconName.CHAOS
     ]
 
     construct(SourceType sourceType, DamageType damageType)
@@ -55,8 +54,8 @@ public abstract class Damage
     function copyTo(Damage copy)
         copy.flags = this.flags
 
-    static function type2Color(DamageType dType) returns string
-        return COLOR[dType castTo int].toColorString()
+    static function type2Icon(DamageType dType) returns string
+        return KStringUtils.icon(ICONS[dType castTo int])
 
 public class DamageInstance extends Damage
     real dmg
@@ -70,7 +69,7 @@ public class DamageInstance extends Damage
         this.copyTo(copy)
         return copy
 
-    function dealDamageTo(BoardEntity source, BoardStack target) returns SpecificDamageInstance
+    function calculateDamageTo(BoardEntity source, BoardStack target) returns SpecificDamageInstance
         return new SpecificDamageInstance(this, source, target)
 
 public class DamagePreview extends Damage
@@ -102,30 +101,61 @@ public class DamagePreview extends Damage
 
     function extendTooltipWithSpecific(Tooltip tooltip, BoardEntity source, BoardStack target)
         let preview = new SpecificDamagePreview(this, source, target)
-        tooltip.addLine(KStringUtils.coloredString(target.getPlayer().toColor(), target.getName()))
-        tooltip.addLine(KStringUtils.stat("Damage", Damage.type2Color(preview.damagePreview.damageType), preview.damage))
-        tooltip.addLine(KStringUtils.stat("Kills", KStringUtils.COLOR_NEGATIVE, preview.amount))
+        tooltip.addLine(KStringUtils.coloredString(target.getPlayer().toColor(), target.getName())
+            + " : "
+            + Damage.type2Icon(preview.damagePreview.damageType)
+            + " " + KStringUtils.coloredRange(KStringUtils.COLOR_PRIMARY, preview.damage)
+            + "   " + KStringUtils.icon(IconName.DEATH)
+            + " " + KStringUtils.coloredRange(KStringUtils.COLOR_NEGATIVE, preview.amount))
+
+        /*
+        tooltip.addLine(KStringUtils.coloredString(colorA(202, 34, 34, 20).toColorString(), target.getName() + " : ")
+            + KStringUtils.icon(IconName.DEATH)
+            + " " + KStringUtils.coloredRange(KStringUtils.COLOR_PRIMARY, preview.amount))
+            */
         destroy preview
 
     function toColoredText() returns string
-        return KStringUtils.coloredRange(Damage.type2Color(damageType), dmg.round())
+        return Damage.type2Icon(damageType) + " " + KStringUtils.range(dmg.round())
 
 public class SpecificDamageInstance
+    protected boolean applied = false
+    protected int overKillDamage
     protected int damage
     protected int kills
+    protected BoardStack target
+    protected BoardEntity source
     protected DamageInstance damageInstance
 
     construct(DamageInstance baseDamage, BoardEntity source, BoardStack target)
         damageInstance = baseDamage.copy()
+        this.target = target
+        this.source = source
+        calculateBaseDamage()
+
+    private function calculateBaseDamage()
         let factor = calculateDamageFactor(source, damageInstance, target)
-        damage = (damageInstance.dmg * factor).round()
-        kills = calculateStackLostCount(target, damage)
+        overKillDamage = (damageInstance.dmg * factor).round()
+        calculate()
+    
+    private function calculate()
+        kills = calculateStackLostCount(target, overKillDamage)
+        let maxDamage = target.stats.getMaxHP() * (target.stats.amount - 1) + target.stats.getHp()
+        damage = min(overKillDamage, maxDamage)
+
+    function applyResults()
+        if applied
+            Log.error("tried to apply damage instance another time")
+            return
         var remainingHp = target.stats.getHp()
         remainingHp += target.stats.getMaxHP() * kills
-        remainingHp -= damage
-        
+        remainingHp -= overKillDamage
         target.stats.addAmount(-kills)
         target.stats.setHp(remainingHp)
+        applied = true
+
+    function getOverKillDamage() returns int
+        return overKillDamage
 
     function getDamage() returns int
         return damage
@@ -133,18 +163,46 @@ public class SpecificDamageInstance
     function getKills() returns int
         return kills
 
-    function getDamageData() returns Damage
-        return damageInstance
+    /** this actually sets the overKillDamage and ajuste the damage afterwards **/
+    function setDamage(int damage)
+        if applied
+            Log.error("tried to change damage while it already applied")
+            return
+        overKillDamage = damage
+        calculate()
 
-    function getBaseDamage() returns int
-        return damageInstance.dmg.round()
+    /** 
+        Carefull, this will change calculation for reamining onDamageTriggers with this damage
+        BUT it will NOT change the base Damage of a Spell
+        For Example if you hit 3 units with 100 damge and one of them pushes the damge to 200
+        the others will NOT take 200
+    **/
+    function setBaseDamage(real damage)
+        if applied
+            Log.error("tried to change damage while it already applied")
+            return
+        damageInstance.dmg = damage
+        calculateBaseDamage()
+
+    function getBaseDamage() returns real
+        return damageInstance.dmg
+
+    function hasFlag(DamageFlags flag) returns boolean
+        return damageInstance.hasFlag(flag)
+
+    function getType() returns DamageType
+        return damageInstance.getType()
+
+    function getSourceType() returns SourceType
+        return damageInstance.getSourceType()
 
     function toColoredText() returns string
-        var str = KStringUtils.coloredInt(Damage.type2Color(damageInstance.damageType), damage)
+        var dmgStr = overKillDamage.toString()
         if damageInstance.hasFlag(DamageFlags.CRIT)
-            str += "!"
+            dmgStr += "!"
+        var str = KStringUtils.primaryString(dmgStr)
         if kills > 0
-            str +=  "\n" + KStringUtils.coloredInt(KStringUtils.COLOR_NEGATIVE, kills)
+            str +=  "  " + KStringUtils.coloredInt(KStringUtils.COLOR_NEGATIVE, kills)
         return str 
 
     ondestroy
@@ -181,6 +239,8 @@ public function calculateAttackVsDefencePercentage(int attack, int defence) retu
         return negativeEffect
 
 function calculateDamageFactor(BoardEntity source, Damage dmg, BoardStack target) returns real
+    if dmg.hasFlag(DamageFlags.UNMITIGATABLE)
+        return 1.0
     let resistanceFactor = (1 - (target.stats.getResistance(dmg.damageType) / 100.0))
     if dmg.sourceType == ATTACK and source.getType() == EntityType.STACK
         let sourceAttacker = source.toStack()

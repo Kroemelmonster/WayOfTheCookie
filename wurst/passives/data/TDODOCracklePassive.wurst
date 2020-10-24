@@ -1,3 +1,4 @@
+/*
 package CracklePassive
 
 import initlater BoardEntity
@@ -5,10 +6,8 @@ import Abilities
 import initlater StackPassive
 import initlater PassiveType
 
-init
-    Initializer.register(InitializerNames.PASSIVES) -> 
-        CracklePassive.setup()
 
+        /*
 public class CracklePassive extends StackPassive
     static PassiveType TYPE
     protected static function setup()
@@ -27,7 +26,6 @@ public class CracklePassive extends StackPassive
 
     construct(BoardEntity entity)
         super(entity, TYPE)
-        /*
         stack.getTriggers().addOnDamageDealt() (BoardEntity source, BoardStack target, SpecificDamageInstance specificInstance, SequenzListener next) ->
             if specificInstance.damageInstance.isTriggered
                 next.continue()

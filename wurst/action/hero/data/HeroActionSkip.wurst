@@ -51,11 +51,11 @@ public class HeroActionSkip extends HeroAction
         activate()
         listener.continue(0)
 
-    override function getPreviewResultForCell(Cell cell) returns CellResult
-        return CellResult.NONE
+    override function getPreviewColorForCell(Cell cell) returns CellPreviewColor
+        return CellPreviewColor.NONE
 
-    override function getHighlightResultForCell(Player p, Cell cell) returns CellResult
-        return CellResult.NONE
+    override function getHighlightColorForCell(Player p, Cell cell) returns CellHighlightColor
+        return CellHighlightColor.NONE
 
     override function recalculatePreview()
         return

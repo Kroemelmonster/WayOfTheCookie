@@ -10,6 +10,7 @@ import Integer
 public enum InitializerNames
     SYSTEM
     UI
+    DOODADS
     STATI
     SPELLS
     ACTIONS
@@ -27,6 +28,7 @@ public enum InitializerNames
 constant NAMES = [
     "Start Systems",
     "Draw User Interface",
+    "Skulp the Enviromant",
     "Test Buffs'n Debuffs",
     "Prepare Spells",
     "Muster Actions",
@@ -59,7 +61,7 @@ public class Initializer
         
     protected static function run(int i)
         if initializers[i] != null and not initializers[i].isEmpty()
-            Log.info(NAMES[i] + " (" + initializers[i].size().toString()+")")
+            //Log.info(NAMES[i] + " (" + initializers[i].size().toString()+")")
             while not initializers[i].isEmpty()
                 initializers[i].dequeue().continue()
             destroy initializers[i]

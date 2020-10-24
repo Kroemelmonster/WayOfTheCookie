@@ -10,7 +10,7 @@ public class PlayerBoardHelper
         return p.playingBoard
 
     static function getPlayerBoardHero(Player p) returns BoardHero
-        return getPlayerBoard(p).getBoardHero(p)
+        return getPlayerBoard(p).getBoardForce(p).getBoardHero()
 
     static function getSelectedEntity(Player p) returns BoardEntity
         return p.currentSelectedEntity

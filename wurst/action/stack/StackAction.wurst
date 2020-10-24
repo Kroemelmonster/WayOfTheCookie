@@ -1,13 +1,10 @@
 package StackAction
 
-import LinkedList
+import public initlater Action
+import public initlater StackActionType
+import public initlater SubStackActions
 
-import initlater ActionCost
-import initlater Action
-import initlater StackActionType
-
-import KUtil
-import BoardStack
+import public BoardStack
 
 public abstract class StackAction extends Action
     protected BoardStack stack
@@ -30,4 +27,5 @@ public abstract class StackAction extends Action
     function createTooltipLines() returns LinkedList<string>
         return cost.createTooltipLines()
         ..addAllAndDestroy(createBasicTooltipLines())
+        
     protected abstract function createBasicTooltipLines() returns LinkedList<string>

@@ -2,41 +2,32 @@ package SpellLightningBolt
 
 import Doodads
 
-import initlater SpellType
+import SpellActionTarget
 
 import PlayerData
 import BoardController
-import Action
-import Cell
 import BoardStack
 import UIMenuActionConsole
 import AnimationWait
 import Damage
 import AnimationCast
-import SpellAction
-import BoardHero
-import BoardEntity
 import StatusType
 import StatusController
 import Status
 import UIController
 import StatusPurged
-import ActionCost
-import Tooltip
-import UITooltip
 import HeroData
-import Spell
 import Scheduler
 
 init
     Initializer.register(InitializerNames.SPELLS) -> 
         SpellLightningBolt.setup()
 
-public class SpellLightningBolt extends SpellAction
+public class SpellLightningBolt extends SpellActionTarget
     static SpellType TYPE
     protected static function setup()
         PURGE_DEBUFF = StatusPurged.TYPE
-        TYPE = SpellAction.createType("Lightning Bolt", "Icons\\BTNLightningBolt.blp")
+        TYPE = SpellActionTarget.createType("Lightning Bolt", "Icons\\BTNLightningBolt.blp")
         TYPE.addLevel(ActionCostPreset.createWithMana(1, true, 4), HeroDataChange.create(0, 0, 1))
         ..setIntData(DAMAGE, 60)
         ..setIntData(SLOW, 1)
@@ -80,25 +71,28 @@ public class SpellLightningBolt extends SpellAction
     
     /* -------------------------------------------------------------------------- */
 
-    private LinkedList<Cell> possibleTargets = new LinkedList<Cell>()
+    private Cell highlightedCell
 
-    override function getHighlightResultForCell(Player p, Cell cell) returns CellResult
-        if possibleTargets.has(cell)
-            return CellResult.NEGATIVE
-        return CellResult.NONE
+    override function canTarget(BoardStack potentialTarget) returns boolean
+        return hero.isEnemy(potentialTarget)
 
-    override function recalculatePreview()
-        recalculatePossibleTargets()
+    override function getHighlightRuneRuneForCell(Player p, Cell cell) returns CellHighlightRune
+        if cell == highlightedCell
+            return CellHighlightRune.CAST
+        return CellHighlightRune.NONE
 
     override function recalculateHighlight(Player p)
-        if possibleTargets.has(p.currentMousePosition.cell)
-            showPreview(p.currentMousePosition.cell)
-        else
-            hidePreview()
+        let potentialHighlightedCell = p.currentMousePosition.cell
+        if potentialHighlightedCell == null or not targets.has(potentialHighlightedCell.getStack())
+            highlightedCell = null
+            hideTooltip()
+            return
+        highlightedCell = potentialHighlightedCell
+        showTooltip(highlightedCell.getStack())
 
     override function castAt(Cell cell) returns boolean
         // can not cast at something that is not targetable
-        if not possibleTargets.has(cell)
+        if not targets.has(cell.getStack())
             return false
 
         AnimationCast.atCell(hero, cell) () ->
@@ -125,38 +119,29 @@ public class SpellLightningBolt extends SpellAction
         AnimationWait.untill(entity.getBoard(), waitUntill) -> 
             finishCast(true)
 
-    private function recalculatePossibleTargets()
-        possibleTargets.clear()
-
-        entity.getBoard().forEachStack() stack ->
-            if stack.getPlayer().isEnemyTo(entity.getPlayer())
-                possibleTargets.add(stack.getCell())
-
-    private function showPreview(Cell fromCell)
+    private function showTooltip(BoardStack target)
         let tt = createBasicTooltip()
         ..addLines(createTooltipLines(level, this))
 
-        if fromCell != null
+        if target != null
             tt.addLine("")
             calculateDamage(level, this)
-            .extendTooltipWithSpecific(tt, entity, fromCell.getStack())
+            .extendTooltipWithSpecific(tt, entity, target)
         
         UITooltip.display(entity.getConntrollingPlayer(), tt)
         UIMenuActionConsole.updateActionPoints(entity, cost)
     
-    private function hidePreview()
+    private function hideTooltip()
         UITooltip.hide(entity.getConntrollingPlayer())
         UIMenuActionConsole.updateActionPoints(entity)
 
     override function onUIMouseEnter()
-        showPreview(null)
+        showTooltip(null)
 
     override function onUIMouseLeave()
-        hidePreview()
+        hideTooltip()
 
     private construct(BoardHero hero, Spell spell)
         super(hero, spell)
 
     ondestroy
-        if possibleTargets != null
-            destroy possibleTargets

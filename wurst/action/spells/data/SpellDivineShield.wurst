@@ -1,0 +1,119 @@
+package SpellDivineShield
+
+import Doodads
+
+import SpellActionTarget
+
+import PlayerData
+import BoardController
+import BoardStack
+import UIMenuActionConsole
+import AnimationWait
+import Damage
+import AnimationCast
+import StatusType
+import StatusController
+import Status
+import UIController
+import StatusPurged
+import HeroData
+import Scheduler
+import StatusDivineShield
+
+init
+    Initializer.register(InitializerNames.SPELLS) -> 
+        SpellDivineShield.setup()
+
+public class SpellDivineShield extends SpellActionTarget
+    static SpellType TYPE
+    protected static function setup()
+        BUFF = StatusDivineShield.TYPE
+        TYPE = SpellActionTarget.createType("Divine Shield", Icons.bTNDivineIntervention)
+        TYPE.addLevel(ActionCostPreset.createWithMana(1, true, 4), HeroDataChange.create(1, 0, 1))
+        ..setIntData(ABSORD, 300)
+        TYPE.addLevel(ActionCostPreset.createWithMana(1, true, 5), HeroDataChange.create(2, 0, 2))
+        ..setIntData(ABSORD, 500)
+        TYPE.addLevel(ActionCostPreset.createWithMana(1, true, 6), HeroDataChange.create(3, 0, 3))
+        ..setIntData(ABSORD, 700)
+        TYPE.onActionCreate() (hero, spell) -> 
+            return new SpellDivineShield(hero, spell)
+        TYPE.onCreateTooltipLines() (level, spellStats) -> 
+            return createTooltipLines(level, spellStats)
+
+    private static constant int ABSORD = 0
+    private static StatusType BUFF
+    
+    private static function calculateAbsorb(SpellLevel level, HasSpellStats spellStats) returns int
+        var multi = 1.0
+        if spellStats != null
+            multi += spellStats.getPower() * 0.05
+        return (level.getIntData(ABSORD) * multi).round()
+
+    private static function createTooltipLines(SpellLevel level, HasSpellStats spellStats) returns LinkedList<string>
+        return new LinkedList<string>
+        ..add(KStringUtils.stat("Target", "Ally"))
+        ..add("")
+        ..add("Enlightens one Ally with a bla bla")
+        ..add(KStringUtils.line())
+        ..addAllAndDestroy(BUFF.createTooltipLines(createStatusData(level, spellStats)))
+
+    private static function createStatusData(SpellLevel level, HasSpellStats spellStats) returns StatusData
+        return StatusData.create(1)
+        ..setIntData(StatusDivineShield.ABSORB, calculateAbsorb(level, spellStats))
+    
+    /* -------------------------------------------------------------------------- */
+
+    private Cell highlightedCell
+
+    override function canTarget(BoardStack potentialTarget) returns boolean
+        return hero.isAlly(potentialTarget)
+
+    override function getHighlightRuneRuneForCell(Player p, Cell cell) returns CellHighlightRune
+        if cell == highlightedCell
+            return CellHighlightRune.CAST
+        return CellHighlightRune.NONE
+
+    override function recalculateHighlight(Player p)
+        let potentialHighlightedCell = p.currentMousePosition.cell
+        if potentialHighlightedCell == null or not targets.has(potentialHighlightedCell.getStack())
+            highlightedCell = null
+            hideTooltip()
+            return
+        highlightedCell = potentialHighlightedCell
+        showTooltip(highlightedCell.getStack())
+
+    override function castAt(Cell cell) returns boolean
+        // can not cast at something that is not targetable
+        if not targets.has(cell.getStack())
+            return false
+
+        AnimationCast.atCell(hero, cell) () ->
+            let backSwingUntill = Scheduler.getTimeIn(0.2)
+            StatusController.apply(BUFF, cell.getStack(), createStatusData(level, this)) (status) ->
+                backSwing(backSwingUntill)
+        return true
+
+    private function backSwing(real waitUntill)
+        AnimationWait.untill(entity.getBoard(), waitUntill) -> 
+            finishCast(true)
+
+    private function showTooltip(BoardStack _target)
+        let tt = createBasicTooltip()
+        ..addLines(createTooltipLines(level, this))
+        
+        UITooltip.display(entity.getConntrollingPlayer(), tt)
+        UIMenuActionConsole.updateActionPoints(entity, cost)
+    
+    private function hideTooltip()
+        UITooltip.hide(entity.getConntrollingPlayer())
+        UIMenuActionConsole.updateActionPoints(entity)
+
+    override function onUIMouseEnter()
+        showTooltip(null)
+
+    override function onUIMouseLeave()
+        hideTooltip()
+
+    private construct(BoardHero hero, Spell spell)
+        super(hero, spell)
+        cellResultForHit = CellPreviewColor.POSITIVE

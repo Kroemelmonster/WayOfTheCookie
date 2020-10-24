@@ -1,26 +1,18 @@
 package SpellRallingCry
 
-import initlater SpellType
+import WarcrySpellAction
 
 import PlayerData
 import UIMenuActionConsole
 import AnimationCast
-import SpellAction
-import BoardEntity
 import StatusType
 import StatusController
 import Status
-import WarcrySpellAction
 import StatusRallingCry
 import BoardStack
-import ActionCost
-import Tooltip
-import UITooltip
-import Spell
 import HeroData
 import Scheduler
 import AnimationWait
-import BoardHero
 
 init
     Initializer.register(InitializerNames.SPELLS) -> 
@@ -33,51 +25,61 @@ public class SpellRallingCry extends WarcrySpellAction
         TYPE = WarcrySpellAction.createType("Rallying Cry", "Icons\\BTNAbilityWarriorWarCry.blp")
         TYPE.addLevel(ActionCostPreset.create(0, false, 3), HeroDataChange.create(1, 0, 1))
         ..setIntData(ATTACK_BONUS, 3)
+        ..setRealData(ATTACK_PERC, 0.5)
         TYPE.addLevel(ActionCostPreset.create(0, false, 2), HeroDataChange.create(2, 0, 1))
         ..setIntData(ATTACK_BONUS, 5)
-        TYPE.addLevel(ActionCostPreset.create(0, false, 1), HeroDataChange.create(2, 0, 2))
+        ..setRealData(ATTACK_PERC, 0.6)
+        TYPE.addLevel(ActionCostPreset.create(0, false, 1), HeroDataChange.create(3, 0, 2))
         ..setIntData(ATTACK_BONUS, 7)
+        ..setRealData(ATTACK_PERC, 0.7)
         TYPE.onActionCreate() (hero, spell) -> 
             return new SpellRallingCry(hero, spell)
         TYPE.onCreateTooltipLines() (level, spell) -> 
-            return createTooltipLines(level)
+            return createTooltipLines(level, spell)
 
-    private static constant int ATTACK_BONUS = 0
+    private static constant ATTACK_BONUS = 0
+    private static constant ATTACK_PERC = 0
 
     private static StatusType STATUS
 
-    private static function createTooltipLines(SpellLevel level) returns LinkedList<string>
+    private static function createTooltipLines(SpellLevel level, HasSpellStats spellStats) returns LinkedList<string>
         return new LinkedList<string>
         ..add(KStringUtils.stat("Target", "Allies/Self"))
         ..add("")
-        ..add("Gives your self and all your troops a temporary Attack Bonus")
+        ..add("Gives your self temporary Attack Bonus. Then Gives all your troops "
+         + KStringUtils.primaryPercent(level.getRealData(ATTACK_PERC))
+         + " of your total Attack as additional Bonus")
         ..add(KStringUtils.line())
-        ..addAllAndDestroy(STATUS.createTooltipLines(createStatusData(level)))
+        ..addAllAndDestroy(STATUS.createTooltipLines(createStatusData(level, spellStats)))
     
-    private static function createStatusData(SpellLevel level) returns StatusData
+    private static function createStatusData(SpellLevel level, HasSpellStats spellStats) returns StatusData
+        let attackBonus = level.getIntData(ATTACK_BONUS)
+        let attackBonusUnits = ((spellStats.getAttack() + attackBonus) * level.getRealData(ATTACK_PERC)).round()
         return StatusData.create(1)
-        ..setIntData(ATTACK_BONUS, level.getIntData(ATTACK_BONUS))
+        ..setIntData(StatusRallingCry.ATTACK_BONUS, attackBonus)
+        ..setIntData(StatusRallingCry.ATTACK_BONUS_UNITS, attackBonusUnits)
 
     /* -------------------------------------------------------------------------- */
 
     override function cast()
         AnimationCast.withoutTarget(entity) ->
-            let data = createStatusData(level)
-            ..clearEntityData()
-            entity.getBoard().forEachStack() (BoardStack ally) ->
-                if ally.isAlly(entity)
-                    data.addEntityData(ally)
-            
-            let backSwingUntill = Scheduler.getTimeIn(0.2)
-            StatusController.apply(STATUS, entity, data) (status) ->
+            flashEffect("WhiteChakraExplosion.mdx", entity.getPos3Real())
+            let backSwingUntill = Scheduler.getTimeIn(0.5)
+            applyStati() ->
                 AnimationWait.untill(entity.getBoard(), backSwingUntill) -> 
                     finishCast(true)
 
-            
+    private function applyStati(SequenzListener next)
+        let data = createStatusData(level, this)
+        ..clearEntityData()
+        entity.getForce().forEachStack() (BoardStack ally) ->
+            data.addEntityData(ally)
+        StatusController.apply(STATUS, entity, data) (status) ->
+            next.continue()
 
     private function showPreview()
         let tt = createBasicTooltip()
-        ..addLines(createTooltipLines(level))
+        ..addLines(createTooltipLines(level, this))
         UITooltip.display(entity.getConntrollingPlayer(), tt)
         UIMenuActionConsole.updateActionPoints(entity, cost)
 

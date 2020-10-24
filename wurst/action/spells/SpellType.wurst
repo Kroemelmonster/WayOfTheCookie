@@ -1,13 +1,9 @@
 package SpellType
 
+import public SpellAction
+
 import Hero
-import ActionType
-import Spell
-import SpellAction
-import ActionCost
 import HeroData
-import Tooltip
-import BoardHero
 
 interface SpellCreateListener
     function create(BoardHero hero, Spell spell) returns SpellAction

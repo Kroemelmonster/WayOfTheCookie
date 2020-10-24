@@ -7,9 +7,7 @@ import initlater Cell
 import initlater BoardStack
 import BoardStackStats
 import BoardEntity
-import LinkedList
-
-constant int MOVE_COST_BLOCKED = 1000
+import Globals
 
 public interface PathCell
     function getRemainingMoveAP(HasBoardEntityStats stats) returns int
@@ -107,16 +105,22 @@ public class PathFinding
     private int calcIndex = 0
     private LinkedList<PathCellInner> openCells
 
-    @inline
-    static function getCellMoveIntoCost(Cell c) returns int
-        let stack = c.getStack()
-        if stack != null
+    static function getCellMoveIntoCostIgnoringStack(BoardStack ignore, Cell fromCell, Cell toCell) returns int
+        let stack = toCell.getStack()
+        if stack != null and stack != ignore
             return MOVE_COST_BLOCKED
-        return 1
+        return toCell.getCellMoveIntoCost(fromCell)
 
     @inline
-    static function getCellMoveOutCost(Cell c) returns int
-        return 0
+    static function getCellMoveIntoCost(Cell fromCell, Cell toCell) returns int
+        let stack = toCell.getStack()
+        if stack != null
+            return MOVE_COST_BLOCKED
+        return toCell.getCellMoveIntoCost(fromCell)
+
+    @inline
+    static function getCellMoveOutCost(Cell fromCell, Cell toCell) returns int
+        return fromCell.getCellMoveOutCost(toCell)
 
     construct(BoardEntity entity)
         this.entity = entity
@@ -162,6 +166,8 @@ public class PathFinding
     private function calculateInner()
         resetPaths()
         
+        //Log.trace("recaclc pathfindeing for : "+entity.toString())
+        //Log.trace("it stands at : "+entity.getCell().toString())
         let pathStart = paths.get(entity.getCell())
         pathStart.setupFirst(calcIndex)
         openCells.add(pathStart)
@@ -172,11 +178,11 @@ public class PathFinding
             
             current.cell.forEachNeighbour() neighbourCell ->
                 let neighbour = paths.get(neighbourCell)
-                let costInto = getCellMoveIntoCost(neighbourCell)
+                let costInto = getCellMoveIntoCost(current.cell, neighbourCell)
                 if costInto == MOVE_COST_BLOCKED
                     neighbour.block(calcIndex)
                 else
-                    let cost = costInto + getCellMoveOutCost(neighbourCell)
+                    let cost = costInto + getCellMoveOutCost(current.cell, neighbourCell)
                     let newCost = currentCost + cost
                     // did we find a more efficent path ? go there
                     if newCost < neighbour.getCost(calcIndex)

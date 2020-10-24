@@ -26,10 +26,10 @@ class WorldHeroes
                 return stackType.level <= 2
 
             let h = create(playerData[0], HeroTypes.FAR_SEER)
-            ..addStackWithLeadershipAtFree(StackTypes.find("Forest Troll High Priest"), GetRandomInt(500, 700))
-            ..addStackWithLeadershipAtFree(StackTypes.find("Spirit Walker"), GetRandomInt(500, 700))
-            ..addStackWithLeadershipAtFree(StackTypes.find("Skeletal Orc"), GetRandomInt(50, 100))
-            ..addStackWithLeadershipAtFree(StackTypes.find("Forest Troll Berserker"), GetRandomInt(50, 100))
+            ..addStackWithLeadershipAtFree(StackTypes.getAllOfLevel(5).getRandom(), GetRandomInt(400, 600))
+            ..addStackWithLeadershipAtFree(StackTypes.find("Spirit Walker"), GetRandomInt(400, 600))
+            ..addStackWithLeadershipAtFree(StackTypes.find("Skeletal Orc"), GetRandomInt(150, 300))
+            ..addStackWithLeadershipAtFree(StackTypes.find("Forest Troll Berserker"), GetRandomInt(150, 300))
             ..equiqItemAt(0, ItemSteelHammer.TYPE.createNew())
             ..setBackPackItem(0, ItemSimpleAxe.TYPE.createNew())
             ..setBackPackItem(1, ItemSimpleAxe.TYPE.createNew())

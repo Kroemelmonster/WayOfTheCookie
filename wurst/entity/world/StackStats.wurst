@@ -1,11 +1,9 @@
 package StackStats
 
 import StackType
-import KUtil
 import StatsModifier
 
 import initlater Stack
-import LinkedList
 import HeroStats
 import DamageAndResistance
 import initlater TalentType

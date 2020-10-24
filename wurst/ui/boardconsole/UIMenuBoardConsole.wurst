@@ -60,7 +60,7 @@ class InitiativeCommandButton extends UIButtonIcon
 
     protected function setEntity(BoardEntity entity, int time)
         this.entity = entity
-        if time > 0
+        if time >= 0
             handleTime.setText(time.toString())
 
         setBackground(entity.getIcon())
@@ -138,12 +138,18 @@ class UIMenuBoardConsole
 
         let iterator = initiative.iterator()
         for i = 1 to btns.length - 1
-            let hasEntry = iterator.hasNext()
-            btns[i].setVisible(hasEntry)
-
-            if hasEntry
-                let initEntry = iterator.next()
-                btns[i].setEntity(initEntry.getEnitity().getBoardEntity(), initEntry.getTime())
+            if iterator.hasNext()
+                InitiativeEntry entry = null
+                InitiativeBoardEntity entity = null
+                while entity == null and iterator.hasNext()
+                    entry = iterator.next()
+                    entity = entry.getBoardEntity()
+                if entity != null
+                    btns[i].setEntity(entity.getBoardEntity(), entry.getTime())
+                else
+                    btns[i].setVisible(false)
+            else
+                btns[i].setVisible(false)
 
         destroy iterator
         

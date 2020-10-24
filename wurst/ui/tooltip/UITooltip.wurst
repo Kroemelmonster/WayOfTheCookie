@@ -3,6 +3,8 @@ import UIHandle
 import UIWindow
 import PlayerData
 import initlater Tooltip
+import ClosureFrames
+import UIInteractable
 
 class UITooltipIcon extends UIHandle
     static function create(framehandle parent, real height) returns UITooltipIcon
@@ -49,10 +51,11 @@ init
         UITooltip.create()
 
 public class UITooltip
-    private static constant LINE_HEIGHT = 0.0122
-    private static constant HEIGHT_OFFSET = 0.03
-    private static constant MIN_HEIGHT = 0.08
+    private static constant LINE_HEIGHT = 0.01  // 0.0122
+    private static constant MIN_LINES = 0
     private static constant ICONS_HEIGHT = 0.015
+
+    private static real ADDITIONAL_HEIGHT
 
     private static framehandle self
 
@@ -65,28 +68,41 @@ public class UITooltip
     private static real textWidth
 
     static function create()
-        self = createUIFrameByName("TooltipBackground", GAME_UI, false)
-        ..setSize(0.25, 0.2)
+        let widht = 0.25
+        self = createUIFrame("MENU", GAME_UI, true)
+        ..setSize(widht, 0.2)
         ..setLevel(1000)
         ..setPoint(FRAMEPOINT_BOTTOMRIGHT, CONSOLE_UI, FRAMEPOINT_BOTTOMRIGHT)
         ..setVisible(false)
+        self.onMouseEnter() -> 
+            if GetTriggerPlayerData().isLocal()
+                self.setAlpha(100)
+
+        self.onMouseLeave() -> 
+            if GetTriggerPlayerData().isLocal()
+                self.setAlpha(255)
+        createUIFrameByName("TooltipBackground", self, false)
+        ..setAllPoints(self)
         let padding = 0.005
         handleHeaderText = createUIFrameByName("TooltipTextHeader", self, false)
         ..setPoint(FRAMEPOINT_TOPLEFT, self, FRAMEPOINT_TOPLEFT, padding, -padding)
-        ..setPoint(FRAMEPOINT_BOTTOMRIGHT, self, FRAMEPOINT_TOPRIGHT, -padding, -0.021)
+        ..setPoint(FRAMEPOINT_TOPRIGHT, self, FRAMEPOINT_TOPRIGHT, -padding, -padding)
+        ..setText("TEST")
+
+        ADDITIONAL_HEIGHT = handleHeaderText.getHeight() + padding * 4 // padding top, pading bewteen this and icons, padding between icons and the text
 
         handleIconsHolder = createUIFrame("FRAME", self)
         ..setPoint(FRAMEPOINT_TOPLEFT, handleHeaderText, FRAMEPOINT_BOTTOMLEFT, 0.0, -padding)
         ..setPoint(FRAMEPOINT_TOPRIGHT, handleHeaderText, FRAMEPOINT_BOTTOMRIGHT, 0.0, -padding)
         ..setHeight(ICONS_HEIGHT)
 
-        handleText = createUIFrame("TEXT", self)
+        handleText = createUIFrameByName("TooltipText", self, false)
         ..setPoint(FRAMEPOINT_TOPLEFT, handleIconsHolder, FRAMEPOINT_BOTTOMLEFT, 0.0, -padding)
-        ..setPoint(FRAMEPOINT_BOTTOMRIGHT, self, FRAMEPOINT_BOTTOMRIGHT, 0.0, padding)
+        ..setPoint(FRAMEPOINT_BOTTOMRIGHT, self, FRAMEPOINT_BOTTOMRIGHT, -padding, padding)
 
-        textWidth = 0.25 - (padding * 2)
+        textWidth = widht - (padding * 2)
 
-        hanldeLineTest = createUIFrame("TEXT", self)
+        hanldeLineTest = createUIFrameByName("TooltipText", self, false)
         ..setPoint(FRAMEPOINT_TOPLEFT, handleText, FRAMEPOINT_TOPLEFT, padding, 0)
         ..setPoint(FRAMEPOINT_BOTTOMLEFT, self, FRAMEPOINT_BOTTOMLEFT, padding * 2, 0)
         ..setVisible(false)
@@ -135,25 +151,27 @@ public class UITooltip
         for i = 0 to icons.length - 1
             icons[i].hide()
         
+        var height = ADDITIONAL_HEIGHT
+        
         let ttIcons = tt.getIcons()
         if ttIcons == null or ttIcons.isEmpty()
             handleIconsHolder.setHeight(0.001)
+            height += 0.001
         else
             handleIconsHolder.setHeight(ICONS_HEIGHT)
             var index = 0
             for icon in ttIcons
                 icons[index].update(icon.getName(), icon.getIcon())
                 index++
+            
+            height += ICONS_HEIGHT
 
         handleHeaderText.setText(tt.convertUIHeader())
         handleText.setText(tt.convertUIText())
-        let lineNumbers = tt.getLineCount()
 
-        let height = lineNumbers * LINE_HEIGHT
-        if height > MIN_HEIGHT
-            self.setHeight(height + HEIGHT_OFFSET)
-        else
-            self.setHeight(MIN_HEIGHT + HEIGHT_OFFSET)
+        let lines = max(tt.getLineCount(), MIN_LINES)
+        height += lines * LINE_HEIGHT
+        self.setHeight(height)
         self.setVisible(true)
 
         destroy tt

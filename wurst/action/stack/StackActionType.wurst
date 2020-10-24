@@ -1,9 +1,5 @@
 package StackActionType
 
-import Icon
-import ActionCost
-import initlater ActionType
-import initlater BoardStack
 import initlater StackAction
 import Data
 

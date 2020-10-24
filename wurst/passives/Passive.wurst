@@ -1,20 +1,22 @@
 package Passive
 
-import initlater BoardEntity
-import initlater PassiveType
-import Tooltip
+import BoardEntity
+import public PassiveType
+import public Tooltip
 
 public abstract class Passive
     protected BoardEntity entity
     protected PassiveType passiveType
-    protected string name
-
+    
     construct(BoardEntity entity, PassiveType passiveType)
         this.entity = entity
         this.passiveType = passiveType
 
     function getName() returns string
         return passiveType.getName()
+
+    function getIcon() returns string
+        return passiveType.getIcon()
 
     function toString() returns string
         return "Passive '"+getName()+"'"

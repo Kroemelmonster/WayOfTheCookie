@@ -1,19 +1,10 @@
 package ActionAttackMove
 
-import Action
-import ActionType
-import SubStackActions
 import StackActionTarget
-import StackActionType
 
 import PlayerData
 import Damage
-import BoardStack
 import UIMenuActionConsole
-import ActionCost
-import UITooltip
-import Tooltip
-import BoardEntity
 
 init
     Initializer.register(InitializerNames.ACTIONS) -> 
@@ -59,6 +50,9 @@ public class ActionAttackMove extends StackActionTarget
 
     override function createBasicTooltipLines() returns LinkedList<string>
         return new LinkedList<string>
+
+    override function getHighlightRuneRuneForCell(Player p, Cell cell) returns CellHighlightRune
+        return CellHighlightRune.NONE
 
     private construct(BoardStack stack, StackActionData data)
         super(stack, TYPE, data)

@@ -1,0 +1,25 @@
+package UIInput
+import UIInteractable
+
+public interface InputChange<T>
+    function onChange(T value)
+
+public abstract class UIInput<T> extends UIInteractable
+    private InputChange<T> listener
+    protected boolean block = false
+        
+    private construct(framehandle self, boolean preventBug)
+        super(self, preventBug)
+
+    function setValue(T newValue)
+        block = true
+        visualizeValue(newValue)
+        block = false
+
+    protected function callListener(T value)
+        listener.onChange(value)
+
+    protected abstract function visualizeValue(T value)
+
+    function onValueChange(InputChange<T> listener)
+        this.listener = listener

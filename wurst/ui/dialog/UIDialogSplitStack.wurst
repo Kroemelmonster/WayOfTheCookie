@@ -20,8 +20,8 @@ public class DialogInfoSplitStack
 public class UIDialogSplitStack
     private static UIDialog dia
     private static UISlider slider
-    private static UIEditBox editBoxLeft
-    private static UIEditBox editBoxRight
+    private static UIEditBoxInt editBoxLeft
+    private static UIEditBoxInt editBoxRight
 
     private static framehandle handleIconLeft
     private static framehandle handleIconRight
@@ -40,20 +40,20 @@ public class UIDialogSplitStack
         ..onValueChange() -> 
             setStackValues(GetTriggerPlayerData(), slider.getValue())
 
-        editBoxLeft = UIEditBox.create(dia)
+        editBoxLeft = UIEditBoxInt.create(dia)
         ..setInnerPoint(FRAMEPOINT_BOTTOMLEFT, dia, FRAMEPOINT_BOTTOMLEFT, 0, paddingH)
-        ..onValueChange() -> 
+        ..onValueChange() (integer value) ->
             let p = GetTriggerPlayerData()
-            setStackValues(p, p.dialogInfo.splitInfo.maxAmount - editBoxLeft.getValue().toInt())
+            setStackValues(p, p.dialogInfo.splitInfo.maxAmount - value)
 
         handleIconLeft = createUIFrame("BACKDROP", dia)
         ..setPoint(FRAMEPOINT_BOTTOM, editBoxLeft, FRAMEPOINT_TOP)
         ..setSize(0.04, 0.04)
 
-        editBoxRight = UIEditBox.create(dia)
+        editBoxRight = UIEditBoxInt.create(dia)
         ..setInnerPoint(FRAMEPOINT_BOTTOMRIGHT, dia, FRAMEPOINT_BOTTOMRIGHT, 0, paddingH)
-        ..onValueChange() -> 
-            setStackValues(GetTriggerPlayerData(), editBoxRight.getValue().toInt())
+        ..onValueChange()  (integer value) ->
+            setStackValues(GetTriggerPlayerData(), value)
 
         handleIconRight = createUIFrame("BACKDROP", dia)
         ..setPoint(FRAMEPOINT_BOTTOM, editBoxRight, FRAMEPOINT_TOP)

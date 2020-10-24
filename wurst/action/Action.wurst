@@ -1,21 +1,16 @@
 package Action
 
 import PlayerData
-
-import initlater Cell
-import initlater BoardEntity
-import initlater OrderSystem
-
 import BoardTrigger
 import UIController
-import ActionCost
-import Icon
-import initlater ActionType
-import Tooltip
-import LinkedList
-import KUtil
+import initlater OrderSystem
 
-
+import public initlater BoardEntity
+import public initlater Cell
+import public ActionCost
+import public initlater ActionType
+import public Tooltip
+import public UITooltip
 
 public abstract class Action
     protected BoardEntity entity
@@ -29,16 +24,15 @@ public abstract class Action
         this.actionType = actionType
         cost = ActionCost.create(entity)
 
-    function getPreviewResultForCell(Cell _cell) returns CellResult
-        return CellResult.NONE
-
     function onAnyStackCellChange()
         recalculatePreview()
         if OrderSystem.canOrderAndInteract(entity.getConntrollingPlayer())
             recalculateHighlight(entity.getConntrollingPlayer())
 
     protected abstract function recalculatePreview()
-    abstract function getHighlightResultForCell(Player p, Cell cell) returns CellResult
+    abstract function getPreviewColorForCell(Cell _cell) returns CellPreviewColor
+    abstract function getHighlightColorForCell(Player p, Cell cell) returns CellHighlightColor
+    abstract function getHighlightRuneRuneForCell(Player p, Cell cell) returns CellHighlightRune
     abstract function onUIMouseEnter()
     abstract function onUIMouseLeave()
     abstract function recalculateHighlight(Player p)

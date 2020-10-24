@@ -1,43 +1,33 @@
 package ActionSummonSkeleton
 
-
-import initlater ActionCost
-import initlater ActionType
-import initlater StackActionType
-import initlater Action
-import initlater StackAction
+import StackActionTargetCell
 
 import Abilities
 import PlayerData
 import BoardController
 import StackType
-import Cell
-import BoardStack
 import UIMenuActionConsole
 import AnimationWait
 import AnimationCast
-import BoardTrigger
-import Tooltip
-import UITooltip
-import BoardEntity
 import StackTypesData
+import Scheduler
 
 init
     Initializer.register(InitializerNames.ACTIONS) -> 
         ActionSummonSkeleton.setup()
 
-public class ActionSummonSkeleton extends StackAction
+public class ActionSummonSkeleton extends StackActionTargetCell
     static StackActionType TYPE
 
     protected static function setup()
-        TYPE = StackAction.createType("Summon Skeleton", Icons.bTNRaiseDead, ActionCostPreset.create(1, true, 3))
+        TYPE = StackActionTargetCell.createType("Summon Skeleton", Icons.bTNRaiseDead, ActionCostPreset.create(1, true, 3))
         ..enableOption(ActionTypeOption.PRIMARY)
         TYPE.onCreate() (BoardStack stack, StackActionData data) ->
             return new ActionSummonSkeleton(stack, data)
         TYPE.onCreateTooltipLines() data -> 
             return createTooltipLines(data)
 
-    private static constant int MAXRANGE = 1
+    private static constant TARGET_RANGE = intRange(1, 1)
     private static constant string EFFECT = Abilities.raiseSkeleton
     private static StackType SUMMONED_TYPE
 
@@ -49,7 +39,7 @@ public class ActionSummonSkeleton extends StackAction
         let leadership = getSummonLeadershipLeadershipAmount(amount)
         return new LinkedList<string>
         ..add(KStringUtils.stat("Target", "Empty Cell"))
-        ..add(KStringUtils.stat("Range", MAXRANGE))
+        ..add(KStringUtils.stat("Range", TARGET_RANGE))
         ..add("")
         ..add("Summons a Stack of "
         + KStringUtils.coloredString(KStringUtils.COLOR_SECONDARY, SUMMONED_TYPE.name)
@@ -64,95 +54,56 @@ public class ActionSummonSkeleton extends StackAction
     
 /* -------------------------------------------------------------------------- */
 
-    private LinkedList<Cell> area = new LinkedList<Cell>()
-    private intRange summonAmount  
+    private Cell highlightedCell
 
     private construct(BoardStack stack, StackActionData data)
         super(stack, TYPE, data)
         SUMMONED_TYPE = StackTypes.find("Lesser Skeleton")
 
-    override function getHighlightResultForCell(Player p, Cell cell) returns CellResult
-        if area.has(cell)
-            return CellResult.NEUTRAL
-        return CellResult.NONE
+    override function recalculateHighlightInner(Cell target)
+        highlightedCell = target
 
-    override function recalculatePreview()
-        recalculate()
+    override function getHighlightRuneRuneForCell(Player p, Cell cell) returns CellHighlightRune
+        if cell == highlightedCell
+            return CellHighlightRune.CAST
+        return CellHighlightRune.NONE
 
-    override function recalculateHighlight(Player p)
-        if area.has(p.currentMousePosition.cell)
-            showPreview()
-        else
-            hidePreview()
+    protected override function canTarget(Cell potentialTarget) returns boolean
+        return potentialTarget.getStack() == null
 
-    override function sendTargetOrder(Cell cell) returns boolean
-        if area.has(cell)
-            recalcSummonAmount()
-            let summon = cell.getBoard().createSummon(stack.getPlayer(), SUMMONED_TYPE, summonAmount.random())
-
-            AnimationCast.atCell(stack, cell) () ->
-                flashEffect(EFFECT, cell.getCoord())
-                BoardController.placeStackOnBoard(summon, cell, true) ->
-                    AnimationWait.time(cell.getBoard(), 0.5) ->
-                        BoardController.finishOrder(entity, cost)
-            
-            return true
-        
+    protected override function canHit(BoardStack target) returns boolean
         return false
 
-    private function recalcSummonAmount()
-        let amount = stack.stats.getAmount()
-        let leadershipAmount = getSummonLeadershipLeadershipAmount(stack.stats.amount)
-        summonAmount = intRange((leadershipAmount.min * amount / SUMMONED_TYPE.leadership).ceil(), (leadershipAmount.max * amount / SUMMONED_TYPE.leadership).ceil())
+    protected override function getTargetRange() returns intRange
+        return TARGET_RANGE
 
-        // TODO
-        /*
-        var str = "Summons a Stack of "+ Tooltip.coloredRange(Tooltip.COLOR_PRIMARY, summonAmount)
-        str += " " + Tooltip.coloredString(Tooltip.COLOR_SECONDARY, SUMMONED_TYPE.name)
-        tooltip.setLine(3, str)*/
+    protected override function getAreaCellIterator(Cell target) returns LinkedListIterator<Cell>
+        return new SingleCellIterator(target)
 
-    private function recalculate()
-        area.clear()
-        recalcSummonAmount()
-
-        stack.getCell().forEachCellsInRange(intRange(1, MAXRANGE)) (Cell cell) ->
-            if cell.getStack() == null
-                area.add(cell)
-
-    private function showPreview()
+    protected override function previewTarget(int prevUsedApForMove, Cell target)
         let tt = createBasicTooltip()
         ..addLines(createBasicTooltipLines())
-        UITooltip.display(entity.getConntrollingPlayer(), tt)
-        // TODO do this in a UiController
-        UIMenuActionConsole.updateActionPoints(entity, cost)
 
-    private function hidePreview()
-        UITooltip.hide(entity.getConntrollingPlayer())
-        UIMenuActionConsole.updateActionPoints(entity)
+        UITooltip.display(stack.getConntrollingPlayer(), tt)
+        UIMenuActionConsole.updateActionPoints(entity, cost, prevUsedApForMove)
+    
+    protected override function executeOrder(boolean didMove, int prevUsedApForMove, Cell target) returns boolean
+        AnimationCast.atCell(stack, target) () ->
+            flashEffect(EFFECT, target.getCoord())
+            let waitUntil = Scheduler.getTimeIn(0.5)
+            BoardController.createSummon(stack.getForce(), SUMMONED_TYPE, target, caclualateSummonAmount().random()) ->
+                AnimationWait.untill(target.getBoard(), waitUntil) ->
+                    BoardController.finishOrder(entity, cost)
 
-    override function onUIMouseEnter()
-        recalcSummonAmount()
-        showPreview()
+        return true
 
-    override function onUIMouseLeave()
-        hidePreview()
-
+    private function caclualateSummonAmount() returns intRange
+        let amount = stack.stats.getAmount()
+        let leadershipAmount = getSummonLeadershipLeadershipAmount(stack.stats.amount)
+        return intRange((leadershipAmount.min / SUMMONED_TYPE.leadership).ceil(), (leadershipAmount.max / SUMMONED_TYPE.leadership).ceil())
+    
     override function createBasicTooltipLines() returns LinkedList<string>
         return createTooltipLines(this)
-
-    override function executeForKI(SequenzListenerStatus listener)
-        // just someone it when there is a place
-        recalculate()
-        if area.isEmpty()
-            listener.continue(1)
-        else
-            activate()
-            nullTimer() ->
-                let random = area.get(GetRandomInt(0, area.size() - 1))
-                sendTargetOrder(random)
-
-
+    
     ondestroy
-        if area != null
-            destroy area
         

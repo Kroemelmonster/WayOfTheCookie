@@ -1,0 +1,91 @@
+package ObstacleBlocker
+
+import CellObstacle
+import CellObstacleType
+import Doodads
+import Cell
+import Board
+import HexagonalGridUtil
+
+init
+    Initializer.register(InitializerNames.DOODADS) -> 
+        ObstacleBlocker.setup()
+
+public class ObstacleBlocker extends CellObstacle
+    static CellObstacleType TYPE
+
+    protected static function setup()
+        TYPE = CellObstacleType.createNeutralBlocker() (Board board) ->
+            return new ObstacleBlocker(board)
+        TYPE.addVariation(Doodads.ribBones0, 0.8, 0.9, 0.0, 0.0)
+        TYPE.addVariation(Doodads.ribBones1, 0.7, 0.9, 70.0, 0.0)
+        ..addNeighbour(0)
+        TYPE.addVariation(Doodads.ribBones2, 2.7, 1.0, 80.0, 40.0)
+        ..addNeighbour(0)
+        ..addNeighbour(2)
+        TYPE.addVariation(Doodads.barrens_Bones0, 0.0, 0.9, 0.0, 0.0)
+        TYPE.addVariation(Doodads.barrens_Bones1, 0.0, 0.8, 0.0, 0.0)
+        TYPE.addVariation(Doodads.barrens_Bones2, 0.0, 0.8, 0.0, 0.0)
+        TYPE.addVariation(Doodads.barrens_Bones3, 0.0, 0.9, 0.0, 0.0)
+        TYPE.addVariation(Doodads.barrens_Bones4, 0.0, 0.9, 0.0, 0.0)
+        TYPE.addVariation(Doodads.barrens_Bones5, 0.0, 0.9, 0.0, 0.0)
+        TYPE.addVariation(Doodads.barrens_Bones6, 0.0, 0.9, 0.0, 0.0)
+        TYPE.addVariation(Doodads.barrens_Bones7, 0.0, 0.9, 0.0, 0.0)
+        TYPE.addVariation(Doodads.barrens_Bones8, 0.0, 0.9, 0.0, 0.0)
+        TYPE.addVariation(Doodads.barrens_Rocks0, 0.0, 0.9, 0.0, 0.0)
+        TYPE.addVariation(Doodads.barrens_Rocks1, 0.0, 0.9, 0.0, 0.0)
+        TYPE.addVariation(Doodads.barrens_Rocks2, 0.0, 0.9, 0.0, 0.0)
+        TYPE.addVariation(Doodads.barrens_Rocks3, 0.0, 0.9, 0.0, 0.0)
+        TYPE.addVariation(Doodads.barrens_Rocks4, 0.0, 0.9, 0.0, 0.0)
+        TYPE.addVariation(Doodads.barrens_Rocks5, 0.0, 0.9, 0.0, 0.0)
+        TYPE.addVariation(Doodads.barrens_Rocks6, 0.0, 0.9, 0.0, 0.0)
+        TYPE.addVariation(Doodads.barrens_Rocks7, 0.0, 0.9, 0.0, 0.0)
+        TYPE.addVariation(Doodads.barrens_Rocks9, 0.0, 0.9, 0.0, 0.0)
+        
+
+        // TYPE.addModel(Doodads.ribBones1, vec2(0, 0), angle(0))
+
+/* -------------------------------------------------------------------------- */
+    private effect model
+
+    private construct(Board board)
+        super(TYPE)
+        let minCol = board.getBoardForce(BoardForceSide.LEFT).getColLimit()
+        let maxCol = board.getBoardForce(BoardForceSide.RIGHT).getColLimit()
+        let vari = TYPE.getRandomVariation()
+        placeRandom(board, vari, minCol, maxCol)
+
+    override function placeModel(Cell cell, Variation vari, int angle)
+        var pos = cell.getCoord()
+        pos += angle(angle * PI / 3).toVec(vari.offsetX)
+        pos += angle((angle * PI / 3) + PI / 2).toVec(vari.offsetY)
+        model = addEffect(vari.model, pos)
+        ..setYaw(vari.baseYaw + (angle * PI / 3))
+        ..setScale(vari.scale)
+
+        /*Configurations.debugInt1.addListener() (int value) ->
+            model.destr()
+            model = addEffect("Doodads\\Barrens\\Props\\Barrens_Bones\\Barrens_Bones"+value.toString()+".mdx", pos)
+            ..setYaw(vari.baseYaw + (angle * PI / 3))
+            ..setScale(vari.scale)*/
+
+        Configurations.debugReal3.addListener() (Real value) ->
+            model.setYaw(value.self + (angle * PI / 3))
+
+
+        Configurations.debugReal1.addListener() (Real value) ->
+            pos = cell.getCoord()
+            pos += angle(angle * PI / 3).toVec(Configurations.debugReal1.getValue().self)
+            pos += angle((angle * PI / 3) + PI / 2).toVec(Configurations.debugReal2.getValue().self)
+            model.setPos(pos)
+
+        Configurations.debugReal2.addListener() (Real value) ->
+            pos = cell.getCoord()
+            pos += angle(angle * PI / 3).toVec(Configurations.debugReal1.getValue().self)
+            pos += angle((angle * PI / 3) + PI / 2).toVec(Configurations.debugReal2.getValue().self)
+            model.setPos(pos)
+
+    ondestroy
+        model.destr()
+        model = null
+

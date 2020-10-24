@@ -1,36 +1,36 @@
 package BoardHero
+
 import Hero
 import PlayerData
 import BoardEntity
-import LinkedList
 import Action
 import Cell
-import Abilities
-import AttachmentPoints
 import initlater Board
 import initlater HeroActionAttack
 import initlater HeroActionSkip
-import AbilityIds
 import initlater BoardHeroStats
 import HeroType
 import initlater SpellAction
 import ActionType
 import Spell
+import initlater BoardForce
 
 public class BoardHero extends BoardEntity
-    private static int MAX_QUICKCAST_SPELLS = 3
+    private static int MAX_QUICKCAST_SPELLS = 4
     Hero hero
 
     BoardHeroStats stats
     private HeroType heroType
+
+    protected LinkedList<SpellAction> quickCastSpells = new LinkedList<SpellAction>
     
-    construct(Hero hero, vec2 coord, Board board, int side)
-        super(EntityType.HERO, board)
+    construct(Hero hero, vec2 coord, BoardForce boardForce)
+        super(EntityType.HERO, boardForce)
         this.hero = hero
         this.stats = new BoardHeroStats(this, hero.stats)
         this.heroType = hero.getType()
 
-        createBLZUnit(coord, side)
+        createBLZUnit(coord)
 
         addAction(HeroActionSkip.TYPE.create(this))
         addAction(HeroActionAttack.TYPE.create(this))
@@ -41,8 +41,8 @@ public class BoardHero extends BoardEntity
         resetAP()
         resetCurrentSelectedAction()
 
-    private function createBLZUnit(vec2 coord, int side)
-        u = createUnit(DUMMY_PLAYER, heroType.unitId, coord , angle(PI * side))
+    private function createBLZUnit(vec2 coord)
+        u = createUnit(DUMMY_PLAYER, heroType.unitId, coord , boardForce.getSide().toAngle())
         ..setColor(hero.getPlayer().blzPlayer.getColor())
 
         placeEntity()
@@ -83,16 +83,19 @@ public class BoardHero extends BoardEntity
     function payMana(int amount)
         stats.payMana(amount)
 
-    function updateQuickcast()
-        var index = 0
-        for action in actions
-            if action.hasOption(ActionTypeOption.SPELL)
-                let spell = action castTo SpellAction
-                if spell.isQuickcast()
-                    index++
-                    if index > MAX_QUICKCAST_SPELLS
-                        spell.activateQuickcast(false)
+    function addQuickCast(SpellAction action)
+        if quickCastSpells.has(action)
+            return
+        if quickCastSpells.size() >= MAX_QUICKCAST_SPELLS
+            removeQuickCast(quickCastSpells.getFirst())
+        quickCastSpells.add(action)
 
+    function removeQuickCast(SpellAction action)
+        if quickCastSpells.has(action)
+            quickCastSpells.remove(action)
+
+    function isQuickCast(SpellAction action) returns boolean
+        return quickCastSpells.has(action)
 
     override function resetAP()
         stats.resetActionPoints()
@@ -109,3 +112,5 @@ public class BoardHero extends BoardEntity
         
         destroyTriggers()
         u.remove()
+
+        destroy quickCastSpells

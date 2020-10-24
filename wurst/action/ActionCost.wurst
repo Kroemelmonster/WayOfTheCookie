@@ -1,8 +1,7 @@
 package ActionCost
+
 import initlater BoardEntity
 import Tooltip
-import KStringUtils
-import LinkedList
 
 public interface ActionCostData
     function getAP() returns int

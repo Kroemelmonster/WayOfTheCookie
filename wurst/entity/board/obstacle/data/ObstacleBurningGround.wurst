@@ -1,0 +1,60 @@
+package ObstacleBurningGround
+
+import CellObstacle
+import CellObstacleType
+import Cell
+import Board
+import Abilities
+import BoardStack
+import BoardController
+import Damage
+import AnimationWait
+import BoardListenerOnCellMove
+
+init
+    Initializer.register(InitializerNames.DOODADS) -> 
+        ObstacleBurningGround.setup()
+
+public class ObstacleBurningGround extends CellObstacle
+    static CellObstacleType TYPE
+
+    protected static function setup()
+        TYPE = CellObstacleType.create() (Cell cell, CellObstacleData data) ->
+            return new ObstacleBurningGround(cell, data)
+        TYPE.addVariation(Abilities.flameStrikeEmbers, 0.0, 1.0, 0.0, 0.0)
+
+/* -------------------------------------------------------------------------- */
+    private effect model
+    private DamagePreview damagePreview
+
+    private construct(Cell cell, CellObstacleData data)
+        super(TYPE)
+        let vari = TYPE.getRandomVariation()
+        damagePreview = data.getDamagePreview().copy()
+        let source = data.getEntityData()
+        addCell(cell)
+        placeModel(cell, vari, 0)
+        onAnyCellEnter() (BoardListenerOnCellMoveData data) ->
+            let stack = data.getStack()
+            AnimationWait.time(stack.getBoard(), 0.1) ->
+                let damageInstance = damagePreview.getRandomInstance()
+                BoardController.dealDamage(source, damageInstance, stack) -> 
+                    destroy damageInstance
+                    AnimationWait.time(stack.getBoard(), 0.1) ->
+                        data.continue(true)
+
+    override function placeModel(Cell cell, Variation vari, int angle)
+        var pos = cell.getCoord()
+        pos += angle(angle * PI / 3).toVec(vari.offsetX)
+        pos += angle((angle * PI / 3) + PI / 2).toVec(vari.offsetY)
+        model = addEffect(vari.model, pos)
+        ..setYaw(vari.baseYaw + (angle * PI / 3))
+        ..setScale(vari.scale)
+
+    ondestroy
+        model.destr()
+        model = null
+
+        destroy damagePreview
+        
+

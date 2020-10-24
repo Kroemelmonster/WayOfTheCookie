@@ -9,6 +9,7 @@ rect gg_rct_BoardIsleTwoV= null
 rect gg_rct_BoardPlainsOne= null
 rect gg_rct_BoardPlainsThree= null
 rect gg_rct_BoardPlainsTwo= null
+rect gg_rct_BoardPlainsTwoV= null
 camerasetup gg_cam_Cavern_1= null
 camerasetup gg_cam_Cavern_2= null
 camerasetup gg_cam_Flex_Cam= null
@@ -161,7 +162,8 @@ function CreateRegions takes nothing returns nothing
     set we=AddWeatherEffect(gg_rct_BoardPlainsOne, 'LRaa')
     call EnableWeatherEffect(we, true)
     set gg_rct_BoardPlainsThree=Rect(- 5952.0, 15584.0, - 5024.0, 16416.0)
-    set gg_rct_BoardPlainsTwo=Rect(- 6016.0, 17856.0, - 4896.0, 18688.0)
+    set gg_rct_BoardPlainsTwo=Rect(- 5824.0, 17568.0, - 4480.0, 18528.0)
+    set gg_rct_BoardPlainsTwoV=Rect(- 6240.0, 17440.0, - 4288.0, 19008.0)
 endfunction
 
 //***************************************************************************

@@ -58,7 +58,7 @@ class UIController
         triggerOnAnyStackCellChange(entity.getBoard(), next)
         
     static function triggerOnAnyStackCellChange(Board board, SequenzListener next)
-        let allstacks = board.getAllStacks()
+        let allstacks = board.getACopyOfAllStacks()
         let itr = allstacks.iterator()
         triggerOnAnyStackCellChangeInner(itr) -> 
             destroy itr

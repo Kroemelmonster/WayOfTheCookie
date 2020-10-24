@@ -40,6 +40,9 @@ public class MainController
 
 
     static function endFight(Board board, int side)
+            // TODO
+        Log.info("yo end fight needs some dooing")
+            /*
         let hero = board.getHero(0)
         let enemy = board.getHostileArmy()
         let p = hero.getPlayer()
@@ -52,7 +55,7 @@ public class MainController
             nullTimer() ->
                 result.execute(hero)
                 hero.enable(true)
-                enemy.kill()
+                enemy.kill()*/
             
     static function updateHeroData(Hero hero, HeroDataChange changedData)
         UIController.updateHeroData(hero, changedData)

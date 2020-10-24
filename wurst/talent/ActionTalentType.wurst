@@ -8,6 +8,7 @@ import ActionTalent
 import StackActionType
 import ActionCost
 import Data
+import Damage
 
 public class ActionTalentType extends TalentType implements HasData
     protected StackActionType actionType
@@ -41,6 +42,12 @@ public class ActionTalentType extends TalentType implements HasData
 
     override function getRealData(int where) returns real
         return data.getRealData(where)
+
+    override function setDamagePreview(DamagePreview preview)
+        data.setDamagePreview(preview)
+
+    override function getDamagePreview() returns DamagePreview
+        return data.getDamagePreview()
 
     override function isHidden() returns boolean
         if not actionType.hasOption(ActionTypeOption.PRIMARY)

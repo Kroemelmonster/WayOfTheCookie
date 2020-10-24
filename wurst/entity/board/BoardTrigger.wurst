@@ -30,9 +30,6 @@ public abstract class BoardTriggerOnStackInteraction
 public abstract class BoardTriggerOnDamage
     abstract function onEvent(BoardEntity source, BoardStack target, SpecificDamageInstance specificInstance, SequenzListener next)
 
-public abstract class BoardTriggerOnBeforeDamage
-    abstract function onEvent(BoardEntity source, BoardStack target, DamageInstance instance, SequenzListener next)
-
 public abstract class BoardTrigger
     abstract function onEvent(SequenzListener next)
 
@@ -43,8 +40,8 @@ public class EntityTrigger
     private LinkedList<BoardTrigger> onTurnEnd = new LinkedList<BoardTrigger>()
     private LinkedList<BoardTriggerOnStackInteraction> onAttacked = new LinkedList<BoardTriggerOnStackInteraction>()
     
-    private LinkedList<BoardTriggerOnBeforeDamage> onBeforeDamageDealt = new LinkedList<BoardTriggerOnBeforeDamage>()
-    private LinkedList<BoardTriggerOnBeforeDamage> onBeforeDamageTaken = new LinkedList<BoardTriggerOnBeforeDamage>()
+    private LinkedList<BoardTriggerOnDamage> onBeforeDamageDealt = new LinkedList<BoardTriggerOnDamage>()
+    private LinkedList<BoardTriggerOnDamage> onBeforeDamageTaken = new LinkedList<BoardTriggerOnDamage>()
     private LinkedList<BoardTriggerOnDamage> onDamageTaken = new LinkedList<BoardTriggerOnDamage>()
     private LinkedList<BoardTriggerOnDamage> onDamageDealt = new LinkedList<BoardTriggerOnDamage>()
 
@@ -88,19 +85,19 @@ public class EntityTrigger
         onAttacked.remove(listener)
         destroy listener
 
-    function addOnBeforeDamageDealt(BoardTriggerOnBeforeDamage listener) returns BoardTriggerOnBeforeDamage
+    function addOnBeforeDamageDealt(BoardTriggerOnDamage listener) returns BoardTriggerOnDamage
         onBeforeDamageDealt.add(listener)
         return listener
 
-    function removeOnBeforeDamageDealt(BoardTriggerOnBeforeDamage listener)
+    function removeOnBeforeDamageDealt(BoardTriggerOnDamage listener)
         onBeforeDamageDealt.remove(listener)
         destroy listener
 
-    function addOnBeforeDamageTaken(BoardTriggerOnBeforeDamage listener) returns BoardTriggerOnBeforeDamage
+    function addOnBeforeDamageTaken(BoardTriggerOnDamage listener) returns BoardTriggerOnDamage
         onBeforeDamageTaken.add(listener)
         return listener
 
-    function removeOnBeforeDamageTaken(BoardTriggerOnBeforeDamage listener)
+    function removeOnBeforeDamageTaken(BoardTriggerOnDamage listener)
         onBeforeDamageTaken.remove(listener)
         destroy listener
 
@@ -120,7 +117,7 @@ public class EntityTrigger
         onDamageDealt.remove(listener)
         destroy listener
 
-    function triggerOnBeforeDamageDealt(BoardEntity source, BoardStack target, DamageInstance instance, SequenzListener next)
+    function triggerOnBeforeDamageDealt(BoardEntity source, BoardStack target, SpecificDamageInstance instance, SequenzListener next)
         let copy = onBeforeDamageDealt.copy()
         let itr = copy.iterator()
         triggerOnBeforeDamageDealtInner(itr, source, target, instance) () ->
@@ -128,7 +125,7 @@ public class EntityTrigger
             destroy copy
             next.continue()
 
-    private function triggerOnBeforeDamageDealtInner(LLIterator<BoardTriggerOnBeforeDamage> iter, BoardEntity source, BoardStack target, DamageInstance instance, SequenzListener next)
+    private function triggerOnBeforeDamageDealtInner(LLIterator<BoardTriggerOnDamage> iter, BoardEntity source, BoardStack target, SpecificDamageInstance instance, SequenzListener next)
         if iter.hasNext()
             let listener = iter.next()
             listener.onEvent(source, target, instance) ->
@@ -136,7 +133,7 @@ public class EntityTrigger
         else
             next.continue()
 
-    function triggerOnBeforeDamageTaken(BoardEntity source, BoardStack target, DamageInstance instance, SequenzListener next)
+    function triggerOnBeforeDamageTaken(BoardEntity source, BoardStack target, SpecificDamageInstance instance, SequenzListener next)
         let copy = onBeforeDamageTaken.copy()
         let itr = copy.iterator()
         triggerOnBeforeDamageTakenInner(itr, source, target, instance) () ->
@@ -144,7 +141,7 @@ public class EntityTrigger
             destroy copy
             next.continue()
 
-    private function triggerOnBeforeDamageTakenInner(LLIterator<BoardTriggerOnBeforeDamage> iter, BoardEntity source, BoardStack target, DamageInstance instance, SequenzListener next)
+    private function triggerOnBeforeDamageTakenInner(LLIterator<BoardTriggerOnDamage> iter, BoardEntity source, BoardStack target, SpecificDamageInstance instance, SequenzListener next)
         if iter.hasNext()
             let listener = iter.next()
             listener.onEvent(source, target, instance) ->

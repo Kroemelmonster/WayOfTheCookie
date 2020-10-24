@@ -1,0 +1,47 @@
+package ObstacleDifficultTerrain
+
+import CellObstacle
+import CellObstacleType
+import Doodads
+import Cell
+import Board
+
+init
+    Initializer.register(InitializerNames.DOODADS) -> 
+        ObstacleDifficultTerrain.setup()
+
+public class ObstacleDifficultTerrain extends CellObstacle
+    static CellObstacleType TYPE
+
+    protected static function setup()
+        TYPE = CellObstacleType.createNeutral() (Board board) ->
+            return new ObstacleDifficultTerrain(board)
+        TYPE.addVariation(Doodads.felwood_Thorns4, 0.0, 2.0, 0.0, 0.0)
+        TYPE.addVariation(Doodads.felwood_Thorns5, 0.0, 2.0, 0.0, 0.0)
+        TYPE.addVariation(Doodads.felwood_Thorns6, 0.0, 2.0, 0.0, 0.0)
+
+/* -------------------------------------------------------------------------- */
+    private effect model
+
+    private construct(Board board)
+        super(TYPE)
+        let minCol = board.getBoardForce(BoardForceSide.LEFT).getColLimit()
+        let maxCol = board.getBoardForce(BoardForceSide.RIGHT).getColLimit()
+        let vari = TYPE.getRandomVariation()
+        placeRandom(board, vari, minCol, maxCol)
+
+    override function placeModel(Cell cell, Variation vari, int angle)
+        var pos = cell.getCoord()
+        pos += angle(angle * PI / 3).toVec(vari.offsetX)
+        pos += angle((angle * PI / 3) + PI / 2).toVec(vari.offsetY)
+        model = addEffect(vari.model, pos)
+        ..setYaw(vari.baseYaw + (angle * PI / 3))
+        ..setScale(vari.scale)
+
+    override function getAdditionalMoveIntoCost(Cell fromCell, Cell toCell) returns int
+        return 1
+
+    ondestroy
+        model.destr()
+        model = null
+

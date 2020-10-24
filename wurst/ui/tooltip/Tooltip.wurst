@@ -1,9 +1,7 @@
 package Tooltip
+
 import UITooltip
-import LinkedList
-import PlayerData
 import Icon
-import KStringUtils
 
 public interface GeneratesTooltip
     function createTooltip() returns Tooltip
@@ -47,13 +45,11 @@ public class Tooltip
     private construct()
         lines = new LinkedList<TooltipLine>
 
-    @inline
     function addLine(string text)
         lines.add(new TooltipLine(text))
 
         
     /** !! Carefull this deletes the list !! **/
-    @inline
     function addLines(LinkedList<string> lines)
         for line in lines
             addLine(line)
@@ -65,7 +61,6 @@ public class Tooltip
     function setKey(string key)
         this.key = key
 
-    @inline
     function addTooltip(Tooltip other, boolean once)
         for TooltipLine line in other.lines
             if line != null
@@ -73,11 +68,9 @@ public class Tooltip
         if once
             destroy other
 
-    @inline
     function updateLine(int index, string text)
         lines.get(index).setLine(text)
 
-    @inline
     function getLine(int index) returns string
         return lines.get(index).text
 

@@ -12,8 +12,16 @@ public class Description
 
     protected static function setup()
         create("Attack")
-        ..addLine("Increases your damage with attacks.")
+        ..addLine("Increases your damage with attacks. 🔥⚡❄🌊🌪⚔🗡🏹🛡☄✨💀☠☣☢")
         ..addLine("")
+        ..addLine(
+           KStringUtils.icon(IconName.FIRE)
+         + KStringUtils.icon(IconName.LIGHTNING)
+         + KStringUtils.icon(IconName.DEATH)
+         + KStringUtils.icon(IconName.ICE)
+         + KStringUtils.icon(IconName.MAGIC)
+         + KStringUtils.icon(IconName.PHYSICAL)
+         + KStringUtils.icon(IconName.CHAOS))
         ..addLine("Each " + KStringUtils.secondaryString("Attack")
          + " that you have more than your opponents "
          + KStringUtils.secondaryString("Defence")

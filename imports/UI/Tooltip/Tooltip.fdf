@@ -1,6 +1,16 @@
 Frame "TEXT" "TooltipTextHeader" {
 	UseActiveContext,
-	FrameFont "Fonts\BLQ55Web.ttf", 0.016, "",
+	LayerStyle "IGNORETRACKEVENTS",
+	FrameFont "Fonts\BlizQuadrataWeb.otf", 0.014, "",
+	FontColor 1.0 1.0 1.0 1.0,
+	FontShadowColor 0.0 0.0 0.0 0.9,
+	FontShadowOffset 0.001 -0.001,
+}
+
+Frame "TEXT" "TooltipText" {
+	UseActiveContext,
+	LayerStyle "IGNORETRACKEVENTS",
+	FrameFont "Fonts\BlizQuadrataWeb.otf", 0.010, "",
 	FontFlags "FIXEDSIZE",
 	FontColor 1.0 1.0 1.0 1.0,
 	FontShadowColor 0.0 0.0 0.0 0.9,

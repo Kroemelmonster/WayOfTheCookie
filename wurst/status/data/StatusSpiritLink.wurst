@@ -31,14 +31,9 @@ public class StatusSpiritLink extends SharedStatus
             return createTooltipBaseLines(data)
         TYPE.setCanApplyListener() (BoardEntity entity, StatusData data) ->
             return canApplyTo(entity, data)
-        
-        damagePreview = DamagePreview.create(SourceType.UNSPECIFIC, DamageType.PURE)
-        ..addFlag(DamageFlags.TRIGGERED)
 
     static constant int DAMAGE_TRANSFER = 0
     static constant int DAMAGE_REDUCE = 1
-
-    private static DamagePreview damagePreview
 
     private static function canApplyTo(BoardEntity entity, StatusData data) returns boolean
         let status = StatusController.get(TYPE, entity) castTo StatusSpiritLink
@@ -77,7 +72,7 @@ public class StatusSpiritLink extends SharedStatus
     /* -------------------------------------------------------------------------- */
 
     private BoardTrigger turnStartListener
-    private BoardTriggerOnBeforeDamage damageTakenTrigger
+    private BoardTriggerOnDamage damageTakenTrigger
     
     private effect display
     private int duration
@@ -98,7 +93,7 @@ public class StatusSpiritLink extends SharedStatus
         turnStartListener = entity.getTriggers().addTurnStart() next ->
             duration--
             if duration <= 0
-                removePrimary(next)
+                remove(next)
             else
                 next.continue()
 
@@ -116,24 +111,30 @@ public class StatusSpiritLink extends SharedStatus
         display = entity.addAttachEffect(Abilities.spiritLinkTarget, AttachmentPoints.chest)
 
 
-        damageTakenTrigger = entity.getTriggers().addOnBeforeDamageTaken() (BoardEntity source, BoardStack target, DamageInstance instance, SequenzListener next) ->
-            if instance.hasFlag(DamageFlags.TRIGGERED)
+        damageTakenTrigger = entity.getTriggers().addOnBeforeDamageTaken() (BoardEntity source, BoardStack target, SpecificDamageInstance instance, SequenzListener next) ->
+            if instance.hasFlag(DamageFlags.UNMITIGATABLE)
                 next.continue()
             else
                 absorbDamage(instance, next)
-
-            
     
-    private function absorbDamage(DamageInstance instance, SequenzListener next)
+    private function absorbDamage(SpecificDamageInstance incommingInstance, SequenzListener next)
+        let damage = incommingInstance.getDamage()
+        if damage <= 0
+            next.continue()
+            return
         AnimationWait.time(entity.getBoard(), 0.2) ->
-            let transferDmg = instance.dmg * (transferPerc * reducePerc)
-            instance.dmg *= transferPerc
-        
-            damagePreview.dmg = realRange(transferDmg, transferDmg)
-            let linkDamageSpecfic = damagePreview.getRandomInstance()
+            let transferDmg = damage * (transferPerc * reducePerc)
+            incommingInstance.setDamage((incommingInstance.getOverKillDamage() * transferPerc).round())
+            
+            let preview = DamagePreview.create(incommingInstance.getSourceType(), incommingInstance.getType())
+            preview.addFlag(DamageFlags.TRIGGERED)
+            preview.addFlag(DamageFlags.UNMITIGATABLE)
+            preview.dmg = realRange(transferDmg, transferDmg)
+            let linkDamageSpecfic = preview.getRandomInstance()
                 
             BoardController.dealDamage(entity, linkDamageSpecfic, primary.entity) ->
                 destroy linkDamageSpecfic
+                destroy preview
                 AnimationWait.time(entity.getBoard(), 0.2) ->
                     next.continue()
 
@@ -150,7 +151,7 @@ public class StatusSpiritLink extends SharedStatus
     override function createTooltip() returns Tooltip
         return createTooltip(this)
 
-    override function hide()
+    override function removeVisuals()
         if display != null
             display.destr()
 

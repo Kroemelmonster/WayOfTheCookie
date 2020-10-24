@@ -56,7 +56,7 @@ class UITalent extends UIInteractable
     protected TalentStats talent
 
     private construct(UIHandle parent)  
-        super(createUIFrame("MENU", parent, true))
+        super(createUIFrame("MENU", parent, true), true)
         setSize(0.023, 0.023)
         hanldeIcon = createUIFrame("BACKDROP", self)
         ..setAllPoints(self)
@@ -83,7 +83,7 @@ class UIStatus extends UIInteractable
     protected StatusStats status
 
     private construct(UIHandle parent)  
-        super(createUIFrame("MENU", parent, true))
+        super(createUIFrame("MENU", parent, true), true)
         setSize(0.023, 0.023)
         hanldeIcon = createUIFrame("BACKDROP", self)
         ..setAllPoints(self)

@@ -1,0 +1,65 @@
+package Configurations
+import NoWurst
+//import public Wurstunit
+import public TypeCasting
+import LinkedList
+import Initializer
+
+public interface ChangeListener<T>
+    function onChange(T value)
+
+public class Real
+    real self
+
+    construct(real value)
+        this.self = value
+
+public function real.toReal() returns Real
+    return new Real(this)
+
+public class Configuration<T>
+    protected T value
+    protected LinkedList<ChangeListener<T>> listeners = new LinkedList<ChangeListener<T>>
+
+    construct(T initial)
+        value = initial
+
+    function addListener(ChangeListener<T> listener)
+        listeners.add(listener)
+
+    function getValue() returns T
+        return value
+    
+    function setValue(T newVal)
+        value = newVal
+        for listener in listeners
+            listener.onChange(newVal)
+
+
+init
+    Initializer.register(InitializerNames.SYSTEM)-> 
+        Configurations.setup()
+
+class Configurations
+    static Configuration<boolean> kiControlled
+
+    static Configuration<int> debugInt1
+    static Configuration<Real> debugReal1
+    static Configuration<Real> debugReal2
+    static Configuration<Real> debugReal3
+
+    static function setup()
+        kiControlled = new Configuration<boolean>(false)
+        debugInt1 = new Configuration<int>(0)
+        debugReal1 = new Configuration<Real>(new Real(0.0))
+        debugReal2 = new Configuration<Real>(new Real(0.0))
+        debugReal3 = new Configuration<Real>(new Real(0.0))
+
+
+    
+    
+
+
+    
+
+

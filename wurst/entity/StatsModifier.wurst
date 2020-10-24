@@ -1,7 +1,5 @@
 package StatsModifier
 
-import KUtil
-
 public class StatsModifier
     int multi = 100
     int addBonus = 0

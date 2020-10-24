@@ -1,0 +1,27 @@
+package UICheckBox
+
+import ClosureFrames
+import UIHandle
+import UIInput
+
+public class UICheckBox extends UIInput<boolean>
+    static function create(UIHandle parent) returns UICheckBox
+        return new UICheckBox(parent.self)
+
+    private boolean value = false
+    private framehandle frameChecked
+        
+    private construct(framehandle parent)
+        super(createUIFrameByName("CheckBoxBasic", parent, false), true)
+        self.onClick() ->
+            setValue(not value)
+            callListener(value)
+
+        frameChecked = getFrame("EscMenuCheckHighlightTemplate")
+        ..setAllPoints(self)
+        ..setVisible(false)
+
+
+    override function visualizeValue(boolean value)
+        this.value = value
+        frameChecked.setVisible(value)

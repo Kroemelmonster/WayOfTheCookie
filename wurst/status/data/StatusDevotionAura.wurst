@@ -1,0 +1,112 @@
+package StatusDevotionAura
+
+import AttachmentPoints
+import Abilities
+
+import Status
+
+import initlater BoardStack
+import initlater BoardEntity
+import initlater StatusType
+import BoardTrigger
+import Tooltip
+
+init
+    Initializer.register(InitializerNames.STATI) -> 
+        StatusDevotionAura.setup()
+
+public class AuraData<T>
+    protected T value
+    protected int instance
+
+    construct(T data, int instance)
+        this.value = data
+        this.instance = instance
+
+public class StatusDevotionAura extends Status
+    static StatusType TYPE
+
+    static function setup()
+        TYPE = new StatusType("Devotion", Icons.bTNDevotion)
+        TYPE.setCreationListener() (boardEntity, data) ->
+            return new StatusDevotionAura(TYPE, boardEntity, data)
+        TYPE.setTooltipListener() data ->
+            return createTooltipBaseLines(data)
+
+    static constant DEFENCE = 0
+
+    private static function createTooltipBaseLines(int defence) returns LinkedList<string>
+        return new LinkedList<string>
+        ..add("You are affected by Devotion Aura and gain "
+         + KStringUtils.coloredInt(KStringUtils.COLOR_POSITIVE, defence)
+         + " Defence")
+        
+    private static function createTooltipBaseLines(StatusData data) returns LinkedList<string>
+        return createTooltipBaseLines(data.getIntData(DEFENCE))
+
+    private static function createTooltip(StatusDevotionAura b) returns Tooltip
+        return Tooltip.create(TYPE.getName())
+        ..addLine("")
+        ..addLines(createTooltipBaseLines(b.summary))
+
+    /* -------------------------------------------------------------------------- */
+
+    private effect display
+    private LinkedList<AuraData<int>> auraDatas
+    private int summary
+
+    construct(StatusType statusType, BoardEntity entity, StatusData data)
+        super(statusType, entity)
+        // display = entity.addAttachEffect(Abilities.purgeBuffTarget, AttachmentPoints.chest)
+        summary = 0
+        auraDatas = new LinkedList<AuraData<int>>
+        refreshStatusData(data)
+
+    override function onRefresh(StatusData data)
+        applyStats(false)
+        refreshStatusData(data)
+
+    override function canPurge() returns boolean
+        return false
+
+    protected function refreshSummary()
+        summary = 0    
+        for auraData in auraDatas
+            summary += auraData.value
+
+    protected function refreshStatusData(StatusData data)
+
+        Log.trace("refresh : "+entity.toString()+ " "+data.getAuraAdd().toString())
+        if data.getAuraAdd()
+            auraDatas.add(new AuraData<int>(data.getIntData(DEFENCE), data.getAuraId()))
+            refreshSummary()
+            applyStats(true)
+        else
+            let checkInstance = data.getAuraId()
+            auraDatas.removeIf() (AuraData<integer> t) ->
+                return t.instance == checkInstance
+            refreshSummary()
+            if auraDatas.size() > 0
+                applyStats(true)
+            else
+                remove()
+
+    protected function applyStats(boolean add)
+        let multi = add ? 1 : -1
+        entity.toStack().stats.defenceModi.addBonus += summary * multi
+
+    override function createTooltip() returns Tooltip
+        return createTooltip(this)
+
+    override function removeVisuals()
+        if display != null
+            display.destr()
+        
+    ondestroy
+        if entity.isAlive()
+            applyStats(false)
+        if auraDatas != null
+            for data in auraDatas
+                destroy data
+            destroy auraDatas
+            auraDatas = null

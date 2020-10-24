@@ -1,20 +1,10 @@
 package ActionSpiritLink
 
-import initlater StackAction
-import initlater StackActionType
-import initlater Action
-import initlater ActionType
-import initlater StackActionTarget
-import initlater ActionCost
+import StackActionTarget
 
 import PlayerData
-import Cell
-import BoardStack
 import UIMenuActionConsole
 import AnimationCast
-import Tooltip
-import UITooltip
-import BoardEntity
 import AnimationWait
 import StatusType
 import StatusSpiritLink
@@ -66,7 +56,10 @@ public class ActionSpiritLink extends StackActionTarget
 
     private construct(BoardStack stack, StackActionData data)
         super(stack, TYPE, data)
-        cellResultForHit = CellResult.NEUTRAL
+        cellResultForHit = CellPreviewColor.POSITIVE
+
+    override function getHighlightRuneRuneForCell(Player p, Cell cell) returns CellHighlightRune
+        return CellHighlightRune.NONE
 
     protected override function canTarget(BoardStack potentialTarget) returns boolean
         if potentialTarget != stack and stack.isAlly(potentialTarget)

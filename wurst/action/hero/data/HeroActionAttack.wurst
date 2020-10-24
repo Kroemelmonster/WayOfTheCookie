@@ -34,15 +34,13 @@ public class HeroActionAttack extends HeroAction
         TYPE.onCreateTooltipLines() -> 
             return new LinkedList<string>
 
-    override function getPreviewResultForCell(Cell cell) returns CellResult
+    override function getPreviewColorForCell(Cell cell) returns CellPreviewColor
         if isCellAttackable(cell)
-            return CellResult.NEGATIVE
-        return CellResult.NONE
-
-    override function getHighlightResultForCell(Player p, Cell cell) returns CellResult
-        if isCellAttackable(cell)
-            return CellResult.NEGATIVE
-        return CellResult.NONE
+            return CellPreviewColor.NEGATIVE
+        return CellPreviewColor.NONE
+        
+    override function getHighlightColorForCell(Player p, Cell cell) returns CellHighlightColor
+        return CellHighlightColor.NONE
 
     override function onUIMouseEnter()
 
@@ -112,9 +110,6 @@ public class HeroActionAttack extends HeroAction
         return target != null and entity.getPlayer().isEnemyTo(target.getPlayer())
 
 
-    protected function getTargets() returns LinkedList<BoardStack>
-        return entity.getBoard().getAllStacks()
-
         // TODO
     /*
     override function createBasicTooltipLines() returns LinkedList<string>
@@ -125,12 +120,6 @@ public class HeroActionAttack extends HeroAction
         super(hero, TYPE)
 
     override function executeForKI(SequenzListenerStatus listener)
-        let enemy = KISystem.getBestTarget(getTargets())
-        
-        nullTimer() ->
-            if enemy == null
-                listener.continue(1)
-            else
-                sendTargetOrder(enemy.getCell())
-                listener.continue(0)
+        // TODO lul
+        listener.continue(1)
         

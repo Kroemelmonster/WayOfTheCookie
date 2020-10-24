@@ -6,6 +6,16 @@ import KUtil
 import Integer
 import Real
 
+public enum IconName
+    FIRE
+    LIGHTNING
+    ICE
+    PHYSICAL
+    MAGIC
+    DEATH
+    CHAOS
+
+tuple texticon(string unicode, string color)
 
 public class KStringUtils
     static constant COLOR_PRIMARY = colorA(255, 204, 0, 255).toColorString()
@@ -13,11 +23,16 @@ public class KStringUtils
     static constant COLOR_SECONDARY = color(145, 145, 145).toColorString()
     static constant COLOR_POSITIVE = color(75, 214, 19).toColorString()
 
-    static constant DAMAGE_COLOR_PHYISICAL = colorA(200, 200, 200, 200).toColorString()
-    static constant DAMAGE_COLOR_MAGICAL = colorA(43, 181, 245, 200).toColorString()
-    static constant DAMAGE_COLOR_POISON = colorA(167, 252, 71, 199).toColorString()
-    static constant DAMAGE_COLOR_FIRE = colorA(255, 120, 86, 200).toColorString()
-
+    static constant string array ICONS = [
+        coloredString(colorA(248, 149, 0, 255).toColorString(), "🔥"),
+        coloredString(colorA(252, 255, 67, 255).toColorString(), "⚡"),
+        coloredString(colorA(124, 237, 252, 255).toColorString(), "❄"),
+        coloredString(colorA(179, 179, 179, 255).toColorString(), "⚔"),
+        coloredString(colorA(163, 64, 255, 255).toColorString(), "✨"),
+        coloredString(colorA(255, 255, 255, 255).toColorString(), "☠"),
+        coloredString(colorA(21, 255, 0, 255).toColorString(), "💀")
+    ]
+       // "🔥","⚡❄🌊🌪⚔🗡🏹🛡☄✨💀☠"]
     static constant string array ROMAN_LETTERS = ["I", "II", "III", "IV", "V"]
 
     static function coloredRange(string color, intRange r) returns string
@@ -27,6 +42,14 @@ public class KStringUtils
         str += "|r"
         return str
 
+    static function range(intRange r) returns string
+        var str = r.min.toString()
+        if r.min < r.max
+            str +=  " - " + r.max.toString()
+        return str
+
+    static function icon(IconName name) returns string
+        return ICONS[name castTo int]
 
     static function line() returns string
         return "----------"

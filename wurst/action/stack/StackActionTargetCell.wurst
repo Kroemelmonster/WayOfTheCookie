@@ -1,0 +1,252 @@
+package StackActionTargetCell
+
+import public StackAction
+import PlayerData
+import BoardController
+import UIMenuActionConsole
+import PathFinding
+import BoardTrigger
+import UIController
+import KiWeightedCells
+import KISystem
+
+public abstract class StackActionTargetCell extends StackAction
+
+    static function createType(string name, string icon, ActionCostPreset cost) returns StackActionType
+        return new StackActionType(name, icon, cost)
+
+    protected LinkedList<Cell> highlightedPath
+    protected intRange range
+    protected CellPreviewColor cellResultForHit
+    protected KiWeightedCells kiCells 
+
+    construct(BoardStack stack, StackActionType actionType, StackActionData data)
+        super(stack, actionType, data)
+        cellResultForHit = CellPreviewColor.NEGATIVE
+        highlightedPath = new LinkedList<Cell>
+        kiCells = new KiWeightedCells()
+
+    protected abstract function canTarget(Cell cell) returns boolean
+    protected abstract function canHit(BoardStack target) returns boolean
+    protected abstract function getTargetRange() returns intRange
+    protected abstract function previewTarget(int usedApForMove, Cell target)
+    protected abstract function executeOrder(boolean didMove, int prevUsedApForMove, Cell target) returns boolean
+    protected abstract function recalculateHighlightInner(Cell target)
+    protected abstract function getAreaCellIterator(Cell target) returns LinkedListIterator<Cell>
+
+    protected override function recalculatePreview()
+
+    protected function getBestCellToTargetFrom(Cell atCell) returns Cell
+        if not canTarget(atCell)
+            return null
+        // now go through every Cell that would be in range
+        var currentHighestRemainingPoints = 0
+        Cell currentBest = null
+        let range = getTargetRange()
+        
+        let possibleCellsItr = atCell.eachCellInRangeIterator(range)
+        while possibleCellsItr.hasNext()
+            let possibleCellsToActFrom = possibleCellsItr.next()
+            let remainingPoints = getRemainingMoveAPFromCell(possibleCellsToActFrom, 100)
+            if remainingPoints > currentHighestRemainingPoints
+                currentHighestRemainingPoints = remainingPoints
+                currentBest = possibleCellsToActFrom
+        destroy possibleCellsItr
+        return currentBest
+
+    protected function getAPAfterWalkToCell(Cell target) returns int
+        let remainingMoveActionPoints = stack.getRemainingMoveAP()
+        let remainingActionPoints = stack.getRemainingAP()
+        let remainingMoveActionPointsFromCell = getRemainingMoveAPFromCell(target, remainingMoveActionPoints)
+        
+        // you simple cant reach it
+        if remainingMoveActionPointsFromCell == -1000
+            return -1000
+
+        if remainingActionPoints <= remainingMoveActionPoints
+            if remainingMoveActionPointsFromCell < remainingActionPoints
+                return remainingMoveActionPointsFromCell
+            else
+                return remainingActionPoints
+        else
+            return remainingActionPoints - (remainingMoveActionPoints - remainingMoveActionPointsFromCell)
+
+    override function getPreviewColorForCell(Cell cell) returns CellPreviewColor
+        let previewStack = cell.getStack()
+        if previewStack == null
+            let remainingAPAfterMove = getAPAfterWalkToCell(cell)
+            if remainingAPAfterMove >= cost.getAP()
+                return CellPreviewColor.ACTABLE
+        return CellPreviewColor.NONE
+
+    override function getHighlightColorForCell(Player p, Cell cell) returns CellHighlightColor
+        if highlightedPath.has(cell)
+            return CellHighlightColor.PATH
+        return CellHighlightColor.NONE
+
+    override function sendTargetOrder(Cell cell) returns boolean
+        if not highlightedPath.isEmpty()
+            // there is a way tets go
+            SubStackActions.move(stack, highlightedPath) (couldReachTarget, potentialUsedAp) ->
+                executeOrder(true, potentialUsedAp, cell)
+            return true
+        if stack.getCell().isInRange(cell, getTargetRange())
+            return executeOrder(false, 0, cell)
+        return false
+
+    protected function finish(boolean changedCell, int withAdditionAP)
+        if changedCell
+            UIController.triggerOnAnyStackCellChange(entity.getBoard()) -> 
+                BoardController.finishOrder(entity, cost, withAdditionAP)
+        else
+            BoardController.finishOrder(entity, cost, withAdditionAP)
+
+    override function recalculateHighlight(Player p)
+        let cell = p.currentMousePosition.cell
+        
+        recalculateHighlighPathTo(p.currentMousePosition.cell, false)
+        if cell == null
+            recalculateHighlightInner(null)
+        else if not highlightedPath.isEmpty() or stack.getCell().isInRange(cell, getTargetRange())
+            recalculateHighlightInner(cell)
+        else
+            recalculateHighlightInner(null)
+
+    protected function recalculateHighlighPathTo(Cell cell, boolean calculateForKi) returns Cell
+        highlightedPath.clear()
+        if cell == null or not canTarget(cell)
+            hideTooltipAndUpdateAP(0, calculateForKi)
+            return null
+        let movetoCell = getBestCellToTargetFrom(cell)
+
+        var additionalAPMoveCost = 0
+        // is it a target ?
+            
+        // we already here no need to get a path
+        if movetoCell != stack.getCell()
+            PathCell pathCell
+            if calculateForKi
+                pathCell = entity.getPathToCell(movetoCell, entity.getRemainingMoveAP())
+            else
+                pathCell = entity.getPathToCell(movetoCell)
+                if pathCell != null and getAPAfterWalkToCell(pathCell.getCell()) < cost.getAP()
+                    pathCell = null
+
+            // maybe there is no path to run ?
+            if pathCell == null
+                hideTooltipAndUpdateAP(0, calculateForKi)
+                return null
+
+            additionalAPMoveCost = pathCell.getCost()
+            let path = pathCell.getBackwardPath()
+            while path.hasNext()
+                let pathingCell = path.next().getCell()
+                highlightedPath.addtoStart(pathingCell)
+        
+        let targetCell = highlightedPath.peek()
+        if not calculateForKi
+            previewTarget(additionalAPMoveCost, cell)
+        return targetCell
+
+    protected function hideTooltipAndUpdateAP(int usedAP, boolean calculateForKi)
+        if calculateForKi
+            return
+        UITooltip.hide(stack.getConntrollingPlayer())
+        UIMenuActionConsole.updateActionPoints(entity, usedAP)
+
+    override function onUIMouseEnter()
+        previewTarget(0, null)
+
+    override function onUIMouseLeave()
+        hideTooltipAndUpdateAP(0, false)
+
+    private function getRemainingMoveAPFromCellSave(Cell cell, int limitingMoveAP) returns int
+        let path = entity.getPathToCell(cell)
+        if path != null
+            return path.getRemainingMoveAP(limitingMoveAP)
+        return -1000
+
+    protected function getRemainingMoveAPFromCell(Cell cell, int limitingMoveAP) returns int
+        if cell == null
+            return -1000
+        if cell == stack.getCell()
+            return 1000
+        return getRemainingMoveAPFromCellSave(cell, limitingMoveAP)
+
+    override function executeForKI(SequenzListenerStatus listener)
+        var apCost = cost.getAP()
+        if apCost == 0
+            apCost = 1 // after you moved all points you cant even use a spell that cost nothing
+        kiCells.reset()
+
+        let cellItr = stack.getBoard().eachCellIterator()
+        checkCells(cellItr, apCost) ->
+            var checkWeightedCells = kiCells.get(true)
+            if checkWeightedCells.getList().size() == 0
+                checkWeightedCells = kiCells.get(false)
+            if checkWeightedCells.getList().size() == 0
+                listener.continue(1)
+            else
+                WeightedCell bestTarget = null
+                let itr = checkWeightedCells.getList().iterator()
+                // TODO currently this just gets us the best taregt : sad 
+                while itr.hasNext() and bestTarget == null
+                    let possibleBest = itr.next()
+                    if possibleBest.enemies == checkWeightedCells.getMaxEnemies()
+                        bestTarget = possibleBest
+                destroy itr
+                let moveToCell = recalculateHighlighPathTo(bestTarget.castFrom, true)
+                
+                if moveToCell == null
+                    listener.continue(1)
+                else
+                    if getAPAfterWalkToCell(moveToCell) >= apCost
+                        sendTargetOrder(bestTarget.cell)
+                    else
+                        KISystem.orderMoveTo(stack, moveToCell)
+                    listener.continue(0)
+
+    protected function checkCells(LinkedListIterator<Cell> cellItr, int apCost, SequenzListener next)
+        if cellItr.hasNext()
+            let cell = cellItr.next()
+            if canTarget(cell)
+                let weightedCell = addAllCellsInAreaToWeightedCells(cell)
+                if weightedCell.enemies > 0 or weightedCell.allies > 0
+                    weightedCell.castFrom = getBestCellToTargetFrom(cell)
+                    let remainingAP = getAPAfterWalkToCell(weightedCell.castFrom)
+                    if remainingAP >= apCost
+                        kiCells.addThisTurn(weightedCell)
+                    else if remainingAP > -1000
+                        kiCells.addEventually(weightedCell)
+
+            // TOO MANY CHECKS.. lets cool down
+            if kiCells.checks >= 1000
+                nullTimer() -> 
+                    kiCells.checks = 0
+                    checkCells(cellItr, apCost, next)
+            else
+                checkCells(cellItr, apCost, next)
+        else
+            nullTimer() -> 
+                next.continue()
+        
+    protected function addAllCellsInAreaToWeightedCells(Cell targetCell) returns WeightedCell
+        let itr = getAreaCellIterator(targetCell)
+        let weightedCell = new WeightedCell(targetCell)
+        while itr.hasNext()
+            let target = itr.next().getStack()
+            if target != null and canHit(target)
+                if stack.isEnemy(target)
+                    weightedCell.enemies ++
+                    weightedCell.weightedEnemies += target.stats.getWeight()
+                else if stack.isAlly(target)
+                    weightedCell.allies ++
+                    weightedCell.weightedAllies += target.stats.getWeight()
+        kiCells.checks += itr.getIterations()
+        destroy itr
+        return weightedCell
+
+    ondestroy
+        destroy highlightedPath
+        destroy kiCells
+

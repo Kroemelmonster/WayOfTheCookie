@@ -1,0 +1,69 @@
+package KiWeightedCells
+import Action
+import Board
+
+public class WeightedCell
+    real weightedEnemies = 0.0
+    int enemies = 0
+    real weightedAllies = 0.0
+    int allies = 0
+    Cell cell = null
+    Cell castFrom = null
+
+    construct(Cell cell)
+        this.cell = cell
+
+public class WeightedCells
+    protected LinkedList<WeightedCell> weightedCells = new LinkedList<WeightedCell>
+    private int maxEnemies
+    private int maxAllies
+
+    function getMaxEnemies() returns int
+        return maxEnemies
+
+    function getMaxAllies() returns int
+        return maxAllies
+
+    function getList() returns LinkedList<WeightedCell>
+        return weightedCells
+
+    protected function reset()
+        maxEnemies = 0
+        maxAllies = 0
+
+        for cell in weightedCells
+            destroy cell
+        weightedCells.clear()
+
+    protected function add(WeightedCell cell)
+        weightedCells.add(cell)
+        if cell.enemies > maxEnemies
+            maxEnemies = cell.enemies
+        if cell.allies > maxAllies
+            maxAllies = cell.allies
+
+public class KiWeightedCells
+    protected WeightedCells thisTurn
+    protected WeightedCells eventually
+    int checks = 0
+
+    construct()
+        thisTurn = new WeightedCells()
+        eventually = new WeightedCells()
+
+    function reset()
+        checks = 0
+        thisTurn.reset()
+        eventually.reset()
+
+    function addThisTurn(WeightedCell cell)
+        thisTurn.add(cell)
+
+    function addEventually(WeightedCell cell)
+        eventually.add(cell)
+
+    function get(boolean onlyThisTurn) returns WeightedCells
+        if onlyThisTurn
+            return thisTurn
+        return eventually
+

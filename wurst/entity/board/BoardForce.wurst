@@ -1,0 +1,154 @@
+package BoardForce
+
+import public initlater Board
+import Hero
+import Stack
+import BoardStack
+import BoardHero
+import Cell
+import HexagonalGridUtil
+import HostileArmy
+import PlayerData
+import StackType
+
+public class BoardForce
+    private static constant WIDTH = 2
+    private Board board
+    private BoardForceSide side
+    private Army army
+    private Player p
+
+    private HostileArmy hostileArmy
+    private Hero hero
+
+    private LinkedList<BoardStack> livingStacks = new LinkedList<BoardStack>
+    private LinkedList<BoardStack> graveyard = new LinkedList<BoardStack>
+    private BoardHero boardHero
+
+    private vec2 heroPlace
+    private fogmodifier visibleModi
+    private int colLimit
+    boolean shouldRedraw = false
+
+
+    construct(Board board, BoardForceSide side, vec2 heroPlace)
+        this.board = board
+        this.heroPlace = heroPlace
+        this.side = side
+
+    function getBoard() returns Board
+        return board
+
+    function getPlayer() returns Player
+        return p
+
+    function getSide() returns BoardForceSide
+        return side
+
+    function getBoardHero() returns BoardHero
+        return boardHero
+
+    function forEachStack(LLItrClosure<BoardStack> itr)
+        livingStacks.forEach(itr)
+
+    function place(Hero hero)
+        this.hero = hero
+        this.hostileArmy = null
+
+        p = hero.getPlayer()
+        army = hero.getArmy()
+
+        boardHero = new BoardHero(hero, heroPlace, this)
+        board.getInitiative().addHeroInitital(boardHero)
+
+        placeArmy()
+
+    function place(HostileArmy hostileArmy)
+        this.hero = null
+        this.hostileArmy = hostileArmy
+
+        this.p = hostileArmy.getPlayer()
+        this.army = hostileArmy.getArmy()
+
+        placeArmy()
+    
+    function getColLimit() returns int
+        return colLimit
+
+    function createSummon(StackType stackType, int amount) returns BoardStack
+        ArmyStack armyStack = null
+        if hero != null
+            armyStack = hero.createSummon(stackType, amount)
+        else if hostileArmy != null
+            armyStack = hostileArmy.createSummon(stackType, amount)
+
+        if armyStack != null
+            return new BoardStack(this, armyStack)
+        return null    
+
+    function makeVisible(rect visibleArea, unit dummyCam)
+        // TODO clear old visibilityModi.. and such
+        visibleModi = createVision(p.blzPlayer, visibleArea, false)
+        ..start()
+        p.blzPlayer.setCameraTargetControllerNoZ(dummyCam, vec2(0.0, 0.0), false)
+    
+    private function placeArmy()
+        p.playingBoard = board
+
+        var col = 0
+        colLimit = WIDTH
+        if side == BoardForceSide.RIGHT
+            col = board.getCols() - 1
+            colLimit = col - WIDTH
+        var row = (board.getRows() / 2).floor()
+        var rowChange = 1
+        
+        for i = 0 to Army.MAX_SIZE - 1
+            let armyStack = army.getStack(i)
+            if armyStack != null
+                placeStack(new BoardStack(this, armyStack), hex(col, row))
+            
+                row += rowChange
+                if rowChange > 0
+                    rowChange += 1
+                else
+                    rowChange -= 1
+                rowChange *= -1
+
+
+    private function placeStack(BoardStack stack, hex pos)
+        let cell = board.getCell(pos)
+        if cell != null
+            placeStack(stack, cell, false)
+        else
+            Log.error("cant place stack "+stack.getName())
+
+    function placeStack(BoardStack stack, Cell cell, boolean isSummoned)
+        cell.placeStack(stack)
+        livingStacks.add(stack)
+        if isSummoned
+            board.getInitiative().addSummon(stack)
+        else
+            board.getInitiative().addStackInitial(stack)
+        
+
+    function triggerOnStackKilled(BoardStack stack)
+        livingStacks.remove(stack)
+        board.getInitiative().removeStack(stack)
+        graveyard.add(stack)
+
+    function remove()
+        p.playingBoard = null
+        visibleModi.destr()
+
+        if boardHero != null
+            destroy boardHero
+
+        for stack in livingStacks
+            destroy stack
+        livingStacks.clear()
+        
+        for stack in graveyard
+            destroy stack
+        graveyard.clear()
+

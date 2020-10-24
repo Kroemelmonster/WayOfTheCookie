@@ -53,6 +53,9 @@ public class UIHandle
     function setPoint(framepointtype point, UIHandle relative, framepointtype relativePoint, real x, real y)
         self.setPoint(point, relative.self, relativePoint, x, y)
 
+    function clearAllPoints()
+        self.clearAllPoints()
+
     function setScale(real scale)
         self.setScale(scale)
 

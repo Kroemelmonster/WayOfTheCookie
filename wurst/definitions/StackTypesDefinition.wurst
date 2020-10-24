@@ -7,7 +7,6 @@ import StackSoundTypesDefinition
 
 import StackType
 import ActionSlam
-import CracklePassive
 import TalentType
 import ActionChainLightning
 import ActionSpiritLink
@@ -16,6 +15,8 @@ import CounterAttackPassive
 import Damage
 import ActionCrit
 import StackTypesData
+import ActionMultiStrike
+import PassiveDevotionAura
 
 init
     StackTypesDefinition.initialize()
@@ -71,12 +72,12 @@ class StackTypesDefinition
 
         Initializer.register(InitializerNames.STACKS) -> 
             createMelee(UnitTypesIds.SKELETON_LESSER, UnitTypesIds.ARMY_SKELETON_LESSER, 
-            "ReplaceableTextures\\CommandButtons\\BTNLesserDarkMinion.blp", StackSoundSets.SKELETON, 1, 10, 50)
+            "ReplaceableTextures\\CommandButtons\\BTNLesserDarkMinion.blp", StackSoundSets.SKELETON, 1, 3, 50)
             ..addFamily(Family.SKELTON)
             ..setInitiative(3)
             ..setActionPoints(3)
-            ..setMaxHp(5)
-            ..setDamage(intRange(3, 6))
+            ..setMaxHp(4)
+            ..setDamage(intRange(1, 2))
             ..setAttack(6)
             ..setDefence(0)
 
@@ -95,10 +96,11 @@ class StackTypesDefinition
             createMelee(UnitTypesIds.ANCIENT_SASQUATCH, UnitTypesIds.ARMY_ANCIENT_SASQUATCH, 
             "ReplaceableTextures\\CommandButtons\\BTNSasquatchAncient.blp", StackSoundSets.SKELETON, 5, 950, 100)
             ..addFamily(Family.SASQUATCH)
+            ..addTalent(PassiveDevotionAura.TYPE.createTalent())
             ..addTalent(ActionSlam.TYPE.createTalent())
             // TODO ..addTalent(TalentSet.CLEAVE50)
             ..setInitiative(6)
-            ..setActionPoints(6)
+            ..setActionPoints(4)
             ..setMaxHp(1200)
             ..setDamage(intRange(200, 305))
             ..setAttack(44)
@@ -128,7 +130,6 @@ class StackTypesDefinition
         Initializer.register(InitializerNames.STACKS) -> 
             createMelee(UnitTypesIds.GNOLL_WARDEN, UnitTypesIds.ARMY_GNOLL_WARDEN, Icons.bTNGnollWarden, StackSoundSets.SKELETON, 3, 170, 100)
             ..addFamily(Family.GNOLL)
-            ..addTalent(CracklePassive.TYPE.createTalent())
             ..setInitiative(5)
             ..setActionPoints(5)
             ..setMaxHp(220)
@@ -144,8 +145,8 @@ class StackTypesDefinition
             ..setDamage(intRange(23, 30))
             ..setAttack(13)
             ..setDefence(13)
-            ..setDamageType(DamageType.POISON)
-            ..addResistanceAgainst(DamageType.POISON, 40)
+            ..setDamageType(DamageType.CHAOS)
+            ..addResistanceAgainst(DamageType.CHAOS, 40)
             ..addResistanceAgainst(DamageType.FIRE, -25)
                 
         Initializer.register(InitializerNames.STACKS) -> 
@@ -163,7 +164,9 @@ class StackTypesDefinition
         Initializer.register(InitializerNames.STACKS) -> 
             createRange(UnitTypesIds.FOREST_TROLL_BERSERKER, UnitTypesIds.ARMY_FOREST_TROLL_BERSERKER, Icons.bTNForestTrollTrapper1, StackSoundSets.FOOTMAN, 3, 150, 110)
             ..addFamily(Family.TROLL)
-            ..addTalent(CounterAttackPassive.TYPE.createTalent())
+            ..addTalent(CounterAttackPassive.TYPE.createTalent()
+                ..setIntData(CounterAttackPassive.COUNTER, 2))
+            ..addTalent(ActionMultiStrike.TYPE.createTalent())
             ..setInitiative(5)
             ..setActionPoints(3)
             ..setMaxHp(150)
@@ -190,6 +193,8 @@ class StackTypesDefinition
         Initializer.register(InitializerNames.STACKS) -> 
             createRange(UnitTypesIds.SPIRIT_WALKER, UnitTypesIds.ARMY_SPIRIT_WALKER, Icons.bTNSpiritWalker, StackSoundSets.NECROMANCER, 3, 200, 200)
             ..addTalent(ActionSpiritLink.TYPE.createTalent())
+            ..addTalent(PassiveDevotionAura.TYPE.createTalent()
+                ..setIntData(PassiveDevotionAura.DEFENCE, 5))
             ..setInitiative(5)
             ..setActionPoints(3)
             ..setMaxHp(300)
@@ -198,3 +203,4 @@ class StackTypesDefinition
             ..setAttack(13)
             ..setDefence(9)
             ..setDamageType(DamageType.MAGIC)
+            ..addResistanceAgainst(DamageType.MAGIC, 40)

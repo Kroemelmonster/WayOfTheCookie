@@ -1,14 +1,8 @@
 package InstantSpellAction
 
-import initlater SpellType
+import public SpellAction
 
-import Cell
 import PlayerData
-import SpellAction
-import ActionType
-import BoardEntity
-import Spell
-import BoardHero
 
 public abstract class InstantSpellAction extends SpellAction
 
@@ -20,12 +14,14 @@ public abstract class InstantSpellAction extends SpellAction
     construct(BoardHero hero, Spell spell)
         super(hero, spell)
 
+    override function getPreviewColorForCell(Cell cell) returns CellPreviewColor
+        return CellPreviewColor.NONE
 
-    override function getPreviewResultForCell(Cell cell) returns CellResult
-        return CellResult.NONE
+    override function getHighlightColorForCell(Player p, Cell cell) returns CellHighlightColor
+        return CellHighlightColor.NONE
 
-    override function getHighlightResultForCell(Player p, Cell cell) returns CellResult
-        return CellResult.NONE
+    override function getHighlightRuneRuneForCell(Player p, Cell cell) returns CellHighlightRune
+        return CellHighlightRune.NONE
 
     override function recalculatePreview()
         return

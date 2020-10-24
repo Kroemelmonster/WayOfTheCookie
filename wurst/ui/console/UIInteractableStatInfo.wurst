@@ -15,7 +15,7 @@ public class UIInteractableStatInfo extends UIInteractable
     protected framehandle handleText
 
     private construct(UIHandle parent)
-        super(createUIFrame("MENU", parent, true))
+        super(createUIFrame("MENU", parent, true), true)
         let height = 0.025
         setHeight(height)
 
@@ -39,11 +39,12 @@ public class UIInteractableStatInfo extends UIInteractable
                 handleIcon.setTexture("ICONS/STATDmgMagic.dds")
             case FIRE
                 handleIcon.setTexture("ICONS/STATDmgFire.dds")
-            case POISON
-                handleIcon.setTexture("ICONS/STATDmgPoison.dds")
+            case CHAOS
+                handleIcon.setTexture("ICONS/STATDmgChaos.dds")
+            case COLD
+                handleIcon.setTexture("ICONS/STATDmgCold.dds")
             default
                 handleIcon.setTexture("ICONS/STATDmgPhysical.dds")
-                // TODO there is no PURE icon ?
 
     function setText(string txt)
         handleText.setText(txt)

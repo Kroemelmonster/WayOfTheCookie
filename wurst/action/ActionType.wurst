@@ -2,6 +2,7 @@ package ActionType
 
 import Icon
 import BitSet
+
 public enum ActionTypeOption
     INSTANT
     PRIMARY
@@ -11,7 +12,7 @@ public enum ActionTypeOption
 
 public abstract class ActionType extends Icon
 
-    protected bitset optionSet = bitset(0)
+    protected bitset optionSet = emptyBitset()
 
     construct(string name, string icon)
         super(name, icon)

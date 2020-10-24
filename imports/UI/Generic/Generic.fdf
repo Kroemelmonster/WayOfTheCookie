@@ -109,4 +109,80 @@ Frame "EDITBOX" "EditBoxBasic" {
     }
 }
 
+Frame "GLUETEXTBUTTON" "MenuBTN" {
+    Width 0.16,
+    Height 0.033,
+    ControlStyle "AUTOTRACK|HIGHLIGHTONMOUSEOVER",
+    ButtonPushedTextOffset -0.002 -0.002,
+
+    ControlBackdrop "MenuBTNIcon",
+    Frame "BACKDROP" "MenuBTNIcon" {
+        BackdropBackground "UI\Button\MenuBTN.dds",
+        BackdropBlendAll,
+    }
+
+    ControlPushedBackdrop "MenuBTNIconPushed",
+    Frame "BACKDROP" "MenuBTNIconPushed" {
+        BackdropBackground "UI\Button\MenuBTNPushed.dds",
+        BackdropBlendAll,
+    }
+
+    ControlDisabledBackdrop "MenuBTNIconDisabled",
+    Frame "BACKDROP" "MenuBTNIconDisabled" {
+        BackdropBackground "UI\Button\MenuBTNDisabled.dds",
+        BackdropBlendAll,
+    }
+
+    ControlMouseOverHighlight "MenuBTNHighlight",
+    Frame "HIGHLIGHT" "MenuBTNHighlight" {
+        HighlightType "FILETEXTURE",
+        HighlightAlphaFile "UI\Button\MenuBTNHighlight.dds",
+        HighlightAlphaMode "ADD",
+    }
+
+    ButtonText "MenuBTNText",
+    Frame "TEXT" "MenuBTNText" {
+        FrameFont "Fonts\ghei00b_t.ttf", 0.013, "",
+        FontColor 1.0 1.0 1.0 1.0,
+        FontJustificationH JUSTIFYCENTER,
+        FontJustificationV JUSTIFYMIDDLE,
+        FontJustificationOffset 0.0 0.0,
+    }
+}
+
+Frame "GLUETEXTBUTTON" "CheckBoxBasic" {
+    Width 0.024,
+    Height 0.024,
+    
+    ControlStyle "AUTOTRACK",
+
+    ControlBackdrop "EscMenuCheckBoxBackdrop",
+    Frame "BACKDROP" "EscMenuCheckBoxBackdrop" {
+        DecorateFileNames,
+        BackdropBlendAll,
+        BackdropBackground  "EscMenuCheckBoxBackground",
+    }
+
+    ControlDisabledBackdrop "EscMenuDisabledCheckBoxBackdrop",
+    Frame "BACKDROP" "EscMenuDisabledCheckBoxBackdrop" {
+        DecorateFileNames,
+        BackdropBlendAll,
+        BackdropBackground  "EscMenuDisabledCheckBoxBackground",
+    }
+
+    ControlPushedBackdrop "EscMenuCheckBoxPushedBackdrop",
+    Frame "BACKDROP" "EscMenuCheckBoxPushedBackdrop" {
+        DecorateFileNames,
+        BackdropBlendAll,
+        BackdropBackground  "EscMenuCheckBoxPushedBackground",
+    }
+
+    Frame "HIGHLIGHT" "EscMenuCheckHighlightTemplate" {
+        DecorateFileNames,
+        HighlightType "FILETEXTURE",
+        HighlightAlphaFile "EscMenuCheckBoxCheckHighlight",
+        HighlightAlphaMode "BLEND",
+    }
+}
+
 //Fonts\BLQ55Web.ttf

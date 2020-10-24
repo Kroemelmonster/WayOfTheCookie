@@ -89,7 +89,7 @@ public class Player
             activePlayers.add(this)
 
     function isConntrolledByKI() returns boolean
-        if canControllKI
+        if Configurations.kiControlled.getValue()
             return false
         return doesNotNeedVisuals
 
@@ -101,6 +101,9 @@ public class Player
 
     function toColor() returns string
         return c.toColorString()
+
+    function getColor() returns playercolor
+        return blzPlayer.getColor()
 
     function onAnyKeyPress(KeyPressListener listener)
         if not doesNotNeedVisuals

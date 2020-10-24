@@ -17,6 +17,8 @@ import AbilityIds
 import HashMap
 import initlater PathFinding
 import Globals
+import initlater BoardForce
+import BoardEntityListener
 
 public enum EntityType
     STACK
@@ -28,7 +30,7 @@ public abstract class BoardEntity
     static function castFromUnit(unit u) returns BoardEntity
         return unitHash.get(u)
 
-    protected Board board
+    protected BoardForce boardForce
     protected PathFinding pathFinding
     protected unit u
     private effect highlightEffect
@@ -43,16 +45,18 @@ public abstract class BoardEntity
     private EventListener unitDamageTakenListener
 
     private EntityTrigger triggers
+    private BoardEntityListener listeners
 
     protected Action defaultAction
     protected Action currentSelectedAction
     protected LinkedList<Action> actions
 
-    construct(EntityType entityType, Board board)
+    construct(EntityType entityType, BoardForce boardForce)
         this.entityType = entityType
-        this.board = board
+        this.boardForce = boardForce
         this.stati = new LinkedList<Status>
         this.triggers = new EntityTrigger()
+        listeners = new BoardEntityListener()
         this.actions = new LinkedList<Action>
         currentSelectedAction = null
         defaultAction = null
@@ -60,24 +64,39 @@ public abstract class BoardEntity
             pathFinding = new PathFinding(this)
 
     function getBoard() returns Board
-        return board
+        return boardForce.getBoard()
 
     function getType() returns EntityType
         return entityType
 
+    function getPlayer() returns Player
+        return boardForce.getPlayer()
+
+    function getForce() returns BoardForce
+        return boardForce
+
     abstract function getCell() returns Cell
-    abstract function getPlayer() returns Player
     abstract function getIcon() returns string
     abstract function getName() returns string
     abstract protected function hasPath() returns boolean
 
+    function isEnemy(BoardEntity other) returns boolean
+        if other == null
+            return false
+        return getPlayer().isEnemyTo(other.getPlayer())
+
+    function isAlly(BoardEntity other) returns boolean
+        if other == null
+            return false
+        return getPlayer().isAllyTo(other.getPlayer())
+
     function getConntrollingPlayer() returns Player
-        if canControllKI
+        if Configurations.kiControlled.getValue()
             return Player.ME
         return getPlayer()
 
     function canBeControlled(Player byPlayer) returns boolean
-        if canControllKI
+        if Configurations.kiControlled.getValue()
             return true
         return byPlayer == getPlayer()
 
@@ -145,6 +164,9 @@ public abstract class BoardEntity
 
     function getTriggers() returns EntityTrigger
         return triggers
+
+    function listeners() returns BoardEntityListener
+        return listeners
 
     function forEachStatusStats(LLItrClosure<StatusStats> itr)
         stati.forEach() status ->
@@ -277,5 +299,6 @@ public abstract class BoardEntity
 
     protected function destroyTriggers()
         destroy triggers
+        destroy listeners
 
     ondestroy

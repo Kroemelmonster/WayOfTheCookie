@@ -1,24 +1,14 @@
 package ActionChainLightning
 
-import StackAction
-import ActionCost
-import Action
-import ActionType
 import StackActionTarget
-import StackActionType
 
 import Abilities
 import PlayerData
 import BoardController
-import Cell
-import BoardStack
 import UIMenuActionConsole
 import AnimationWait
 import Damage
 import AnimationCast
-import Tooltip
-import UITooltip
-import BoardEntity
 
 init
     Initializer.register(InitializerNames.ACTIONS) -> 
@@ -69,6 +59,9 @@ public class ActionChainLightning extends StackActionTarget
         return createTooltipLines(action.stack.stats.amount)
 
 /* -------------------------------------------------------------------------- */
+
+    override function getHighlightRuneRuneForCell(Player p, Cell cell) returns CellHighlightRune
+        return CellHighlightRune.NONE
 
     protected override function canTarget(BoardStack potentialTarget) returns boolean
         return stack.isEnemy(potentialTarget)

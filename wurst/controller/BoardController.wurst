@@ -23,6 +23,10 @@ import initlater PathFinding
 
 import initlater MainController
 import initlater UIController
+import initlater StackType
+import initlater BoardForce
+import CellObstacle
+import BoardListenerOnCellMove
 
 public class BoardController
 
@@ -36,22 +40,35 @@ public class BoardController
         if target.getType() != EntityType.STACK
             next.continue()
             return
-        StatusController.apply(StatusStunned.TYPE, target, StatusData.create(1)) (status) ->
+        let statusData = StatusData.create()
+        ..setIntData(StatusStunned.DURATION, time)
+        StatusController.apply(StatusStunned.TYPE, target, statusData) (status) ->
             next.continue()
 
+    static function createSummon(BoardForce boardForce, StackType stackType, Cell cell,  int amount, SequenzListener next)
+        nullTimer() -> 
+            let board = boardForce.getBoard()
+            let summon = boardForce.createSummon(stackType, amount)
+            boardForce.placeStack(summon, cell, true)
+            onCellEnter(summon, cell, cell) (cost) -> 
+                UIController.triggerOnStackCreationOrDeathChange(board) -> 
+                    next.continue()
+
     /** Use this to summon / create a Stack mid Fight */
+    /*
     static function placeStackOnBoard(BoardStack stack, Cell cell, boolean isSummoned, SequenzListener next)
         let board = cell.getBoard()
-        nullTimer() ->  
-            board.placeStack(stack, cell, isSummoned)
+        nullTimer() ->
+            boardForce.placeStack(stack, cell, isSummoned)
             onCellEnter(stack, cell, cell) (cost) -> 
                 UIController.triggerOnStackCreationOrDeathChange(board) -> 
                     next.continue()
+                    */
 
     static function killStack(BoardStack stack, SequenzListener next)
         let board = stack.getBoard()
         nullTimer() ->  
-            StatusController.hideAll(stack)
+            StatusController.removeAllBeforeDeath(stack)
             stack.kill()
             UIController.triggerOnStackCreationOrDeathChange(board) -> 
                 next.continue()
@@ -87,8 +104,9 @@ public class BoardController
             return
         
         let instance = originalDamageInstance.copy()
-        calculateDamageBefore(source, instance, stackTarget) ->
-            let specificInstance = instance.dealDamageTo(source, stackTarget)
+        let specificInstance = instance.calculateDamageTo(source, stackTarget)
+        calculateDamageBefore(source, specificInstance, stackTarget) ->
+            specificInstance.applyResults()
             dealDamageInner(source, specificInstance, stackTarget) ->
                 destroy instance
                 destroy specificInstance
@@ -97,7 +115,7 @@ public class BoardController
                 else
                     next.continue()
 
-    private static function calculateDamageBefore(BoardEntity source, DamageInstance instance, BoardStack target, SequenzListener next)
+    private static function calculateDamageBefore(BoardEntity source, SpecificDamageInstance instance, BoardStack target, SequenzListener next)
         onBeforeDamageTaken(source, target, instance) ->
             onBeforeDamageDealt(source, target, instance) ->
                 next.continue()
@@ -107,7 +125,7 @@ public class BoardController
         standardTextTag(target.getCell().getCoord(), instance.toColoredText())
 
         // after damage trigers
-        if instance.getDamageData().hasFlag(DamageFlags.TRIGGERED)
+        if instance.hasFlag(DamageFlags.TRIGGERED)
             next.continue()
         else
             onDamageTaken(source, target, instance) ->
@@ -115,11 +133,11 @@ public class BoardController
                     next.continue()
     /** triggers **/
 
-    private static function onBeforeDamageDealt(BoardEntity source, BoardStack target, DamageInstance instance, SequenzListener next)
+    private static function onBeforeDamageDealt(BoardEntity source, BoardStack target, SpecificDamageInstance instance, SequenzListener next)
         source.getTriggers().triggerOnBeforeDamageDealt(source, target, instance) ->
             next.continue()
 
-    private static function onBeforeDamageTaken(BoardEntity source, BoardStack target, DamageInstance instance, SequenzListener next)
+    private static function onBeforeDamageTaken(BoardEntity source, BoardStack target, SpecificDamageInstance instance, SequenzListener next)
         target.getTriggers().triggerOnBeforeDamageTaken(source, target, instance) ->
             next.continue()
             
@@ -158,8 +176,11 @@ public class BoardController
         
     private static function getWonnedSide(Board board) returns int
         var sideWon = -2
-        let list = board.getAllStacks()
-        let itr = list.iterator()
+        // let list = board.getAllStacks()
+        // let itr = list.iterator()
+        // TODO
+        return -1
+        /*
         while itr.hasNext() and sideWon != -1
             let stack = itr.next()
             let side = board.getPlayerIndex(stack.getPlayer())
@@ -170,7 +191,7 @@ public class BoardController
 
         destroy itr
         destroy list
-        return sideWon
+        return sideWon*/
 
     static function onTurnStart(BoardEntity entity, boolean wasWaiting)
         nullTimer() ->
@@ -187,43 +208,91 @@ public class BoardController
                             board.getInitiative().next()
             else
                 MainController.endFight(board, side)
-                    
-    /** the sequenz has the cost for leaving the cell **/
-    static function onCellLeave(BoardStack stack, Cell fromCell, Cell toCell, SequenzListenerData<int> next)
-        let board = stack.getBoard()
-        let copy = board.getAllStacks()
-        let stackItr = copy.iterator()
-        let initlatCost = PathFinding.getCellMoveOutCost(fromCell)
-        onCellLeaveForAllStacks(stackItr, stack, fromCell, toCell, initlatCost) (newCost) ->
-            destroy stackItr
-            destroy copy
-            next.continue(newCost)
 
-    /** the sequenz has the cost for entering the cell **/
-    static function onCellEnter(BoardStack stack, Cell fromCell, Cell toCell, SequenzListenerData<int> next)
-        let board = stack.getBoard()
-        let copy = board.getAllStacks()
+    static function triggerOnCellEnterForBoardPlacement(Board board, SequenzListener next)
+        let copy = board.getACopyOfAllStacks()
         let stackItr = copy.iterator()
-        let initlatCost = PathFinding.getCellMoveIntoCost(toCell)
-        onCellEnterForAllStacks(stackItr, stack, fromCell, toCell, initlatCost) (newCost) ->
+        onCellEnterForBoardPlacements(stackItr, 0) (exectutions) -> 
+            destroy copy
+            destroy stackItr
+            next.continue()
+    
+    static function onCellLeave(BoardStack stack, Cell fromCell, Cell toCell, SequenzListenerData<BoardListenerOnCellMoveData> next)
+        let board = stack.getBoard()
+        let copy = board.getACopyOfAllStacks()
+        let stackItr = copy.iterator()
+        let data = BoardListenerOnCellMoveData.create(stack, fromCell, toCell, false)
+        onCellLeaveForAllStacks(stackItr, data) ->
             destroy stackItr
             destroy copy
-            next.continue(newCost)
+            let copyObs = fromCell.getACopyOfAllObstacles()
+            let obsItr = copyObs.iterator()
+            onCellLeaveForCell(obsItr, data) ->
+                destroy obsItr
+                destroy copyObs
+                next.continue(data)
+                destroy data
+
+    static function onCellEnter(BoardStack stack, Cell fromCell, Cell toCell, SequenzListenerData<BoardListenerOnCellMoveData> next)
+        let board = stack.getBoard()
+        let copy = board.getACopyOfAllStacks()
+        let stackItr = copy.iterator()
+        let data = BoardListenerOnCellMoveData.create(stack, fromCell, toCell, true)
+        onCellEnterForAllStacks(stackItr, data) ->
+            destroy stackItr
+            destroy copy
+
+            let copyObs = toCell.getACopyOfAllObstacles()
+            let obsItr = copyObs.iterator()
+            onCellEnterForCell(obsItr, data) ->
+                destroy obsItr
+                destroy copyObs
+                next.continue(data)
+                destroy data
 
     /* -------------------------------------------------- */
 
-    private static function onCellLeaveForAllStacks(LLIterator<BoardStack> stackItr, BoardStack stack, Cell fromCell, Cell toCell, int prevCostToMove, SequenzListenerData<int> next)
-        if stackItr.hasNext()
-            let current = stackItr.next()
-            current.getTriggers().triggerOnAnyCellLeave(stack, fromCell, toCell, prevCostToMove) (newCost) ->
-                onCellLeaveForAllStacks(stackItr, stack, fromCell, toCell, newCost, next)
+    private static function onCellEnterForBoardPlacements(LLIterator<BoardStack> itr, int executions, SequenzListenerData<int> next)
+        if itr.hasNext()
+            let stack = itr.next()
+            onCellEnter(stack, null, stack.getCell()) (data) ->
+                let usesExections = data.getExecutions()
+                var newExections = executions + usesExections
+                if usesExections == 0 // it is only 0 if it actually got reset. it is -1 if no triggers at all were executed
+                    newExections = 0
+                if newExections >= 50
+                    newExections = 0
+                    nullTimer() ->
+                        onCellEnterForBoardPlacements(itr, newExections, next)
+                else
+                    onCellEnterForBoardPlacements(itr, newExections, next)
         else
-            next.continue(prevCostToMove)
+            next.continue(executions)
+
+    private static function onCellLeaveForAllStacks(LLIterator<BoardStack> itr, BoardListenerOnCellMoveData data, SequenzListener next)
+        if itr.hasNext()
+            itr.next().listeners().triggerOnAnyCellLeave(data) -> 
+                onCellLeaveForAllStacks(itr, data, next)
+        else
+            next.continue()
+
+    private static function onCellLeaveForCell(LLIterator<CellObstacle> itr,  BoardListenerOnCellMoveData data, SequenzListener next)
+        if itr.hasNext()
+            itr.next().triggerOnAnyCellEnter(data) -> 
+                onCellLeaveForCell(itr, data, next)
+        else
+            next.continue()
                 
-    private static function onCellEnterForAllStacks(LLIterator<BoardStack> stackItr, BoardStack stack, Cell fromCell, Cell toCell, int prevCostToMove, SequenzListenerData<int> next)
+    private static function onCellEnterForAllStacks(LLIterator<BoardStack> stackItr, BoardListenerOnCellMoveData data, SequenzListener next)
         if stackItr.hasNext()
-            let current = stackItr.next()
-            current.getTriggers().triggerOnAnyCellEnter(stack, fromCell, toCell, prevCostToMove) (newCost) ->
-                onCellEnterForAllStacks(stackItr, stack, fromCell, toCell, newCost, next)
+            stackItr.next().listeners().triggerOnAnyCellEnter(data) ->
+                onCellEnterForAllStacks(stackItr, data, next)
         else
-            next.continue(prevCostToMove)
+            next.continue()
+
+    private static function onCellEnterForCell(LLIterator<CellObstacle> itr, BoardListenerOnCellMoveData data, SequenzListener next)
+        if itr.hasNext()
+            itr.next().triggerOnAnyCellEnter(data) ->
+                onCellEnterForCell(itr, data, next)
+        else
+            next.continue()

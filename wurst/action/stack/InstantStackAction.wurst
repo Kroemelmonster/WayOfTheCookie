@@ -1,14 +1,7 @@
 package InstantStackAction
 
-import initlater ActionType
-import initlater StackActionType
-
 import PlayerData
-import Cell
-import ActionCost
-import StackAction
-import BoardStack
-
+import public StackAction
 
 public abstract class InstantStackAction extends StackAction
 
@@ -19,11 +12,14 @@ public abstract class InstantStackAction extends StackAction
     construct(BoardStack stack, StackActionType actionType, StackActionData data)
         super(stack, actionType, data)
 
-    override function getPreviewResultForCell(Cell cell) returns CellResult
-        return CellResult.NONE
+    override function getPreviewColorForCell(Cell cell) returns CellPreviewColor
+        return CellPreviewColor.NONE
 
-    override function getHighlightResultForCell(Player p, Cell cell) returns CellResult
-        return CellResult.NONE
+    override function getHighlightColorForCell(Player p, Cell cell) returns CellHighlightColor
+        return CellHighlightColor.NONE
+
+    override function getHighlightRuneRuneForCell(Player p, Cell cell) returns CellHighlightRune
+        return CellHighlightRune.NONE
 
     override function recalculatePreview()
         return

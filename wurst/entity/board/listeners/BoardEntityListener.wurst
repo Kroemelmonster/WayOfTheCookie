@@ -1,0 +1,49 @@
+package BoardEntityListener
+
+import initlater BoardListenerOnCellMove
+
+public class BoardEntityListener
+    private LinkedList<BoardListenerOnCellMove> onAnyCellEnter = new LinkedList<BoardListenerOnCellMove>()
+    private LinkedList<BoardListenerOnCellMove> onAnyCellLeave = new LinkedList<BoardListenerOnCellMove>()
+
+    function addOnAnyCellEnter(BoardListenerOnCellMove listener) returns BoardListenerOnCellMove
+        onAnyCellEnter.add(listener)
+        return listener
+
+    function removeOnAnyCellEnter(BoardListenerOnCellMove listener)
+        onAnyCellEnter.remove(listener)
+        destroy listener
+
+    function addOnAnyCellLeave(BoardListenerOnCellMove listener) returns BoardListenerOnCellMove
+        onAnyCellLeave.add(listener)
+        return listener
+
+    function removeOnAnyCellLeave(BoardListenerOnCellMove listener)
+        onAnyCellLeave.remove(listener)
+        destroy listener
+    
+/* -------------------------------------------------------------------------- */    
+
+    function triggerOnAnyCellEnter(BoardListenerOnCellMoveData data, SequenzListener next)
+        let copy = onAnyCellEnter.copy()
+        triggerOnAnyMoveInner(copy, copy.iterator(), data, next)
+    
+    function triggerOnAnyCellLeave(BoardListenerOnCellMoveData data, SequenzListener next)
+        let copy = onAnyCellLeave.copy()
+        triggerOnAnyMoveInner(copy, copy.iterator(), data, next)
+
+/* -------------------------------------------------------------------------- */
+
+    private function triggerOnAnyMoveInner(LinkedList<BoardListenerOnCellMove> copy, LLIterator<BoardListenerOnCellMove> iter, BoardListenerOnCellMoveData data, SequenzListener next)
+        if iter.hasNext()
+            iter.next().execute(data) ->
+                triggerOnAnyMoveInner(copy, iter, data, next)
+        else
+            destroy iter
+            destroy copy
+            next.continue()
+
+    ondestroy
+        for listener in onAnyCellEnter
+            destroy listener
+        destroy onAnyCellEnter

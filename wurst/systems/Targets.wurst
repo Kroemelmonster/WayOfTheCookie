@@ -1,7 +1,5 @@
 package Targets
 
-import LinkedList
-
 import initlater Board
 import initlater Cell
 import initlater BoardStack
@@ -26,9 +24,9 @@ public class Target
 
     function self() returns BoardStack
         return self
-
+    
 public class Targets
-    private BoardStack initator
+    private Board board
     private LinkedList<Target> allPossibleTargets
     private LinkedList<Target> currentTurnTargets
 
@@ -36,8 +34,8 @@ public class Targets
     private TargetListListener filter
     private TargetThisTurnAsWell thisTurnFilter
 
-    construct(BoardStack initator, TargetListListener filter)
-        this.initator = initator
+    construct(Board board, TargetListListener filter)
+        this.board = board
         this.allPossibleTargets = new LinkedList<Target>()
         this.filter = filter
     
@@ -97,7 +95,7 @@ public class Targets
 
     private function calculateInner()
         clear()
-        initator.getBoard().forEachStack() eventuellTarget ->
+        board.forEachStack() eventuellTarget ->
             let fromCell = filter.getCellToActFrom(eventuellTarget)
             if fromCell != null
                 let target = new Target(eventuellTarget, fromCell)

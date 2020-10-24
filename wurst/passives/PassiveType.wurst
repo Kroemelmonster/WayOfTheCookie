@@ -1,43 +1,26 @@
 package PassiveType
+
 import Icon
-import LinkedList
-import Passive
-import BoardEntity
-import initlater PassiveTalentType
-import CounterAttackPassive
-import CracklePassive
+import BitSet
 
-
-interface PassiveCreateListener
-    function create(BoardEntity boardEntity) returns Passive
-
-interface PassiveCreateTooltipLinesListener
-    function create(int value) returns LinkedList<string>
+public enum PassiveTypeOption
+    NONE // TODO maybe we need those
 
 public class PassiveType extends Icon
-    protected PassiveCreateListener listener
-    protected PassiveCreateTooltipLinesListener tooltipLinesListener
-    protected PassiveTalentType creatingTalent
+
+    protected bitset optionSet = emptyBitset()
 
     construct(string name, string icon)
         super(name, icon)
     
-    function onCreate(PassiveCreateListener listener)
-        this.listener = listener
+    function enableOption(PassiveTypeOption opt)
+        optionSet = optionSet.set(opt castTo int)
 
-    function onCreateTooltipLines(PassiveCreateTooltipLinesListener tooltipLinesListener)
-        this.tooltipLinesListener = tooltipLinesListener
+    function hasOption(PassiveTypeOption option) returns boolean
+        return optionSet.get(option castTo int)
+    
+    override function getName() returns string
+        return super.getName()
 
-    function create(BoardEntity boardEntity) returns Passive
-        return listener.create(boardEntity)
-
-    function toString() returns string
-        return "PassiveType '"+name+"'"
-
-    function createTooltipLines(int value) returns LinkedList<string>
-        return tooltipLinesListener.create(value)
-
-    function createTalent() returns PassiveTalentType
-        if creatingTalent == null
-            creatingTalent = new PassiveTalentType(this)
-        return creatingTalent
+    override function getIcon() returns string
+        return super.getIcon()

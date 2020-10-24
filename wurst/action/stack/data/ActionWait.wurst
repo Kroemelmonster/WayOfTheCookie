@@ -1,17 +1,10 @@
 package ActionWait
 
-import initlater StackActionType
-import initlater Action
-import initlater InstantStackAction
+import InstantStackAction
 
 import OrderSystem
-import BoardStack
 import BoardTrigger
 import InitiativeList
-import ActionCost
-import UITooltip
-import Tooltip
-import BoardEntity
 
 init
     Initializer.register(InitializerNames.ACTIONS) -> 
@@ -43,7 +36,7 @@ public class ActionWait extends InstantStackAction
     override function canActivate() returns boolean
         let initiative = stack.getPlayer().playingBoard.getInitiative()
         let isWaiting = initiative.getCurrent().isWaiting()
-        return isWaiting == false
+        return not isWaiting
 
     override function activate()
         let board = stack.getConntrollingPlayer().playingBoard
@@ -54,7 +47,7 @@ public class ActionWait extends InstantStackAction
         let tt = createBasicTooltip()
         if canActivate()
             // TODO maybe do this better ? idont know
-            let str = KStringUtils.primaryString((InitiativeList.intiativeToDisplayTime(stack.stats.getInitiative()) / 2.0).round().toString())
+            let str = KStringUtils.primaryString((InitiativeList.initiativeToTime(stack.stats.getInitiative()) / 2.0).round().toString())
             + " " + KStringUtils.secondaryString("timeunits")
             tt.addLine("Postpone the turn by "+str)
         else

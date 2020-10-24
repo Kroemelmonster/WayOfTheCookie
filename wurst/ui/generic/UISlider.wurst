@@ -12,7 +12,7 @@ public class UISlider extends UIInteractable
     private boolean manual = true
 
     private construct(framehandle parent)
-        super(createUIFrameByName("SliderHorizontalBasic", parent, false))
+        super(createUIFrameByName("SliderHorizontalBasic", parent, false), false)
         UIInteractable.create(getFrame("SliderHorizontalBasicThumb"))
 
     function onValueChange(FrameHandleListener innerFrameHandleListener)

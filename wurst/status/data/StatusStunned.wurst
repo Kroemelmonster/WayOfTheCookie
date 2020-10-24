@@ -9,6 +9,7 @@ import initlater StatusType
 import initlater BoardEntity
 import BoardTrigger
 import Tooltip
+import InitiativeList
 
 init
     Initializer.register(InitializerNames.STATI) -> 
@@ -21,27 +22,31 @@ public class StatusStunned extends Status
     protected static function setup()
         TYPE = new StatusType("Stunned", Icons.bTNStun)
         TYPE.setCreationListener() (boardEntity, data) ->
-            return new StatusStunned(TYPE, boardEntity)
+            return new StatusStunned(TYPE, boardEntity, data)
         TYPE.setTooltipListener() data ->
             return createTooltipLines()
 
+    static constant DURATION = 0
+
     private static function createTooltipLines() returns LinkedList<string>
-        let lines = new LinkedList<string>
+        return new LinkedList<string>
         ..add("You are stuned!")
-        return lines
 
     /* -------------------------------------------------------------------------- */
     
     private effect display
-    private BoardTrigger turnStartListener
+    private InitiativeEvent initEvent
 
-    construct(StatusType statusType, BoardEntity entity)
+    construct(StatusType statusType, BoardEntity entity, StatusData data)
         super(statusType, entity)
         display = entity.addAttachEffect(Abilities.thunderclapTarget, AttachmentPoints.overhead)
 
-        turnStartListener = entity.getTriggers().addTurnStart() (SequenzListener next) ->
-            removeWithoutTrigger()
+        let duration = data.getIntData(DURATION)
+
+        initEvent = entity.getBoard().getInitiative().addSequenzListener(duration) (SequenzListener next) ->
+            remove()
             next.continue()
+
 
     override function onRefresh(StatusData data)
 
@@ -51,10 +56,11 @@ public class StatusStunned extends Status
     override function createTooltip() returns Tooltip
         return TYPE.createTooltip(null)
 
-    override function hide()
+    override function removeVisuals()
         if display != null
             display.destr()
 
     ondestroy
-        if entity.isAlive()
-            entity.getTriggers().removeOnTurnStart(turnStartListener)
+        if initEvent != null
+            entity.getBoard().getInitiative().removeListener(initEvent)
+            initEvent = null

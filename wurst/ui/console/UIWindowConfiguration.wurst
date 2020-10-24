@@ -1,0 +1,124 @@
+package UIWindowConfiguration
+import UIWindow
+import PlayerData
+import UIHandle
+import UIButtonMenu
+import FramehandleNames
+import UIDialog
+import Globals
+import ClosureFrames
+import UICheckBox
+import UIInput
+import UIEditBox
+
+
+class UIField<T> extends UIHandle
+    static function createCheckbox(Configuration<boolean> config, string lable, UIHandle parent) returns UIField<boolean>
+        let frame = createUIHandle("FRAME", parent)
+        frame.setHeight(0.04)
+        let checkBox = UICheckBox.create(frame)
+        ..setPoint(FRAMEPOINT_LEFT, frame, FRAMEPOINT_LEFT)
+        createUIFrame("TEXT", frame)
+        ..setPoint(FRAMEPOINT_LEFT, checkBox, FRAMEPOINT_RIGHT)
+        ..setText(lable)
+        return new UIField(frame, config, checkBox)
+
+    static function createInt(Configuration<int> config, string lable, UIHandle parent) returns UIField<integer>
+        let frame = createUIHandle("FRAME", parent)
+        frame.setHeight(0.04)
+        let handleLable = createUIFrame("TEXT", frame)
+        ..setPoint(FRAMEPOINT_TOPLEFT, frame, FRAMEPOINT_TOPLEFT)
+        ..setText(lable)
+        let editBox = UIEditBoxInt.create(frame)
+        ..setPoint(FRAMEPOINT_TOPLEFT, handleLable, FRAMEPOINT_BOTTOMLEFT)
+        return new UIField(frame, config, editBox)
+
+    static function createReal(Configuration<Real> config, string lable, UIHandle parent) returns UIField<Real>
+        let frame = createUIHandle("FRAME", parent)
+        frame.setHeight(0.04)
+        let handleLable = createUIFrame("TEXT", frame)
+        ..setPoint(FRAMEPOINT_TOPLEFT, frame, FRAMEPOINT_TOPLEFT)
+        ..setText(lable)
+        let editBox = UIEditBoxReal.create(frame)
+        ..setPoint(FRAMEPOINT_TOPLEFT, handleLable, FRAMEPOINT_BOTTOMLEFT)
+        return new UIField(frame, config, editBox)
+    
+    
+    UIInput<T> uiInput
+    Configuration<T> config
+
+    private construct(UIHandle frame, Configuration<T> config, UIInput<T> input)
+        super(frame.self)
+        this.config = config
+        this.uiInput = input
+
+        uiInput.setValue(config.getValue())
+        uiInput.onValueChange() (T value) ->
+            config.setValue(value)
+
+
+
+public class UIWindowConfiguration
+    protected static UIWindowBasic window
+
+    static function create() returns UIWindowBasic
+        window = UIWindowBasic.create("Configuration", false)
+        ..setPointToConsoleUI(FRAMEPOINT_TOP, FRAMEPOINT_TOP)
+        ..setSize(0.29, 0.35)
+        ..setLevel(110)
+
+        UIHandle before = UIField.createCheckbox(Configurations.kiControlled, "Debug: Controll KI", window)
+        ..setInnerPoint(FRAMEPOINT_TOPLEFT, window, FRAMEPOINT_TOPLEFT)
+        ..setInnerPoint(FRAMEPOINT_TOPRIGHT, window, FRAMEPOINT_TOP)
+
+        before = UIField.createInt(Configurations.debugInt1, "some int", window)
+        ..setPoint(FRAMEPOINT_TOPLEFT, before, FRAMEPOINT_BOTTOMLEFT)
+        ..setPoint(FRAMEPOINT_TOPRIGHT, before, FRAMEPOINT_BOTTOMRIGHT)
+
+        before = UIField.createReal(Configurations.debugReal1, "some real", window)
+        ..setPoint(FRAMEPOINT_TOPLEFT, before, FRAMEPOINT_BOTTOMLEFT)
+        ..setPoint(FRAMEPOINT_TOPRIGHT, before, FRAMEPOINT_BOTTOMRIGHT)
+
+        before = UIField.createReal(Configurations.debugReal2, "another real", window)
+        ..setPoint(FRAMEPOINT_TOPLEFT, before, FRAMEPOINT_BOTTOMLEFT)
+        ..setPoint(FRAMEPOINT_TOPRIGHT, before, FRAMEPOINT_BOTTOMRIGHT)
+
+        before = UIField.createReal(Configurations.debugReal3, "another real", window)
+        ..setPoint(FRAMEPOINT_TOPLEFT, before, FRAMEPOINT_BOTTOMLEFT)
+        ..setPoint(FRAMEPOINT_TOPRIGHT, before, FRAMEPOINT_BOTTOMRIGHT)
+
+
+        /*
+        let btnEnd = UIButtonMenu.create(window, "End Game")
+        ..setInnerPoint(FRAMEPOINT_BOTTOMLEFT, window, FRAMEPOINT_BOTTOMLEFT)
+        ..setInnerPoint(FRAMEPOINT_BOTTOMRIGHT, window, FRAMEPOINT_BOTTOMRIGHT)
+        ..onClick() ->
+            EndGame(false)
+        
+        let btnFrames = UIButtonMenu.create(window, "Frames off")
+        ..setPoint(FRAMEPOINT_BOTTOMLEFT, btnEnd, FRAMEPOINT_TOPLEFT, 0, 0.01)
+        ..setPoint(FRAMEPOINT_BOTTOMRIGHT, btnEnd, FRAMEPOINT_TOPRIGHT, 0, 0.01)
+        btnFrames.onClick() ->
+            let ressourceBar = getFrame("ConsoleUI")
+            let isVisible = ressourceBar.isVisible()
+            ressourceBar.setVisible(not isVisible)
+            getFrame("ResourceBarFrame").setVisible(not isVisible)
+            if isVisible
+                btnFrames.setText("Frames off")
+            else
+                btnFrames.setText("Frames on")
+
+        let btnKi = UIButtonMenu.create(window, "KI Controlled")
+        ..setPoint(FRAMEPOINT_BOTTOMLEFT, btnFrames, FRAMEPOINT_TOPLEFT, 0, 0.01)
+        ..setPoint(FRAMEPOINT_BOTTOMRIGHT, btnFrames, FRAMEPOINT_TOPRIGHT, 0, 0.01)
+        btnKi.onClick() ->
+            canControllKI = not canControllKI
+            if canControllKI
+                btnKi.setText("User Controlled")
+            else
+                btnKi.setText("KI Controlled")*/
+
+        return window
+
+    static function get() returns UIWindowBasic
+        return window

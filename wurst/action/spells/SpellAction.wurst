@@ -1,19 +1,12 @@
 package SpellAction
 
-import initlater BoardHero
-import initlater Spell
-import initlater SpellType
+import public initlater BoardHero
+import public initlater Spell
+import public initlater SpellType
 
-import ActionCost
-import Action
-import ActionType
-import BoardEntity
-import Tooltip
+import public Action
 import BoardTrigger
-import Cell
 import BoardController
-import LinkedList
-import KUtil
 
 public abstract class SpellAction extends Action implements HasSpellStats
     protected BoardHero hero
@@ -21,7 +14,6 @@ public abstract class SpellAction extends Action implements HasSpellStats
     protected SpellLevel level
     protected boolean currentlyActive = false
     protected Spell spell
-    protected boolean quickCast = false
 
     static function createType(string name, string icon) returns SpellType
         return new SpellType(name, icon)
@@ -47,29 +39,22 @@ public abstract class SpellAction extends Action implements HasSpellStats
     function getLevelIndex() returns int
         return levelIndex
 
-    function isQuickcast() returns boolean
-        return quickCast
-
     function toggleQuickcast()
-        activateQuickcast(not quickCast)
+        activateQuickcast(not hero.isQuickCast(this))
 
     function activateQuickcast(boolean flag)
-        quickCast = flag
         if flag
-            hero.updateQuickcast()
+            hero.addQuickCast(this)
         else
             if entity.getCurrentAction() == this
                 entity.resetCurrentSelectedAction()
+            hero.removeQuickCast(this)
 
     function getBoardHero() returns BoardHero
         return hero
 
-    override function getDamageMulti() returns real
-        let power = hero.stats.getPower()
-        return 1.0 + spell.getBaseMultiFromPower(power)
-
     override function showAsPrimary() returns boolean
-        return quickCast
+        return hero.isQuickCast(this)
 
     override function getExtendedName() returns string
         return getName() + " ["+(levelIndex + 1).toString()+"]"
@@ -101,3 +86,15 @@ public abstract class SpellAction extends Action implements HasSpellStats
     override function executeForKI(SequenzListenerStatus listener)
         Log.error("YOU NEED TO WRITE KI FOR "+toString())
         listener.continue(-1)
+
+    /* -------------------------------------------------------------------------- */
+
+    override function getDamageMulti() returns real
+        let power = getPower()
+        return 1.0 + Spell.getBaseMultiFromPower(power)
+
+    override function getPower() returns int
+        return hero.stats.getPower()
+
+    override function getAttack() returns int
+        return hero.stats.getAttack()

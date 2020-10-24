@@ -25,36 +25,53 @@ public class StatusRallingCry extends SharedStatus
         TYPE.setTooltipListener() data ->
             return createTooltipBaseLines(data)
 
-    protected static constant int ATTACK_BONUS = 0
+    static constant ATTACK_BONUS = 0
+    static constant ATTACK_BONUS_UNITS = 1
 
-    protected static function createTooltipBaseLines(int attackValue) returns LinkedList<string>
+    protected static function createTooltipBaseLinesHero(int attackHero, int attackUnits) returns LinkedList<string>
         return new LinkedList<string>
         ..add("Increases the Attack by "
-            + KStringUtils.coloredInt(KStringUtils.COLOR_POSITIVE, attackValue))
+            + KStringUtils.coloredInt(KStringUtils.COLOR_POSITIVE, attackHero))
+        ..add("Also increases the Attack of your trops by "
+            + KStringUtils.coloredInt(KStringUtils.COLOR_POSITIVE, attackUnits))
+
+    protected static function createTooltipBaseLinesUnits(int attack) returns LinkedList<string>
+        return new LinkedList<string>
+        ..add("You have increased Attack of "
+            + KStringUtils.coloredInt(KStringUtils.COLOR_POSITIVE, attack))
 
     protected static function createTooltipBaseLines(StatusData data) returns LinkedList<string>
-        return createTooltipBaseLines(data.getIntData(ATTACK_BONUS))
+        return createTooltipBaseLinesHero(data.getIntData(ATTACK_BONUS), data.getIntData(ATTACK_BONUS_UNITS))
 
-    protected static function createTooltip(StatusRallingCry b) returns Tooltip
+    protected static function createTooltipHero(StatusRallingCry b) returns Tooltip
         return Tooltip.create(TYPE.getName())
-        ..addLines(createTooltipBaseLines(b.attack))
+        ..addLines(createTooltipBaseLinesHero(b.attack, b.attackUnits))
+
+    protected static function createTooltipUnits(StatusRallingCry b) returns Tooltip
+        Log.trace("get ma the tt of : "+b.attackUnits.toString()+ " = "+(b castTo int).toString())
+        return Tooltip.create(TYPE.getName())
+        ..addLines(createTooltipBaseLinesUnits(b.attackUnits))
 
     /* -------------------------------------------------------------------------- */
 
     protected BoardTrigger turnStartListener
     protected effect display
     protected int duration
-    protected int attack = 0
+    protected int attack
+    protected int attackUnits
 
     construct(StatusType statusType, BoardEntity entity, StatusData data)
         super(statusType, entity, data)
 
     protected override function setupPrimary(StatusData data)
         duration = data.duration
+        attack = data.getIntData(ATTACK_BONUS)
+        attackUnits = data.getIntData(ATTACK_BONUS_UNITS)
 
         let affectedAllies = data.getAllEntityData()
         let secondaryData = StatusData.create()
         ..setIntData(ATTACK_BONUS, attack)
+        ..setIntData(ATTACK_BONUS_UNITS, attackUnits)
         for ally in affectedAllies
             applySecondary(ally, secondaryData)
         destroy secondaryData
@@ -62,16 +79,17 @@ public class StatusRallingCry extends SharedStatus
         turnStartListener = entity.getTriggers().addTurnStart() next ->
             duration--
             if duration <= 0
-                removePrimary(next)
+                remove(next)
             else
                 next.continue()
-
-        attack = data.getIntData(ATTACK_BONUS)
+        
         display = entity.addAttachEffect(Abilities.drumsCasterHeal, AttachmentPoints.origin)
         applyStats(true)
 
     protected override function setupSecondary(StatusData data)
         attack = data.getIntData(ATTACK_BONUS)
+        attackUnits = data.getIntData(ATTACK_BONUS_UNITS)
+
         display = entity.addAttachEffect(Abilities.drumsCasterHeal, AttachmentPoints.origin)
         applyStats(true)
         
@@ -93,12 +111,15 @@ public class StatusRallingCry extends SharedStatus
 
     protected function applyStatsStack(boolean add)
         let multi = add ? 1 : -1
-        entity.toStack().stats.attackModi.addBonus += attack * multi
+        entity.toStack().stats.attackModi.addBonus += attackUnits * multi
 
     override function createTooltip() returns Tooltip
-        return createTooltip(this)
+        if isPrimary()
+            return createTooltipHero(this)
+        else
+            return createTooltipUnits(this)
 
-    override function hide()
+    override function removeVisuals()
         if display != null
             display.destr()
             display = null

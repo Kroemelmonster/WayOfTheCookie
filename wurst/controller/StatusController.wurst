@@ -5,7 +5,6 @@ import initlater Status
 import initlater BoardStack
 
 import BoardEntity
-import BoardTrigger
 
 public class StatusController 
 
@@ -38,6 +37,15 @@ public class StatusController
             next.continue(statusType.applyNewStatusTo(entity, data))
         else
             next.continue(oldStatus)
+    
+    /** use this if you know that this status should never have any triggers **/
+    static function applyNoListener(StatusType statusType, BoardEntity entity, StatusData data) returns Status
+        let oldStatus = get(statusType, entity)
+        if oldStatus != null
+            oldStatus.refresh(data)
+        else if statusType.canApplyTo(entity, data)
+            return statusType.applyNewStatusTo(entity, data)
+        return oldStatus
 
     static function purge(StatusType statusType, BoardEntity entity, SequenzListener next)
         let b = get(statusType, entity)
@@ -46,9 +54,9 @@ public class StatusController
             return
         b.purge(next)
 
-    static function hideAll(BoardStack stack)
+    static function removeAllBeforeDeath(BoardStack stack)
         let itr = stack.statusIterator()
         while itr.hasNext()
-            itr.next().hide()
+            itr.next().removeBeforeDeath()
 
         destroy itr

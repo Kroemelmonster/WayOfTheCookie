@@ -33,6 +33,8 @@ class UIBoardActionButton extends UIButtonIcon
         tryToActivate(p)
 
     private function tryToActivate(Player p)
+        if action == null
+            return
         let activeEntity = PlayerBoardHelper.getCurrentActiveEntity(p)
         if not OrderSystem.canOrderUnit(p, activeEntity)
             return
@@ -158,10 +160,10 @@ public class UIMenuActionConsole
             return
     
         for i = 0 to primaryBtns.length - 1
-            primaryBtns[i].setVisible(false)
+            primaryBtns[i].setEmpty()
 
         for i = 0 to secondaryBtns.length - 1
-            secondaryBtns[i].setVisible(false)
+            secondaryBtns[i].setEmpty()
 
         let activeEntity = PlayerBoardHelper.getCurrentActiveEntity(p)
 

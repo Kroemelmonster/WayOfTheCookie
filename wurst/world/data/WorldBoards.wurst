@@ -15,13 +15,14 @@ class WorldBoards
 
     protected static function initialize() 
         Initializer.register(InitializerNames.WORLD_BOARDS) -> 
-            create(gg_rct_BoardIsleOne, gg_rct_BoardIsleOneV)
+            create(gg_rct_BoardPlainsTwo, gg_rct_BoardPlainsTwoV)
 
+        /*
         Initializer.register(InitializerNames.WORLD_BOARDS) -> 
             create(gg_rct_BoardIsleTwo, gg_rct_BoardIsleTwoV)
 
         Initializer.register(InitializerNames.WORLD_BOARDS) -> 
-            create(gg_rct_BoardIsleThree, gg_rct_BoardIsleThreeV)
+            create(gg_rct_BoardIsleThree, gg_rct_BoardIsleThreeV)*/
 
     static function getBoardToFightOn(HostileArmy _enemy) returns Board
         return all.get(GetRandomInt(0, all.size() - 1))

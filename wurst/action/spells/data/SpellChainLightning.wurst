@@ -2,34 +2,25 @@ package SpellChainLightning
 
 import Abilities
 
-import initlater SpellType
+import SpellActionTarget
 
-import Cell
 import BoardStack
 import PlayerData
 import BoardController
-import Action
 import UIMenuActionConsole
 import AnimationWait
 import Damage
 import AnimationCast
-import SpellAction
-import BoardHero
-import BoardEntity
-import ActionCost
-import Tooltip
-import UITooltip
 import HeroData
-import Spell
 
 init
     Initializer.register(InitializerNames.SPELLS) -> 
         SpellChainLightning.setup()
 
-public class SpellChainLightning extends SpellAction
+public class SpellChainLightning extends SpellActionTarget
     static SpellType TYPE
     protected static function setup()
-        TYPE = SpellAction.createType("Chain Lightning", Icons.bTNChainLightning)
+        TYPE = SpellActionTarget.createType("Chain Lightning", Icons.bTNChainLightning)
         TYPE.addLevel(ActionCostPreset.createWithMana(1, true, 7), HeroDataChange.create(0, 1, 3))
         ..setIntData(DAMAGE, 65)
         ..setIntData(CHAINS, 2)
@@ -73,24 +64,28 @@ public class SpellChainLightning extends SpellAction
 
     /* -------------------------------------------------------------------------- */
     
-    private LinkedList<Cell> area = new LinkedList<Cell>()
+    private LinkedList<Cell> highlightedArea = new LinkedList<Cell>()
 
-    override function getHighlightResultForCell(Player p, Cell cell) returns CellResult
-        if area.has(cell)
-            return CellResult.NEGATIVE
-        return CellResult.NONE
+    override function canTarget(BoardStack potentialTarget) returns boolean
+        return hero.isEnemy(potentialTarget)
 
-    override function recalculatePreview()
-        recalculatePossibleTargets()
+    override function getHighlightRuneRuneForCell(Player p, Cell cell) returns CellHighlightRune
+        if highlightedArea.has(cell)
+            return CellHighlightRune.CAST
+        return CellHighlightRune.NONE
 
     override function recalculateHighlight(Player p)
-        if area.has(p.currentMousePosition.cell)
-            showPreview(p.currentMousePosition.cell)
-        else
-            hidePreview()
+        let highlightedCell = p.currentMousePosition.cell
+
+        highlightedArea.clear()
+        if highlightedCell == null or not targets.has(highlightedCell.getStack())
+            hideTooltip()
+            return
+
+        showTooltipAndFillHighlight(highlightedCell.getStack())
 
     override function castAt(Cell cell) returns boolean
-        if not area.has(cell)
+        if not targets.has(cell.getStack())
             return false
         AnimationCast.atCell(hero, cell) () ->
             let rolledBaseDamage = calculateDamage(level, this, 0).getRandomInstance()
@@ -112,8 +107,7 @@ public class SpellChainLightning extends SpellAction
         let e = addEffect(Abilities.boltImpact, targetPos)
         AnimationWait.time(entity.getBoard(), 0.3) ->
             bolt.destr()
-            e.setPosition(-100000, -10000, 10000)
-            e.destr()
+            e.moveAndDestroy()
             var targetCell = target.getCell()
             BoardController.dealDamage(hero, baseDamage, target) -> 
                 if chains < level.getIntData(CHAINS)
@@ -143,28 +137,24 @@ public class SpellChainLightning extends SpellAction
         destroy itr
         return nextTarget
 
-    private function recalculatePossibleTargets()
-        area.clear()
-
-        entity.getBoard().forEachStack() (BoardStack t) ->
-            if t.getPlayer() != entity.getPlayer()
-                area.add(t.getCell())
-
-    private function showPreview(Cell fromCell)
+    private function showTooltipAndFillHighlight(BoardStack target)
         let tt = createBasicTooltip()
         ..addLines(createTooltipLines(level, this))
-        if fromCell != null
-            tt.addLine("")
+        if target != null
 
             let prevTargets = new LinkedList<BoardStack>()
-            prevTargets.add(fromCell.getStack())
+            prevTargets.add(target)
+
+            highlightedArea.add(target.getCell())
             var chain = 0
-            while chain < level.getIntData(CHAINS)
+            while chain <= level.getIntData(CHAINS)
                 let currentTarget = prevTargets.peek()
                 if currentTarget == null
                     break
+                tt.addLine("")
                 calculateDamage(level, this, chain)
                 .extendTooltipWithSpecific(tt, entity, currentTarget)
+                highlightedArea.add(currentTarget.getCell())
                 chain++
                 prevTargets.add(getNextTarget(prevTargets, currentTarget.getCell()))
             destroy prevTargets
@@ -172,19 +162,19 @@ public class SpellChainLightning extends SpellAction
         UITooltip.display(entity.getConntrollingPlayer(), tt)
         UIMenuActionConsole.updateActionPoints(entity, cost)
     
-    private function hidePreview()
+    private function hideTooltip()
         UITooltip.hide(entity.getConntrollingPlayer())
         UIMenuActionConsole.updateActionPoints(entity)
 
     override function onUIMouseEnter()
-        showPreview(null)
+        showTooltipAndFillHighlight(null)
 
     override function onUIMouseLeave()
-        hidePreview()
+        hideTooltip()
        
     private construct(BoardHero hero, Spell spell)
         super(hero, spell)
 
     ondestroy
-        if area != null
-            destroy area
+        if highlightedArea != null
+            destroy highlightedArea

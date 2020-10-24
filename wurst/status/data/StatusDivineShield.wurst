@@ -1,0 +1,95 @@
+package StatusDivineShield
+
+import AttachmentPoints
+import Abilities
+
+import Status
+
+import initlater BoardStack
+import initlater BoardEntity
+import initlater StatusType
+import BoardTrigger
+import Tooltip
+import Damage
+import AnimationWait
+
+init
+    Initializer.register(InitializerNames.STATI) -> 
+        StatusDivineShield.setup()
+
+public class StatusDivineShield extends Status
+    static StatusType TYPE
+
+    static function setup()
+        TYPE = new StatusType("Divine Shield", Icons.bTNDivineIntervention)
+        TYPE.setCreationListener() (boardEntity, data) ->
+            return new StatusDivineShield(TYPE, boardEntity, data)
+        TYPE.setTooltipListener() data ->
+            return createTooltipBaseLines(data)
+
+    static constant int ABSORB = 0
+
+    private static function createTooltipBaseLines(int absorb) returns LinkedList<string>
+        return new LinkedList<string>
+        ..add("Absorbs a total of "
+         + KStringUtils.coloredInt(KStringUtils.COLOR_POSITIVE, absorb)
+         + " Damage")
+        
+    private static function createTooltipBaseLines(StatusData data) returns LinkedList<string>
+        return createTooltipBaseLines(data.getIntData(ABSORB))
+
+    private static function createTooltip(StatusDivineShield b) returns Tooltip
+        return Tooltip.create(TYPE.getName())
+        ..addLine("")
+        ..addLines(createTooltipBaseLines(b.absorb))
+
+    /* -------------------------------------------------------------------------- */
+
+    private effect display
+    private int absorb = 0
+    
+    private BoardTriggerOnDamage damageTakenTrigger
+
+    construct(StatusType statusType, BoardEntity entity, StatusData data)
+        super(statusType, entity)
+        display = entity.addAttachEffect(Abilities.divineShieldTarget, AttachmentPoints.origin)
+
+        refreshStatusData(data)
+
+        damageTakenTrigger = entity.getTriggers().addOnBeforeDamageTaken() (BoardEntity source, BoardStack target, SpecificDamageInstance instance, SequenzListener next) ->
+            absorbDamage(instance, next)
+
+    override function onRefresh(StatusData data)
+        refreshStatusData(data)
+
+    override function canPurge() returns boolean
+        return true
+
+    protected function refreshStatusData(StatusData data)
+        absorb += data.getIntData(ABSORB)
+
+    private function absorbDamage(SpecificDamageInstance incommingInstance, SequenzListener next)
+        nullTimer() ->
+            let overKillDmg = incommingInstance.getOverKillDamage()
+            let absorbedDmg = min(absorb, overKillDmg)
+            incommingInstance.setDamage(overKillDmg - absorbedDmg)
+            absorb -= absorbedDmg
+            if absorb > 0
+                next.continue()
+            else
+                remove()
+                nullTimer() -> 
+                    next.continue()
+
+    override function createTooltip() returns Tooltip
+        return createTooltip(this)
+
+    override function removeVisuals()
+        if display != null
+            display.destr()
+
+    ondestroy
+        if entity.isAlive()
+            if damageTakenTrigger != null
+                entity.getTriggers().removeOnBeforeDamageTaken(damageTakenTrigger)
+                damageTakenTrigger = null

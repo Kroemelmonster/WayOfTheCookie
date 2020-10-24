@@ -1,0 +1,59 @@
+package SpellActionTarget
+
+import public SpellAction
+
+import Targets
+import BoardStack
+import PlayerData
+import BoardTrigger
+import KISystem
+
+public abstract class SpellActionTarget extends SpellAction
+
+    static function createType(string name, string icon) returns SpellType
+        return new SpellType(name, icon)
+        ..enableOption(ActionTypeOption.SPELL)
+
+    protected Targets targets
+    protected CellPreviewColor cellResultForHit
+
+    construct(BoardHero hero, Spell spell)
+        super(hero, spell)
+        cellResultForHit = CellPreviewColor.NEGATIVE
+        targets = new Targets(hero.getBoard()) (potentialTarget) ->
+            return getCellToAttack(potentialTarget)
+
+    override function recalculatePreview()
+        targets.recalculate()
+
+    protected abstract function canTarget(BoardStack potentialTarget) returns boolean
+
+    protected function getCellToAttack(BoardStack potentialTarget) returns Cell
+        if canTarget(potentialTarget)
+            return potentialTarget.getCell()
+        return null
+
+    override function getPreviewColorForCell(Cell cell) returns CellPreviewColor
+        if targets.has(cell.getStack())
+            return cellResultForHit
+        return CellPreviewColor.NONE
+
+    override function getHighlightColorForCell(Player p, Cell cell) returns CellHighlightColor
+        return CellHighlightColor.NONE
+
+    override function executeForKI(SequenzListenerStatus listener)
+        // calculate Best targets
+        recalculatePreview()
+        let bestTarget = KISystem.getBestTarget(targets)
+        if bestTarget == null
+            listener.continue(1)
+            return
+        nullTimer() ->
+            let bestTargetStack = bestTarget.self()
+            if sendTargetOrder(bestTargetStack.getCell())
+                listener.continue(0)
+            else
+                listener.continue(1)
+
+    ondestroy
+        destroy targets

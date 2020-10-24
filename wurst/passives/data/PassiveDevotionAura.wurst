@@ -1,0 +1,117 @@
+package PassiveDevotionAura
+
+import Cell
+import StackPassive
+
+import BoardTrigger
+import BoardEntity
+import SubStackActions
+import StatusType
+import StatusDevotionAura
+import BoardListenerOnCellMove
+import StatusController
+import Status
+
+init
+    Initializer.register(InitializerNames.PASSIVES) -> 
+        PassiveDevotionAura.setup()
+
+public class PassiveDevotionAura extends StackPassive
+    static StackPassiveType TYPE
+    protected static function setup()
+        BUFF = StatusDevotionAura.TYPE
+        TYPE = new StackPassiveType("Counter Attack", "Icons/PASCounterAttack.dds")
+        TYPE.onCreate() (BoardStack stack, StackPassiveData data) -> 
+            return new PassiveDevotionAura(stack, data)
+        TYPE.onCreateTooltipLines() data -> 
+            return createTooltipLines(data)
+        TYPE.onCreateData() -> 
+            return StackPassiveData.create()
+            ..setIntData(DEFENCE, 10)
+
+    static constant DEFENCE = 0
+    static constant AREA = intRange(0, 1)
+    private static StatusType BUFF 
+
+    private static function createTooltipLines(int defence) returns LinkedList<string>
+        let lines = new LinkedList<string>
+        ..add("yuhu massig armor brah "+defence.toString())
+        return lines
+
+    private static function createTooltipLines(StackPassiveData data) returns LinkedList<string>
+        return createTooltipLines(data.getIntData(DEFENCE))
+      
+    private static function createTooltipLines(PassiveDevotionAura action) returns LinkedList<string>
+        return createTooltipLines(action.defence)
+
+    private static function createStatusData(int defence) returns StatusData
+        return StatusData.create()
+        ..setIntData(StatusDevotionAura.DEFENCE, defence)
+
+/* -------------------------------------------------------------------------- */
+
+    private LinkedList<BoardStack> affected 
+    private int defence
+
+    construct(BoardStack stack, StackPassiveData data)
+        super(stack, TYPE, data)
+        affected = new LinkedList<BoardStack>()
+        defence = data.getIntData(DEFENCE)
+
+        stack.listeners().addOnAnyCellEnter() (BoardListenerOnCellMoveData data) ->
+            let movingStack = data.getStack()
+            if data.getStack() == stack
+                checkYourself(data)
+            else
+                checkOthers(movingStack, data)
+            data.continue(false)
+
+    private function checkYourself(BoardListenerOnCellMoveData data)
+        let copy = affected.copy()
+        data.getCellTo().forEachCellsInRange(AREA) (Cell cell) ->
+            let target = cell.getStack()
+            if target != null and doesApply(target)
+                if copy.has(target)
+                    copy.remove(target)
+                else
+                    applyStatus(target)
+
+        for leftBehind in copy
+            removeStatus(leftBehind)
+
+        destroy copy
+
+    private function doesApply(BoardStack movingStack) returns boolean
+        return stack.isAlly(movingStack)
+
+    private function checkOthers(BoardStack movingStack, BoardListenerOnCellMoveData data)
+        if not doesApply(movingStack)
+            return
+        let cell = stack.getCell()
+        let fromCell = data.getCellFrom()
+        let toCell = data.getCellTo()
+        let fromInRange = fromCell != null and cell.isInRange(fromCell, AREA)
+        let toInRange = cell.isInRange(toCell, AREA)
+        if fromCell != null and not fromInRange and toInRange
+            applyStatus(movingStack)
+        else if not toInRange and fromInRange
+            removeStatus(movingStack)
+
+    private function applyStatus(BoardStack stack)
+        affected.add(stack)
+
+        let data = createStatusData(defence)
+        ..setAura(true, (this castTo int))
+        StatusController.applyNoListener(BUFF, stack, data)
+
+    private function removeStatus(BoardStack stack)
+        if affected.has(stack)
+            affected.remove(stack)
+
+        let data = createStatusData(defence)
+        ..setAura(false, (this castTo int))
+        StatusController.applyNoListener(BUFF, stack, data)
+
+
+    override function createTooltipLines() returns LinkedList<string>
+        return createTooltipLines(this)

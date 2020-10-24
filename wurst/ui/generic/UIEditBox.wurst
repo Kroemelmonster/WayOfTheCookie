@@ -2,25 +2,39 @@ package UIEditBox
 
 import ClosureFrames
 import UIHandle
-import UIInteractable
-import PlayerData
+import UIInput
 
-public class UIEditBox extends UIInteractable
-    static function create(UIHandle parent) returns UIEditBox
-        return new UIEditBox(parent.self)
-        
+public class UIEditBoxInt extends UIInput<integer>
+    static function create(UIHandle parent) returns UIEditBoxInt
+        return new UIEditBoxInt(parent.self)
+
     private construct(framehandle parent)
-        super(createUIFrameByName("EditBoxBasic", parent, false))
-
-    function onValueChange(FrameHandleListener listener)
+        super(createUIFrameByName("EditBoxBasic", parent, false), false)
         self.onEditboxEnter() -> 
-            listener.onEvent()
+            if not block
+                let value = self.getText().toInt()
+                setValue(value)
+                callListener(value)
 
-    function setValue(string text)
-        self.setText(text)
+    override function visualizeValue(integer value)
+        self.setText(value.toString())
 
-    function setValue(int value)
-        setValue(value.toString())
+        
+public class UIEditBoxReal extends UIInput<Real>
+    static function create(UIHandle parent) returns UIEditBoxReal
+        return new UIEditBoxReal(parent.self)
 
-    function getValue() returns string
-        return self.getText()
+    private Real value
+
+    private construct(framehandle parent)
+        super(createUIFrameByName("EditBoxBasic", parent, false), false)
+        value = new Real(0.0)
+        self.onEditboxEnter() -> 
+            if not block
+                value.self = self.getText().toRealNumber()
+                setValue(value)
+                callListener(value)
+
+
+    override function visualizeValue(Real value)
+        self.setText(value.self.toString(2))

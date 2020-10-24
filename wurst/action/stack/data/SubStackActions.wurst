@@ -82,15 +82,15 @@ public class SubStackActions
         let nextCell = pathItr.next()
         let currentCell = stack.getCell()
         var usedAP = prevCost
-        BoardController.onCellLeave(stack, currentCell, nextCell) (cost) ->
-            usedAP += cost
+        BoardController.onCellLeave(stack, currentCell, nextCell) (leaveData) ->
+            usedAP += leaveData.getCost()
             if not stack.isAlive() or usedAP > limitingMoveAP
                 next.continue(false, usedAP)
             else
                 AnimationMove.atCell(stack, nextCell) -> 
-                    BoardController.onCellEnter(stack, currentCell, nextCell) (cost) ->
-                        stack.replaceCell(nextCell)
-                        usedAP += cost
+                    stack.replaceCell(nextCell)
+                    BoardController.onCellEnter(stack, currentCell, nextCell) (enterData) ->
+                        usedAP += enterData.getCost()
                         if not stack.isAlive() or usedAP > limitingMoveAP
                             next.continue(false, usedAP)
                         else if pathItr.hasNext()

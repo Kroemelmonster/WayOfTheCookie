@@ -1,0 +1,123 @@
+package CellObstacleType
+import Cell
+import CellObstacle
+import initlater Board
+import initlater ObstacleBlocker
+import initlater ObstacleDifficultTerrain
+import HexagonalGridUtil
+import Data
+import BoardEntity
+
+public class Variation
+    string model
+    real baseYaw
+    real scale
+    real offsetX
+    real offsetY
+
+    int array[9] neighbours 
+    int neighbourSize = 0
+
+    construct(string model, real baseYaw, real scale, real offsetX, real offsetY)
+        this.model = model
+        this.baseYaw = baseYaw
+        this.scale = scale
+        this.offsetX = offsetX
+        this.offsetY = offsetY
+
+    function addNeighbour(int neighbour)
+        this.neighbours[neighbourSize] = neighbour
+        neighbourSize++
+
+public class CellObstacleData extends Data
+    protected LinkedList<BoardEntity> entityData
+    
+    static function create() returns CellObstacleData
+        return new CellObstacleData()
+        
+    private construct()
+
+    function setEntityData(BoardEntity value)
+        clearEntityData()
+        addEntityData(value)
+
+    function clearEntityData()
+        if entityData == null
+            entityData = new LinkedList<BoardEntity>
+        entityData.clear()
+
+    function addEntityData(BoardEntity value)
+        entityData.add(value)
+
+    function getEntityData() returns BoardEntity
+        return entityData.getFirst()
+
+    function getAllEntityData() returns LinkedList<BoardEntity>
+        return entityData
+
+    ondestroy
+        if entityData != null
+            destroy entityData
+            entityData = null
+
+public interface CreateListener
+    function create(Cell cell, CellObstacleData data) returns CellObstacle
+
+public interface CreateRandomListener
+    function create(Board board) returns CellObstacle
+
+public class CellObstacleType
+    static function fillBoard(Board board)
+        let minCol = board.getBoardForce(BoardForceSide.LEFT).getColLimit()
+        let maxCol = board.getBoardForce(BoardForceSide.RIGHT).getColLimit()
+        let boardSize = (maxCol - minCol) *  board.getRows()
+        var blockers = (boardSize * GetRandomReal(0.1, 0.2)).round()
+        while blockers > 0
+            blockers -= ObstacleBlocker.TYPE.createRandom(board).getSize()
+        
+        var difTerrain = (boardSize * GetRandomReal(0.02, 0.08)).round()
+        while difTerrain > 0
+            difTerrain -= ObstacleDifficultTerrain.TYPE.createRandom(board).getSize()
+        
+    static function createNeutralBlocker(CreateRandomListener listener) returns CellObstacleType
+        let obs = new CellObstacleType()
+        obs.randoListener = listener
+        obs.blocks = true
+        return obs
+    
+    static function createNeutral(CreateRandomListener listener) returns CellObstacleType
+        let obs = new CellObstacleType()
+        obs.randoListener = listener
+        return obs
+
+    static function create(CreateListener listener) returns CellObstacleType
+        let obs = new CellObstacleType()
+        obs.listener = listener
+        return obs
+    
+    private CreateListener listener
+    private CreateRandomListener randoListener
+    private boolean blocks = false
+    private LinkedList<Variation> variations = new LinkedList<Variation>
+
+    construct()
+
+    function addVariation(string model, real baseYaw, real scale, real offsetX, real offsetY) returns Variation
+        let vari = new Variation(model, baseYaw, scale, offsetX, offsetY)
+        variations.add(vari)
+        return vari
+
+    function getRandomVariation() returns Variation
+        return variations.get(GetRandomInt(0, variations.size() - 1))
+
+    function create(Cell cell, CellObstacleData data) returns CellObstacle
+        let result = listener.create(cell, data)
+        if data != null
+            destroy data
+        return result
+
+    function createRandom(Board board) returns CellObstacle
+        return randoListener.create(board)
+            
+    function doesBlock() returns boolean
+        return blocks

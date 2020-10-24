@@ -1,19 +1,10 @@
 package ActionCrit
 
-import ActionType
-import ActionCost
-import SubStackActions
 import StackActionTarget
-import StackActionType
-import Action
 
 import PlayerData
 import Damage
-import BoardStack
 import UIMenuActionConsole
-import UITooltip
-import Tooltip
-import BoardEntity
 
 init
     Initializer.register(InitializerNames.ACTIONS) -> 
@@ -35,17 +26,14 @@ public class ActionCrit extends StackActionTarget
             return StackActionData.create(cost)
             ..setRealData(CRIT, 1.5)
 
-    private static function createTooltipLines(real perc) returns LinkedList<string>
+    private static function createTooltipLines(StackActionData data) returns LinkedList<string>
         return new LinkedList<string>
         ..add(KStringUtils.stat("Target", "Enemy"))
         ..add("")
-        ..add("Striking your foe with a ciritical hit dealing "+KStringUtils.primaryPercent(perc)+" more dmg.")
-
-    private static function createTooltipLines(StackActionData _data) returns LinkedList<string>
-        return createTooltipLines(1)
+        ..add("Striking your foe with a ciritical hit dealing "+KStringUtils.primaryPercent(data.getRealData(CRIT))+" dmg.")
         
     private static function createTooltipLines(ActionCrit action) returns LinkedList<string>
-        return createTooltipLines(action.data.getRealData(CRIT))
+        return createTooltipLines(action.data)
 
     private static function createDamagePreview(BoardStack stack, StackActionData data) returns DamagePreview
         return DamagePreview.create(SourceType.ATTACK, stack.stats.getDamageType())
@@ -53,9 +41,8 @@ public class ActionCrit extends StackActionTarget
         ..addFlag(DamageFlags.CRIT)
 
 /* -------------------------------------------------------------------------- */
-
-    private construct(BoardStack stack, StackActionData data)
-        super(stack, TYPE, data)
+    override function getHighlightRuneRuneForCell(Player p, Cell cell) returns CellHighlightRune
+        return CellHighlightRune.NONE
 
     protected override function canTarget(BoardStack potentialTarget) returns boolean
         return stack.canAttack(potentialTarget)
@@ -88,3 +75,6 @@ public class ActionCrit extends StackActionTarget
 
     override function createBasicTooltipLines() returns LinkedList<string>
         return createTooltipLines(this)
+
+    private construct(BoardStack stack, StackActionData data)
+        super(stack, TYPE, data)

@@ -1,13 +1,8 @@
 package ActionTalent
-import BoardEntity
+
 import TalentType
-import ActionType
 import Talent
-import Tooltip
-import Action
-import BoardStack
 import initlater ActionTalentType
-import StackActionType
 import StackAction
 
 public class ActionTalent extends Talent

@@ -1,0 +1,107 @@
+package CellObstacle
+import initlater Cell
+import initlater Board
+import HexagonalGridUtil
+import initlater CellObstacleType
+import BoardTrigger
+import BoardStack
+import BoardListenerOnCellMove
+
+public abstract class CellObstacle
+    private CellObstacleType obstacleType
+    private LinkedList<Cell> cells = new LinkedList<Cell>
+    
+    private BoardListenerOnCellMove onAnyCellEnter
+    private BoardListenerOnCellMove onAnyCellLeave
+
+    construct(CellObstacleType obstacleType)
+        this.obstacleType = obstacleType
+
+    protected function placeRandom(Board board, Variation vari, int minCol, int maxCol)
+        int angle = 0
+        Cell cell = null
+        boolean found = false
+
+        while not found
+            angle = GetRandomInt(0, 5)
+            let randomHex = hex(GetRandomInt(minCol, maxCol), GetRandomInt(0, board.getRows() - 1))
+            cell = board.getCell(randomHex)
+
+            var checkCell = cell
+            var placeAble = true
+            var index = 0
+            while placeAble and index <= vari.neighbourSize
+                if canBeplacedOn(checkCell) and checkCell.getHex().col.isBetween(minCol, maxCol)
+                    checkCell = checkCell.getNeighbour((vari.neighbours[index] + angle).moduloInt(6))
+                    index++
+                else
+                    placeAble = false
+
+            found = placeAble
+
+        addCell(cell)
+        var nextCell = cell
+        for i = 0 to vari.neighbourSize - 1
+            nextCell = nextCell.getNeighbour((vari.neighbours[i] + angle).moduloInt(6))
+            addCell(nextCell)
+        
+        placeModel(cell, vari, angle)
+
+    private function canBeplacedOn(Cell cell) returns boolean
+        return (cell != null and not cell.isBlocked() and not cell.hasObstacles())
+
+    abstract function placeModel(Cell cell, Variation vari, int angle)
+
+    protected function onAnyCellLeave(BoardListenerOnCellMove listener)
+        this.onAnyCellLeave = listener
+
+    protected function onAnyCellEnter(BoardListenerOnCellMove listener)
+        this.onAnyCellEnter = listener
+
+    function triggerOnAnyCellLeave(BoardListenerOnCellMoveData data, SequenzListener next)
+        if onAnyCellLeave != null
+            onAnyCellLeave.execute(data, next)
+        else
+            next.continue()
+
+    function triggerOnAnyCellEnter(BoardListenerOnCellMoveData data, SequenzListener next)
+        if onAnyCellEnter != null
+            onAnyCellEnter.execute(data, next)
+        else
+            next.continue()
+        
+    function addCell(Cell cell)
+        cells.add(cell)
+        cell.addObstacle(this)
+
+    function removeCell(Cell cell)
+        cells.remove(cell)
+        cell.removeObstacle(this)
+
+    function getSize() returns int
+        return cells.size()
+
+    function doesBlock() returns boolean
+        return obstacleType.doesBlock()
+
+    function getAdditionalMoveIntoCost(Cell _fromCell, Cell _toCell) returns int
+        return 0
+
+    function getAdditionalMoveOutCost(Cell _fromCell, Cell _toCell) returns int
+        return 0
+
+    ondestroy
+        let itr = cells.iterator()
+        while itr.hasNext()
+            itr.next().removeObstacle(this)
+            itr.remove()
+        destroy itr
+        destroy cells
+        if onAnyCellEnter != null
+            destroy onAnyCellEnter
+            onAnyCellEnter = null
+
+        if onAnyCellLeave != null
+            destroy onAnyCellLeave
+            onAnyCellLeave = null
+

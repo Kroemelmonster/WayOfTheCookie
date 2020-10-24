@@ -1,12 +1,6 @@
 package WarcrySpellAction
 
-import initlater SpellType
-
-import InstantSpellAction
-import ActionType
-import BoardEntity
-import Spell
-import BoardHero
+import public InstantSpellAction
 
 public abstract class WarcrySpellAction extends InstantSpellAction
 

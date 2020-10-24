@@ -1,17 +1,10 @@
 package Spell
 
-import initlater SpellType
 import initlater Hero
 
-import ActionType
-import BoardEntity
 import SpellAction
-import ActionCost
 import HeroData
-import Tooltip
 import Globals
-import LinkedList
-import initlater BoardHero
 import Data
 
 public class SpellLevel extends Data
@@ -30,6 +23,8 @@ public class SpellLevel extends Data
 
 public interface HasSpellStats
     function getDamageMulti() returns real
+    function getPower() returns int
+    function getAttack() returns int
 
 public class Spell implements HasSpellStats
     protected SpellType spellType
@@ -73,12 +68,18 @@ public class Spell implements HasSpellStats
     function getExtendedName() returns string
         return getName() + " [" + (level + 1).toString() + "]"
 
-    function getBaseMultiFromPower(int power) returns real
+    static function getBaseMultiFromPower(int power) returns real
         return (power * DAMAGE_PER_SPELLPOWER / 100.0)
 
     override function getDamageMulti() returns real
-        let power = hero.stats.getPower()
+        let power = getPower()
         return (1.0 + getBaseMultiFromPower(power))
+
+    override function getPower() returns int
+        return hero.stats.getPower()
+
+    override function getAttack() returns int
+        return hero.stats.getAttack()
 
     function createTooltip(int level, boolean showLevelCost) returns Tooltip
         return spellType.createTooltip(hero, this, level, showLevelCost)

@@ -16,6 +16,9 @@ public class StatusData extends Data
     SharedStatus linkToPrimary
     protected LinkedList<BoardEntity> entityData
 
+    protected boolean auraAdd
+    protected int auraId = -1
+
     construct(int duration)
         this.duration = duration
         linkToPrimary = null
@@ -25,6 +28,17 @@ public class StatusData extends Data
 
     static function create(int duration) returns StatusData
         return new StatusData(duration)
+
+    /** id should be an identifier that seperates this status Data from others **/
+    function setAura(boolean add, int id)
+        auraAdd = add
+        auraId = id
+
+    function getAuraId() returns int
+        return auraId
+
+    function getAuraAdd() returns boolean
+        return auraAdd
 
     function setSecondary(SharedStatus main)
         this.linkToPrimary = main
@@ -46,6 +60,11 @@ public class StatusData extends Data
 
     function getAllEntityData() returns LinkedList<BoardEntity>
         return entityData
+    
+    ondestroy
+        if entityData != null
+            destroy entityData
+            entityData = null
 
 public abstract class Status implements StatusStats
     protected StatusType statusType
@@ -72,7 +91,11 @@ public abstract class Status implements StatusStats
         This will ONLY remove ANY visuals this buff might have, it does not unregister any events
 
         But since you should only call this on a dead stack, it wont trigger anything anyway **/
-    abstract function hide()
+    function removeBeforeDeath()
+        removeVisuals()
+        remove()
+
+    abstract function removeVisuals()
     abstract function onRefresh(StatusData data)
     abstract function canPurge() returns boolean
     override abstract function createTooltip() returns Tooltip
@@ -81,14 +104,21 @@ public abstract class Status implements StatusStats
         if canPurge()
             remove(next)
 
+    protected function remove()
+        remove(null)
+    
     protected function remove(SequenzListener next)
-        next.continue()
+        removeInner(next)
+
+    protected function removeInner(SequenzListener next)
+        if next != null
+            next.continue()
         removeWithoutTrigger()
 
     protected function removeWithoutTrigger()
         destroy this
 
     ondestroy
+        removeVisuals()
         if entity != null
             entity.removeStatus(this)
-        hide()

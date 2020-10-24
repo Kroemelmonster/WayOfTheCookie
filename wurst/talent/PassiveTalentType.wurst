@@ -5,16 +5,45 @@ import Tooltip
 import BoardEntity
 import TalentType
 import PassiveTalent
+import StackPassiveType
+import Data
+import Damage
 
-public class PassiveTalentType extends TalentType
-    protected PassiveType passiveType
+public class PassiveTalentType extends TalentType implements HasData
+    protected StackPassiveType passiveType
+    protected StackPassiveData data
     
-    construct(PassiveType passiveType)
+    construct(StackPassiveType passiveType, StackPassiveData data)
         super(passiveType)
         this.passiveType = passiveType
+        this.data = data
         
         onCreate() entity ->
-            return new PassiveTalent(this, passiveType, entity)
+            return new PassiveTalent(this, passiveType, data, entity)
         onCreateTooltip() -> 
             return createBasicTooltip()
-            ..addLines(passiveType.createTooltipLines(1))
+            ..addLines(passiveType.createTooltipLines(data))
+
+    override function setIntData(int where, int value)
+        data.setIntData(where, value)
+
+    override function getIntData(int where) returns int
+        return data.getIntData(where)
+
+    override function setBoolData(int where, boolean value)
+        data.setBoolData(where, value)
+
+    override function getBoolData(int where) returns boolean
+        return getBoolData(where)
+
+    override function setRealData(int where, real value)
+        data.setRealData(where, value)
+
+    override function getRealData(int where) returns real
+        return data.getRealData(where)
+        
+    override function setDamagePreview(DamagePreview preview)
+        data.setDamagePreview(preview)
+
+    override function getDamagePreview() returns DamagePreview
+        return data.getDamagePreview()

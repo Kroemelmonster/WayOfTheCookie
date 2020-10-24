@@ -13,15 +13,12 @@ public class Stack
         this.stackType = stackType
         this.amount = amount
 
-    @inline
     function getStackType() returns StackType
         return stackType
 
-    @inline
     function getAmount() returns int
         return amount
 
-    @inline
     function setAmount(int value)
         amount = value
 

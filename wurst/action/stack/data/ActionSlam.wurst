@@ -2,34 +2,25 @@ package ActionSlam
 
 import Abilities
 
-import BoardStack
-import Action
-import InstantStackAction
+import StackActionTargetCell
+
 import BoardController
 import UIMenuActionConsole
 import AnimationWait
 import AnimationCast
-import BoardTrigger
-import HashMap
-import Cell
 import Damage
-import ActionCost
-import Tooltip
-import UITooltip
-import ActionType
-import BoardEntity
-import KISystem
-import StackActionType
+import PlayerData
+import Board
+import Scheduler
 
 init
     Initializer.register(InitializerNames.ACTIONS) -> 
         ActionSlam.setup()
 
-// TODO streamline
-public class ActionSlam extends InstantStackAction
+public class ActionSlam extends StackActionTargetCell
     static StackActionType TYPE
     protected static function setup()
-        TYPE = InstantStackAction.createType("Slam", Icons.bTNGolemThunderClap, ActionCostPreset.create(1, false, 2))
+        TYPE = StackActionTargetCell.createType("Slam", Icons.bTNGolemThunderClap, ActionCostPreset.create(1, true, 2))
         ..enableOption(ActionTypeOption.PRIMARY)
         TYPE.onCreate() (BoardStack stack, StackActionData data) ->
             return new ActionSlam(stack, data)
@@ -37,26 +28,23 @@ public class ActionSlam extends InstantStackAction
             return createTooltipLines(data)
         damagePreview = DamagePreview.create(SourceType.SPELL, DamageType.PHYSICAL)
 
-    private static constant int MAXRANGE = 1
+    private static constant TARGET_RANGE = intRange(0, 0)
+    private static constant AFFECTED_RANGE = intRange(1, 1)
     private static constant string EFFECT = Abilities.thunderclapCaster
 
-    private static constant int DAZZED_TIME = 200
     private static DamagePreview damagePreview
 
     private static function calculateDamage(int amount) returns DamagePreview
-        damagePreview.dmg = realRange(100.0 * amount, 150.0 * amount)
+        damagePreview.dmg = realRange(350.0 * amount, 450.0 * amount)
         return damagePreview
 
     private static function createTooltipLines(int amount) returns LinkedList<string>
         return new LinkedList<string>
-        ..add(KStringUtils.stat("Target", "None"))
-        ..add(KStringUtils.stat("Range", MAXRANGE))
+        ..add(KStringUtils.stat("Target", "Enemy"))
+        ..add(KStringUtils.stat("Range", AFFECTED_RANGE))
         ..add(KStringUtils.stat("Damage", calculateDamage(amount).toColoredText()))
         ..add("")
         ..add("Slams the Ground around you, curshing your foes.")
-        ..add("Stunning them for "
-         + KStringUtils.primaryString(DAZZED_TIME.toString())
-         + " " + KStringUtils.secondaryString("timeunits"))
 
     private static function createTooltipLines(StackActionData _data) returns LinkedList<string>
         return createTooltipLines(1)
@@ -64,106 +52,80 @@ public class ActionSlam extends InstantStackAction
     private static function createTooltipLines(ActionSlam action) returns LinkedList<string>
         return createTooltipLines(action.stack.stats.amount)
 
-    construct(BoardStack stack, StackActionData data)
-        super(stack, TYPE, data)
+/* -------------------------------------------------------------------------- */
+    private LinkedList<Cell> highlightArea = new LinkedList<Cell>
 
-    private function getTargets() returns LinkedList<BoardStack>
-        let area = stack.getCell().getAllCellsInRange(intRange(0, MAXRANGE))
-        let targets = new LinkedList<BoardStack>()
-        for cell in area
-            let possibleTarget = cell.getStack()
-            if possibleTarget != null and stack.isEnemy(possibleTarget)
-                targets.add(possibleTarget)
-        destroy area
-        return targets
+    override function recalculateHighlightInner(Cell target)
+        highlightArea.clear()
+        if target != null
+            target.forEachCellsInRange(AFFECTED_RANGE) areaCell ->
+                highlightArea.add(areaCell)
 
-    private function finish(LLIterator<BoardStack> itr, DamageInstance instance)
-        destroy itr
-        destroy instance
-        AnimationWait.time(stack.getBoard(), 0.5) -> // this is the backswing for casting
-            BoardController.finishOrder(entity, cost)
+    override function getHighlightRuneRuneForCell(Player p, Cell cell) returns CellHighlightRune
+        if highlightArea.has(cell)
+            return CellHighlightRune.CAST
+        return CellHighlightRune.NONE
 
-    private function hit(LLIterator<BoardStack> itr, DamageInstance instance)
-        if itr.hasNext()
-            let target = itr.next()
-            BoardController.dealDamage(stack, instance, target) -> 
-                BoardController.stunEntity(stack, target, DAZZED_TIME) -> 
-                    hit(itr, instance)
-        else
-            finish(itr, instance)
+    protected override function canTarget(Cell potentialTarget) returns boolean
+        return true
 
-    override function activate()
-        let targets = getTargets()
+    protected override function canHit(BoardStack target) returns boolean
+        return stack.isEnemy(target)
 
-        AnimationCast.withoutTarget(stack) () ->
-            flashEffect(EFFECT, stack.getCell().getCoord())
-            calculateDamage(stack.stats.amount)
-            hit(targets.iterator(), damagePreview.getRandomInstance())
+    protected override function getTargetRange() returns intRange
+        return TARGET_RANGE
 
-    override function onUIMouseEnter()
+    protected override function getAreaCellIterator(Cell target) returns LinkedListIterator<Cell>
+        return target.eachCellInRangeIterator(AFFECTED_RANGE)
+
+    protected override function previewTarget(int prevUsedApForMove, Cell target)
         let tt = createBasicTooltip()
         ..addLines(createBasicTooltipLines())
+
+        if target != null
+            let cellItr = getAreaCellIterator(target)
+            while cellItr.hasNext()
+                let cell = cellItr.next()
+                let potentialTarget = cell.getStack()
+                if canHit(potentialTarget)
+                    tt.addLine("")
+                    calculateDamage(stack.stats.amount)
+                    .extendTooltipWithSpecific(tt, entity, potentialTarget)
+            destroy cellItr
+
         UITooltip.display(stack.getConntrollingPlayer(), tt)
-        UIMenuActionConsole.updateActionPoints(entity, cost)
-            
-    override function onUIMouseLeave()
-        UITooltip.hide(stack.getConntrollingPlayer())
-        UIMenuActionConsole.updateActionPoints(entity)
+        UIMenuActionConsole.updateActionPoints(entity, cost, prevUsedApForMove)
+
+    protected override function executeOrder(boolean didMove, int prevUsedApForMove, Cell target) returns boolean
+        AnimationCast.withoutTarget(stack) () ->
+            let e = addEffect(EFFECT, target.getCoord())
+            let cellItr = getAreaCellIterator(target)
+            let rolledBaseDamage = calculateDamage(stack.stats.amount).getRandomInstance()
+            let waitUntil = Scheduler.getTimeIn(0.667)
+            hitNextCell(cellItr, rolledBaseDamage) ->
+                destroy cellItr
+                destroy rolledBaseDamage
+                AnimationWait.untill(entity.getBoard(), waitUntil) ->
+                    e.moveAndDestroy()
+                    finish(didMove, prevUsedApForMove)
+        return true
+
+    private function hitNextCell(LinkedListIterator<Cell> cellItr, DamageInstance rolledDamage, SequenzListener next)
+        if not cellItr.hasNext()
+            next.continue()
+            return
+        let potentialTarget = cellItr.next().getStack()
+        if canHit(potentialTarget)
+            BoardController.dealDamage(stack, rolledDamage, potentialTarget) -> 
+                hitNextCell(cellItr, rolledDamage, next)
+        else
+            hitNextCell(cellItr, rolledDamage, next)
 
     override function createBasicTooltipLines() returns LinkedList<string>
         return createTooltipLines(this)
-            
-    override function executeForKI(SequenzListenerStatus listener)
-        let weightCells = new HashMap<Cell, real>()
-        var apCost = cost.getAP()
-        if apCost == 0
-            apCost = 1 // after you moved all points you cant even use a spell that cost nothing
-        Cell bestCellToCastFrom = null
-        var highestWeightSoFar = 0.0
-        var highestRemainingActionPoints = 0
-        let stackItr = stack.getBoard().getAllStacks().iterator()
-        while stackItr.hasNext()
-            let target = stackItr.next()
-            if target.isEnemy(stack)
-                let weight =  target.stats.getWeight()
-                let itr = target.getCell().eachCellInRangeIterator(intRange(1, MAXRANGE))
-                while itr.hasNext()
-                    let cell = itr.next()
-                    var remaining = stack.getRemainingAP()
-                    if cell != stack.getCell()
-                        remaining = -1
-                        let pCell = entity.getPathToCell(cell)
-                        if pCell != null
-                            remaining = pCell.getRemainingMoveAP(stack.stats)
-                    if remaining >= apCost
-                        var newWeight = weight
-                        if weightCells.has(cell)
-                            newWeight += weightCells.get(cell)
-                        weightCells.put(cell, newWeight)
-                        if newWeight > highestWeightSoFar
-                            highestWeightSoFar = newWeight
-                            bestCellToCastFrom = cell
-                            highestRemainingActionPoints = remaining
-                        else if newWeight == highestWeightSoFar and remaining > highestRemainingActionPoints
-                            bestCellToCastFrom = cell
-                            highestRemainingActionPoints = remaining
 
-                destroy itr
-
-        destroy stackItr
-        destroy weightCells
-        nullTimer() ->
-            if bestCellToCastFrom != null
-                if bestCellToCastFrom == stack.getCell()
-                    activate()
-                    listener.continue(0)
-                else
-                    if KISystem.orderMoveTo(stack, bestCellToCastFrom)
-                        listener.continue(0)
-                    else
-                        listener.continue(1)
-            else
-                listener.continue(1)
+    private construct(BoardStack stack, StackActionData data)
+        super(stack, TYPE, data)
 
     ondestroy
-        
+        destroy highlightArea

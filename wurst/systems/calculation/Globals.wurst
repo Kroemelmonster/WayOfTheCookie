@@ -8,5 +8,4 @@ public constant DAMAGE_PER_SPELLPOWER = 15.0
 public constant ATTACK_DAMAGE_PER_ATTACK = 10.0
 public constant MANA_PER_WISDOWM = 10
 
-// THIS IS A DEBUG THINGY
-public boolean canControllKI = false
+public constant MOVE_COST_BLOCKED = 1000

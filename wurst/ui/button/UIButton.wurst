@@ -34,7 +34,7 @@ public class UIButton extends UIInteractable
     private FrameHandleListener onMouseUp
 
     private construct(framehandle self)
-        super(self)
+        super(self, true)
         handleBackground = getFrame("Texture")
         self.onClick() () ->
             if onClickListener != null

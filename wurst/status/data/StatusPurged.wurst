@@ -55,7 +55,7 @@ public class StatusPurged extends Status
         turnStartListener = entity.getTriggers().addTurnStart() (SequenzListener next) ->
             duration--
             if duration <= 0
-                remove(next)
+                removeInner(next)
             else
                 next.continue()
 
@@ -80,7 +80,7 @@ public class StatusPurged extends Status
     override function createTooltip() returns Tooltip
         return createTooltip(this)
 
-    override function hide()
+    override function removeVisuals()
         if display != null
             display.destr()
 

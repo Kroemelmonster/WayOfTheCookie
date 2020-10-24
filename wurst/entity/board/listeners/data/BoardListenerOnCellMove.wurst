@@ -1,0 +1,55 @@
+package BoardListenerOnCellMove
+
+import initlater BoardStack
+import initlater Cell
+import BoardListener
+import initlater PathFinding
+
+public abstract class BoardListenerOnCellMove
+    abstract function onEvent(BoardListenerOnCellMoveData data)
+
+    function execute(BoardListenerOnCellMoveData data, SequenzListener next)
+        data.next = next
+        if data.executions >= BoardListenerData.MAX_EXECUTIONS
+            Log.error("you have too many move triggers so we wait a sec")
+            nullTimer() -> 
+                onEvent(data)
+        else
+            onEvent(data)
+
+public class BoardListenerOnCellMoveData extends BoardListenerData
+    static function create(BoardStack stack, Cell fromCell, Cell toCell, boolean into) returns BoardListenerOnCellMoveData
+        let data = new BoardListenerOnCellMoveData()
+        data.stack = stack
+        data.fromCell = fromCell
+        data.toCell = toCell
+        if into
+            data.cost = PathFinding.getCellMoveIntoCostIgnoringStack(stack, fromCell, toCell)
+        else
+            data.cost = PathFinding.getCellMoveOutCost(fromCell, toCell)
+
+        return data
+        
+    private BoardStack stack
+    private Cell fromCell
+    private Cell toCell
+    private int cost
+
+    function getStack() returns BoardStack
+        return stack
+
+    function getCellFrom() returns Cell
+        return fromCell
+
+    function getCellTo() returns Cell
+        return toCell
+
+    function addCost(int add)
+        cost += add
+
+    function getCost() returns int
+        return cost
+
+    override function toString() returns string
+        return "OnCellMove "+ stack.toString()+" from "+fromCell.toString()+" to "+toCell.toString()+" cost is "+cost.toString()
+    

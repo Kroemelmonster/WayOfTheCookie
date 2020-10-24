@@ -1,31 +1,19 @@
 package BoardStack
 
-import LinkedList
-import Abilities
-import AttachmentPoints
-import ClosureEvents
-import AbilityIds
-
 import StackType
 import PlayerData
 import Action
-import UnitDefinition
 import Passive
 
-import initlater Cell
-import initlater Board
 import BoardStackStats
 import StackStats
 import Stack
-import BoardTrigger
-import BoardEntity
-import ActionType
+import initlater BoardForce
 
 public class BoardStack extends BoardEntity
     private StackType stackType
     private ArmyStack armyStack
     private Cell cell
-    private Player p
 
     private texttag tt
 
@@ -33,9 +21,8 @@ public class BoardStack extends BoardEntity
 
     BoardStackStats stats
 
-    construct(Player p, ArmyStack stack)
-        super(EntityType.STACK, null)
-        this.p = p
+    construct(BoardForce boardForce, ArmyStack stack)
+        super(EntityType.STACK, boardForce)
         this.passiveActions = new LinkedList<Passive>
         this.stats = new BoardStackStats(this, stack.stats, stack.getAmount())
         this.armyStack = stack
@@ -46,9 +33,6 @@ public class BoardStack extends BoardEntity
 
     override function getCell() returns Cell
         return cell
-
-    override function getPlayer() returns Player
-        return p
 
     override function getIcon() returns string
         return stackType.icon
@@ -81,37 +65,25 @@ public class BoardStack extends BoardEntity
         stats.removeAP(amount)
 
     override function resetAP()
-        stats.resetActionPoints()
-
-    function isEnemy(BoardEntity other) returns boolean
-        return p.isEnemyTo(other.getPlayer())
-
-    function isAlly(BoardEntity other) returns boolean
-        return p.isAllyTo(other.getPlayer())
+        stats.resetAP()
 
     function canAttack(BoardStack other) returns boolean
         return isEnemy(other)
 
     function place(Cell cell)
-        let playerIndex = cell.getBoard().getPlayerIndex(p)
-        if playerIndex == -1
-            return
-
         this.cell = cell
-        this.board = cell.getBoard()
-        createBLZUnit(playerIndex)
+        createBLZUnit()
 
-        if board.getInitiative().isFirstTurn() == false
+        if not getBoard().getInitiative().isFirstTurn()
             SetUnitAnimation(u, "birth")
 
         resetAP()
-
         tt = createTTEx(getTextTagPos(), stats.getAmount().toString(), 10.0)
 
 
-    private function createBLZUnit(int playerIndex)
-        u = createUnit(DUMMY_PLAYER, stackType.unitId, cell.getCoord(), angle(PI * playerIndex))
-        u.setColor(p.blzPlayer.getColor())
+    private function createBLZUnit()
+        u = createUnit(DUMMY_PLAYER, stackType.unitId, cell.getCoord(), boardForce.getSide().toAngle())
+        ..setColor(getPlayer().getColor())
         placeEntity()
 
     function replaceCell(Cell cell)
@@ -129,12 +101,12 @@ public class BoardStack extends BoardEntity
         return stats.getInitiative()
 
     function kill()
-        board.triggerOnStackKilled(this)
+        boardForce.triggerOnStackKilled(this)
         removeStackRelatedThingsFromBoard()
         u.kill()
 
     function isSelectByOwnPlayer() returns boolean
-        return p.currentSelectedEntity == this
+        return getPlayer().currentSelectedEntity == this
 
     function getCurrentOrder() returns int
         return u.getCurrentOrder()

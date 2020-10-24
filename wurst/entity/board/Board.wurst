@@ -1,0 +1,373 @@
+package Board
+
+import Cell
+import BoardStack
+import HexagonalGridUtil
+import InitiativeList
+import Animation
+import Action
+import UIController
+import PlayerData
+import HostileArmy
+import Stack
+import Hero
+import StackType
+import DummyRecycler
+import BoardHero
+import BoardForce
+import CellObstacle
+import CellObstacleType
+import BoardController
+
+public enum BoardForceSide
+    LEFT
+    RIGHT
+    NEUTRAL
+
+public function BoardForceSide.toAngle() returns angle
+    if this == NEUTRAL
+        return angle(PI * 1.5)
+    return angle(PI * (this castTo int))
+
+public class Board
+    protected static Cell array allCells
+    private static int offsetCells = 0
+
+    protected int cols
+    protected int rows
+
+    private vec2 coord
+    private rect area
+    protected int boundMin
+    protected int boundMax
+    
+    private InitiativeList initiative
+
+    private Animation currentAnim
+    private boolean isInteractAble = true
+
+    
+    private rect visibleArea
+    private unit dummyCam
+
+    private BoardForce forceLeft
+    private BoardForce forceRight
+
+    construct(rect playArea, rect visibleArea)
+        rows = (playArea.height() / VERTICAL_SPACING).floor()
+        cols = (playArea.width() / WIDTH).floor()
+        coord = playArea.getLeftBot()
+        boundMin = offsetCells
+        boundMax = offsetCells + cols * rows
+        offsetCells += cols * rows
+        for col = 0 to cols - 1 
+            for row = 0 to rows - 1
+                let h = hex(col, row)
+                allCells[getIndex(h)] = new Cell(this, hex(col, row))
+
+        playArea.resize(coord, hex(cols, rows).toCoord() + coord)
+        area = playArea
+        this.visibleArea = visibleArea
+        initiative = new InitiativeList(this)
+        dummyCam = DummyRecycler.get(area.getCenter(), angle(0.0))
+
+        forceLeft = new BoardForce(this, BoardForceSide.LEFT, area.getLeftTop())
+        forceRight = new BoardForce(this, BoardForceSide.RIGHT, area.getRightTop())
+    
+    private function getIndex(hex hex) returns int
+        return boundMin + hex.col * rows + hex.row
+
+    private function isInBounds(hex hex) returns boolean
+        return hex.col >= 0 and hex.col < cols and hex.row >= 0 and hex.row < rows
+
+    function getCell(hex hex) returns Cell
+        if isInBounds(hex)
+            return allCells[getIndex(hex)]
+        return null
+
+    function getCoord() returns vec2
+        return coord
+    
+    function getInitiative() returns InitiativeList
+        return initiative
+
+    function getBoardForce(Player p) returns BoardForce
+        if p == forceLeft.getPlayer()
+            return forceLeft
+        else if p == forceRight.getPlayer()
+            return forceRight
+        return null
+
+    function getBoardForce(BoardForceSide side) returns BoardForce
+        if side == BoardForceSide.LEFT
+            return forceLeft
+        else if side == BoardForceSide.RIGHT
+            return forceRight
+        return null
+
+    function placeCombat(Hero hero, HostileArmy army, SequenzListener next)
+        forceLeft.place(hero)
+        forceRight.place(army)
+
+        CellObstacleType.fillBoard(this)
+
+        initiative.update()
+        
+        UIController.triggerOnAnyStackCellChange(this) ->
+            forceLeft.makeVisible(visibleArea, dummyCam)
+            forceRight.makeVisible(visibleArea, dummyCam)
+            BoardController.triggerOnCellEnterForBoardPlacement(this) ->
+                next.continue()
+
+    function endFight()
+        initiative.reset()
+
+        forceLeft.remove()
+        forceRight.remove()
+
+        forEachCell() cell ->
+            cell.removeAllObstacle()
+
+    function getPlayer(int index) returns Player
+        if index == 0
+            return forceLeft.getPlayer()
+        return forceRight.getPlayer()
+
+    function getCols() returns int
+        return cols
+
+    function getRows() returns int
+        return rows
+
+    function forEachNeighbour(Cell startCell, LLItrClosure<Cell> itr)
+        let cube = startCell.getHex().toCube()
+        for i = 0 to 5
+            let cell = getCell((cube + CUBE_NEIGHBOURS[i]).toHex())
+            if cell != null
+                itr.run(cell)
+
+        destroy itr
+
+    function forEachStack(LLItrClosure<BoardStack> itr)
+        forceLeft.forEachStack() (BoardStack t) ->
+            itr.run(t)
+        forceRight.forEachStack() (BoardStack t) ->
+            itr.run(t)
+
+        destroy itr
+
+    /**
+        Gives you a copy of all the stacks on the Board
+        You are free to remove and kill anything on the board it will still link to the old stacks as if they were on the Board
+
+        Just remeber to delete the List afterwards
+    **/
+    function getACopyOfAllStacks() returns LinkedList<BoardStack>
+        let copy = new LinkedList<BoardStack>
+        forEachStack() boardStack ->
+            copy.add(boardStack)
+        return copy
+
+    function eachCellIterator() returns CellAllIterator
+        return new CellAllIterator(this)
+
+    function getNeighbour(Cell cell, int index) returns Cell
+        let h = cell.getHex().getNeighbour(index)
+        return getCell(h)
+
+    function getNeighbourSecure(Cell cell, int index) returns Cell
+        return getNeighbour(cell, ModuloInteger(index, 6))
+
+    function getNeighbourIndex(Cell start, Cell other) returns int
+        let startCube = start.getHex().toCube()
+        let endCube = other.getHex().toCube()
+        for i = 0 to 5
+            if startCube + CUBE_NEIGHBOURS[i] == endCube
+                return i
+        return -1
+
+    function getDistanceTo(Cell cell, Cell otherCell) returns int
+        let c1 = cell.getHex().toCube()
+        let c2 = otherCell.getHex().toCube()
+        return c1.distanceTo(c2)
+
+    function isInRange(Cell cell, Cell otherCell, intRange r) returns boolean
+        return getDistanceTo(cell, otherCell).isBetween(r)
+
+    function eachCellInRangeIterator(Cell startCell, intRange r) returns CellRangeIterator
+        return new CellRangeIterator(startCell, r)
+
+    function forEachCellsInRange(Cell startCell, intRange r, LLItrClosure<Cell> itr)
+        let cellItr = eachCellInRangeIterator(startCell, r)
+        while cellItr.hasNext()
+            itr.run(cellItr.next())
+        destroy cellItr
+        destroy itr
+
+    function getAllCellsInRange(Cell startCell, intRange r) returns LinkedList<Cell>
+        let list = new LinkedList<Cell>()
+        let cellItr = eachCellInRangeIterator(startCell, r)
+        while cellItr.hasNext()
+            list.add(cellItr.next())
+        destroy cellItr
+        return list
+
+    function isLocalPlayer() returns boolean
+        return forceLeft.getPlayer().isLocal() or forceRight.getPlayer().isLocal()
+            
+    function startCombat()
+        initiative.next()
+
+    function setAnimation(Animation anim)
+        this.currentAnim = anim
+
+    function enableInteraction(boolean enable)
+        this.isInteractAble = enable
+
+    function isInteractAble() returns boolean
+        return isInteractAble
+
+    function tick(real delta)
+        tickAnimation(delta)
+        if forceLeft.shouldRedraw
+            forceLeft.shouldRedraw = false
+            realDraw(forceLeft.getPlayer())
+        if forceRight.shouldRedraw
+            forceRight.shouldRedraw = false
+            realDraw(forceRight.getPlayer())
+
+        forEachStack() (BoardStack t) ->
+            t.tick(delta)
+
+    
+    function tickAnimation(real delta)
+        if currentAnim != null
+            if currentAnim.tick(delta)
+                if currentAnim != null
+                    Animation.finishAnimation(currentAnim)
+        
+    function drawAll()
+        forceLeft.shouldRedraw = true
+        forceRight.shouldRedraw = true
+
+    function draw(Player p)
+        let boardForce = getBoardForce(p)
+        if boardForce != null
+            boardForce.shouldRedraw = true
+        
+    function realDraw(Player p)
+        if p.isLocal() == false or p.doesNotNeedVisuals
+            return
+
+        let currentEntity = initiative.getCurrent()
+        //let currentStack = initiative.getCurrent().getStack()
+        let canGiveOrders = (currentEntity != null and p == currentEntity.getConntrollingPlayer() and p.currentSelectedEntity == currentEntity.getBoardEntity())
+
+        Action action = null
+        Cell currentSelectedCell = null
+        if p.currentSelectedEntity != null
+            currentSelectedCell = p.currentSelectedEntity.getCell()
+
+            if canGiveOrders
+                action = p.currentSelectedEntity.getCurrentAction()
+            else
+                action = p.currentSelectedEntity.getDefaultAction()
+        else if p.currentMousePosition.cell != null
+            let stack = p.currentMousePosition.cell.getStack()
+            if stack != null
+                action = stack.getDefaultAction()
+
+        for i = boundMin to boundMax - 1
+            allCells[i].draw(p, action, canGiveOrders, currentSelectedCell)
+
+    function forEachCell(LLItrClosure<Cell> itr)
+        for i = boundMin to boundMax - 1
+            itr.run(allCells[i])
+        destroy itr
+
+    function getCellBasedOnCoords(vec2 mouseCoord) returns Cell
+        return getCell(coordToHex(mouseCoord - coord))
+
+public class CellAllIterator implements LinkedListIterator<Cell>
+    private Board board
+    private int index
+
+    construct(Board board)
+        this.board = board
+        this.index = board.boundMin
+
+    override function hasNext() returns boolean
+        return index < board.boundMax
+
+    override function next() returns Cell
+        let cell = Board.allCells[index]
+        index++
+        return cell
+
+    override function getIterations() returns int
+        return board.cols * board.rows
+
+
+public class CellRangeIterator implements LinkedListIterator<Cell>
+    private Board board
+    private cube cube
+    private int ring
+    private int direction
+    private int cellsInThatDirection
+    private intRange range
+    private Cell nextCell
+    private int checkedCells = 0
+
+    construct(Cell startCell, intRange range)
+        board = startCell.getBoard()
+        this.range = range
+        cube = startCell.getHex().toCube()
+
+        ring = 0
+        while ring < range.min
+            ring ++
+            cube += CUBE_NEIGHBOURS[4]
+
+    
+        cellsInThatDirection = 1
+        direction = 0
+
+        nextCell = board.getCell(cube.toHex())
+        if nextCell == null
+            next()
+
+    override function hasNext() returns boolean
+        return nextCell != null
+
+    private function getNext() returns Cell
+        if cellsInThatDirection >= ring
+            // change direction
+            cellsInThatDirection = 1
+            // are you done with this ring ?
+            if ring == 0 or (direction + 1) > 5
+                cube += CUBE_NEIGHBOURS[4]
+                if ring > 0
+                    cube += CUBE_NEIGHBOURS[direction]
+                // go one ring outside
+                direction = 0
+                ring ++
+            else
+                cube += CUBE_NEIGHBOURS[direction]
+                direction++
+        else
+            cube += CUBE_NEIGHBOURS[direction]
+            cellsInThatDirection++
+        checkedCells++
+        return board.getCell(cube.toHex())
+
+    override function next() returns Cell
+        let savedNextCell = nextCell
+        nextCell = null
+        while ring <= range.max and nextCell == null
+            nextCell = getNext()
+        if ring > range.max
+            nextCell = null
+        return savedNextCell
+
+    override function getIterations() returns int
+        return checkedCells

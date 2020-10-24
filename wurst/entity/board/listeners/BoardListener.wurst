@@ -1,0 +1,24 @@
+package BoardListener
+
+public abstract class BoardListenerData
+    static constant MAX_EXECUTIONS = 100
+
+    protected SequenzListener next
+    int executions = -1
+
+    construct()
+
+    function continue(boolean didYouTakeTime)
+        if didYouTakeTime
+            executions = 0
+        else
+            if executions == -1
+                executions = 1
+            else
+                executions ++
+        next.continue()
+
+    function getExecutions() returns int
+        return executions
+    
+    abstract function toString() returns string

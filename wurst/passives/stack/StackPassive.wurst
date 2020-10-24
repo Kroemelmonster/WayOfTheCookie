@@ -1,0 +1,16 @@
+package StackPassive
+
+import public BoardStack
+import public Passive
+import public initlater StackPassiveType
+
+public abstract class StackPassive extends Passive
+    protected BoardStack stack
+    protected StackPassiveData data
+
+    construct(BoardStack stack, StackPassiveType passiveType, StackPassiveData data)
+        super(stack, passiveType)
+        this.data = data
+        this.stack = stack.toStack()
+        
+    abstract function createTooltipLines() returns LinkedList<string>
