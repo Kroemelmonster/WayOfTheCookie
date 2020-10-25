@@ -19,16 +19,15 @@ init
 class HeroTypesDefinition
     private static function createDefault(integer unitId, integer armyId, string icon) returns HeroType
         let heroType = new HeroType(unitId, armyId, icon, GetObjectName(unitId))
+        ..setInitiative(4)
+        ..setAP(2)
         HeroTypes.list.add(heroType)
         return heroType
 
     protected static function setup()
         HeroTypes.FAR_SEER = createDefault(UnitTypesIds.BOARD_HERO_FAR_SEER, UnitTypesIds.HERO_FAR_SEER, Icons.bTNHeroFarseer)
-        ..setInitiative(7)
-        ..setActionPoints(3)
-        ..setDamage(intRange(5, 10))
         ..setSkillTrees(SkillTreeChieftain.TYPE, SkillTreeTempestarii.TYPE, SkillTreeSpirit.TYPE)
-
+        ..setDamage(intRange(5, 10))
         ..setAttack(1)
         ..setDefence(1)
         ..setWisdom(3)

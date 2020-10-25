@@ -2,20 +2,11 @@ package UIWindowHero
 import UIWindow
 import UIHandle
 import Tooltip
-import StackType
-import StatsModifier
-import KStringUtils
 import PlayerData
-import Stack
 import Scheduler
 import UITooltip
 import Description
-import StackStats
-import DamageType
 import InitiativeList
-import KUtil
-import Talent
-import LinkedList
 import UIInteractableStatInfo
 import UIInteractable
 import HeroStats
@@ -159,7 +150,7 @@ public class UIWindowHero
             Description.extendTooltip(tt, "Initiative")
             tt.addLine("-----")
             let p = GetTriggerPlayerData()
-            InitiativeList.extendTooltip(tt, UIWindowHeroInfo.getStats(p).getInitiative())
+            InitiativeList.extendTooltip(tt, UIWindowHeroInfo.getStats(p).initiative.value())
             UITooltip.display(p, tt, TooltipAnchor.LEFT_BOTTOM , inititaiveInfo)
 
         damageInfo = UIInteractableStatInfo.create(window)
@@ -223,13 +214,14 @@ public class UIWindowHero
             return
         let stats = UIWindowHeroInfo.getStats(p)
 
-        attackInfo.setTextBasedOnStats(stats.getBasisAttack(), stats.getAttack(), stats.getAttackModifier())
-        defenceInfo.setTextBasedOnStats(stats.getBasisDefence(), stats.getDefence(), stats.getDefenceModifier())
-        wisdomInfo.setTextBasedOnStats(stats.getBasisWisdom(), stats.getWisdom(), stats.getWisdomModifier())
-        powerInfo.setTextBasedOnStats(stats.getBasisPower(), stats.getPower(), stats.getPowerModifier())
-        damageInfo.setText(damageToText(stats.getBasisDamage(), stats.getDamage()))
+        attackInfo.setTextBasedOnStats(stats.attack)
+        defenceInfo.setTextBasedOnStats(stats.defence)
+        wisdomInfo.setTextBasedOnStats(stats.wisdom)
+        powerInfo.setTextBasedOnStats(stats.power)
+
+        damageInfo.setTextBasedOnStats(stats.baseAttackDamage.value(), stats.getAttackDamage())
         damageInfo.setIcon(stats.getDamageType())
-        inititaiveInfo.setTextBasedOnStats(stats.getBasisInitiative(), stats.getInitiative(), stats.getInitiativeModifier())
+        inititaiveInfo.setTextBasedOnStats(stats.initiative)
 
         UIWindowHeroInfo.checkAndCancelDrag(p)
 
@@ -239,13 +231,3 @@ public class UIWindowHero
 
         for i = 0 to activeItems.length - 1
             activeItems[i].update(p)
-
-
-
-    
-
-    private static function damageToText(realRange basisDmg, realRange modifiedDmg) returns string
-        let dmgDifference = modifiedDmg.avg() - basisDmg.avg()
-        let roundedBasisDmg = basisDmg.round()
-        return roundedBasisDmg.min.toString() + " - " + roundedBasisDmg.max.toString() + KStringUtils.coloredModiReal(dmgDifference, 1)
-    

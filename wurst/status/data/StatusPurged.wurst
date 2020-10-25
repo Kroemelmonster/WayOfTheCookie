@@ -5,11 +5,11 @@ import Abilities
 
 import Status
 
-import initlater BoardStack
-import initlater BoardEntity
-import initlater StatusType
-import BoardTrigger
+import BoardStack
+import BoardEntity
+import StatusType
 import Tooltip
+import BoardListenerOnInitiative
 
 init
     Initializer.register(InitializerNames.STATI) -> 
@@ -25,7 +25,7 @@ public class StatusPurged extends Status
         TYPE.setTooltipListener() data ->
             return createTooltipBaseLines(data)
 
-    static constant int SLOW = 1
+    static constant SLOW = 1
 
     private static function createTooltipBaseLines(int slowValue) returns LinkedList<string>
         return new LinkedList<string>
@@ -44,7 +44,7 @@ public class StatusPurged extends Status
     /* -------------------------------------------------------------------------- */
 
     private effect display
-    private BoardTrigger turnStartListener
+    private BoardListenerOnInitiative turnStartListener
     private int duration
     private int slow = 0
 
@@ -52,12 +52,11 @@ public class StatusPurged extends Status
         super(statusType, entity)
         display = entity.addAttachEffect(Abilities.purgeBuffTarget, AttachmentPoints.chest)
 
-        turnStartListener = entity.getTriggers().addTurnStart() (SequenzListener next) ->
+        turnStartListener = entity.listeners().addOnTurnStart() (BoardListenerOnInitiativeData onInitData) ->
             duration--
             if duration <= 0
-                removeInner(next)
-            else
-                next.continue()
+                remove()
+            onInitData.continue(false)
 
         refreshStatusData(data)
 
@@ -74,8 +73,7 @@ public class StatusPurged extends Status
         applyStats(true)
 
     protected function applyStats(boolean add)
-        let multi = add ? -1 : 1
-        entity.toStack().stats.moveActionPointModi.addBonus += slow * multi
+        entity.toStack().stats.maxMoveAP.modify(-slow, add)
 
     override function createTooltip() returns Tooltip
         return createTooltip(this)
@@ -87,4 +85,4 @@ public class StatusPurged extends Status
     ondestroy
         if entity.isAlive()
             applyStats(false)
-            entity.getTriggers().removeOnTurnStart(turnStartListener)
+            entity.listeners().removeOnTurnStart(turnStartListener)

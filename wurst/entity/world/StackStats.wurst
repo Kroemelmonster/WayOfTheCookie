@@ -1,46 +1,162 @@
 package StackStats
 
 import StackType
-import StatsModifier
 
 import initlater Stack
 import HeroStats
 import DamageAndResistance
 import initlater TalentType
 import Damage
+import Stats
 
-public interface HasEntityStats extends HasEntityBasicStats
-    function getBasis() returns HasEntityBasicStats
-    function getAttackModifier() returns StatsModifier
-    function getDefenceModifier() returns StatsModifier
-    function getInitiativeModifier() returns StatsModifier
-    function getDamageModifier() returns StatsModifier
-    function getAPModifier() returns StatsModifier
-    function getMaxHPModifier() returns StatsModifier
+class StatStackHeroBased extends StatInt implements IsIntStat
+    protected IsIntStat heroStat
 
-public class StackStats implements HasEntityStats
+    construct(int basis, IsIntStat heroStat)
+        super(basis)
+        this.heroStat = heroStat
+
+    override function value() returns int
+        return ((getBasis() + addBonus) * (multi / 100.0)).round()
+
+    override function getBasis() returns int
+        return super.getBasis() + heroStat.value()
+
+public class StatIntWithBaseInt extends StatAbstract implements IsIntStat
+    protected IsIntStat basis
+
+    construct(IsIntStat basis)
+        super()
+        this.basis = basis
+
+    override function value() returns int
+        return ((getBasis() + addBonus) * (multi / 100.0)).round()
+
+    override function getBasis() returns int
+        return basis.value()
+
+public class StackStats implements HasEntityStats, HasTags
     private Stack stack
-    private HeroStats heroStats
     StackType stackType
 
-    StatsModifier attackModi = new StatsModifier()
-    StatsModifier defenceModi = new StatsModifier()
-    StatsModifier damageModi = new StatsModifier()
-    StatsModifier initModi = new StatsModifier()
-    StatsModifier hpModi = new StatsModifier()
-    StatsModifier actionPointModi = new StatsModifier()
-    StatsModifier moveActionPointModi = new StatsModifier()
-    private StatsModifier resultingMoveActionPointModi = new StatsModifier()
+    StatInt attack
+    StatInt defence
+    StatInt initiative
+    StatInt maxAP
+    StatIntWithBaseInt maxMoveAP
+    StatInt maxHp
+    StatRealRange baseDamage
+    StatIntRange attackRange
 
-    private Resistance resistance
+    protected StatTag array[TAG_AMOUNT + 1] tags
 
-    LinkedList<TalentType> talents = new LinkedList<TalentType>()
+    protected Resistance resistance
+    protected LinkedList<TalentType> talents = new LinkedList<TalentType>()
 
-    override function getBasis() returns StackType
-        return stackType
+    construct(Stack stack, StackType stackType, HeroStats heroStats)
+        this.stackType = stackType
+        this.stack = stack
+        stackType.addAllTalentsTo(talents)
+        resistance = new Resistance(stackType.getResistance())
+
+        if heroStats != null
+            attack = new StatStackHeroBased(stackType.getAttack(), heroStats.attack)
+            defence = new StatStackHeroBased(stackType.getDefence(), heroStats.defence)
+        else
+            attack = new StatInt(stackType.getAttack())
+            defence = new StatInt(stackType.getDefence())
+
+        initiative = new StatInt(stackType.getInitiative())
+        maxHp = new StatInt(stackType.getMaxHP())
+        maxAP = new StatInt(stackType.getMaxAP())
+        maxMoveAP = new StatIntWithBaseInt(maxAP)
+        baseDamage = new StatRealRange(stackType.getBaseDamage())
+        attackRange = new StatIntRange(stackType.getAttackRange())
+
+        for i = 0 to TAG_AMOUNT
+            if tags[i] == null
+                tags[i] = new StatTag()
+            
+
+/* ---------------------------------- Stats --------------------------------- */
 
     override function getIcon() returns string
-        return getBasis().getIcon()
+        return stackType.getIcon()
+
+    override function getName() returns string
+        return stackType.getName()
+
+    override function getAttack() returns int
+        return attack.value()
+
+    override function getDefence() returns int
+        return defence.value()
+
+    override function getInitiative() returns int
+        return initiative.value()
+
+    override function getBaseDamage() returns realRange
+        return baseDamage.value()
+    
+    override function getAttackRange() returns intRange
+        return attackRange.value()
+    
+    override function getMaxAP() returns int
+        return maxAP.value()
+
+    override function getMaxMoveAP() returns int
+        return maxMoveAP.value()
+            
+    override function getMaxHP() returns int
+        return maxHp.value()
+
+    override function forTag(Tag tag) returns StatTag
+        return tags[(tag castTo int)]
+
+    override function getDamageMulti(LinkedList<Tag> tags) returns real
+        return tagsGetDamageMulti(this, tags)
+
+    override function getStatusEffectivness(LinkedList<Tag> tags) returns real
+        return tagsGetStatusEffectivness(this, tags)
+
+    override function getSummonEffectivness(LinkedList<Tag> tags) returns real
+        return tagsGetSummonEffectivness(this, tags)
+
+    override function getLeadership() returns int
+        return stackType.getLeadership()
+
+    override function getDamageType() returns DamageType
+        return stackType.getDamageType()
+
+    override function getResistance() returns Resistance
+        return resistance
+
+
+    override function forEachVisibleTalent(LLItrClosure<TalentStats> itr)
+        talents.forEach() (TalentType talentType) ->
+            if not talentType.isHidden()
+                itr.run(talentType)
+        destroy itr
+
+    function getDamageMulti(vararg Tag tags) returns real
+        let temp = new LinkedList<Tag>
+        for tag in tags
+            temp.add(tag)
+        let result = getDamageMulti(temp)
+        destroy temp
+        return result
+
+    function getAttackDamage() returns realRange
+        return baseDamage.value() * getAmount() * getDamageMulti(Tag.ATTACK, damageType2Tag(getDamageType()))
+
+    function getResistance(DamageType dType) returns int
+        return stackType.getResistance(dType) + resistance.getRes(dType)
+
+    override function getAmount() returns int
+        return stack.getAmount()
+
+    function getWeight() returns real
+        return stackType.getWeight().toReal()
 
     function getTalents() returns LinkedList<TalentType>
         return talents
@@ -51,98 +167,17 @@ public class StackStats implements HasEntityStats
     function removeTalent(TalentType talent)
         talents.remove(talent)
 
-    override function forEachTalentStat(LLItrClosure<TalentStats> itr)
-        talents.forEach() (TalentType talentType) ->
-            if not talentType.isHidden()
-                itr.run(talentType)
-        destroy itr
-
-    construct(Stack stack, StackType stackType, HeroStats heroStats)
-        this.stackType = stackType
-        this.stack = stack
-        this.heroStats = heroStats
-        this.talents.addAll(stackType.talents)
-        resistance = new Resistance(stackType.getResistance())
-
-    override function getMaxHP() returns int
-        return hpModi.get(getBasis().getMaxHP()).round()
-
-    function getDamageAll() returns realRange
-        return damageModi.getRealRange(getBasis().getDamage(), getAmount())
-
-    override function getAttack() returns int
-        var basis = getBasis().getAttack()
-        if heroStats != null
-            basis += heroStats.getAttack()
-        return attackModi.get(basis).round()
-
-    override function getDefence() returns int
-        var basis = getBasis().getDefence()
-        if heroStats != null
-            basis += heroStats.getDefence()
-        return defenceModi.get(basis).round()
-
-    override function getDamage() returns realRange
-        return damageModi.getRealRange(getBasis().getDamage(), 1)
-
-    override function getRange() returns intRange
-        return getBasis().getRange()
-
-    override function getInitiative() returns int
-        return initModi.get(getBasis().getInitiative()).round()
-
-    override function getMaxAP() returns int
-        return actionPointModi.get(getBasis().getMaxAP()).round()
-
-    override function getMaxMoveAP() returns int
-        resultingMoveActionPointModi.addBonus = moveActionPointModi.addBonus + actionPointModi.addBonus
-        resultingMoveActionPointModi.multi = moveActionPointModi.multi + actionPointModi.multi - 100
-        // there are no stackTypes who inherintly have a different move action point... You should always use a passive for this
-        return resultingMoveActionPointModi.get(getBasis().getMaxMoveAP()).round()
-
-    override function getLeadership() returns int
-        return getBasis().getLeadership()
-
-    override function getAttackModifier() returns StatsModifier
-        return attackModi
-
-    override function getDefenceModifier() returns StatsModifier
-        return defenceModi
-
-    override function getDamageModifier() returns StatsModifier
-        return damageModi
-
-    override function getAPModifier() returns StatsModifier
-        return actionPointModi
-
-    override function getInitiativeModifier() returns StatsModifier
-        return initModi
-
-    override function getMaxHPModifier() returns StatsModifier
-        return hpModi
-
-    override function getDamageType() returns DamageType
-        return getBasis().getDamageType()
-
-    override function getResistance() returns Resistance
-        return resistance
-
-    function getResistance(DamageType dType) returns int
-        return getBasis().getResistance(dType) + resistance.getRes(dType)
-
-    function getAmount() returns int
-        return stack.getAmount()
-
-    function getWeight() returns real
-        return stackType.weight.toReal()
-
     ondestroy
-        destroy attackModi
-        destroy defenceModi
-        destroy damageModi
-        destroy initModi
-        destroy actionPointModi
-        destroy moveActionPointModi
-        destroy resultingMoveActionPointModi
-        destroy hpModi
+        destroy attack
+        destroy defence
+        destroy baseDamage
+        destroy initiative
+        destroy maxAP
+        destroy maxMoveAP
+        destroy attackRange
+        destroy maxHp
         destroy resistance
+
+        for i = 0 to TAG_AMOUNT
+            destroy tags[i]
+            tags[i] = null

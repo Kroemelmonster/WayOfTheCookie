@@ -5,10 +5,9 @@ import Abilities
 
 import Status
 
-import initlater BoardStack
-import initlater BoardEntity
-import initlater StatusType
-import BoardTrigger
+import BoardStack
+import BoardEntity
+import StatusType
 import Tooltip
 
 init
@@ -34,6 +33,7 @@ public class StatusDevotionAura extends Status
             return createTooltipBaseLines(data)
 
     static constant DEFENCE = 0
+    static constant MAIN = 0
 
     private static function createTooltipBaseLines(int defence) returns LinkedList<string>
         return new LinkedList<string>
@@ -57,9 +57,9 @@ public class StatusDevotionAura extends Status
 
     construct(StatusType statusType, BoardEntity entity, StatusData data)
         super(statusType, entity)
-        // display = entity.addAttachEffect(Abilities.purgeBuffTarget, AttachmentPoints.chest)
         summary = 0
         auraDatas = new LinkedList<AuraData<int>>
+            
         refreshStatusData(data)
 
     override function onRefresh(StatusData data)
@@ -75,14 +75,21 @@ public class StatusDevotionAura extends Status
             summary += auraData.value
 
     protected function refreshStatusData(StatusData data)
-
-        Log.trace("refresh : "+entity.toString()+ " "+data.getAuraAdd().toString())
+        let checkInstance = data.getAuraId()
         if data.getAuraAdd()
-            auraDatas.add(new AuraData<int>(data.getIntData(DEFENCE), data.getAuraId()))
+            if data.getBoolData(MAIN)
+                if display == null
+                    display = entity.addAttachEffect(Abilities.devotionAura, AttachmentPoints.origin)
+
+            let found = auraDatas.find() (AuraData<integer> t) ->
+                return t.instance == checkInstance
+            if found !=  null
+                found.value = data.getIntData(DEFENCE)
+            else
+                auraDatas.add(new AuraData<int>(data.getIntData(DEFENCE), data.getAuraId()))
             refreshSummary()
             applyStats(true)
         else
-            let checkInstance = data.getAuraId()
             auraDatas.removeIf() (AuraData<integer> t) ->
                 return t.instance == checkInstance
             refreshSummary()
@@ -92,8 +99,7 @@ public class StatusDevotionAura extends Status
                 remove()
 
     protected function applyStats(boolean add)
-        let multi = add ? 1 : -1
-        entity.toStack().stats.defenceModi.addBonus += summary * multi
+        entity.toStack().stats.defence.modify(summary, add)
 
     override function createTooltip() returns Tooltip
         return createTooltip(this)
@@ -101,7 +107,8 @@ public class StatusDevotionAura extends Status
     override function removeVisuals()
         if display != null
             display.destr()
-        
+            display = null
+
     ondestroy
         if entity.isAlive()
             applyStats(false)

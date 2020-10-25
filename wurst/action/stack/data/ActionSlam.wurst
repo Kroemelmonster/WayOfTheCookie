@@ -12,6 +12,8 @@ import Damage
 import PlayerData
 import Board
 import Scheduler
+import Stats
+import StackType
 
 init
     Initializer.register(InitializerNames.ACTIONS) -> 
@@ -20,39 +22,34 @@ init
 public class ActionSlam extends StackActionTargetCell
     static StackActionType TYPE
     protected static function setup()
+        damagePreview = DamagePreview.create(SourceType.SPELL, DamageType.PHYSICAL)
         TYPE = StackActionTargetCell.createType("Slam", Icons.bTNGolemThunderClap, ActionCostPreset.create(1, true, 2))
+        ..setTags(Tag.SPELL, Tag.PHYSICAL)
         ..enableOption(ActionTypeOption.PRIMARY)
         TYPE.onCreate() (BoardStack stack, StackActionData data) ->
             return new ActionSlam(stack, data)
-        TYPE.onCreateTooltipLines() data -> 
-            return createTooltipLines(data)
-        damagePreview = DamagePreview.create(SourceType.SPELL, DamageType.PHYSICAL)
+        TYPE.onCreateTooltipLines() (data, stats) -> 
+            return createTooltipLines(data, stats)
 
     private static constant TARGET_RANGE = intRange(0, 0)
     private static constant AFFECTED_RANGE = intRange(1, 1)
-    private static constant string EFFECT = Abilities.thunderclapCaster
 
     private static DamagePreview damagePreview
 
-    private static function calculateDamage(int amount) returns DamagePreview
-        damagePreview.dmg = realRange(350.0 * amount, 450.0 * amount)
+    private static function calculateDamage(HasEntityStats stats) returns DamagePreview
+        damagePreview.dmg = realRange(350.0, 450.0) * (stats.getAmount() * stats.getDamageMulti(TYPE.getTags()))
         return damagePreview
 
-    private static function createTooltipLines(int amount) returns LinkedList<string>
+    private static function createTooltipLines(StackActionData _data, HasEntityStats stats) returns LinkedList<string>
         return new LinkedList<string>
         ..add(KStringUtils.stat("Target", "Enemy"))
         ..add(KStringUtils.stat("Range", AFFECTED_RANGE))
-        ..add(KStringUtils.stat("Damage", calculateDamage(amount).toColoredText()))
+        ..add(KStringUtils.stat("Damage", calculateDamage(stats).toColoredText()))
         ..add("")
         ..add("Slams the Ground around you, curshing your foes.")
 
-    private static function createTooltipLines(StackActionData _data) returns LinkedList<string>
-        return createTooltipLines(1)
-       
-    private static function createTooltipLines(ActionSlam action) returns LinkedList<string>
-        return createTooltipLines(action.stack.stats.amount)
-
 /* -------------------------------------------------------------------------- */
+
     private LinkedList<Cell> highlightArea = new LinkedList<Cell>
 
     override function recalculateHighlightInner(Cell target)
@@ -89,7 +86,7 @@ public class ActionSlam extends StackActionTargetCell
                 let potentialTarget = cell.getStack()
                 if canHit(potentialTarget)
                     tt.addLine("")
-                    calculateDamage(stack.stats.amount)
+                    calculateDamage(stack.stats)
                     .extendTooltipWithSpecific(tt, entity, potentialTarget)
             destroy cellItr
 
@@ -98,9 +95,9 @@ public class ActionSlam extends StackActionTargetCell
 
     protected override function executeOrder(boolean didMove, int prevUsedApForMove, Cell target) returns boolean
         AnimationCast.withoutTarget(stack) () ->
-            let e = addEffect(EFFECT, target.getCoord())
+            let e = addEffect(Abilities.thunderclapCaster, target.getCoord())
             let cellItr = getAreaCellIterator(target)
-            let rolledBaseDamage = calculateDamage(stack.stats.amount).getRandomInstance()
+            let rolledBaseDamage = calculateDamage(stack.stats).getRandomInstance()
             let waitUntil = Scheduler.getTimeIn(0.667)
             hitNextCell(cellItr, rolledBaseDamage) ->
                 destroy cellItr
@@ -122,7 +119,7 @@ public class ActionSlam extends StackActionTargetCell
             hitNextCell(cellItr, rolledDamage, next)
 
     override function createBasicTooltipLines() returns LinkedList<string>
-        return createTooltipLines(this)
+        return createTooltipLines(data, stack.stats)
 
     private construct(BoardStack stack, StackActionData data)
         super(stack, TYPE, data)

@@ -92,6 +92,6 @@ public class UIMenuWorldConsole
         expBar.setText("Level "+(lvl + 1).toString())
 
         let mana = hero.stats.getMana()
-        let maxMana = hero.stats.getMaxMana()
+        let maxMana = hero.stats.maxMana.value()
         manaBar.setValue(mana, maxMana)
         manaBar.setText(mana.toString() + " / "+ maxMana.toString())

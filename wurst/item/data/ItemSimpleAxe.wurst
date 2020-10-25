@@ -50,10 +50,7 @@ public class ItemSimpleAxe extends KItem
     override function onStackUpdate(ArmyStack armyStack, boolean add)
         if armyStack.getStackType().isFamily(family) == false
             return
-        if add
-            armyStack.stats.damageModi.addBonus += value
-        else
-            armyStack.stats.damageModi.addBonus -= value
+        armyStack.stats.baseDamage.modify(value, add)
    
     override function createTooltip() returns Tooltip
         return createSpecificTooltip(this)

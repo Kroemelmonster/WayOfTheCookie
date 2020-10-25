@@ -6,16 +6,16 @@ import BoardListener
 import initlater PathFinding
 
 public abstract class BoardListenerOnCellMove
-    abstract function onEvent(BoardListenerOnCellMoveData data)
+    abstract function onEvent(BoardListenerOnCellMoveData onMoveData)
 
-    function execute(BoardListenerOnCellMoveData data, SequenzListener next)
-        data.next = next
-        if data.executions >= BoardListenerData.MAX_EXECUTIONS
-            Log.error("you have too many move triggers so we wait a sec")
+    function execute(BoardListenerOnCellMoveData onMoveData, SequenzListener next)
+        onMoveData.next = next
+        if onMoveData.executions >= BoardListenerData.MAX_EXECUTIONS
+            Log.warn("Too many onMove Listeners fired without a break -> we wait")
             nullTimer() -> 
-                onEvent(data)
+                onEvent(onMoveData)
         else
-            onEvent(data)
+            onEvent(onMoveData)
 
 public class BoardListenerOnCellMoveData extends BoardListenerData
     static function create(BoardStack stack, Cell fromCell, Cell toCell, boolean into) returns BoardListenerOnCellMoveData

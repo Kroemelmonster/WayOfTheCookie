@@ -48,7 +48,7 @@ public class FightResult
                 let resultStack = new FightResultStack(stack.getStackType(), stack.getAmount(), stack.representive.stats.getAmount())
                 enemy.add(resultStack)
                 let looseAmount = resultStack.befor - resultStack.after
-                reward.exp += looseAmount * resultStack.stackType.value
+                reward.exp += looseAmount * resultStack.stackType.getValue()
 
         hero.addExp(reward)
 

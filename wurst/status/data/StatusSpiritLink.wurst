@@ -1,21 +1,20 @@
 package StatusSpiritLink
 
 import AttachmentPoints
-import Icons
 import Abilities
 
 import Status
 
-import initlater BoardStack
-import initlater BoardEntity
-import initlater StatusType
+import BoardEntity
+import StatusType
 import BoardController
-import BoardTrigger
 import Tooltip
 import Damage
 import AnimationWait
 import SharedStatus
 import StatusController
+import BoardListenerOnDamage
+import BoardListenerOnInitiative
 
 init
     Initializer.register(InitializerNames.STATI) -> 
@@ -32,8 +31,8 @@ public class StatusSpiritLink extends SharedStatus
         TYPE.setCanApplyListener() (BoardEntity entity, StatusData data) ->
             return canApplyTo(entity, data)
 
-    static constant int DAMAGE_TRANSFER = 0
-    static constant int DAMAGE_REDUCE = 1
+    static constant DAMAGE_TRANSFER = 0
+    static constant DAMAGE_REDUCE = 1
 
     private static function canApplyTo(BoardEntity entity, StatusData data) returns boolean
         let status = StatusController.get(TYPE, entity) castTo StatusSpiritLink
@@ -71,8 +70,9 @@ public class StatusSpiritLink extends SharedStatus
 
     /* -------------------------------------------------------------------------- */
 
-    private BoardTrigger turnStartListener
-    private BoardTriggerOnDamage damageTakenTrigger
+    private BoardListenerOnInitiative turnStartListener
+    private BoardListenerOnDamage beforeDamageTakenTrigger
+    private BoardListenerOnDamage damageTakenTrigger
     
     private effect display
     private int duration
@@ -90,12 +90,11 @@ public class StatusSpiritLink extends SharedStatus
         applySecondaryInner(data)
 
         duration = data.duration
-        turnStartListener = entity.getTriggers().addTurnStart() next ->
+        turnStartListener = entity.listeners().addOnTurnStart() (BoardListenerOnInitiativeData onInitData) ->
             duration--
             if duration <= 0
-                remove(next)
-            else
-                next.continue()
+                remove()
+            onInitData.continue(false)
 
     protected function applySecondaryInner(StatusData data)
         let secondaryData = StatusData.create()
@@ -110,33 +109,48 @@ public class StatusSpiritLink extends SharedStatus
         transferPerc = data.getRealData(DAMAGE_TRANSFER)
         display = entity.addAttachEffect(Abilities.spiritLinkTarget, AttachmentPoints.chest)
 
-
-        damageTakenTrigger = entity.getTriggers().addOnBeforeDamageTaken() (BoardEntity source, BoardStack target, SpecificDamageInstance instance, SequenzListener next) ->
-            if instance.hasFlag(DamageFlags.UNMITIGATABLE)
-                next.continue()
+        beforeDamageTakenTrigger = entity.listeners().addOnBeforeDamageTaken() (BoardListenerOnDamageData onDamageData) ->
+            if onDamageData.hasFlag(DamageFlags.UNMITIGATABLE)
+                onDamageData.continue(false)
             else
-                absorbDamage(instance, next)
+                absorbDamageBefore(onDamageData)
+
+        damageTakenTrigger = entity.listeners().addOnDamageTaken() (BoardListenerOnDamageData onDamageData) ->
+            if onDamageData.hasFlag(DamageFlags.UNMITIGATABLE)
+                onDamageData.continue(false)
+            else
+                absorbDamageAfter(onDamageData)
     
-    private function absorbDamage(SpecificDamageInstance incommingInstance, SequenzListener next)
-        let damage = incommingInstance.getDamage()
+    private function absorbDamageBefore(BoardListenerOnDamageData onDamageData)
+        let damage = onDamageData.getDamage(false)
         if damage <= 0
-            next.continue()
+            onDamageData.setRealData(BoardListenerOnDamageData.SPIRIT_LINK_TRANSFER, 0.0)
+            onDamageData.continue(false)
             return
-        AnimationWait.time(entity.getBoard(), 0.2) ->
-            let transferDmg = damage * (transferPerc * reducePerc)
-            incommingInstance.setDamage((incommingInstance.getOverKillDamage() * transferPerc).round())
             
-            let preview = DamagePreview.create(incommingInstance.getSourceType(), incommingInstance.getType())
-            preview.addFlag(DamageFlags.TRIGGERED)
-            preview.addFlag(DamageFlags.UNMITIGATABLE)
-            preview.dmg = realRange(transferDmg, transferDmg)
+        onDamageData.setRealData(BoardListenerOnDamageData.SPIRIT_LINK_TRANSFER, damage * (transferPerc * reducePerc))
+        onDamageData.multiplyDamage(transferPerc)
+        onDamageData.continue(false)
+
+    private function absorbDamageAfter(BoardListenerOnDamageData onDamageData)
+        let transferDamageTemp = onDamageData.getRealData(BoardListenerOnDamageData.SPIRIT_LINK_TRANSFER)
+        if transferDamageTemp <= 0.0
+            onDamageData.continue(false)
+            return
+        let bolt = addLightning(LIGHTNING_SPIRIT_LINK, true, primary.entity.getPos3Real(), entity.getPos3Real())
+        AnimationWait.time(entity.getBoard(), 0.4) ->
+            bolt.destr()
+            let preview = DamagePreview.create(onDamageData.getSourceType(), onDamageData.getDamageType())
+            ..addFlag(DamageFlags.TRIGGERED)
+            ..addFlag(DamageFlags.UNMITIGATABLE)
+            preview.dmg = realRange(transferDamageTemp, transferDamageTemp)
             let linkDamageSpecfic = preview.getRandomInstance()
                 
             BoardController.dealDamage(entity, linkDamageSpecfic, primary.entity) ->
                 destroy linkDamageSpecfic
                 destroy preview
                 AnimationWait.time(entity.getBoard(), 0.2) ->
-                    next.continue()
+                    onDamageData.continue(true)
 
     override function onRefresh(StatusData data)
         if not canApplyTo(entity, data)
@@ -157,10 +171,13 @@ public class StatusSpiritLink extends SharedStatus
 
     ondestroy
         if entity.isAlive()
-            let triggers = entity.getTriggers()
+            let listeners = entity.listeners()
             if turnStartListener != null
-                triggers.removeOnTurnStart(turnStartListener)
+                listeners.removeOnTurnStart(turnStartListener)
                 turnStartListener = null
+            if beforeDamageTakenTrigger != null
+                listeners.removeOnBeforeDamageTaken(beforeDamageTakenTrigger)
+                beforeDamageTakenTrigger = null
             if damageTakenTrigger != null
-                triggers.removeOnBeforeDamageTaken(damageTakenTrigger)
+                listeners.removeOnDamageTaken(damageTakenTrigger)
                 damageTakenTrigger = null

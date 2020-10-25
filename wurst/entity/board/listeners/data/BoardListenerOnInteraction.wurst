@@ -1,0 +1,37 @@
+package BoardListenerOnInteraction
+
+import BoardListener
+import initlater BoardEntity
+
+public abstract class BoardListenerOnInteraction
+    abstract function onEvent(BoardListenerOnInteractionData onInteractData)
+
+    function execute(BoardListenerOnInteractionData onInteractData, SequenzListener next)
+        onInteractData.next = next
+        if onInteractData.executions >= BoardListenerData.MAX_EXECUTIONS
+            Log.warn("Too many onInteract Listeners fired without a break -> we wait")
+            nullTimer() -> 
+                onEvent(onInteractData)
+        else
+            onEvent(onInteractData)
+
+public class BoardListenerOnInteractionData extends BoardListenerData
+    static function create(BoardEntity initiator, BoardEntity receiver) returns BoardListenerOnInteractionData
+        let data = new BoardListenerOnInteractionData()
+        data.initiator = initiator
+        data.receiver = receiver
+
+        return data
+
+    private BoardEntity initiator
+    private BoardEntity receiver
+
+    function getInittiator() returns BoardEntity
+        return initiator
+
+    function getReceiver() returns BoardEntity
+        return receiver
+
+    override function toString() returns string
+        return "OnInteract "+ initiator.toString()+ " with "+receiver.toString()
+    

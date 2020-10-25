@@ -4,12 +4,15 @@ import initlater StackAction
 import Data
 
 import initlater ActionTalentType
+import Stats
+import StackStats
+import StackType
 
 interface StackActionCreateListener
     function create(BoardStack stack, StackActionData data) returns StackAction
 
 public interface StackActionCreateTooltipLinesListener
-    function create(StackActionData data) returns LinkedList<string>
+    function create(StackActionData data, HasEntityStats stats) returns LinkedList<string>
 
 interface StackActionCreateDataListener
     function create() returns StackActionData
@@ -43,10 +46,20 @@ public class StackActionType extends ActionType
 
     protected ActionCostPreset baseCost
 
+    protected LinkedList<Tag> tags
+
     construct(string name, string icon, ActionCostPreset baseCost)
         super(name, icon)
         this.baseCost = baseCost
-    
+        tags = new LinkedList<Tag>
+
+    function setTags(vararg Tag newTags)
+        for tag in newTags
+            tags.add(tag)
+
+    function getTags() returns LinkedList<Tag>
+        return tags
+        
     function onCreate(StackActionCreateListener listener)
         this.listener = listener
 
@@ -62,16 +75,14 @@ public class StackActionType extends ActionType
     function toString() returns string
         return "StackActionType '"+name+"'"
 
-    function createTooltipLines() returns LinkedList<string>
-        return createTooltipLines(null)
-
-    function createTooltipLines(StackActionData data) returns LinkedList<string>
+    function createTooltipLines(StackActionData data, HasEntityStats stats) returns LinkedList<string>
         LinkedList<string> lines
         if data != null
             lines = data.getCost().createTooltipLines()
         else
             lines = baseCost.createTooltipLines()
-        lines.addAllAndDestroy(tooltipLinesListener.create(data))
+        lines.add(KStringUtils.stat("Tags", tags2String(tags)))
+        lines.addAllAndDestroy(tooltipLinesListener.create(data, stats))
         return lines
 
     function createBaseData() returns StackActionData

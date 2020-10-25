@@ -6,12 +6,13 @@ import initlater PassiveTalentType
 import BoardStack
 import Data
 import StackPassive
+import StackType
 
 interface StackPassiveCreateListener
     function create(BoardStack stack, StackPassiveData data) returns StackPassive
 
 public interface StackPassiveCreateTooltipLinesListener
-    function create(StackPassiveData data) returns LinkedList<string>
+    function create(StackPassiveData data, HasEntityStats stats) returns LinkedList<string>
 
 interface StackPassiveCreateDataListener
     function create() returns StackPassiveData
@@ -47,12 +48,9 @@ public class StackPassiveType extends PassiveType
     function toString() returns string
         return "StackPassiveType '"+name+"'"
 
-    function createTooltipLines() returns LinkedList<string>
-        return createTooltipLines(null)
-
-    function createTooltipLines(StackPassiveData data) returns LinkedList<string>
+    function createTooltipLines(StackPassiveData data, HasEntityStats stats) returns LinkedList<string>
         return new LinkedList<string>()
-        ..addAllAndDestroy(tooltipLinesListener.create(data))
+        ..addAllAndDestroy(tooltipLinesListener.create(data, stats))
 
     function createBaseData() returns StackPassiveData
         if dataListener != null

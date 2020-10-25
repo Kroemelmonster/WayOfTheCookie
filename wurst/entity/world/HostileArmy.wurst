@@ -59,7 +59,7 @@ public class HostileArmy
     function placeWorld(unit chicken)
         let pos = chicken.getPos()
         chicken.remove()
-        u = createUnit(p.blzPlayer, army.getFirstStack().getStackType().armyUnitId, pos, angle(GetRandomReal(0, PI2)))
+        u = createUnit(p.blzPlayer, army.getFirstStack().getStackType().getArmyUnitId(), pos, angle(GetRandomReal(0, PI2)))
         map.put(u, this)
 
         damagedListener = EventListener.add(u, EVENT_PLAYER_UNIT_DAMAGED) ->

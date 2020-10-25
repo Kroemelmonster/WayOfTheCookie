@@ -19,6 +19,7 @@ public enum InitializerNames
     ITEMS
     SKILLTREES
     HEROES
+    DATA
     WORLD_ARMIES
     WORLD_NPC
     WORLD_BOARDS
@@ -36,6 +37,7 @@ constant NAMES = [
     "Write Unit Stats",
     "Forge Items",
     "Think about Skilltrees",
+    "Thinker all together",
     "Come up with unique Heroes",
     "Drop Enemies",
     "Open Shops",

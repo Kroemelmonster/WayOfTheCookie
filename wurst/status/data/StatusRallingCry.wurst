@@ -5,12 +5,12 @@ import Abilities
 
 import Status
 
-import initlater BoardEntity
-import initlater StatusType
-import BoardTrigger
+import BoardEntity
+import StatusType
 import Tooltip
 import BoardStack
 import SharedStatus
+import BoardListenerOnInitiative
 
 init
     Initializer.register(InitializerNames.STATI) -> 
@@ -48,13 +48,12 @@ public class StatusRallingCry extends SharedStatus
         ..addLines(createTooltipBaseLinesHero(b.attack, b.attackUnits))
 
     protected static function createTooltipUnits(StatusRallingCry b) returns Tooltip
-        Log.trace("get ma the tt of : "+b.attackUnits.toString()+ " = "+(b castTo int).toString())
         return Tooltip.create(TYPE.getName())
         ..addLines(createTooltipBaseLinesUnits(b.attackUnits))
 
     /* -------------------------------------------------------------------------- */
 
-    protected BoardTrigger turnStartListener
+    protected BoardListenerOnInitiative turnStartListener
     protected effect display
     protected int duration
     protected int attack
@@ -76,12 +75,11 @@ public class StatusRallingCry extends SharedStatus
             applySecondary(ally, secondaryData)
         destroy secondaryData
 
-        turnStartListener = entity.getTriggers().addTurnStart() next ->
+        turnStartListener = entity.listeners().addOnTurnStart() (BoardListenerOnInitiativeData onInitData) ->
             duration--
             if duration <= 0
-                remove(next)
-            else
-                next.continue()
+                remove()
+            onInitData.continue(false)
         
         display = entity.addAttachEffect(Abilities.drumsCasterHeal, AttachmentPoints.origin)
         applyStats(true)
@@ -106,12 +104,10 @@ public class StatusRallingCry extends SharedStatus
             applyStatsStack(add)
 
     protected function applyStatsHero(boolean add)
-        let multi = add ? 1 : -1
-        entity.toHero().stats.attackModi.addBonus += attack * multi
+        entity.toHero().stats.attack.modify(attack, add)
 
     protected function applyStatsStack(boolean add)
-        let multi = add ? 1 : -1
-        entity.toStack().stats.attackModi.addBonus += attackUnits * multi
+        entity.toStack().stats.attack.modify(attackUnits, add)
 
     override function createTooltip() returns Tooltip
         if isPrimary()
@@ -128,5 +124,5 @@ public class StatusRallingCry extends SharedStatus
         if entity.isAlive()
             applyStats(false)
             if turnStartListener != null
-                entity.getTriggers().removeOnTurnStart(turnStartListener)
+                entity.listeners().removeOnTurnStart(turnStartListener)
                 turnStartListener = null

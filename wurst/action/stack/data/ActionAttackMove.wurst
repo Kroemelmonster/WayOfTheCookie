@@ -5,6 +5,7 @@ import StackActionTarget
 import PlayerData
 import Damage
 import UIMenuActionConsole
+import Stats
 
 init
     Initializer.register(InitializerNames.ACTIONS) -> 
@@ -15,10 +16,11 @@ public class ActionAttackMove extends StackActionTarget
 
     protected static function setup()
         TYPE = StackActionTarget.createType("Attack", Icons.bTNAttack, ActionCostPreset.create(1, true))
+        ..setTags(Tag.ATTACK)
         ..enableOption(ActionTypeOption.DEFAULT)
         TYPE.onCreate() (BoardStack stack, StackActionData data) ->
             return new ActionAttackMove(stack, data)
-        TYPE.onCreateTooltipLines() data -> 
+        TYPE.onCreateTooltipLines() (data, stats) -> 
             return new LinkedList<string>
 
 /* -------------------------------------------------------------------------- */
@@ -27,7 +29,7 @@ public class ActionAttackMove extends StackActionTarget
         return stack.canAttack(potentialTarget)
 
     protected override function getTargetRange() returns intRange
-        return stack.stats.getRange()
+        return stack.stats.getAttackRange()
 
     protected override function previewTarget(int prevUsedApForMove, BoardStack target)
         if target == null
@@ -36,7 +38,7 @@ public class ActionAttackMove extends StackActionTarget
 
         let tt = createBasicTooltip()
         let preview = DamagePreview.create(SourceType.ATTACK, stack.stats.getDamageType())
-        ..setDamage(stack.stats.getDamageAll())
+        ..setDamage(stack.stats.getAttackDamage())
 
         preview.extendTooltipWithSpecific(tt, stack, target)
         destroy preview

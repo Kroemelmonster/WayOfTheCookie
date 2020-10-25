@@ -44,7 +44,6 @@ public abstract class BoardEntity
     private EventListener damageTakenListener
     private EventListener unitDamageTakenListener
 
-    private EntityTrigger triggers
     private BoardEntityListener listeners
 
     protected Action defaultAction
@@ -55,7 +54,6 @@ public abstract class BoardEntity
         this.entityType = entityType
         this.boardForce = boardForce
         this.stati = new LinkedList<Status>
-        this.triggers = new EntityTrigger()
         listeners = new BoardEntityListener()
         this.actions = new LinkedList<Action>
         currentSelectedAction = null
@@ -161,9 +159,6 @@ public abstract class BoardEntity
     abstract function isAlive() returns boolean
     abstract function toString() returns string
     abstract function getInitiative() returns int
-
-    function getTriggers() returns EntityTrigger
-        return triggers
 
     function listeners() returns BoardEntityListener
         return listeners
@@ -298,7 +293,6 @@ public abstract class BoardEntity
             
 
     protected function destroyTriggers()
-        destroy triggers
         destroy listeners
 
     ondestroy

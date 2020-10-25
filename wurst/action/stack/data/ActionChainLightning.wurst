@@ -9,6 +9,8 @@ import UIMenuActionConsole
 import AnimationWait
 import Damage
 import AnimationCast
+import Stats
+import StackType
 
 init
     Initializer.register(InitializerNames.ACTIONS) -> 
@@ -19,13 +21,14 @@ public class ActionChainLightning extends StackActionTarget
 
     protected static function setup()
         let cost = ActionCostPreset.create(1, true, 3)
+        damagePreview = DamagePreview.create(SourceType.SPELL, DamageType.MAGIC)
         TYPE = StackActionTarget.createType("Chain Lightning", Icons.bTNChainLightning, cost)
         ..enableOption(ActionTypeOption.PRIMARY)
+        ..setTags(Tag.SPELL, Tag.MAGIC, Tag.LIGHTNING)
         TYPE.onCreate() (BoardStack stack, StackActionData data) ->
             return new ActionChainLightning(stack, data)
-        TYPE.onCreateTooltipLines() data -> 
-            return createTooltipLines(data)
-        damagePreview = DamagePreview.create(SourceType.SPELL, DamageType.MAGIC)
+        TYPE.onCreateTooltipLines() (data, HasEntityStats stats) -> 
+            return createTooltipLines(data, stats)
 
     private static constant RANGE = intRange(1, 4)
     private static constant MAX_CHAINS = 3
@@ -34,29 +37,23 @@ public class ActionChainLightning extends StackActionTarget
     
     private static DamagePreview damagePreview
 
-    private static function calculateDamage(int amount, int chain) returns DamagePreview
-        var multi = 1.0
+    private static function calculateDamage(StackActionData _data, HasEntityStats stats, int chain) returns DamagePreview
+        var multi = stats.getDamageMulti(TYPE.getTags())
         for i = 1 to chain
             multi *= CHAIN_REDUCTION
-        multi *= amount
-        damagePreview.dmg = realRange(42.0 * multi, 55.0 * multi)
+        multi *= stats.getAmount()
+        damagePreview.dmg = realRange(42.0, 55.0) * multi
         return damagePreview
 
-    private static function createTooltipLines(int amount) returns LinkedList<string>
+    private static function createTooltipLines(StackActionData data, HasEntityStats stats) returns LinkedList<string>
         return new LinkedList<string>
         ..add(KStringUtils.stat("Target", "Enemy"))
-        ..add(KStringUtils.stat("Damage", calculateDamage(amount, 0).toColoredText()))
+        ..add(KStringUtils.stat("Damage", calculateDamage(data, stats, 0).toColoredText()))
         ..add("")
         ..add("Lightning strikes from one target and chains up to "
          + KStringUtils.primaryString(MAX_CHAINS.toString()) + " times")
         ..add("Each time the damage is descreased by "
          + KStringUtils.primaryPercent(1 - CHAIN_REDUCTION))
-
-    private static function createTooltipLines(StackActionData _data) returns LinkedList<string>
-        return createTooltipLines(1)
-       
-    private static function createTooltipLines(ActionChainLightning action) returns LinkedList<string>
-        return createTooltipLines(action.stack.stats.amount)
 
 /* -------------------------------------------------------------------------- */
 
@@ -82,7 +79,7 @@ public class ActionChainLightning extends StackActionTarget
                 let currentTarget = prevTargets.peek()
                 if currentTarget == null
                     break
-                calculateDamage(stack.stats.amount, chain)
+                calculateDamage(data, stack.stats, chain)
                 .extendTooltipWithSpecific(tt, entity, currentTarget)
                 chain++
                 prevTargets.add(getNextTarget(prevTargets, currentTarget.getCell()))
@@ -93,7 +90,7 @@ public class ActionChainLightning extends StackActionTarget
       
     protected override function executeOrder(boolean didMove, int prevUsedApForMove, BoardStack target) returns boolean
         AnimationCast.atCell(stack, target.getCell()) () ->
-            let rolledBaseDamage = calculateDamage(stack.stats.amount, 0).getRandomInstance()
+            let rolledBaseDamage = calculateDamage(data, stack.stats, 0).getRandomInstance()
             let prevTargets = new LinkedList<BoardStack>()
             chainToNext(prevTargets, stack, rolledBaseDamage, target, 0) -> 
                 destroy prevTargets
@@ -144,7 +141,7 @@ public class ActionChainLightning extends StackActionTarget
         return nextTarget
 
     override function createBasicTooltipLines() returns LinkedList<string>
-        return createTooltipLines(this)
+        return createTooltipLines(data, stack.stats)
 
     private construct(BoardStack stack, StackActionData data)
         super(stack, TYPE, data)

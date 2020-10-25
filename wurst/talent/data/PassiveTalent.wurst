@@ -5,6 +5,7 @@ import Talent
 import Action
 import StackPassive
 import initlater PassiveTalentType
+import StackType
 
 public class PassiveTalent extends Talent
     protected StackPassive passive
@@ -20,7 +21,7 @@ public class PassiveTalent extends Talent
             Log.error(entity.toString() + " has a talent "
              + getName() + " which can not be automaticly added")
 
-    override function createTooltip() returns Tooltip
+    override function createTooltip(HasEntityStats stats) returns Tooltip
         return createBasicTooltip()
         ..addLines(passive.createTooltipLines())
 

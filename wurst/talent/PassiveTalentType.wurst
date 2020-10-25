@@ -8,6 +8,7 @@ import PassiveTalent
 import StackPassiveType
 import Data
 import Damage
+import StackType
 
 public class PassiveTalentType extends TalentType implements HasData
     protected StackPassiveType passiveType
@@ -20,9 +21,9 @@ public class PassiveTalentType extends TalentType implements HasData
         
         onCreate() entity ->
             return new PassiveTalent(this, passiveType, data, entity)
-        onCreateTooltip() -> 
+        onCreateTooltip() (HasEntityStats stats) -> 
             return createBasicTooltip()
-            ..addLines(passiveType.createTooltipLines(data))
+            ..addLines(passiveType.createTooltipLines(data, stats))
 
     override function setIntData(int where, int value)
         data.setIntData(where, value)
@@ -41,9 +42,3 @@ public class PassiveTalentType extends TalentType implements HasData
 
     override function getRealData(int where) returns real
         return data.getRealData(where)
-        
-    override function setDamagePreview(DamagePreview preview)
-        data.setDamagePreview(preview)
-
-    override function getDamagePreview() returns DamagePreview
-        return data.getDamagePreview()

@@ -8,14 +8,11 @@ public interface HasData
     function getBoolData(int where) returns boolean
     function setRealData(int where, real value)
     function getRealData(int where) returns real
-    function setDamagePreview(DamagePreview preview)
-    function getDamagePreview() returns DamagePreview
         
 public class Data
     protected int array[10] intData
     protected real array[10] realData
     protected boolean array[10] boolData
-    protected DamagePreview damageData
 
     function setIntData(int where, int value)
         intData[where] = value
@@ -34,14 +31,3 @@ public class Data
 
     function getRealData(int where) returns real
         return realData[where]
-
-    function setDamagePreview(DamagePreview preview)
-        damageData = preview
-
-    function getDamagePreview() returns DamagePreview
-        return damageData
-
-    ondestroy
-        if damageData != null
-            destroy damageData
-            damageData = null

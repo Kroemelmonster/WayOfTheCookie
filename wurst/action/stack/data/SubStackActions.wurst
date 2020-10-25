@@ -22,7 +22,7 @@ public class SubStackActions
     static function attack(BoardStack attacker, BoardStack defender, boolean triggerOnAttack, SequenzListenerStatus next)
         // TODO maybe stream line this
         let preview = DamagePreview.create(SourceType.ATTACK, attacker.stats.getDamageType())
-        ..setDamage(attacker.stats.getDamageAll())
+        ..setDamage(attacker.stats.getAttackDamage())
         let instance = preview.getRandomInstance()
         destroy preview
         attack(attacker, defender, instance, triggerOnAttack) (status) ->

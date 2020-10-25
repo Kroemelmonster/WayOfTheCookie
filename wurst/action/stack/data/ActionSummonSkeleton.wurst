@@ -11,54 +11,54 @@ import AnimationWait
 import AnimationCast
 import StackTypesData
 import Scheduler
+import Stats
 
 init
     Initializer.register(InitializerNames.ACTIONS) -> 
         ActionSummonSkeleton.setup()
 
+init 
+    Initializer.register(InitializerNames.DATA) ->
+        ActionSummonSkeleton.setupAfter()
+
 public class ActionSummonSkeleton extends StackActionTargetCell
     static StackActionType TYPE
 
     protected static function setup()
-        TYPE = StackActionTargetCell.createType("Summon Skeleton", Icons.bTNRaiseDead, ActionCostPreset.create(1, true, 3))
+        TYPE = StackActionTargetCell.createType("Summon Skeleton", Icons.bTNRaiseDead, ActionCostPreset.create(1, true, 2))
+        ..setTags(Tag.SPELL, Tag.DARK)
         ..enableOption(ActionTypeOption.PRIMARY)
         TYPE.onCreate() (BoardStack stack, StackActionData data) ->
             return new ActionSummonSkeleton(stack, data)
-        TYPE.onCreateTooltipLines() data -> 
-            return createTooltipLines(data)
+        TYPE.onCreateTooltipLines() (data, stats) -> 
+            return createTooltipLines(data, stats)
+
+    protected static function setupAfter()
+        SUMMONED_TYPE = StackTypes.find("Lesser Skeleton")
 
     private static constant TARGET_RANGE = intRange(1, 1)
-    private static constant string EFFECT = Abilities.raiseSkeleton
     private static StackType SUMMONED_TYPE
 
-    private static function getSummonLeadershipLeadershipAmount(int amount) returns intRange
-        return intRange((SUMMONED_TYPE.leadership * amount * 0.8).ceil(),
-                        (SUMMONED_TYPE.leadership * amount * 1.2).ceil())
+    private static function getSummonAmount(StackActionData _data, HasEntityStats stats) returns intRange
+        let multi = (stats.getAmount() * stats.getSummonEffectivness(TYPE.getTags())) / SUMMONED_TYPE.getLeadership()
+        return (realRange(10, 15) * multi).ceil() 
 
-    private static function createTooltipLines(int amount) returns LinkedList<string>
-        let leadership = getSummonLeadershipLeadershipAmount(amount)
+    private static function createTooltipLines(StackActionData data, HasEntityStats stats) returns LinkedList<string>
         return new LinkedList<string>
         ..add(KStringUtils.stat("Target", "Empty Cell"))
         ..add(KStringUtils.stat("Range", TARGET_RANGE))
         ..add("")
-        ..add("Summons a Stack of "
-        + KStringUtils.coloredString(KStringUtils.COLOR_SECONDARY, SUMMONED_TYPE.name)
-        + " with a Leaderhip of "
-        + KStringUtils.coloredRange(KStringUtils.COLOR_PRIMARY, leadership))
-
-    private static function createTooltipLines(StackActionData _data) returns LinkedList<string>
-        return createTooltipLines(1)
+        ..add("Summon "
+         + KStringUtils.coloredRange(KStringUtils.COLOR_PRIMARY, getSummonAmount(data, stats))
+         + " Stacks of "
+         + KStringUtils.coloredString(KStringUtils.COLOR_SECONDARY, SUMMONED_TYPE.getName()))
       
-    private static function createTooltipLines(ActionSummonSkeleton action) returns LinkedList<string>
-        return createTooltipLines(action.stack.stats.amount)
-    
 /* -------------------------------------------------------------------------- */
 
     private Cell highlightedCell
 
     private construct(BoardStack stack, StackActionData data)
         super(stack, TYPE, data)
-        SUMMONED_TYPE = StackTypes.find("Lesser Skeleton")
 
     override function recalculateHighlightInner(Cell target)
         highlightedCell = target
@@ -68,8 +68,8 @@ public class ActionSummonSkeleton extends StackActionTargetCell
             return CellHighlightRune.CAST
         return CellHighlightRune.NONE
 
-    protected override function canTarget(Cell potentialTarget) returns boolean
-        return potentialTarget.getStack() == null
+    protected override function canTarget(Cell cell) returns boolean
+        return not cell.isBlocked() and cell.getStack() == null
 
     protected override function canHit(BoardStack target) returns boolean
         return false
@@ -89,21 +89,12 @@ public class ActionSummonSkeleton extends StackActionTargetCell
     
     protected override function executeOrder(boolean didMove, int prevUsedApForMove, Cell target) returns boolean
         AnimationCast.atCell(stack, target) () ->
-            flashEffect(EFFECT, target.getCoord())
+            flashEffect(Abilities.raiseSkeleton, target.getCoord())
             let waitUntil = Scheduler.getTimeIn(0.5)
-            BoardController.createSummon(stack.getForce(), SUMMONED_TYPE, target, caclualateSummonAmount().random()) ->
+            BoardController.createSummon(stack.getForce(), SUMMONED_TYPE, target, getSummonAmount(data, stack.stats).random()) ->
                 AnimationWait.untill(target.getBoard(), waitUntil) ->
                     BoardController.finishOrder(entity, cost)
-
         return true
 
-    private function caclualateSummonAmount() returns intRange
-        let amount = stack.stats.getAmount()
-        let leadershipAmount = getSummonLeadershipLeadershipAmount(stack.stats.amount)
-        return intRange((leadershipAmount.min / SUMMONED_TYPE.leadership).ceil(), (leadershipAmount.max / SUMMONED_TYPE.leadership).ceil())
-    
     override function createBasicTooltipLines() returns LinkedList<string>
-        return createTooltipLines(this)
-    
-    ondestroy
-        
+        return createTooltipLines(data, stack.stats)

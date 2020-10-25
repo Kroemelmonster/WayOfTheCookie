@@ -1,0 +1,202 @@
+package Stats
+import Damage
+
+public abstract class StatAbstract
+    protected int multi
+    protected int addBonus
+
+    construct()
+        multi = 100
+        addBonus = 0
+
+    function add(int value)
+        addBonus += value
+
+    function modify(int value, boolean add)
+        addBonus += value * (add ? 1 : -1)
+
+    function addMulti(int value)
+        this.multi += value
+
+public interface IsIntStat
+    abstract function getBasis() returns int
+    abstract function value() returns int
+
+public class StatInt extends StatAbstract implements IsIntStat
+    protected int basis
+
+    construct(int basis)
+        super()
+        this.basis = basis
+
+    construct(IsIntStat basisStat)
+        super()
+        this.basis = basisStat.value()
+
+    override function value() returns int
+        return ((basis + addBonus) * (multi / 100.0)).round()
+
+    override function getBasis() returns int
+        return basis
+
+    function addBasis(int value)
+        basis += value
+
+public interface IsIntRangeStat
+    abstract function getBasis() returns intRange
+    abstract function value() returns intRange
+    
+public class StatIntRange extends StatAbstract implements IsIntRangeStat
+    protected intRange basis
+
+    construct(intRange basis)
+        super()
+        this.basis = basis
+
+    construct(IsIntRangeStat basisStat)
+        super()
+        this.basis = basisStat.value()
+
+    override function value() returns intRange
+        return ((basis + addBonus) * (multi / 100.0)).round()
+
+    override function getBasis() returns intRange
+        return basis
+
+    function addBasis(int value)
+        basis += value
+
+public interface IsRealRangeStat
+    abstract function getBasis() returns realRange
+    abstract function value() returns realRange
+
+public class StatRealRange extends StatAbstract implements IsRealRangeStat
+    protected realRange basis
+
+    construct(realRange basis)
+        super()
+        this.basis = basis
+
+    construct(IsRealRangeStat basisStat)
+        super()
+        this.basis = basisStat.value()
+
+    override function value() returns realRange
+        return ((basis + addBonus) * (multi / 100.0))
+
+    override function getBasis() returns realRange
+        return basis
+
+    function addBasis(int value)
+        basis += value
+
+public enum Tag
+    ATTACK
+    SPELL
+    PHYSICAL
+    MAGIC
+    FIRE
+    COLD
+    CHAOS
+    LIGHTNING
+    LIGHT
+    DARK
+    WARCRY
+
+constant string array TAG_NAMES = [
+    "ATTACK", "SPELL", "PHYSICAL", "MAGIC", "FIRE", "COLD", "CHAOS", "LIGHTNING", "LIGHT", "DARK", "WARCRY"
+]
+
+public interface HasTags
+    function forTag(Tag tag) returns IsTagStat
+
+public constant TAG_AMOUNT = 10
+
+public function damageType2Tag(DamageType damageType) returns Tag
+    return (((damageType castTo int) + 2) castTo Tag)
+
+public function tags2String(LinkedList<Tag> tags) returns string
+    var str = ""
+    let itr = tags.iterator()
+    while itr.hasNext()
+        str += TAG_NAMES[itr.next() castTo int]
+        if itr.hasNext()
+            str += ", "
+    return str
+
+public function tagsGetDamageMulti(HasTags tagContainter, LinkedList<Tag> tags) returns real
+    var multi = 1.0
+    var additive = 0.0
+    for tag in tags
+        let tagStat = tagContainter.forTag(tag)
+        additive += tagStat.getDamageAdditivePerc()
+        multi *= tagStat.getDamageMultiPerc()
+    return (1.0 + additive) * multi
+
+public function tagsGetStatusEffectivness(HasTags tagContainter, LinkedList<Tag> tags) returns real
+    var multi = 1.0
+    for tagId in tags
+        let tag = tagContainter.forTag(tagId)
+        multi *= tag.getStatusEffectivness()
+    return multi
+
+public function tagsGetSummonEffectivness(HasTags tagContainter, LinkedList<Tag> tags) returns real
+    var multi = 1.0
+    for tagId in tags
+        let tag = tagContainter.forTag(tagId)
+        multi *= tag.getSummonEffectivness()
+    return multi
+
+public interface IsTagStat
+    abstract function getDamageAdditivePerc() returns real
+    abstract function getDamageMultiPerc() returns real
+    abstract function getStatusEffectivness() returns real
+    abstract function getSummonEffectivness() returns real
+
+public abstract class StatTagAbstract
+    protected int damageAdditive
+    protected int damageMultiplicative
+    protected int statusEffectivness
+    protected int summonEffectivness
+
+    construct()
+        damageAdditive = 0
+        damageMultiplicative = 0
+        statusEffectivness = 0
+        summonEffectivness = 0
+
+    function modifyDamageAdditive(int value, boolean add)
+        damageAdditive += value * (add ? 1 : -1)
+
+    function modifyDamageMultiplicative(int value, boolean add)
+        damageMultiplicative += value * (add ? 1 : -1)
+
+    function modifyStatusEffectivness(int value, boolean add)
+        statusEffectivness += value * (add ? 1 : -1)
+
+    function modifySummonEffectivness(int value, boolean add)
+        summonEffectivness += value * (add ? 1 : -1)
+
+
+public class StatTag extends StatTagAbstract implements IsTagStat
+    construct()
+        super()
+
+    construct(StatTag basis)
+        super()
+        damageAdditive = basis.damageAdditive
+        damageMultiplicative = basis.damageMultiplicative
+        statusEffectivness = basis.statusEffectivness
+        summonEffectivness = basis.summonEffectivness
+
+    override function getDamageAdditivePerc() returns real
+        return damageAdditive / 100.0
+
+    override function getDamageMultiPerc() returns real
+        return (100.0 + damageMultiplicative) / 100.0
+
+    override function getStatusEffectivness() returns real
+        return (100.0 + statusEffectivness) / 100.0
+
+    override function getSummonEffectivness() returns real
+        return (100.0 + summonEffectivness) / 100.0

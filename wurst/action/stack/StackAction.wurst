@@ -1,15 +1,17 @@
 package StackAction
 
 import public initlater Action
-import public initlater StackActionType
+import public StackActionType
 import public initlater SubStackActions
 
 import public BoardStack
+import Stats
 
 public abstract class StackAction extends Action
     protected BoardStack stack
     protected StackActionType actionType
     protected StackActionData data
+    protected LinkedList<Tag> tags // just save pointer.. this prevents a bug
 
     static function createType(string name, string icon, ActionCostPreset cost) returns StackActionType
         return new StackActionType(name, icon, cost)
@@ -18,6 +20,7 @@ public abstract class StackAction extends Action
         super(stack, actionType)
         this.stack = stack
         this.actionType = actionType
+        tags = actionType.getTags()
         this.data = data
         if data != null
             cost.setBasic(data.getCost())
@@ -26,6 +29,7 @@ public abstract class StackAction extends Action
 
     function createTooltipLines() returns LinkedList<string>
         return cost.createTooltipLines()
+        ..add(KStringUtils.stat("Tags", tags2String(tags)))
         ..addAllAndDestroy(createBasicTooltipLines())
         
     protected abstract function createBasicTooltipLines() returns LinkedList<string>

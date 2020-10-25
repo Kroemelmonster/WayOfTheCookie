@@ -1,27 +1,68 @@
 package HeroType
 
-import KUtil
 import SkillTree
 import Damage
 
 public class HeroType
-    integer unitId
-    integer armyUnitId
-    string icon
-    string name
+    protected int unitId
+    protected int armyUnitId
+    protected string icon
+    protected string name
 
-    int attack
-    int defence
-    int power
-    int wisdom
-    int initiative
-    int actionPoints
+    protected int attack
+    protected int defence
+    protected int power
+    protected int wisdom
+    protected int initiative
+    protected int aP
+    protected intRange damage
+    protected DamageType damageType = PHYSICAL
 
-    intRange damage
-    
-    DamageType damageType = PHYSICAL
+    protected SkillTreeType array[3] skillTrees
 
-    SkillTreeType array[3] skillTrees
+/* --------------------------------- Getters -------------------------------- */
+
+    function getAttack() returns int
+        return attack
+
+    function getDefence() returns int
+        return defence
+
+    function getPower() returns int
+        return power
+
+    function getWisdom() returns int
+        return power
+
+    function getInitiative() returns int
+        return initiative
+
+    function getAP() returns int
+        return aP
+
+    function getDamage() returns intRange
+        return damage
+
+    function getDamageType() returns DamageType
+        return damageType
+
+    function getSkillTreeType(int index) returns SkillTreeType
+        return skillTrees[index]
+
+
+    function getUnitId() returns int
+        return unitId
+
+    function getArmyUnitId() returns int
+        return armyUnitId
+
+    function getIcon() returns string
+        return icon
+
+    function getName() returns string
+        return name
+
+/* ---------------------------------- Setup --------------------------------- */
 
     construct(integer unitId, integer armyUnitId, string icon, string name)
         this.unitId = unitId
@@ -29,44 +70,35 @@ public class HeroType
         this.icon = icon
         this.name = name
 
-    @inline
     function setSkillTrees(SkillTreeType type1, SkillTreeType type2, SkillTreeType type3)
         skillTrees[0] = type1
         skillTrees[1] = type2
         skillTrees[2] = type3
     
-    @inline
     function setDamage(intRange value)
         damage = value
 
-    @inline
     function setInitiative(int value)
         initiative = value
 
-    @inline
-    function setActionPoints(int value)
-        actionPoints = value
+    function setAP(int value)
+        aP = value
 
-    @inline
     function setAttack(int value)
         attack = value
 
-    @inline
     function setDefence(int value)
         defence = value
 
-    @inline
     function setPower(int value)
         power = value
 
-    @inline
     function setWisdom(int value)
         wisdom = value
 
-    @inline
-    function getDamage(int heroLevel) returns intRange
-        return damage * (1 + (2 * heroLevel))
-
-    @inline
     function setDamageType(DamageType value)
         this.damageType = value
+
+    
+
+    

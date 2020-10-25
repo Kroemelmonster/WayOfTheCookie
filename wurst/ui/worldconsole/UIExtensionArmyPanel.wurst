@@ -103,7 +103,7 @@ class UIExtensionArmyButton extends UIButtonIcon
         if info.dragStart == index
             // zeige das an was auf dragEnd ist an
             if info.stackDragEnd != null
-                setBackground(info.stackDragEnd.getStackType().icon)
+                setBackground(info.stackDragEnd.getStackType().getIcon())
                 setText(info.stackDragEnd.getAmount().toString())
                 // sind die nicht identisch wird es ein swap ansonten haben wir gerade einfach nur den normalen status angezeigt
                 if info.stackDragEnd != info.stackDragStart
@@ -114,12 +114,12 @@ class UIExtensionArmyButton extends UIButtonIcon
         else if info.dragEnd == index
             // zeige das was auf dragStart ist an außer das sind wir selber
             if info.stackDragStart != info.stackDragEnd
-                setBackground(info.stackDragStart.getStackType().icon)
+                setBackground(info.stackDragStart.getStackType().getIcon())
                 setText(info.stackDragStart.getAmount().toString())
                 setAlpha(80)
         else if stack != null
             // there is not drag but maybe there is astack to show
-            setBackground(stack.getStackType().icon)
+            setBackground(stack.getStackType().getIcon())
             setText(stack.getAmount().toString())
         else
             // there is nothing sooo ?

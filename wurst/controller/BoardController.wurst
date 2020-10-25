@@ -1,25 +1,17 @@
 package BoardController
 
-import ClosureTimers
-import LinkedList
 
 import KISystem
 import StatusController
 
 import initlater BoardStack
-import initlater Cell
-import initlater Board
 import initlater Damage
 import initlater StandardTextTags
 import initlater Action
 import initlater OrderSystem
-import initlater BoardTrigger
-import initlater BoardEntity
 import initlater Status
 import initlater StatusType
-import initlater ActionCost
 import initlater StatusStunned
-import initlater PathFinding
 
 import initlater MainController
 import initlater UIController
@@ -27,6 +19,9 @@ import initlater StackType
 import initlater BoardForce
 import CellObstacle
 import BoardListenerOnCellMove
+import BoardListenerOnDamage
+import BoardListenerOnInitiative
+import BoardListenerOnInteraction
 
 public class BoardController
 
@@ -50,7 +45,7 @@ public class BoardController
             let board = boardForce.getBoard()
             let summon = boardForce.createSummon(stackType, amount)
             boardForce.placeStack(summon, cell, true)
-            onCellEnter(summon, cell, cell) (cost) -> 
+            onCellEnter(summon, null, cell) (cost) -> 
                 UIController.triggerOnStackCreationOrDeathChange(board) -> 
                     next.continue()
 
@@ -105,53 +100,28 @@ public class BoardController
         
         let instance = originalDamageInstance.copy()
         let specificInstance = instance.calculateDamageTo(source, stackTarget)
-        calculateDamageBefore(source, specificInstance, stackTarget) ->
-            specificInstance.applyResults()
-            dealDamageInner(source, specificInstance, stackTarget) ->
-                destroy instance
-                destroy specificInstance
-                if stackTarget.stats.getAmount() == 0
-                    killStack(stackTarget, next)
-                else
-                    next.continue()
+        let data = BoardListenerOnDamageData.create(source, stackTarget, specificInstance)
+        source.listeners().triggerOnBeforeDamageDealt(data) ->
+            stackTarget.listeners().triggerOnBeforeDamageTaken(data) ->
 
-    private static function calculateDamageBefore(BoardEntity source, SpecificDamageInstance instance, BoardStack target, SequenzListener next)
-        onBeforeDamageTaken(source, target, instance) ->
-            onBeforeDamageDealt(source, target, instance) ->
-                next.continue()
-
-    private static function dealDamageInner(BoardEntity source, SpecificDamageInstance instance, BoardStack target, SequenzListener next)
-        // apply the dmg
-        standardTextTag(target.getCell().getCoord(), instance.toColoredText())
-
-        // after damage trigers
-        if instance.hasFlag(DamageFlags.TRIGGERED)
-            next.continue()
-        else
-            onDamageTaken(source, target, instance) ->
-                onDamageDealt(source, target, instance) ->
-                    next.continue()
-    /** triggers **/
-
-    private static function onBeforeDamageDealt(BoardEntity source, BoardStack target, SpecificDamageInstance instance, SequenzListener next)
-        source.getTriggers().triggerOnBeforeDamageDealt(source, target, instance) ->
-            next.continue()
-
-    private static function onBeforeDamageTaken(BoardEntity source, BoardStack target, SpecificDamageInstance instance, SequenzListener next)
-        target.getTriggers().triggerOnBeforeDamageTaken(source, target, instance) ->
-            next.continue()
-            
-    private static function onDamageTaken(BoardEntity source, BoardStack target, SpecificDamageInstance specificInstance, SequenzListener next)
-        target.getTriggers().triggerOnDamageTaken(source, target, specificInstance) ->
-            next.continue()
-
-    private static function onDamageDealt(BoardEntity source, BoardStack target, SpecificDamageInstance specificInstance, SequenzListener next)
-        source.getTriggers().triggerOnDamageDealt(source, target, specificInstance) ->
-            next.continue()
+                specificInstance.applyResults()
+                standardTextTag(target.getCell().getCoord(), specificInstance.toColoredText())
+                
+                stackTarget.listeners().triggerOnDamageTaken(data) ->
+                    source.listeners().triggerOnDamageDealt(data) ->
+                        destroy instance
+                        destroy specificInstance
+                        if stackTarget.stats.getAmount() == 0
+                            killStack(stackTarget, next)
+                        else
+                            next.continue()
+                        destroy data
 
     static function onAttackEnd(BoardStack attacker, BoardStack defender, SequenzListener next)
         nullTimer() ->
-            defender.getTriggers().triggerOnAttacked(attacker, defender) ->
+            let data = BoardListenerOnInteractionData.create(attacker, defender)
+            defender.listeners().triggerOnAttacked(data) ->
+                destroy data
                 next.continue()
 
     static function onTurnEnd(BoardEntity entity, boolean isWaiting, SequenzListener next)
@@ -161,7 +131,9 @@ public class BoardController
             entity.forEachAction() action ->
                 action.tickCooldown()
 
-            entity.getTriggers().triggerOnTurnEnd() ->
+            let data = BoardListenerOnInitiativeData.create(entity)
+            entity.listeners().triggerOnTurnEnd(data) ->
+                destroy data
                 next.continue()
         else
             next.continue()
@@ -201,7 +173,9 @@ public class BoardController
                 if wasWaiting
                     turnStartContinue(entity)
                 else
-                    entity.getTriggers().triggerOnTurnStart() ->
+                    let data = BoardListenerOnInitiativeData.create(entity)
+                    entity.listeners().triggerOnTurnStart(data) ->
+                        destroy data
                         if entity.isAlive() and entity.canStillAct()
                             turnStartContinue(entity)
                         else
@@ -278,7 +252,7 @@ public class BoardController
 
     private static function onCellLeaveForCell(LLIterator<CellObstacle> itr,  BoardListenerOnCellMoveData data, SequenzListener next)
         if itr.hasNext()
-            itr.next().triggerOnAnyCellEnter(data) -> 
+            itr.next().triggerOnAnyCellLeave(data) -> 
                 onCellLeaveForCell(itr, data, next)
         else
             next.continue()

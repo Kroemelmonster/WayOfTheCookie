@@ -11,6 +11,12 @@ public tuple intRange(int min, int max)
 public function intRange.op_mult(int m) returns intRange
     return intRange(this.min * m, this.max * m)
 
+public function intRange.op_mult(real m) returns realRange
+    return realRange(this.min * m, this.max * m)
+
+public function intRange.op_plus(int m) returns intRange
+    return intRange(this.min + m, this.max + m)
+
 public function intRange.random() returns int
     return GetRandomInt(this.min, this.max)
 
@@ -25,8 +31,17 @@ public tuple realRange(real min, real max)
 public function realRange.op_mult(real m) returns realRange
     return realRange(this.min * m, this.max * m)
 
+public function realRange.op_mult(int m) returns realRange
+    return realRange(this.min * m, this.max * m)
+
+public function realRange.op_plus(int m) returns realRange
+    return realRange(this.min + m, this.max + m)
+
 public function realRange.round() returns intRange
     return intRange(this.min.round(), this.max.round())
+
+public function realRange.ceil() returns intRange
+    return intRange(this.min.ceil(), this.max.ceil())
 
 public function realRange.random() returns real
     return GetRandomReal(this.min, this.max)

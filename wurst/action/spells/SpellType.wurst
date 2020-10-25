@@ -4,12 +4,14 @@ import public SpellAction
 
 import Hero
 import HeroData
+import HeroStats
+import Stats
 
 interface SpellCreateListener
     function create(BoardHero hero, Spell spell) returns SpellAction
 
 interface SpellTooltipLinesCreateListener
-    function create(SpellLevel level, HasSpellStats spellStats) returns LinkedList<string>
+    function create(SpellLevel level, HasHeroStats stats) returns LinkedList<string>
 
 public class SpellType extends ActionType
     protected static LinkedList<SpellType> all = new LinkedList<SpellType>
@@ -23,11 +25,13 @@ public class SpellType extends ActionType
     protected SpellCreateListener listener
     protected SpellTooltipLinesCreateListener tooltipListener
 
+    protected LinkedList<Tag> tags
     protected LinkedList<SpellLevel> levels
 
     construct(string name, string icon)
         super(name, icon)
         levels = new LinkedList<SpellLevel>
+        tags = new LinkedList<Tag>
         all.add(this)
     
     function onActionCreate(SpellCreateListener listener)
@@ -35,6 +39,13 @@ public class SpellType extends ActionType
 
     function onCreateTooltipLines(SpellTooltipLinesCreateListener tooltipListener)
         this.tooltipListener = tooltipListener
+
+    function setTags(vararg Tag newTags)
+        for tag in newTags
+            tags.add(tag)
+
+    function getTags() returns LinkedList<Tag>
+        return tags
 
     function addLevel(ActionCostPreset usageCost, HeroDataChange payCost) returns SpellLevel
         let level = new SpellLevel(usageCost, payCost)
@@ -53,10 +64,10 @@ public class SpellType extends ActionType
     function create(Hero hero) returns Spell
         return new Spell(this, hero)
 
-    function createTooltipLines(SpellLevel level, HasSpellStats spellStats) returns LinkedList<string>
-        return tooltipListener.create(level, spellStats)
+    function createTooltipLines(SpellLevel level, HasHeroStats stats) returns LinkedList<string>
+        return tooltipListener.create(level, stats)
 
-    function createTooltip(Hero hero, Spell spell, int forLevel, boolean showLevelCost) returns Tooltip
+    function createTooltip(Hero hero, HasHeroStats stats, int forLevel, boolean showLevelCost) returns Tooltip
         let tt = Tooltip.create(getName())
         if not forLevel.isBetween(0, getMaxLevel())
             return null
@@ -66,8 +77,8 @@ public class SpellType extends ActionType
             tt.addLines(level.getUsageCost().createTooltipLines())
         else
             level.getUsageCost().setupTooltipCost(tt)
-        tt.addLines(createTooltipLines(level, spell))
+        tt.addLines(createTooltipLines(level, stats))
         return tt
 
     function createTooltip(Hero hero, boolean showLevelCost) returns Tooltip
-        return createTooltip(hero, null, 0, showLevelCost)
+        return createTooltip(hero, hero.stats, 0, showLevelCost)

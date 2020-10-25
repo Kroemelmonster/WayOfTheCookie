@@ -14,6 +14,12 @@ public class Real
     construct(real value)
         this.self = value
 
+public class Int
+    int self
+
+    construct(int value)
+        this.self = value
+
 public function real.toReal() returns Real
     return new Real(this)
 

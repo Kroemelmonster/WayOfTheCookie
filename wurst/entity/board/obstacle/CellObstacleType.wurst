@@ -7,6 +7,7 @@ import initlater ObstacleDifficultTerrain
 import HexagonalGridUtil
 import Data
 import BoardEntity
+import Damage
 
 public class Variation
     string model
@@ -31,6 +32,7 @@ public class Variation
 
 public class CellObstacleData extends Data
     protected LinkedList<BoardEntity> entityData
+    protected DamagePreview damageData
     
     static function create() returns CellObstacleData
         return new CellObstacleData()
@@ -55,10 +57,19 @@ public class CellObstacleData extends Data
     function getAllEntityData() returns LinkedList<BoardEntity>
         return entityData
 
+    function setDamagePreview(DamagePreview preview)
+        damageData = preview
+
+    function getDamagePreview() returns DamagePreview
+        return damageData
+
     ondestroy
         if entityData != null
             destroy entityData
-            entityData = null
+            entityData = null 
+        if damageData != null
+            destroy damageData
+            damageData = null
 
 public interface CreateListener
     function create(Cell cell, CellObstacleData data) returns CellObstacle

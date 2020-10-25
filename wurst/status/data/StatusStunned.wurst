@@ -5,9 +5,8 @@ import Abilities
 
 import Status
 
-import initlater StatusType
-import initlater BoardEntity
-import BoardTrigger
+import StatusType
+import BoardEntity
 import Tooltip
 import InitiativeList
 

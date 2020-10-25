@@ -8,7 +8,7 @@ import public Action
 import BoardTrigger
 import BoardController
 
-public abstract class SpellAction extends Action implements HasSpellStats
+public abstract class SpellAction extends Action
     protected BoardHero hero
     protected int levelIndex
     protected SpellLevel level
@@ -60,7 +60,7 @@ public abstract class SpellAction extends Action implements HasSpellStats
         return getName() + " ["+(levelIndex + 1).toString()+"]"
 
     function createTooltip() returns Tooltip
-        return spell.createTooltip(levelIndex, false)
+        return spell.createTooltip(levelIndex, hero.stats, false)
 
     protected function startCast()
         currentlyActive = true
@@ -86,15 +86,3 @@ public abstract class SpellAction extends Action implements HasSpellStats
     override function executeForKI(SequenzListenerStatus listener)
         Log.error("YOU NEED TO WRITE KI FOR "+toString())
         listener.continue(-1)
-
-    /* -------------------------------------------------------------------------- */
-
-    override function getDamageMulti() returns real
-        let power = getPower()
-        return 1.0 + Spell.getBaseMultiFromPower(power)
-
-    override function getPower() returns int
-        return hero.stats.getPower()
-
-    override function getAttack() returns int
-        return hero.stats.getAttack()

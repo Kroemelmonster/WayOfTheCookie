@@ -16,7 +16,7 @@ public class StackTypes
     static function getAllOfLevel(int level) returns LinkedList<StackType>
         if groupedByLevel[level] == null
             groupedByLevel[level] = getFilteredList() (StackType stackType) ->
-                return stackType.level == level
+                return stackType.getLevel() == level
         return groupedByLevel[level]
 
     static function getFilteredList(StackTypeFilter filter) returns LinkedList<StackType>

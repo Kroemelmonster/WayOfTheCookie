@@ -11,17 +11,20 @@ import initlater ActionWait
 interface TalentCreateListener
     function create(BoardEntity boardEntity) returns Talent
 
-public interface TalentStats extends GeneratesTooltip, HasIcon
+interface TalentGeneratesTooltipListener
+    function createTooltip(HasEntityStats stats) returns Tooltip
+
+public interface TalentStats extends TalentGeneratesTooltipListener, HasIcon
 
 public class TalentType extends Icon implements TalentStats
 
     static function addStackDefaultAction(StackType stackType)
-        stackType.talents.add(ActionWait.TYPE.createTalent())
-        stackType.talents.add(ActionDefend.TYPE.createTalent())
-        stackType.talents.add(ActionAttackMove.TYPE.createTalent())
+        stackType.addTalent(ActionWait.TYPE.createTalent())
+        stackType.addTalent(ActionDefend.TYPE.createTalent())
+        stackType.addTalent(ActionAttackMove.TYPE.createTalent())
 
     protected TalentCreateListener listener
-    protected GeneratesTooltip tooltipListener
+    protected TalentGeneratesTooltipListener tooltipListener
 
     construct(Icon icon)
         super(icon.name, icon.icon)
@@ -32,7 +35,7 @@ public class TalentType extends Icon implements TalentStats
     function onCreate(TalentCreateListener listener)
         this.listener = listener
 
-    function onCreateTooltip(GeneratesTooltip tooltipListener)
+    function onCreateTooltip(TalentGeneratesTooltipListener tooltipListener)
         this.tooltipListener = tooltipListener
 
     function create(BoardEntity boardEntity) returns Talent
@@ -53,8 +56,8 @@ public class TalentType extends Icon implements TalentStats
     protected function createBasicTooltip() returns Tooltip
         return Tooltip.create(getName())
 
-    override function createTooltip() returns Tooltip
-        return tooltipListener.createTooltip()
+    override function createTooltip(HasEntityStats stats) returns Tooltip
+        return tooltipListener.createTooltip(stats)
 
     //static function setup()
         /*WaitAction.setup()

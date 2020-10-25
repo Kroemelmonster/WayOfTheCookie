@@ -119,7 +119,7 @@ public class DamagePreview extends Damage
         return Damage.type2Icon(damageType) + " " + KStringUtils.range(dmg.round())
 
 public class SpecificDamageInstance
-    protected boolean applied = false
+    protected boolean applied
     protected int overKillDamage
     protected int damage
     protected int kills
@@ -131,6 +131,7 @@ public class SpecificDamageInstance
         damageInstance = baseDamage.copy()
         this.target = target
         this.source = source
+        this.applied = false
         calculateBaseDamage()
 
     private function calculateBaseDamage()
@@ -179,7 +180,7 @@ public class SpecificDamageInstance
     **/
     function setBaseDamage(real damage)
         if applied
-            Log.error("tried to change damage while it already applied")
+            Log.error("tried to change base damage while it already applied")
             return
         damageInstance.dmg = damage
         calculateBaseDamage()

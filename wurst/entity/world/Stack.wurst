@@ -23,7 +23,7 @@ public class Stack
         amount = value
 
     function toString() returns string
-        return "Stack [" + stackType.name + ", " + amount.toString() + "]"
+        return "Stack [" + stackType.getName() + ", " + amount.toString() + "]"
 
 public class ArmyStack extends Stack
     StackStats stats
@@ -39,7 +39,7 @@ public class ArmyStack extends Stack
         return isSummoned
 
     override function toString() returns string
-        return "ArmyStack [" + stackType.name + ", " + amount.toString() + "]"
+        return "ArmyStack [" + stackType.getName() + ", " + amount.toString() + "]"
 
 public class Army
     static constant MAX_SIZE = 5
@@ -61,7 +61,7 @@ public class Army
         return stacks[i]
 
     function addStackWithLeadershipAt(int i, StackType stackType, int leadership) returns ArmyStack
-        let amount = (leadership / stackType.leadership).round()
+        let amount = (leadership / stackType.getLeadership()).round()
         return addStackAt(i, stackType, amount)
         
     function remove(int i)

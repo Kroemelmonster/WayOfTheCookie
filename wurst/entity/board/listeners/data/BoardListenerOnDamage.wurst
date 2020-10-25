@@ -1,0 +1,63 @@
+package BoardListenerOnDamage
+
+import initlater BoardStack
+import BoardListener
+import initlater BoardEntity
+import Damage
+
+public abstract class BoardListenerOnDamage
+    abstract function onEvent(BoardListenerOnDamageData onDamageData)
+
+    function execute(BoardListenerOnDamageData onDamageData, SequenzListener next)
+        onDamageData.next = next
+        if onDamageData.executions >= BoardListenerData.MAX_EXECUTIONS
+            Log.warn("Too many onDamage Listeners fired without a break -> we wait")
+            nullTimer() -> 
+                onEvent(onDamageData)
+        else
+            onEvent(onDamageData)
+
+public class BoardListenerOnDamageData extends BoardListenerData
+    static constant SPIRIT_LINK_TRANSFER = 0
+
+    static function create(BoardEntity source, BoardStack target, SpecificDamageInstance instance) returns BoardListenerOnDamageData
+        let data = new BoardListenerOnDamageData()
+        data.source = source
+        data.target = target
+        data.instance = instance
+
+        return data
+
+    private BoardEntity source
+    private BoardStack target
+    private SpecificDamageInstance instance
+
+    function getSource() returns BoardEntity
+        return source
+
+    function getTarget() returns BoardStack
+        return target
+
+    function hasFlag(DamageFlags flag) returns boolean
+        return instance.hasFlag(flag)
+
+    function getSourceType() returns SourceType
+        return instance.getSourceType()
+
+    function getDamageType() returns DamageType
+        return instance.getType()
+
+    function getDamage(boolean considerOverkill) returns int
+        if considerOverkill
+            return instance.getOverKillDamage()
+        return instance.getDamage()
+
+    function addDamage(int amount)
+        instance.setDamage(instance.getOverKillDamage() + amount)
+
+    function multiplyDamage(real perc)
+        instance.setDamage((instance.getOverKillDamage() * perc).round())
+
+    override function toString() returns string
+        return "OnDamage "+ source.toString()+" damaged "+target.toString()+" with "+instance.toColoredText()
+    

@@ -3,9 +3,10 @@ package CounterAttackPassive
 import Cell
 import StackPassive
 
-import BoardTrigger
 import BoardEntity
 import SubStackActions
+import BoardListenerOnInitiative
+import BoardListenerOnInteraction
 
 init
     Initializer.register(InitializerNames.PASSIVES) -> 
@@ -17,14 +18,14 @@ public class CounterAttackPassive extends StackPassive
         TYPE = new StackPassiveType("Counter Attack", "Icons/PASCounterAttack.dds")
         TYPE.onCreate() (BoardStack stack, StackPassiveData data) -> 
             return new CounterAttackPassive(stack, data)
-        TYPE.onCreateTooltipLines() data -> 
+        TYPE.onCreateTooltipLines() (data, stats) -> 
             return createTooltipLines(data)
         TYPE.onCreateData() -> 
             return StackPassiveData.create()
             ..setIntData(COUNTER, 1)
 
-    static constant int COUNTER = 0
-
+    static constant COUNTER = 0
+    
     private static function createTooltipLines(int counter, int maxCounter) returns LinkedList<string>
         let lines = new LinkedList<string>
         if counter == -1
@@ -52,24 +53,27 @@ public class CounterAttackPassive extends StackPassive
     construct(BoardStack stack, StackPassiveData data)
         super(stack, TYPE, data)
         this.counter = data.getIntData(COUNTER)
-        stack.getTriggers().addTurnEnd() (SequenzListener next) ->
+        stack.listeners().addOnTurnStart() (BoardListenerOnInitiativeData onInitData) ->
             counter = data.getIntData(COUNTER)
-            next.continue()
+            onInitData.continue(false)
 
-        stack.getTriggers().addOnAttacked() (BoardStack attacker, BoardStack defender, SequenzListener next) ->
-            if attacker.isAlive() and defender.isAlive() and checkForCounterAttack(attacker, attacker.getCell())
-                SubStackActions.attack(stack, attacker, false) (attackStatus) ->
-                    counter --
-                    next.continue()
+        stack.listeners().addOnAttacked() (BoardListenerOnInteractionData onInteractData) ->
+            let attackerEntity = onInteractData.getInittiator()
+            if attackerEntity.isAlive() and stack.isAlive() and checkForCounterAttack(attackerEntity)
+                counter --
+                SubStackActions.attack(stack, attackerEntity.toStack(), false) (attackStatus) ->
+                    onInteractData.continue(true)
             else
-                next.continue()
+                onInteractData.continue(false)
 
-    private function checkForCounterAttack(BoardStack _attacker, Cell fromCell) returns boolean
+    private function checkForCounterAttack(BoardEntity attackerEntity) returns boolean
         if counter <= 0
             return false
+        if attackerEntity.getType() != EntityType.STACK
+            return false
 
-        let distance = fromCell.getDistanceTo(stack.getCell())
-        return distance.isBetween(stack.stats.getRange())
+        let distance = attackerEntity.getCell().getDistanceTo(stack.getCell())
+        return distance.isBetween(stack.stats.getAttackRange())
 
     override function createTooltipLines() returns LinkedList<string>
         return createTooltipLines(this)

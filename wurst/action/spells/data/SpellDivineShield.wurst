@@ -1,24 +1,20 @@
 package SpellDivineShield
 
-import Doodads
-
 import SpellActionTarget
 
 import PlayerData
-import BoardController
 import BoardStack
 import UIMenuActionConsole
 import AnimationWait
-import Damage
 import AnimationCast
 import StatusType
 import StatusController
 import Status
-import UIController
-import StatusPurged
 import HeroData
 import Scheduler
 import StatusDivineShield
+import Stats
+import HeroStats
 
 init
     Initializer.register(InitializerNames.SPELLS) -> 
@@ -29,6 +25,7 @@ public class SpellDivineShield extends SpellActionTarget
     protected static function setup()
         BUFF = StatusDivineShield.TYPE
         TYPE = SpellActionTarget.createType("Divine Shield", Icons.bTNDivineIntervention)
+        ..setTags(Tag.SPELL, Tag.LIGHT)
         TYPE.addLevel(ActionCostPreset.createWithMana(1, true, 4), HeroDataChange.create(1, 0, 1))
         ..setIntData(ABSORD, 300)
         TYPE.addLevel(ActionCostPreset.createWithMana(1, true, 5), HeroDataChange.create(2, 0, 2))
@@ -37,29 +34,29 @@ public class SpellDivineShield extends SpellActionTarget
         ..setIntData(ABSORD, 700)
         TYPE.onActionCreate() (hero, spell) -> 
             return new SpellDivineShield(hero, spell)
-        TYPE.onCreateTooltipLines() (level, spellStats) -> 
-            return createTooltipLines(level, spellStats)
+        TYPE.onCreateTooltipLines() (level, stats) -> 
+            return createTooltipLines(level, stats)
 
-    private static constant int ABSORD = 0
+    private static constant ABSORD = 0
     private static StatusType BUFF
     
-    private static function calculateAbsorb(SpellLevel level, HasSpellStats spellStats) returns int
+    private static function calculateAbsorb(SpellLevel level, HasHeroStats stats) returns int
         var multi = 1.0
-        if spellStats != null
-            multi += spellStats.getPower() * 0.05
+        if stats != null
+            multi = stats.getStatusEffectivness(TYPE.getTags())
         return (level.getIntData(ABSORD) * multi).round()
 
-    private static function createTooltipLines(SpellLevel level, HasSpellStats spellStats) returns LinkedList<string>
+    private static function createTooltipLines(SpellLevel level, HasHeroStats stats) returns LinkedList<string>
         return new LinkedList<string>
         ..add(KStringUtils.stat("Target", "Ally"))
         ..add("")
         ..add("Enlightens one Ally with a bla bla")
         ..add(KStringUtils.line())
-        ..addAllAndDestroy(BUFF.createTooltipLines(createStatusData(level, spellStats)))
+        ..addAllAndDestroy(BUFF.createTooltipLines(createStatusData(level, stats)))
 
-    private static function createStatusData(SpellLevel level, HasSpellStats spellStats) returns StatusData
+    private static function createStatusData(SpellLevel level, HasHeroStats stats) returns StatusData
         return StatusData.create(1)
-        ..setIntData(StatusDivineShield.ABSORB, calculateAbsorb(level, spellStats))
+        ..setIntData(StatusDivineShield.ABSORB, calculateAbsorb(level, stats))
     
     /* -------------------------------------------------------------------------- */
 
@@ -89,7 +86,7 @@ public class SpellDivineShield extends SpellActionTarget
 
         AnimationCast.atCell(hero, cell) () ->
             let backSwingUntill = Scheduler.getTimeIn(0.2)
-            StatusController.apply(BUFF, cell.getStack(), createStatusData(level, this)) (status) ->
+            StatusController.apply(BUFF, cell.getStack(), createStatusData(level, hero.stats)) (status) ->
                 backSwing(backSwingUntill)
         return true
 
@@ -99,7 +96,7 @@ public class SpellDivineShield extends SpellActionTarget
 
     private function showTooltip(BoardStack _target)
         let tt = createBasicTooltip()
-        ..addLines(createTooltipLines(level, this))
+        ..addLines(createTooltipLines(level, hero.stats))
         
         UITooltip.display(entity.getConntrollingPlayer(), tt)
         UIMenuActionConsole.updateActionPoints(entity, cost)

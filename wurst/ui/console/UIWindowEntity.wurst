@@ -3,7 +3,6 @@ import UIWindow
 import UIHandle
 import Tooltip
 import StackType
-import StatsModifier
 import PlayerData
 import Stack
 import Scheduler
@@ -16,9 +15,14 @@ import UIInteractable
 import BoardEntity
 import TalentType
 import Status
+import Stats
+import BoardStackStats
+import DamageAndResistance
 
 public class UIWindowEntityInfo
     private BoardEntity entity
+    private StackStats stackStats
+    private BoardStackStats boardStackStats
     private HasEntityStats entityStats
 
     protected static function get(Player p) returns UIWindowEntityInfo
@@ -26,19 +30,54 @@ public class UIWindowEntityInfo
 
     protected static function setEntity(Player p, ArmyStack stack)
         let info = get(p)
-        info.entityStats = stack.stats
+        info.stackStats = stack.stats
         info.entity = null
+        info.boardStackStats = null
 
     protected static function setBoardEntity(Player p, BoardEntity entity) returns boolean
         let info = get(p)
         info.entity = entity
+        info.stackStats = null
         if entity.getType() == EntityType.STACK
-            info.entityStats = entity.toStack().stats
+            info.boardStackStats = entity.toStack().stats
             return true
         return false
 
-    protected static function getStats(Player p) returns HasEntityStats
-        return get(p).entityStats
+    protected static function getEntityStats(Player p) returns HasEntityStats
+        let info = get(p)
+        if info.boardStackStats != null
+            return info.boardStackStats
+        return info.stackStats
+
+    protected static function getBoardStackStats(Player p) returns BoardStackStats
+        return get(p).boardStackStats
+
+    protected static function getStackStas(Player p) returns StackStats
+        return get(p).stackStats
+
+    protected static function getResistance(Player p) returns Resistance
+        let info = get(p)
+        if info.boardStackStats != null
+            return info.boardStackStats.getResistance()
+        if info.stackStats != null
+            return info.stackStats.getResistance()
+        return null
+
+    protected static function getInitiative(Player p) returns IsIntStat
+        let info = get(p)
+        if info.boardStackStats != null
+            return info.boardStackStats.initiative
+        if info.stackStats != null
+            return info.stackStats.initiative
+        return null
+
+    protected static function getIcon(Player p) returns string
+        let info = get(p)
+        if info.boardStackStats != null
+            return info.boardStackStats.getIcon()
+        if info.stackStats != null
+            return info.stackStats.getIcon()
+        return ""
 
     protected static function forEachStatus(Player p, LLItrClosure<StatusStats> itr)
         let entity = get(p).entity
@@ -62,8 +101,9 @@ class UITalent extends UIInteractable
         ..setAllPoints(self)
 
         onMouseEnter() () ->
-            UITooltip.display(GetTriggerPlayerData(), 
-                talent.createTooltip(), TooltipAnchor.LEFT_BOTTOM , self)
+            let p = GetTriggerPlayerData()
+            UITooltip.display(p, 
+                talent.createTooltip(UIWindowEntityInfo.getEntityStats(p)), TooltipAnchor.LEFT_BOTTOM , self)
         onMouseLeave() ->
             UITooltip.hide(GetTriggerPlayerData())
 
@@ -150,7 +190,7 @@ public class UIWindowEntity
             Description.extendTooltip(tt, "Defence")
             tt.addLine("-----")
             let p = GetTriggerPlayerData()
-            UIWindowEntityInfo.getStats(p).getResistance().extendTooltip(tt)
+            UIWindowEntityInfo.getResistance(p).extendTooltip(tt)
             UITooltip.display(p, tt, TooltipAnchor.LEFT_BOTTOM , infoDefence)
 
         infoDamage = UIInteractableStatInfo.create(window)
@@ -179,7 +219,7 @@ public class UIWindowEntity
             Description.extendTooltip(tt, "Initiative")
             tt.addLine("-----")
             let p = GetTriggerPlayerData()
-            InitiativeList.extendTooltip(tt, UIWindowEntityInfo.getStats(p).getInitiative())
+            InitiativeList.extendTooltip(tt, UIWindowEntityInfo.getInitiative(p).value())
             UITooltip.display(p, tt, TooltipAnchor.LEFT_BOTTOM , infoInititaive)
 
         infoAP = UIInteractableStatInfo.create(window)
@@ -258,28 +298,45 @@ public class UIWindowEntity
     private static function update(Player p)
         if not p.isLocal()
             return
-        let stats = UIWindowEntityInfo.getStats(p)
-        let basis = stats.getBasis()
 
-        handleIcon.setTexture(stats.getIcon())
-        infoAttack.setTextBasedOnStats(basis.getAttack(), stats.getAttack(), stats.getAttackModifier())
-        infoDefence.setTextBasedOnStats(basis.getDefence(), stats.getDefence(), stats.getDefenceModifier())
-        infoDamage.setText(damageToText(basis.getDamage(), stats.getDamage()))
-        infoDamage.setIcon(stats.getDamageType())
-        infoRange.setText(rangeToText(stats.getRange()))
-        infoInititaive.setTextBasedOnStats(basis.getInitiative(), stats.getInitiative(), stats.getInitiativeModifier())
-        infoAP.setText(apToText(basis.getMaxAP(), stats.getMaxAP(), stats.getMaxMoveAP()))
-        infoHP.setTextBasedOnStats(basis.getMaxHP(), stats.getMaxHP(), stats.getMaxHPModifier())
-        infoLeadership.setText(stats.getLeadership().toString())
-        
-        
+        handleIcon.setTexture(UIWindowEntityInfo.getIcon(p))
+
         for i = 0 to handleTalents.length - 1
             handleTalents[i].hide()
-        
         var index = 0
-        stats.forEachTalentStat() talentStat ->
-            handleTalents[index].setStat(talentStat)
-            index ++
+        
+        let boardStats = UIWindowEntityInfo.getBoardStackStats(p)
+        if boardStats != null
+            infoAttack.setTextBasedOnStats(boardStats.attack)
+            infoDefence.setTextBasedOnStats(boardStats.defence)
+            infoDamage.setTextBasedOnStats(boardStats.baseDamage)
+            infoDamage.setIcon(boardStats.getDamageType())
+            infoRange.setText(rangeToText(boardStats.attackRange))
+            infoInititaive.setTextBasedOnStats(boardStats.initiative)
+            infoAP.setText(apToText(boardStats.maxAP.getBasis(), boardStats.maxAP.value(), boardStats.maxMoveAP.value()))
+            infoHP.setTextBasedOnStats(boardStats.maxHp)
+            infoLeadership.setText(boardStats.getLeadership().toString())
+            index = 0
+            boardStats.forEachVisibleTalent() talentStat ->
+                handleTalents[index].setStat(talentStat)
+                index ++
+        else
+            let stats = UIWindowEntityInfo.getStackStas(p)
+            infoAttack.setTextBasedOnStats(stats.attack)
+            infoDefence.setTextBasedOnStats(stats.defence)
+            infoDamage.setTextBasedOnStats(stats.baseDamage)
+            infoDamage.setIcon(stats.getDamageType())
+            infoRange.setText(rangeToText(stats.attackRange))
+            infoInititaive.setTextBasedOnStats(stats.initiative)
+            infoAP.setText(apToText(stats.maxAP.getBasis(), stats.maxAP.value(), stats.maxMoveAP.value()))
+            infoHP.setTextBasedOnStats(stats.maxHp)
+            infoLeadership.setText(stats.getLeadership().toString())
+            index = 0
+            stats.forEachVisibleTalent() talentStat ->
+                handleTalents[index].setStat(talentStat)
+                index ++
+        
+        
 
         for i = 0 to handleStatus.length - 1
             handleStatus[i].hide()
@@ -289,12 +346,9 @@ public class UIWindowEntity
             handleStatus[index].setStat(statusStats)
             index ++
             
-    private static function damageToText(realRange basisDmg, realRange modifiedDmg) returns string
-        let dmgDifference = modifiedDmg.avg() - basisDmg.avg()
-        let roundedBasisDmg = basisDmg.round()
-        return roundedBasisDmg.min.toString() + " - " + roundedBasisDmg.max.toString() + KStringUtils.coloredModiReal(dmgDifference, 1)
     
-    private static function rangeToText(intRange attackRange) returns string
+    private static function rangeToText(IsIntRangeStat attackRangeStat) returns string
+        let attackRange = attackRangeStat.value()
         if attackRange.max == 1
             return "Melee"
         if attackRange.min == 1

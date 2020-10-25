@@ -1,0 +1,32 @@
+package BoardListenerOnInitiative
+
+import BoardListener
+import initlater BoardEntity
+
+public abstract class BoardListenerOnInitiative
+    abstract function onEvent(BoardListenerOnInitiativeData onInitData)
+
+    function execute(BoardListenerOnInitiativeData onInitData, SequenzListener next)
+        onInitData.next = next
+        if onInitData.executions >= BoardListenerData.MAX_EXECUTIONS
+            Log.warn("Too many onInit Listeners fired without a break -> we wait")
+            nullTimer() -> 
+                onEvent(onInitData)
+        else
+            onEvent(onInitData)
+
+public class BoardListenerOnInitiativeData extends BoardListenerData
+    static function create(BoardEntity entity) returns BoardListenerOnInitiativeData
+        let data = new BoardListenerOnInitiativeData()
+        data.entity = entity
+
+        return data
+
+    private BoardEntity entity
+
+    function getEntity() returns BoardEntity
+        return entity
+
+    override function toString() returns string
+        return "OnInit "+ entity.toString()
+    

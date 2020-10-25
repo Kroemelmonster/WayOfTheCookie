@@ -5,13 +5,10 @@ import Abilities
 
 import Status
 
-import initlater BoardStack
-import initlater BoardEntity
-import initlater StatusType
-import BoardTrigger
+import BoardEntity
+import StatusType
 import Tooltip
-import Damage
-import AnimationWait
+import BoardListenerOnDamage
 
 init
     Initializer.register(InitializerNames.STATI) -> 
@@ -27,7 +24,7 @@ public class StatusDivineShield extends Status
         TYPE.setTooltipListener() data ->
             return createTooltipBaseLines(data)
 
-    static constant int ABSORB = 0
+    static constant ABSORB = 0
 
     private static function createTooltipBaseLines(int absorb) returns LinkedList<string>
         return new LinkedList<string>
@@ -48,7 +45,7 @@ public class StatusDivineShield extends Status
     private effect display
     private int absorb = 0
     
-    private BoardTriggerOnDamage damageTakenTrigger
+    private BoardListenerOnDamage damageTakenTrigger
 
     construct(StatusType statusType, BoardEntity entity, StatusData data)
         super(statusType, entity)
@@ -56,8 +53,14 @@ public class StatusDivineShield extends Status
 
         refreshStatusData(data)
 
-        damageTakenTrigger = entity.getTriggers().addOnBeforeDamageTaken() (BoardEntity source, BoardStack target, SpecificDamageInstance instance, SequenzListener next) ->
-            absorbDamage(instance, next)
+        damageTakenTrigger = entity.listeners().addOnBeforeDamageTaken() (BoardListenerOnDamageData onDamageTakenData) ->
+            let overKillDmg = onDamageTakenData.getDamage(true)
+            let absorbedDmg = min(absorb, overKillDmg)
+            onDamageTakenData.addDamage(-absorbedDmg)
+            absorb -= absorbedDmg
+            if absorb <= 0
+                remove()
+            onDamageTakenData.continue(false)
 
     override function onRefresh(StatusData data)
         refreshStatusData(data)
@@ -67,19 +70,6 @@ public class StatusDivineShield extends Status
 
     protected function refreshStatusData(StatusData data)
         absorb += data.getIntData(ABSORB)
-
-    private function absorbDamage(SpecificDamageInstance incommingInstance, SequenzListener next)
-        nullTimer() ->
-            let overKillDmg = incommingInstance.getOverKillDamage()
-            let absorbedDmg = min(absorb, overKillDmg)
-            incommingInstance.setDamage(overKillDmg - absorbedDmg)
-            absorb -= absorbedDmg
-            if absorb > 0
-                next.continue()
-            else
-                remove()
-                nullTimer() -> 
-                    next.continue()
 
     override function createTooltip() returns Tooltip
         return createTooltip(this)
@@ -91,5 +81,5 @@ public class StatusDivineShield extends Status
     ondestroy
         if entity.isAlive()
             if damageTakenTrigger != null
-                entity.getTriggers().removeOnBeforeDamageTaken(damageTakenTrigger)
+                entity.listeners().removeOnBeforeDamageTaken(damageTakenTrigger)
                 damageTakenTrigger = null

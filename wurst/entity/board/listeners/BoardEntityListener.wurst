@@ -1,10 +1,20 @@
 package BoardEntityListener
 
 import initlater BoardListenerOnCellMove
+import initlater BoardListenerOnDamage
+import initlater BoardListenerOnInitiative
+import initlater BoardListenerOnInteraction
 
 public class BoardEntityListener
     private LinkedList<BoardListenerOnCellMove> onAnyCellEnter = new LinkedList<BoardListenerOnCellMove>()
     private LinkedList<BoardListenerOnCellMove> onAnyCellLeave = new LinkedList<BoardListenerOnCellMove>()
+    private LinkedList<BoardListenerOnDamage> onBeforeDamageDealt = new LinkedList<BoardListenerOnDamage>()
+    private LinkedList<BoardListenerOnDamage> onBeforeDamageTaken = new LinkedList<BoardListenerOnDamage>()
+    private LinkedList<BoardListenerOnDamage> onDamageTaken = new LinkedList<BoardListenerOnDamage>()
+    private LinkedList<BoardListenerOnDamage> onDamageDealt = new LinkedList<BoardListenerOnDamage>()
+    private LinkedList<BoardListenerOnInitiative> onTurnStart = new LinkedList<BoardListenerOnInitiative>()
+    private LinkedList<BoardListenerOnInitiative> onTurnEnd = new LinkedList<BoardListenerOnInitiative>()
+    private LinkedList<BoardListenerOnInteraction> onAttacked = new LinkedList<BoardListenerOnInteraction>()
 
     function addOnAnyCellEnter(BoardListenerOnCellMove listener) returns BoardListenerOnCellMove
         onAnyCellEnter.add(listener)
@@ -21,7 +31,63 @@ public class BoardEntityListener
     function removeOnAnyCellLeave(BoardListenerOnCellMove listener)
         onAnyCellLeave.remove(listener)
         destroy listener
-    
+
+    function addOnBeforeDamageDealt(BoardListenerOnDamage listener) returns BoardListenerOnDamage
+        onBeforeDamageDealt.add(listener)
+        return listener
+
+    function removeOnBeforeDamageDealt(BoardListenerOnDamage listener)
+        onBeforeDamageDealt.remove(listener)
+        destroy listener
+
+    function addOnBeforeDamageTaken(BoardListenerOnDamage listener) returns BoardListenerOnDamage
+        onBeforeDamageTaken.add(listener)
+        return listener
+
+    function removeOnBeforeDamageTaken(BoardListenerOnDamage listener)
+        onBeforeDamageTaken.remove(listener)
+        destroy listener
+
+    function addOnDamageTaken(BoardListenerOnDamage listener) returns BoardListenerOnDamage
+        onDamageTaken.add(listener)
+        return listener
+
+    function removeOnDamageTaken(BoardListenerOnDamage listener)
+        onDamageTaken.remove(listener)
+        destroy listener
+
+    function addOnDamageDealt(BoardListenerOnDamage listener) returns BoardListenerOnDamage
+        onDamageDealt.add(listener)
+        return listener
+
+    function removeOnDamageDealt(BoardListenerOnDamage listener)
+        onDamageDealt.remove(listener)
+        destroy listener
+
+    function addOnTurnStart(BoardListenerOnInitiative listener) returns BoardListenerOnInitiative
+        onTurnStart.add(listener)
+        return listener
+
+    function removeOnTurnStart(BoardListenerOnInitiative listener)
+        onTurnStart.remove(listener)
+        destroy listener
+
+    function addOnTurnEnd(BoardListenerOnInitiative listener) returns BoardListenerOnInitiative
+        onTurnEnd.add(listener)
+        return listener
+
+    function removeOnTurnEnd(BoardListenerOnInitiative listener)
+        onTurnEnd.remove(listener)
+        destroy listener
+
+    function addOnAttacked(BoardListenerOnInteraction listener) returns BoardListenerOnInteraction
+        onAttacked.add(listener)
+        return listener
+
+    function removeOnAttacked(BoardListenerOnInteraction listener)
+        onAttacked.remove(listener)
+        destroy listener
+
 /* -------------------------------------------------------------------------- */    
 
     function triggerOnAnyCellEnter(BoardListenerOnCellMoveData data, SequenzListener next)
@@ -31,6 +97,34 @@ public class BoardEntityListener
     function triggerOnAnyCellLeave(BoardListenerOnCellMoveData data, SequenzListener next)
         let copy = onAnyCellLeave.copy()
         triggerOnAnyMoveInner(copy, copy.iterator(), data, next)
+
+    function triggerOnBeforeDamageDealt(BoardListenerOnDamageData data, SequenzListener next)
+        let copy = onBeforeDamageDealt.copy()
+        triggerOnDamageInner(copy, copy.iterator(), data, next)
+
+    function triggerOnBeforeDamageTaken(BoardListenerOnDamageData data, SequenzListener next)
+        let copy = onBeforeDamageTaken.copy()
+        triggerOnDamageInner(copy, copy.iterator(), data, next)
+
+    function triggerOnDamageTaken(BoardListenerOnDamageData data, SequenzListener next)
+        let copy = onDamageTaken.copy()
+        triggerOnDamageInner(copy, copy.iterator(), data, next)
+
+    function triggerOnDamageDealt(BoardListenerOnDamageData data, SequenzListener next)
+        let copy = onDamageDealt.copy()
+        triggerOnDamageInner(copy, copy.iterator(), data, next)
+
+    function triggerOnTurnStart(BoardListenerOnInitiativeData data, SequenzListener next)
+        let copy = onTurnStart.copy()
+        triggerOnInitInner(copy, copy.iterator(), data, next)
+
+    function triggerOnTurnEnd(BoardListenerOnInitiativeData data, SequenzListener next)
+        let copy = onTurnEnd.copy()
+        triggerOnInitInner(copy, copy.iterator(), data, next)
+
+    function triggerOnAttacked(BoardListenerOnInteractionData data, SequenzListener next)
+        let copy = onAttacked.copy()
+        triggerOnInteractionInner(copy, copy.iterator(), data, next)
 
 /* -------------------------------------------------------------------------- */
 
@@ -43,7 +137,58 @@ public class BoardEntityListener
             destroy copy
             next.continue()
 
+    private function triggerOnDamageInner(LinkedList<BoardListenerOnDamage> copy, LLIterator<BoardListenerOnDamage> iter, BoardListenerOnDamageData data, SequenzListener next)
+        if iter.hasNext()
+            iter.next().execute(data) ->
+                triggerOnDamageInner(copy, iter, data, next)
+        else
+            destroy iter
+            destroy copy
+            next.continue()
+
+    private function triggerOnInitInner(LinkedList<BoardListenerOnInitiative> copy, LLIterator<BoardListenerOnInitiative> iter, BoardListenerOnInitiativeData data, SequenzListener next)
+        if iter.hasNext()
+            iter.next().execute(data) ->
+                triggerOnInitInner(copy, iter, data, next)
+        else
+            destroy iter
+            destroy copy
+            next.continue()
+
+    private function triggerOnInteractionInner(LinkedList<BoardListenerOnInteraction> copy, LLIterator<BoardListenerOnInteraction> iter, BoardListenerOnInteractionData data, SequenzListener next)
+        if iter.hasNext()
+            iter.next().execute(data) ->
+                triggerOnInteractionInner(copy, iter, data, next)
+        else
+            destroy iter
+            destroy copy
+            next.continue()
+
     ondestroy
         for listener in onAnyCellEnter
             destroy listener
         destroy onAnyCellEnter
+        for listener in onAnyCellLeave
+            destroy listener
+        destroy onAnyCellLeave
+        for listener in onBeforeDamageDealt
+            destroy listener
+        destroy onBeforeDamageDealt
+        for listener in onBeforeDamageTaken
+            destroy listener
+        destroy onBeforeDamageTaken
+        for listener in onDamageTaken
+            destroy listener
+        destroy onDamageTaken
+        for listener in onDamageDealt
+            destroy listener
+        destroy onDamageDealt
+        for listener in onTurnStart
+            destroy listener
+        destroy onTurnStart
+        for listener in onTurnEnd
+            destroy listener
+        destroy onTurnEnd
+        for listener in onAttacked
+            destroy listener
+        destroy onAttacked

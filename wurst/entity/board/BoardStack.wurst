@@ -24,9 +24,9 @@ public class BoardStack extends BoardEntity
     construct(BoardForce boardForce, ArmyStack stack)
         super(EntityType.STACK, boardForce)
         this.passiveActions = new LinkedList<Passive>
-        this.stats = new BoardStackStats(this, stack.stats, stack.getAmount())
         this.armyStack = stack
-        this.stackType = stack.getStackType()
+        stackType = stack.getStackType()
+        stats = new BoardStackStats(this, stack.stats, stack.getAmount())
         stack.representive = this
 
         resetCurrentSelectedAction()
@@ -35,10 +35,10 @@ public class BoardStack extends BoardEntity
         return cell
 
     override function getIcon() returns string
-        return stackType.icon
+        return stackType.getIcon()
 
     override function getName() returns string
-        return stackType.name
+        return stackType.getName()
 
     override protected function hasPath() returns boolean
         return true
@@ -82,7 +82,7 @@ public class BoardStack extends BoardEntity
 
 
     private function createBLZUnit()
-        u = createUnit(DUMMY_PLAYER, stackType.unitId, cell.getCoord(), boardForce.getSide().toAngle())
+        u = createUnit(DUMMY_PLAYER, stackType.getUnitId(), cell.getCoord(), boardForce.getSide().toAngle())
         ..setColor(getPlayer().getColor())
         placeEntity()
 

@@ -1,6 +1,7 @@
 package BoardListener
+import Data
 
-public abstract class BoardListenerData
+public abstract class BoardListenerData extends Data
     static constant MAX_EXECUTIONS = 100
 
     protected SequenzListener next

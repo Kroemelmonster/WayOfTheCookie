@@ -1,118 +1,157 @@
 package HeroStats
 
-import KUtil
-import StatsModifier
-
 import initlater Hero
 import initlater HeroType
 import Globals
 import Damage
+import Stats
 
-public class HeroStats
+public class StatHeroDamage extends StatAbstract implements IsRealRangeStat
+    protected intRange basis
+    protected Int heroLevel
+
+    construct(intRange basis, Int heroLevel)
+        super()
+        this.heroLevel = heroLevel
+        this.basis = basis
+
+    override function value() returns realRange
+        return ((getBasis() + addBonus) * (multi / 100.0))
+
+    override function getBasis() returns realRange
+        return (basis * (heroLevel.self + 2)).toReal()
+
+class StatMaxMana extends StatInt implements IsIntStat
+    protected IsIntStat wisdom
+
+    construct(int basis, IsIntStat wisdom)
+        super(basis)
+        this.wisdom = wisdom
+
+    override function value() returns int
+        return ((getBasis() + addBonus) * (multi / 100.0)).round()
+
+    override function getBasis() returns int
+        return basis + (wisdom.value() * MANA_PER_WISDOWM)
+
+class StatTagAttack extends StatTag
+    protected IsIntStat attack
+
+    construct(IsIntStat attack)
+        super()
+        this.attack = attack
+
+    override function getDamageMultiPerc() returns real
+        let attackMulti = (attack.value() * ATTACK_DAMAGE_PER_ATTACK) / 100.0
+        return super.getDamageMultiPerc() + attackMulti
+    
+
+class StatTagSpell extends StatTag
+    protected IsIntStat power
+    protected IsIntStat wisdom
+
+    construct(IsIntStat power, IsIntStat wisdom)
+        super()
+        this.power = power
+        this.wisdom = wisdom
+
+    override function getDamageMultiPerc() returns real
+        let powerValue = (power.value() * DAMAGE_PER_SPELLPOWER) / 100.0
+        return super.getDamageMultiPerc() + powerValue
+
+    override function getStatusEffectivness() returns real
+        let wisomValue = (wisdom.value() * SPELL_BUFF_EFFECT_PER_WISDOM) / 100.0
+        return super.getStatusEffectivness() + wisomValue
+
+public interface HasHeroStats
+    function getDamageMulti(LinkedList<Tag> tags) returns real
+    function getStatusEffectivness(LinkedList<Tag> tags) returns real
+    function getSummonEffectivness(LinkedList<Tag> tags) returns real
+    function getAttackDamage() returns realRange
+    function getPower() returns IsIntStat
+    function getAttack() returns IsIntStat
+
+public class HeroStats implements HasHeroStats, HasTags
     private Hero hero
     HeroType heroType
 
-    protected int mana = 0
+    protected DamageType damageType
 
-    int basicAttack
-    int basicDefence
-    int basicPower
-    int basicWisdom
+    StatInt attack
+    StatInt defence
+    StatInt power
+    StatInt wisdom
+    StatInt initiative
+    StatInt maxAP
+    StatMaxMana maxMana
+    StatHeroDamage baseAttackDamage
 
-    DamageType damageType
+    protected StatTag array[TAG_AMOUNT + 1] tags
 
-    StatsModifier attackModi = new StatsModifier()
-    StatsModifier defenceModi = new StatsModifier()
-    StatsModifier powerModi = new StatsModifier()
-    StatsModifier wisdomModi = new StatsModifier()
-
-    StatsModifier damageModi = new StatsModifier()
-    protected StatsModifier realAttackModi = new StatsModifier()
-    StatsModifier initModi = new StatsModifier()
-    StatsModifier actionPointModi = new StatsModifier()
-    StatsModifier additionalManaModi = new StatsModifier()
+    protected int mana
 
     construct(Hero hero, HeroType heroType)
         this.hero = hero
         this.heroType = heroType
-        basicAttack = heroType.attack
-        basicDefence = heroType.defence
-        basicPower = heroType.power
-        basicWisdom = heroType.wisdom
-        damageType = heroType.damageType
-        
-        this.mana = getMaxMana()
 
-    function getInitiative() returns int
-        return initModi.get(heroType.initiative).round()
+        damageType = heroType.getDamageType()
 
-    function getMaxActionPoints() returns int
-        return actionPointModi.get(heroType.actionPoints).round()
+        attack = new StatInt(heroType.getAttack())
+        defence = new StatInt(heroType.getDefence())
+        power = new StatInt(heroType.getPower())
+        wisdom = new StatInt(heroType.getWisdom())
+        initiative = new StatInt(heroType.getInitiative())
+        maxAP = new StatInt(heroType.getAP())
+        maxMana = new StatMaxMana(0, wisdom)
+        baseAttackDamage = new StatHeroDamage(heroType.getDamage(), hero.level)
 
-    function getBasisAttack() returns int
-        return basicAttack
+        tags[(Tag.ATTACK castTo int)] = new StatTagAttack(attack)
+        tags[(Tag.SPELL castTo int)] = new StatTagSpell(power, wisdom)
 
-    function getBasisDefence() returns int
-        return basicDefence
+        for i = 0 to TAG_AMOUNT
+            if tags[i] == null
+                tags[i] = new StatTag()
 
-    function getBasisPower() returns int
-        return basicPower
+        mana = maxMana.value()
 
-    function getBasisWisdom() returns int
-        return basicWisdom
+    override function getPower() returns IsIntStat
+        return power
 
-    function getBasisInitiative() returns int
-        return heroType.initiative
+    override function getAttack() returns IsIntStat
+        return attack
 
-    function getBasisDamage() returns realRange
-        realAttackModi.addBonus = 0
-        realAttackModi.multi = 100 + (getAttack() * ATTACK_DAMAGE_PER_ATTACK).toInt()
-        return realAttackModi.getRealRange(heroType.getDamage(hero.getLevel()), 1)
+    override function forTag(Tag tag) returns StatTag
+        return tags[(tag castTo int)]
 
-    function getAttack() returns int
-        return attackModi.get(getBasisAttack()).round()
+    override function getDamageMulti(LinkedList<Tag> tags) returns real
+        return tagsGetDamageMulti(this, tags)
 
-    function getDefence() returns int
-        return defenceModi.get(getBasisDefence()).round()
+    function getDamageMulti(vararg Tag tags) returns real
+        let temp = new LinkedList<Tag>
+        for tag in tags
+            temp.add(tag)
+        let result = getDamageMulti(temp)
+        destroy temp
+        return result
 
-    function getPower() returns int
-        return defenceModi.get(getBasisPower()).round()
+    override function getStatusEffectivness(LinkedList<Tag> tags) returns real
+        return tagsGetStatusEffectivness(this, tags)
 
-    function getWisdom() returns int
-        return wisdomModi.get(getBasisWisdom()).round()
+    override function getSummonEffectivness(LinkedList<Tag> tags) returns real
+        return tagsGetSummonEffectivness(this, tags)
 
-    function getDamage() returns realRange        
-        return damageModi.getRealRange(getBasisDamage(), 1)
-
-    function getAdditionalMana() returns int
-        return additionalManaModi.get(0).round()
-    
-    function getMaxMana() returns int
-        return getWisdom() * MANA_PER_WISDOWM + getAdditionalMana()
-
-    function getAttackModifier() returns StatsModifier
-        return attackModi
-
-    function getDefenceModifier() returns StatsModifier
-        return defenceModi
-
-    function getPowerModifier() returns StatsModifier
-        return powerModi
-
-    function getWisdomModifier() returns StatsModifier
-        return wisdomModi
-
-    function getDamageModifier() returns StatsModifier
-        return damageModi
-
-    function getInitiativeModifier() returns StatsModifier
-        return initModi
-
-    function getAPModifier() returns StatsModifier
-        return actionPointModi
+    override function getAttackDamage() returns realRange
+        return baseAttackDamage.value() * getDamageMulti(Tag.ATTACK, damageType2Tag(getDamageType()))
 
     function getMana() returns int
         return mana
+
+    function addMana(int amount)
+        mana += amount
+        if mana > maxMana.value()
+            mana = maxMana.value()
+        else if mana < 0
+            mana = 0
 
     function getDamageType() returns DamageType
         return damageType

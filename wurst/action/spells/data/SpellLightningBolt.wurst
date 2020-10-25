@@ -18,6 +18,8 @@ import UIController
 import StatusPurged
 import HeroData
 import Scheduler
+import HeroStats
+import Stats
 
 init
     Initializer.register(InitializerNames.SPELLS) -> 
@@ -27,7 +29,9 @@ public class SpellLightningBolt extends SpellActionTarget
     static SpellType TYPE
     protected static function setup()
         PURGE_DEBUFF = StatusPurged.TYPE
+        damagePreview = DamagePreview.create(SourceType.SPELL, DamageType.MAGIC)
         TYPE = SpellActionTarget.createType("Lightning Bolt", "Icons\\BTNLightningBolt.blp")
+        ..setTags(Tag.SPELL, Tag.MAGIC, Tag.LIGHTNING)
         TYPE.addLevel(ActionCostPreset.createWithMana(1, true, 4), HeroDataChange.create(0, 0, 1))
         ..setIntData(DAMAGE, 60)
         ..setIntData(SLOW, 1)
@@ -42,24 +46,24 @@ public class SpellLightningBolt extends SpellActionTarget
         TYPE.onCreateTooltipLines() (level, spellStats) -> 
             return createTooltipLines(level, spellStats)
 
-    private static constant int DAMAGE = 0
-    private static constant int SLOW = 1
-    private static StatusType PURGE_DEBUFF
+    private static constant DAMAGE = 0
+    private static constant SLOW = 1
 
-    private static constant DamagePreview damagePreview = DamagePreview.create(SourceType.SPELL, DamageType.MAGIC)
+    private static StatusType PURGE_DEBUFF
+    private static DamagePreview damagePreview
     
-    private static function calculateDamage(SpellLevel level, HasSpellStats spellStats) returns DamagePreview
+    private static function calculateDamage(SpellLevel level, HasHeroStats stats) returns DamagePreview
         var multi = 1.0
-        if spellStats != null
-            multi = spellStats.getDamageMulti()
+        if stats != null
+            multi = stats.getDamageMulti(TYPE.getTags())
         let baseDamage = level.getIntData(DAMAGE)
         damagePreview.dmg = realRange(baseDamage * 0.5 * multi, baseDamage * 2 * multi)
         return damagePreview
 
-    private static function createTooltipLines(SpellLevel level, HasSpellStats spellStats) returns LinkedList<string>
+    private static function createTooltipLines(SpellLevel level, HasHeroStats stats) returns LinkedList<string>
         return new LinkedList<string>
         ..add(KStringUtils.stat("Target", "Enemy"))
-        ..add(KStringUtils.stat("Damage", calculateDamage(level, spellStats).toColoredText()))
+        ..add(KStringUtils.stat("Damage", calculateDamage(level, stats).toColoredText()))
         ..add("")
         ..add("Lightning strikes from above and purges one Enemy.")
         ..add(KStringUtils.line())
@@ -96,7 +100,7 @@ public class SpellLightningBolt extends SpellActionTarget
             return false
 
         AnimationCast.atCell(hero, cell) () ->
-            let rolledBaseDamage = calculateDamage(level, this).getRandomInstance()
+            let rolledBaseDamage = calculateDamage(level, hero.stats).getRandomInstance()
             let target = cell.getStack()
             let e = addEffect(Doodads.lightningbolt, target.getPos3Real())
             AnimationWait.time(entity.getBoard(), 0.3) ->
@@ -121,11 +125,11 @@ public class SpellLightningBolt extends SpellActionTarget
 
     private function showTooltip(BoardStack target)
         let tt = createBasicTooltip()
-        ..addLines(createTooltipLines(level, this))
+        ..addLines(createTooltipLines(level, hero.stats))
 
         if target != null
             tt.addLine("")
-            calculateDamage(level, this)
+            calculateDamage(level, hero.stats)
             .extendTooltipWithSpecific(tt, entity, target)
         
         UITooltip.display(entity.getConntrollingPlayer(), tt)

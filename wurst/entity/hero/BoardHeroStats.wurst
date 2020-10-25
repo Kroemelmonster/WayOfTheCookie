@@ -1,106 +1,133 @@
 package BoardHeroStats
 
-import KUtil
-import StatsModifier
-
 import HeroStats
 import BoardHero
-import Globals
 import Damage
+import Stats
+import Globals
 
-public class BoardHeroStats
+class StatTagAttack extends StatTag
+    protected IsIntStat attack
+
+    construct(StatTag basis, IsIntStat attack)
+        super(basis)
+        this.attack = attack
+
+    override function getDamageMultiPerc() returns real
+        let attackMulti = (attack.value() * ATTACK_DAMAGE_PER_ATTACK) / 100.0
+        return super.getDamageMultiPerc() + attackMulti
+    
+
+class StatTagSpell extends StatTag
+    protected IsIntStat power
+    protected IsIntStat wisdom
+
+    construct(StatTag basis, IsIntStat power, IsIntStat wisdom)
+        super(basis)
+        this.power = power
+        this.wisdom = wisdom
+
+    override function getDamageMultiPerc() returns real
+        let powerValue = (power.value() * DAMAGE_PER_SPELLPOWER) / 100.0
+        return super.getDamageMultiPerc() + powerValue
+
+    override function getStatusEffectivness() returns real
+        let wisdomValue = (wisdom.value() * SPELL_BUFF_EFFECT_PER_WISDOM) / 100.0
+        return super.getStatusEffectivness() + wisdomValue
+
+public class BoardHeroStats implements HasHeroStats, HasTags
     private HeroStats basis
     private BoardHero hero
 
     int remainingActionPoints
-    int mana
 
-    StatsModifier attackModi = new StatsModifier()
-    protected StatsModifier realAttackModi = new StatsModifier()
-    StatsModifier powerModi = new StatsModifier()
-    StatsModifier wisdomModi = new StatsModifier()
+    StatInt attack
+    StatInt defence
+    StatInt power
+    StatInt wisdom
+    StatInt initiative
+    StatInt maxAP
+    StatHeroDamage baseAttackDamage
 
-    StatsModifier damageModi = new StatsModifier()
-    StatsModifier initModi = new StatsModifier()
-    StatsModifier actionPointModi = new StatsModifier()
-    StatsModifier additionalManaModi = new StatsModifier()
+    protected StatTag array[TAG_AMOUNT + 1] tags
 
     construct(BoardHero hero, HeroStats basis)
         this.basis = basis
         this.hero = hero
-        this.mana = basis.getMana()
 
-    function getBasis() returns HeroStats
-        return basis
-    
-    function getInitiative() returns int
-        return initModi.get(basis.getInitiative()).round()
+        attack = new StatInt(basis.attack)
+        defence = new StatInt(basis.defence)
+        power = new StatInt(basis.power)
+        wisdom = new StatInt(basis.wisdom)
+        initiative = new StatInt(basis.initiative)
+        maxAP = new StatInt(basis.maxAP)
+        baseAttackDamage = new StatHeroDamage(basis.heroType.getDamage(), hero.hero.level)
 
-    function getMaxActionPoints() returns int
-        return actionPointModi.get(basis.getMaxActionPoints()).round()
+        tags[(Tag.ATTACK castTo int)] = new StatTagAttack(basis.forTag(Tag.ATTACK), attack)
+        tags[(Tag.SPELL castTo int)] = new StatTagSpell(basis.forTag(Tag.SPELL), power, wisdom)
 
-    function getAttack() returns int
-        return attackModi.get(basis.getAttack()).round()
+        for i = 0 to TAG_AMOUNT
+            if tags[i] == null
+                tags[i] = new StatTag(basis.forTag((i castTo Tag)))
 
-    function getDefence() returns int
-        return basis.getDefence()
+    override function forTag(Tag tag) returns StatTag
+        return tags[(tag castTo int)]
 
-    function getPower() returns int
-        return powerModi.get(basis.getPower()).round()
+    override function getDamageMulti(LinkedList<Tag> tags) returns real
+        return tagsGetDamageMulti(this, tags)
 
-    function getWisdom() returns int
-        return wisdomModi.get(basis.getWisdom()).round()
+    function getDamageMulti(vararg Tag tags) returns real
+        let temp = new LinkedList<Tag>
+        for tag in tags
+            temp.add(tag)
+        let result = getDamageMulti(temp)
+        destroy temp
+        return result
 
-    function getMaxMana() returns int
-        let wis = getWisdom()
-        let additionalMana = additionalManaModi.get(basis.getAdditionalMana()).round()
-        return wis * MANA_PER_WISDOWM + additionalMana
+    override function getStatusEffectivness(LinkedList<Tag> tags) returns real
+        return tagsGetStatusEffectivness(this, tags)
 
-    function getDamage() returns realRange
-        return damageModi.getRealRange(getRawDamage(), 1)
+    override function getSummonEffectivness(LinkedList<Tag> tags) returns real
+        return tagsGetSummonEffectivness(this, tags)
+        
+    override function getAttackDamage() returns realRange
+        return baseAttackDamage.value() * getDamageMulti(Tag.ATTACK, damageType2Tag(getDamageType()))
 
-    
-    function getRawDamage() returns realRange
-        realAttackModi.addBonus = 0
-        realAttackModi.multi = 100 + (getAttack() * ATTACK_DAMAGE_PER_ATTACK).toInt()
-        return realAttackModi.getRealRange(basis.heroType.getDamage(hero.hero.getLevel()), 1)
+    override function getPower() returns IsIntStat
+        return power
+
+    override function getAttack() returns IsIntStat
+        return attack
 
     function getDamageType() returns DamageType
-        return basis.damageType
+        return basis.getDamageType()
 
     function getMana() returns int
-        return mana
-
-    function payMana(int amount)
-        this.mana -= amount
+        return basis.getMana()
 
     function getRemainingActionPoints() returns integer
         return remainingActionPoints
     
-    /** setters  **/
     function removeAP(integer amount)
         remainingActionPoints -= amount
         if remainingActionPoints < 0
             remainingActionPoints = 0
 
-    function resetActionPoints()
-        remainingActionPoints = getMaxActionPoints()
+    function resetAP()
+        remainingActionPoints = maxAP.value()
 
     function addMana(int amount)
-        mana += amount
-        if mana > getMaxMana()
-            mana = getMaxMana()
-        else if mana < 0
-            mana = 0
-
+        basis.addMana(amount)
 
     ondestroy
-        destroy attackModi
-        destroy realAttackModi
-        destroy powerModi
-        destroy wisdomModi
+        destroy attack
+        destroy defence
+        destroy power
+        destroy wisdom
+        destroy initiative
+        destroy maxAP
+        destroy baseAttackDamage
 
-        destroy damageModi
-        destroy initModi
-        destroy actionPointModi
-        destroy additionalManaModi
+        for i = 0 to TAG_AMOUNT
+            destroy tags[i]
+            tags[i] = null

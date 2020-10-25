@@ -68,23 +68,6 @@ public class ObstacleBlocker extends CellObstacle
             model = addEffect("Doodads\\Barrens\\Props\\Barrens_Bones\\Barrens_Bones"+value.toString()+".mdx", pos)
             ..setYaw(vari.baseYaw + (angle * PI / 3))
             ..setScale(vari.scale)*/
-
-        Configurations.debugReal3.addListener() (Real value) ->
-            model.setYaw(value.self + (angle * PI / 3))
-
-
-        Configurations.debugReal1.addListener() (Real value) ->
-            pos = cell.getCoord()
-            pos += angle(angle * PI / 3).toVec(Configurations.debugReal1.getValue().self)
-            pos += angle((angle * PI / 3) + PI / 2).toVec(Configurations.debugReal2.getValue().self)
-            model.setPos(pos)
-
-        Configurations.debugReal2.addListener() (Real value) ->
-            pos = cell.getCoord()
-            pos += angle(angle * PI / 3).toVec(Configurations.debugReal1.getValue().self)
-            pos += angle((angle * PI / 3) + PI / 2).toVec(Configurations.debugReal2.getValue().self)
-            model.setPos(pos)
-
     ondestroy
         model.destr()
         model = null

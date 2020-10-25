@@ -12,16 +12,8 @@ public class Description
 
     protected static function setup()
         create("Attack")
-        ..addLine("Increases your damage with attacks. 🔥⚡❄🌊🌪⚔🗡🏹🛡☄✨💀☠☣☢")
+        ..addLine("Increases your damage with attacks.")
         ..addLine("")
-        ..addLine(
-           KStringUtils.icon(IconName.FIRE)
-         + KStringUtils.icon(IconName.LIGHTNING)
-         + KStringUtils.icon(IconName.DEATH)
-         + KStringUtils.icon(IconName.ICE)
-         + KStringUtils.icon(IconName.MAGIC)
-         + KStringUtils.icon(IconName.PHYSICAL)
-         + KStringUtils.icon(IconName.CHAOS))
         ..addLine("Each " + KStringUtils.secondaryString("Attack")
          + " that you have more than your opponents "
          + KStringUtils.secondaryString("Defence")
@@ -85,17 +77,16 @@ public class Description
         create("Leadership")
         ..addLine("The requirement to controll one stack.")
 
-        create("Spellpower")
-        ..addLine("Increases the potency of most Spells.")
-        ..addLine("")
-        ..addLine("On default each point increases the damage of your spells by "
-         + KStringUtils.coloredPercent(DAMAGE_PER_SPELLPOWER / 100.0))
+        create("Power")
+        ..addLine("Each " + KStringUtils.secondaryString("Power")
+         + " increases the damage of " + KStringUtils.secondaryString("Spells")
+         + " by  " + KStringUtils.coloredPercent(DAMAGE_PER_SPELLPOWER / 100.0))
 
         create("Wisdom")
-        ..addLine("Increases the maximum Mana you have.")
-        ..addLine("")
-        ..addLine("Each " + KStringUtils.secondaryString("Wisdom")
-         + " increases your Mana Pool by " + KStringUtils.coloredModiInt(MANA_PER_WISDOWM))
+        ..addLine("Each " + KStringUtils.secondaryString("Wisdom"))
+        ..addLine("increases your Mana Pool by " + KStringUtils.coloredModiInt(MANA_PER_WISDOWM))
+        ..addLine("increases the effectivness of Buffs cast by your " + KStringUtils.secondaryString("Spells")
+         + " by  " + KStringUtils.coloredPercent(SPELL_BUFF_EFFECT_PER_WISDOM / 100.0))
 
     static function extendTooltip(Tooltip tt, string keyword)
         if not bookOfWisdom.has(keyword)

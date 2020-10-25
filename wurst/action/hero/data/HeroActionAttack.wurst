@@ -57,7 +57,7 @@ public class HeroActionAttack extends HeroAction
             let tt = createBasicTooltip()
             // TODO stream line--
             let preview = DamagePreview.create(SourceType.ATTACK, hero.stats.getDamageType())
-            ..setDamage(hero.stats.getDamage())
+            ..setDamage(hero.stats.baseAttackDamage.value())
             preview.extendTooltipWithSpecific(tt, entity, cell.getStack())
             destroy preview
 
@@ -95,7 +95,7 @@ public class HeroActionAttack extends HeroAction
             let defender = cell.getStack()
             AnimationHeroAttack.against(entity, defender) () ->
                 let preview = DamagePreview.create(SourceType.ATTACK, hero.stats.getDamageType())
-                ..setDamage(hero.stats.getDamage())
+                ..setDamage(hero.stats.getAttackDamage())
                 let instance = preview.getRandomInstance()
                 destroy preview
                 BoardController.dealDamage(hero, instance, defender) ->

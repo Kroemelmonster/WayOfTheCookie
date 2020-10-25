@@ -12,6 +12,8 @@ import AnimationWait
 import Damage
 import AnimationCast
 import HeroData
+import HeroStats
+import Stats
 
 init
     Initializer.register(InitializerNames.SPELLS) -> 
@@ -20,7 +22,9 @@ init
 public class SpellChainLightning extends SpellActionTarget
     static SpellType TYPE
     protected static function setup()
+        damagePreview = DamagePreview.create(SourceType.SPELL, DamageType.MAGIC)
         TYPE = SpellActionTarget.createType("Chain Lightning", Icons.bTNChainLightning)
+        TYPE.setTags(Tag.SPELL, Tag.MAGIC, Tag.LIGHTNING)
         TYPE.addLevel(ActionCostPreset.createWithMana(1, true, 7), HeroDataChange.create(0, 1, 3))
         ..setIntData(DAMAGE, 65)
         ..setIntData(CHAINS, 2)
@@ -32,30 +36,31 @@ public class SpellChainLightning extends SpellActionTarget
         ..setIntData(CHAINS, 4)
         TYPE.onActionCreate() (hero, spell) -> 
             return new SpellChainLightning(hero, spell)
-        TYPE.onCreateTooltipLines() (level, spellStats) -> 
-            return createTooltipLines(level, spellStats)
+        TYPE.onCreateTooltipLines() (level, stats) -> 
+            return createTooltipLines(level, stats)
 
-    private static constant int DAMAGE = 0
-    private static constant int CHAINS = 1
+    private static constant DAMAGE = 0
+    private static constant CHAINS = 1
+    
+    private static constant CHAIN_RANGE = 3
+    private static constant CHAIN_REDUCTION = 0.90
 
-    private static constant int CHAIN_RANGE = 3
-    private static constant real CHAIN_REDUCTION = 0.90
-    private static constant DamagePreview damagePreview = DamagePreview.create(SourceType.SPELL, DamageType.MAGIC)
+    private static DamagePreview damagePreview
 
-    private static function calculateDamage(SpellLevel level, HasSpellStats spellStats, int amountOfChained) returns DamagePreview
+    private static function calculateDamage(SpellLevel level, HasHeroStats stats, int amountOfChained) returns DamagePreview
         var multi = 1.0
         for i = 1 to amountOfChained
             multi *= CHAIN_REDUCTION
-        if spellStats != null
-            multi *= spellStats.getDamageMulti()
+        if stats != null
+            multi *= stats.getDamageMulti(TYPE.getTags())
         let baseDamage = level.getIntData(DAMAGE)
         damagePreview.dmg = realRange(baseDamage * 0.65 * multi, baseDamage* 1.85 * multi)
         return damagePreview
 
-    private static function createTooltipLines(SpellLevel level, HasSpellStats spellStats) returns LinkedList<string>
+    private static function createTooltipLines(SpellLevel level, HasHeroStats stats) returns LinkedList<string>
         return new LinkedList<string>
         ..add(KStringUtils.stat("Target", "Enemy"))
-        ..add(KStringUtils.stat("Damage", calculateDamage(level, spellStats, 0).toColoredText()))
+        ..add(KStringUtils.stat("Damage", calculateDamage(level, stats, 0).toColoredText()))
         ..add("")
         ..add("You strike a Foe with Lightning which chains up to "
          + KStringUtils.primaryString(level.getIntData(CHAINS).toString()) + " times")
@@ -88,7 +93,7 @@ public class SpellChainLightning extends SpellActionTarget
         if not targets.has(cell.getStack())
             return false
         AnimationCast.atCell(hero, cell) () ->
-            let rolledBaseDamage = calculateDamage(level, this, 0).getRandomInstance()
+            let rolledBaseDamage = calculateDamage(level, hero.stats, 0).getRandomInstance()
             let prevTargets = new LinkedList<BoardStack>()
             chainToNext(prevTargets, entity, rolledBaseDamage, cell.getStack(), 0) ->
                 destroy prevTargets
@@ -139,7 +144,7 @@ public class SpellChainLightning extends SpellActionTarget
 
     private function showTooltipAndFillHighlight(BoardStack target)
         let tt = createBasicTooltip()
-        ..addLines(createTooltipLines(level, this))
+        ..addLines(createTooltipLines(level, hero.stats))
         if target != null
 
             let prevTargets = new LinkedList<BoardStack>()
@@ -152,7 +157,7 @@ public class SpellChainLightning extends SpellActionTarget
                 if currentTarget == null
                     break
                 tt.addLine("")
-                calculateDamage(level, this, chain)
+                calculateDamage(level, hero.stats, chain)
                 .extendTooltipWithSpecific(tt, entity, currentTarget)
                 highlightedArea.add(currentTarget.getCell())
                 chain++

@@ -6,6 +6,7 @@ import SpellAction
 import HeroData
 import Globals
 import Data
+import HeroStats
 
 public class SpellLevel extends Data
     protected ActionCostPreset usageCost
@@ -21,12 +22,10 @@ public class SpellLevel extends Data
     function getPayCost() returns HeroDataChange
         return levelCost
 
-public interface HasSpellStats
-    function getDamageMulti() returns real
-    function getPower() returns int
-    function getAttack() returns int
+public class Spell
+    static function getBaseMultiFromPower(int power) returns real
+        return (power * DAMAGE_PER_SPELLPOWER / 100.0)
 
-public class Spell implements HasSpellStats
     protected SpellType spellType
     protected Hero hero
 
@@ -68,29 +67,23 @@ public class Spell implements HasSpellStats
     function getExtendedName() returns string
         return getName() + " [" + (level + 1).toString() + "]"
 
-    static function getBaseMultiFromPower(int power) returns real
-        return (power * DAMAGE_PER_SPELLPOWER / 100.0)
-
-    override function getDamageMulti() returns real
-        let power = getPower()
-        return (1.0 + getBaseMultiFromPower(power))
-
-    override function getPower() returns int
-        return hero.stats.getPower()
-
-    override function getAttack() returns int
-        return hero.stats.getAttack()
-
-    function createTooltip(int level, boolean showLevelCost) returns Tooltip
-        return spellType.createTooltip(hero, this, level, showLevelCost)
-
-    function createTooltip(boolean showLevelCost) returns Tooltip
-        return createTooltip(level, showLevelCost)
-
-    function createTooltipLines(SpellLevel level) returns LinkedList<string>
-        return spellType.createTooltipLines(level,  this)
-
     function getType() returns SpellType
         return spellType
+
+/* -------------------------------------------------------------------------- */
+
+    function createTooltip(int level, HasHeroStats stats, boolean showLevelCost) returns Tooltip
+        return spellType.createTooltip(hero, stats, level, showLevelCost)
+
+    function createTooltip(int level, boolean showLevelCost) returns Tooltip
+        return createTooltip(level, hero.stats, showLevelCost)
+
+    function createTooltip(boolean showLevelCost) returns Tooltip
+        return createTooltip(level, hero.stats, showLevelCost)
+
+    function createTooltipLines(SpellLevel level) returns LinkedList<string>
+        return spellType.createTooltipLines(level, hero.stats)
+
+
 
         

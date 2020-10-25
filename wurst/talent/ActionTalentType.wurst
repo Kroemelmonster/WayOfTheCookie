@@ -1,14 +1,12 @@
 package ActionTalentType
 import ActionType
-import initlater Talent
 import Tooltip
 import BoardEntity
 import TalentType
 import ActionTalent
 import StackActionType
-import ActionCost
 import Data
-import Damage
+import StackType
 
 public class ActionTalentType extends TalentType implements HasData
     protected StackActionType actionType
@@ -21,9 +19,9 @@ public class ActionTalentType extends TalentType implements HasData
         
         onCreate() entity ->
             return new ActionTalent(this, actionType, data, entity)
-        onCreateTooltip() -> 
+        onCreateTooltip() (HasEntityStats stats) -> 
             return createBasicTooltip()
-            ..addLines(actionType.createTooltipLines(data))
+            ..addLines(actionType.createTooltipLines(data, stats))
 
     override function setIntData(int where, int value)
         data.setIntData(where, value)
@@ -42,12 +40,6 @@ public class ActionTalentType extends TalentType implements HasData
 
     override function getRealData(int where) returns real
         return data.getRealData(where)
-
-    override function setDamagePreview(DamagePreview preview)
-        data.setDamagePreview(preview)
-
-    override function getDamagePreview() returns DamagePreview
-        return data.getDamagePreview()
 
     override function isHidden() returns boolean
         if not actionType.hasOption(ActionTypeOption.PRIMARY)

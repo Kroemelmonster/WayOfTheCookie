@@ -42,7 +42,7 @@ public class BoardHero extends BoardEntity
         resetCurrentSelectedAction()
 
     private function createBLZUnit(vec2 coord)
-        u = createUnit(DUMMY_PLAYER, heroType.unitId, coord , boardForce.getSide().toAngle())
+        u = createUnit(DUMMY_PLAYER, heroType.getUnitId(), coord , boardForce.getSide().toAngle())
         ..setColor(hero.getPlayer().blzPlayer.getColor())
 
         placeEntity()
@@ -54,19 +54,19 @@ public class BoardHero extends BoardEntity
         return hero.getPlayer()
 
     override function getIcon() returns string
-        return hero.getType().icon
+        return hero.getType().getIcon()
 
     override function getName() returns string
-        return hero.getType().name
+        return hero.getType().getName()
 
     override protected function hasPath() returns boolean
         return false
 
     override function getInitiative() returns int
-        return stats.getInitiative()
+        return stats.initiative.value()
 
     override function getMaxAP() returns int
-        return stats.getMaxActionPoints()
+        return stats.maxAP.value()
 
     override function getRemainingAP() returns int
         return stats.getRemainingActionPoints()
@@ -78,10 +78,10 @@ public class BoardHero extends BoardEntity
         stats.removeAP(amount)
 
     function getMana() returns int
-        return stats.mana
+        return stats.getMana()
 
     function payMana(int amount)
-        stats.payMana(amount)
+        stats.addMana(-amount)
 
     function addQuickCast(SpellAction action)
         if quickCastSpells.has(action)
@@ -98,7 +98,7 @@ public class BoardHero extends BoardEntity
         return quickCastSpells.has(action)
 
     override function resetAP()
-        stats.resetActionPoints()
+        stats.resetAP()
 
     override function isAlive() returns boolean
         return true

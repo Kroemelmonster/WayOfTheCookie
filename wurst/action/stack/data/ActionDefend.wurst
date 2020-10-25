@@ -6,6 +6,7 @@ import Abilities
 import BoardController
 import UIMenuActionConsole
 import BoardTrigger
+import StackType
 
 init
     Initializer.register(InitializerNames.ACTIONS) -> 
@@ -18,18 +19,12 @@ public class ActionDefend extends InstantStackAction
         TYPE = InstantStackAction.createType("Defend", Icons.bTNStop, ActionCostPreset.create(1, true))
         TYPE.onCreate() (BoardStack stack, StackActionData data) ->
             return new ActionDefend(stack, data)
-        TYPE.onCreateTooltipLines() data -> 
-            return createTooltipLines(data)
+        TYPE.onCreateTooltipLines() (data, stats) -> 
+            return createTooltipLines(data, stats)
 
-    private static function createTooltipLines(int _amount) returns LinkedList<string>
+    private static function createTooltipLines(StackActionData _data, HasEntityStats _stats) returns LinkedList<string>
         return new LinkedList<string>
         ..add("Skips your turn ( thats it for now )")
-
-    private static function createTooltipLines(StackActionData _data) returns LinkedList<string>
-        return createTooltipLines(1)
-       
-    private static function createTooltipLines(ActionDefend action) returns LinkedList<string>
-        return createTooltipLines(action.stack.stats.amount)
 
 /* -------------------------------------------------------------------------- */
 
@@ -48,7 +43,7 @@ public class ActionDefend extends InstantStackAction
         UIMenuActionConsole.updateActionPoints(entity)
 
     override function createBasicTooltipLines() returns LinkedList<string>
-        return createTooltipLines(this)
+        return createTooltipLines(data, stack.stats)
 
 /* -------------------------------------------------------------------------- */
 

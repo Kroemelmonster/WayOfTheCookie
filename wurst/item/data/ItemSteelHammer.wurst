@@ -29,11 +29,7 @@ public class ItemSteelHammer extends KItem
         super(itemType)
 
     override function onEquip(Hero h, boolean add)
-        if add
-            h.stats.attackModi.addBonus += VALUE
-        else
-            h.stats.attackModi.addBonus -= VALUE
-
+        h.stats.attack.modify(VALUE, add)
 
     override function onStackUpdate(ArmyStack armyStack, boolean add)
         

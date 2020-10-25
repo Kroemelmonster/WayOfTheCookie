@@ -13,15 +13,10 @@ import NPC
 import KItem
 import SkillTree
 import FightResult
-import KUtil
 import HeroType
 import HeroStats
-import LinkedList
 import initlater SpellAction
 import HeroData
-import ActionType
-import initlater SpellType
-import Spell
 
 
 
@@ -33,8 +28,6 @@ public class Hero
     protected HeroType heroType
     HeroStats stats
 
-
-    protected int unitboardid
     protected string icon
     protected Player p
     protected int gold
@@ -43,7 +36,7 @@ public class Hero
     protected int leadership
 
     protected int exp = 0
-    protected int level = 0
+    Int level = new Int(0)
 
     protected int attack = 0
     protected int defence = 0
@@ -70,12 +63,12 @@ public class Hero
         this.stats = new HeroStats(this, heroType)
         spells = new LinkedList<Spell>()
 
-        u = createUnit(playerData[0].blzPlayer, heroType.armyUnitId, playerData[0].blzPlayer.getStartLocation(), angle(0))
+        u = createUnit(playerData[0].blzPlayer, heroType.getArmyUnitId(), playerData[0].blzPlayer.getStartLocation(), angle(0))
         army = new Army(stats)
         data = new HeroData(10, 10, 10)
         unitHash.put(u, this)
         for i = 0 to skillTrees.length - 1
-            skillTrees[i] = heroType.skillTrees[i].createNew(this)
+            skillTrees[i] = heroType.getSkillTreeType(i).createNew(this)
 
         damagedListener = EventListener.add(u, EVENT_PLAYER_UNIT_DAMAGED) ->
             if u.isInvulnerable() == false
@@ -100,9 +93,6 @@ public class Hero
 
     function getType() returns HeroType
         return heroType
-
-    function getUnitType() returns int
-        return unitboardid
 
     private function select()
         p.blzPlayer.selectSingle(u)
@@ -152,17 +142,17 @@ public class Hero
         return gold
 
     function getLevel() returns int
-        return level
+        return level.self
 
     function getExp() returns int
         return exp
 
     function addExp(Reward reward)
         exp += reward.exp
-        while exp >= LEVELS[level]
-            exp -= LEVELS[level]
-            let statsGain = 6 + level
-            level ++
+        while exp >= LEVELS[level.self]
+            exp -= LEVELS[level.self]
+            let statsGain = 6 + level.self
+            level.self ++
             
             reward.level ++
             // TODO here better rewards for level up
@@ -185,19 +175,19 @@ public class Hero
         return leadership
 
     function getMaxAmountOfStackTypeBasedOnGold(StackType stackType) returns int
-        return (gold / stackType.getCost()).floor()
+        return (gold / stackType.getValue()).floor()
 
     function getCurrentLeadershipRequirementOfStackType(StackType stackType) returns int
         var req = 0
         for i = 0 to Army.MAX_SIZE - 1
             let stack = army.getStack(i)
             if stack != null and stack.getStackType() == stackType
-                req += stackType.leadership * stack.getAmount()
+                req += stackType.getLeadership() * stack.getAmount()
 
         return req
 
     function getMaxAmountOfStackTypeRemainingBasedOnLeadership(StackType stackType) returns int
-        return ((leadership - getCurrentLeadershipRequirementOfStackType(stackType)) / stackType.leadership.toReal()).floor()
+        return ((leadership - getCurrentLeadershipRequirementOfStackType(stackType)) / stackType.getLeadership().toReal()).floor()
 
     function setVulnearble(boolean flag)
         if not flag

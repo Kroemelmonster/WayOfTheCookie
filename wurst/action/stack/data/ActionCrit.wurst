@@ -5,6 +5,8 @@ import StackActionTarget
 import PlayerData
 import Damage
 import UIMenuActionConsole
+import Stats
+import StackType
 
 init
     Initializer.register(InitializerNames.ACTIONS) -> 
@@ -17,30 +19,30 @@ public class ActionCrit extends StackActionTarget
     protected static function setup()
         let cost = ActionCostPreset.create(1, true, 2)
         TYPE = StackActionTarget.createType("Critical Strike", Icons.bTNCriticalStrike, cost)
+        ..setTags(Tag.ATTACK)
         ..enableOption(ActionTypeOption.PRIMARY)
         TYPE.onCreate() (BoardStack stack, StackActionData data) ->
             return new ActionCrit(stack, data)
-        TYPE.onCreateTooltipLines() data -> 
-            return createTooltipLines(data)
+        TYPE.onCreateTooltipLines() (data, stats)-> 
+            return createTooltipLines(data, stats)
         TYPE.onCreateData() -> 
             return StackActionData.create(cost)
             ..setRealData(CRIT, 1.5)
 
-    private static function createTooltipLines(StackActionData data) returns LinkedList<string>
+    private static function createTooltipLines(StackActionData data, HasEntityStats _stats) returns LinkedList<string>
         return new LinkedList<string>
         ..add(KStringUtils.stat("Target", "Enemy"))
         ..add("")
-        ..add("Striking your foe with a ciritical hit dealing "+KStringUtils.primaryPercent(data.getRealData(CRIT))+" dmg.")
-        
-    private static function createTooltipLines(ActionCrit action) returns LinkedList<string>
-        return createTooltipLines(action.data)
+        ..add("Striking your foe with a ciritical hit dealing "
+         + KStringUtils.primaryPercent(data.getRealData(CRIT))+" dmg.")
 
     private static function createDamagePreview(BoardStack stack, StackActionData data) returns DamagePreview
         return DamagePreview.create(SourceType.ATTACK, stack.stats.getDamageType())
-        ..setDamage(stack.stats.getDamageAll() * data.getRealData(CRIT))
+        ..setDamage(stack.stats.getAttackDamage() * data.getRealData(CRIT))
         ..addFlag(DamageFlags.CRIT)
 
 /* -------------------------------------------------------------------------- */
+
     override function getHighlightRuneRuneForCell(Player p, Cell cell) returns CellHighlightRune
         return CellHighlightRune.NONE
 
@@ -48,7 +50,7 @@ public class ActionCrit extends StackActionTarget
         return stack.canAttack(potentialTarget)
 
     protected override function getTargetRange() returns intRange
-        return stack.stats.getRange()
+        return stack.stats.getAttackRange()
 
     protected override function previewTarget(int prevUsedApForMove, BoardStack target)
         let tt = createBasicTooltip()
@@ -74,7 +76,7 @@ public class ActionCrit extends StackActionTarget
         return true
 
     override function createBasicTooltipLines() returns LinkedList<string>
-        return createTooltipLines(this)
+        return createTooltipLines(data, stack.stats)
 
     private construct(BoardStack stack, StackActionData data)
         super(stack, TYPE, data)

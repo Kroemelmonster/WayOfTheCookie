@@ -13,6 +13,8 @@ import BoardStack
 import HeroData
 import Scheduler
 import AnimationWait
+import HeroStats
+import Stats
 
 init
     Initializer.register(InitializerNames.SPELLS) -> 
@@ -23,6 +25,7 @@ public class SpellRallingCry extends WarcrySpellAction
     protected static function setup()
         STATUS = StatusRallingCry.TYPE
         TYPE = WarcrySpellAction.createType("Rallying Cry", "Icons\\BTNAbilityWarriorWarCry.blp")
+        ..setTags(Tag.WARCRY)
         TYPE.addLevel(ActionCostPreset.create(0, false, 3), HeroDataChange.create(1, 0, 1))
         ..setIntData(ATTACK_BONUS, 3)
         ..setRealData(ATTACK_PERC, 0.5)
@@ -42,19 +45,22 @@ public class SpellRallingCry extends WarcrySpellAction
 
     private static StatusType STATUS
 
-    private static function createTooltipLines(SpellLevel level, HasSpellStats spellStats) returns LinkedList<string>
+    private static function createTooltipLines(SpellLevel level, HasHeroStats stats) returns LinkedList<string>
         return new LinkedList<string>
         ..add(KStringUtils.stat("Target", "Allies/Self"))
         ..add("")
         ..add("Gives your self temporary Attack Bonus. Then Gives all your troops "
-         + KStringUtils.primaryPercent(level.getRealData(ATTACK_PERC))
+         + KStringUtils.primaryPercent(getAtackPerc(level, stats))
          + " of your total Attack as additional Bonus")
         ..add(KStringUtils.line())
-        ..addAllAndDestroy(STATUS.createTooltipLines(createStatusData(level, spellStats)))
+        ..addAllAndDestroy(STATUS.createTooltipLines(createStatusData(level, stats)))
+
+    private static function getAtackPerc(SpellLevel level, HasHeroStats stats) returns real
+        return level.getRealData(ATTACK_PERC) * stats.getStatusEffectivness(TYPE.getTags())
     
-    private static function createStatusData(SpellLevel level, HasSpellStats spellStats) returns StatusData
-        let attackBonus = level.getIntData(ATTACK_BONUS)
-        let attackBonusUnits = ((spellStats.getAttack() + attackBonus) * level.getRealData(ATTACK_PERC)).round()
+    private static function createStatusData(SpellLevel level, HasHeroStats stats) returns StatusData
+        let attackBonus = (level.getIntData(ATTACK_BONUS) * stats.getStatusEffectivness(TYPE.getTags())).round()
+        let attackBonusUnits = ((stats.getAttack().value() + attackBonus) * getAtackPerc(level, stats)).round()
         return StatusData.create(1)
         ..setIntData(StatusRallingCry.ATTACK_BONUS, attackBonus)
         ..setIntData(StatusRallingCry.ATTACK_BONUS_UNITS, attackBonusUnits)
@@ -70,7 +76,7 @@ public class SpellRallingCry extends WarcrySpellAction
                     finishCast(true)
 
     private function applyStati(SequenzListener next)
-        let data = createStatusData(level, this)
+        let data = createStatusData(level, hero.stats)
         ..clearEntityData()
         entity.getForce().forEachStack() (BoardStack ally) ->
             data.addEntityData(ally)
@@ -79,7 +85,7 @@ public class SpellRallingCry extends WarcrySpellAction
 
     private function showPreview()
         let tt = createBasicTooltip()
-        ..addLines(createTooltipLines(level, this))
+        ..addLines(createTooltipLines(level, hero.stats))
         UITooltip.display(entity.getConntrollingPlayer(), tt)
         UIMenuActionConsole.updateActionPoints(entity, cost)
 

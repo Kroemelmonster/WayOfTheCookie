@@ -4,6 +4,7 @@ import TalentType
 import Talent
 import initlater ActionTalentType
 import StackAction
+import StackType
 
 public class ActionTalent extends Talent
     protected StackAction action
@@ -19,7 +20,7 @@ public class ActionTalent extends Talent
             Log.error(entity.toString() + " has a talent "
              + getName() + " which can not be automaticly added")
 
-    override function createTooltip() returns Tooltip
+    override function createTooltip(HasEntityStats stats) returns Tooltip
         return createBasicTooltip()
         ..addLines(action.createTooltipLines())
 
