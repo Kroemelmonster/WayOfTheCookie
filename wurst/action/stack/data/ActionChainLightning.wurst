@@ -47,11 +47,11 @@ public class ActionChainLightning extends StackActionTarget
 
     private static function createTooltipLines(StackActionData data, HasEntityStats stats) returns LinkedList<string>
         return new LinkedList<string>
-        ..add(KStringUtils.stat("Target", "Enemy"))
-        ..add(KStringUtils.stat("Damage", calculateDamage(data, stats, 0).toColoredText()))
+        ..add(KStringUtils.data("Target", "Enemy"))
+        ..add(KStringUtils.data("Damage", calculateDamage(data, stats, 0).toColoredText()))
         ..add("")
         ..add("Lightning strikes from one target and chains up to "
-         + KStringUtils.primaryString(MAX_CHAINS.toString()) + " times")
+         + KStringUtils.primary(MAX_CHAINS) + " times")
         ..add("Each time the damage is descreased by "
          + KStringUtils.primaryPercent(1 - CHAIN_REDUCTION))
 

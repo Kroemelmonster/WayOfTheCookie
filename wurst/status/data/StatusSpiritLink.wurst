@@ -52,18 +52,18 @@ public class StatusSpiritLink extends SharedStatus
     private static function createTooltip(StatusSpiritLink b) returns Tooltip
         let tt = Tooltip.create(TYPE.getName())
         if b.isPrimary()
-            tt.addLine(KStringUtils.stat("Duration", b.duration))
+            tt.addLine(KStringUtils.data("Duration", b.duration))
             var targetStr = ""
             let size = b.secondaryStati.size()
             if size == 1
                 targetStr = b.secondaryStati.getFirst().entity.getName()
             else if size > 1
                 targetStr = size.toString() + " Allies"
-            tt.addLine(KStringUtils.stat("LinkedTo", targetStr))
+            tt.addLine(KStringUtils.data("LinkedTo", targetStr))
             tt.addLine("")
             tt.addLines(createTooltipBaseLinesPrimary(b.transferPerc, b.reducePerc))
         else
-            tt.addLine(KStringUtils.stat("LinkedTo", b.primary.entity.getName()))
+            tt.addLine(KStringUtils.data("LinkedTo", b.primary.entity.getName()))
             tt.addLine("")
             tt.addLine(KStringUtils.primaryPercent(b.transferPerc) + " of any Damage you take gets transfered to the caster.")
         return tt

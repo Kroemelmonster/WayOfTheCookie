@@ -93,7 +93,7 @@ public class UIWindowNPC
                 stockUnits[i].setVisible(stockitr.hasNext())
                 if stockitr.hasNext()
                     let stack = stockitr.next()
-                    stockUnits[i].setBackground(stack.getStackType().getIcon())
-                    stockUnits[i].setText(stack.getAmount().toString(), stack.getStackType().getValue().toString())
+                    stockUnits[i].setBackground(stack.typ.getIcon())
+                    stockUnits[i].setText(stack.getAmount().toString(), stack.typ.getValue().toString())
 
             destroy stockitr

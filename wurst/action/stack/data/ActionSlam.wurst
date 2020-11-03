@@ -42,9 +42,9 @@ public class ActionSlam extends StackActionTargetCell
 
     private static function createTooltipLines(StackActionData _data, HasEntityStats stats) returns LinkedList<string>
         return new LinkedList<string>
-        ..add(KStringUtils.stat("Target", "Enemy"))
-        ..add(KStringUtils.stat("Range", AFFECTED_RANGE))
-        ..add(KStringUtils.stat("Damage", calculateDamage(stats).toColoredText()))
+        ..add(KStringUtils.data("Target", "Enemy"))
+        ..add(KStringUtils.data("Range", AFFECTED_RANGE))
+        ..add(KStringUtils.data("Damage", calculateDamage(stats).toColoredText()))
         ..add("")
         ..add("Slams the Ground around you, curshing your foes.")
 

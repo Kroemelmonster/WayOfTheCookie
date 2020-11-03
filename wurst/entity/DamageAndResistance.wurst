@@ -22,8 +22,8 @@ public class Resistance
         return baseRes + res[dType castTo int]
 
     function extendTooltip(Tooltip tt)
-        tt.addLine("Physical Resistance : " + KStringUtils.coloredPercent(getRes(DamageType.PHYSICAL) / 100))
-        tt.addLine("Magic Resistance : " + KStringUtils.coloredPercent(getRes(DamageType.MAGIC) / 100))
-        tt.addLine("Fire Resistance : " + KStringUtils.coloredPercent(getRes(DamageType.FIRE) / 100))
-        tt.addLine("Cold Resistance : " + KStringUtils.coloredPercent(getRes(DamageType.COLD) / 100))
-        tt.addLine("Chaos Resistance : " + KStringUtils.coloredPercent(getRes(DamageType.CHAOS) / 100))
+        tt.addLine("Physical Resistance : " + KStringUtils.signedPercent(getRes(DamageType.PHYSICAL)))
+        tt.addLine("Magic Resistance : " + KStringUtils.signedPercent(getRes(DamageType.MAGIC)))
+        tt.addLine("Fire Resistance : " + KStringUtils.signedPercent(getRes(DamageType.FIRE)))
+        tt.addLine("Cold Resistance : " + KStringUtils.signedPercent(getRes(DamageType.COLD)))
+        tt.addLine("Chaos Resistance : " + KStringUtils.signedPercent(getRes(DamageType.CHAOS)))

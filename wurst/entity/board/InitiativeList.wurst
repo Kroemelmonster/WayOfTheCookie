@@ -330,5 +330,5 @@ public class InitiativeList
 
     static function extendTooltip(Tooltip tt, int initiative)
         tt.addLine("Every time this units ends its turn it has to wait "
-        + KStringUtils.primaryString(initiativeToTime(initiative).toString())
-        + " " + KStringUtils.secondaryString("timeunits") + " until it can act again")
+        + KStringUtils.primary(initiativeToTime(initiative))
+        + " " + KStringUtils.secondary("timeunits") + " until it can act again")

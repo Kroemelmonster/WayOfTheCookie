@@ -25,13 +25,13 @@ public class SpellChainLightning extends SpellActionTarget
         damagePreview = DamagePreview.create(SourceType.SPELL, DamageType.MAGIC)
         TYPE = SpellActionTarget.createType("Chain Lightning", Icons.bTNChainLightning)
         TYPE.setTags(Tag.SPELL, Tag.MAGIC, Tag.LIGHTNING)
-        TYPE.addLevel(ActionCostPreset.createWithMana(1, true, 7), HeroDataChange.create(0, 1, 3))
+        TYPE.addLevel(ActionCostPreset.createWithMana(1, true, 7), HeroDataChange.createForRune(0, 1, 3))
         ..setIntData(DAMAGE, 65)
         ..setIntData(CHAINS, 2)
-        TYPE.addLevel(ActionCostPreset.createWithMana(1, true, 12), HeroDataChange.create(0, 2, 5))
+        TYPE.addLevel(ActionCostPreset.createWithMana(1, true, 12), HeroDataChange.createForRune(0, 2, 5))
         ..setIntData(DAMAGE, 125)
         ..setIntData(CHAINS, 3)
-        TYPE.addLevel(ActionCostPreset.createWithMana(1, true, 20), HeroDataChange.create(0, 3, 7))
+        TYPE.addLevel(ActionCostPreset.createWithMana(1, true, 20), HeroDataChange.createForRune(0, 3, 7))
         ..setIntData(DAMAGE, 185)
         ..setIntData(CHAINS, 4)
         TYPE.onActionCreate() (hero, spell) -> 
@@ -59,11 +59,11 @@ public class SpellChainLightning extends SpellActionTarget
 
     private static function createTooltipLines(SpellLevel level, HasHeroStats stats) returns LinkedList<string>
         return new LinkedList<string>
-        ..add(KStringUtils.stat("Target", "Enemy"))
-        ..add(KStringUtils.stat("Damage", calculateDamage(level, stats, 0).toColoredText()))
+        ..add(KStringUtils.data("Target", "Enemy"))
+        ..add(KStringUtils.data("Damage", calculateDamage(level, stats, 0).toColoredText()))
         ..add("")
         ..add("You strike a Foe with Lightning which chains up to "
-         + KStringUtils.primaryString(level.getIntData(CHAINS).toString()) + " times")
+         + KStringUtils.primary(level.getIntData(CHAINS)) + " times")
         ..add("Each time the damage is descreased by "
          + KStringUtils.primaryPercent(1 - CHAIN_REDUCTION))
 

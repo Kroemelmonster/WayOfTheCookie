@@ -1,7 +1,5 @@
 package SubTargetList
 
-import LinkedList
-
 import initlater BoardStack
 import initlater Cell
 

@@ -23,6 +23,12 @@ public function intRange.random() returns int
 public function intRange.toReal() returns realRange
     return realRange(this.min.toReal(), this.max.toReal())
 
+public function intRange.toString() returns string
+    var str = this.min.toString()
+    if this.min < this.max
+        str +=  " - " + this.max.toString()
+    return str
+
 public function intRange.avg() returns real
     return (this.min + this.max) / 2.0
 

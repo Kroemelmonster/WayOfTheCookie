@@ -30,15 +30,15 @@ public class SpellFlameStrike extends SpellActionTarget
         damagePreview = DamagePreview.create(SourceType.SPELL, DamageType.FIRE)
         TYPE = SpellActionTarget.createType("Flame Strike", Icons.bTNWallOfFire)
         ..setTags(Tag.SPELL, Tag.FIRE)
-        TYPE.addLevel(ActionCostPreset.createWithMana(1, true, 6), HeroDataChange.create(1, 0, 3))
+        TYPE.addLevel(ActionCostPreset.createWithMana(1, true, 6), HeroDataChange.createForRune(1, 0, 3))
         ..setIntData(DAMAGE, 90)
         ..setIntData(BURNING_GROUND_DURATION, 300)
         ..setRealData(BURNING_GROUND_DAMAGE_PERC, 0.5)
-        TYPE.addLevel(ActionCostPreset.createWithMana(1, true, 9), HeroDataChange.create(1, 0, 5))
+        TYPE.addLevel(ActionCostPreset.createWithMana(1, true, 9), HeroDataChange.createForRune(1, 0, 5))
         ..setIntData(DAMAGE, 150)
         ..setIntData(BURNING_GROUND_DURATION, 500)
         ..setRealData(BURNING_GROUND_DAMAGE_PERC, 0.6)
-        TYPE.addLevel(ActionCostPreset.createWithMana(1, true, 12), HeroDataChange.create(2, 0, 8))
+        TYPE.addLevel(ActionCostPreset.createWithMana(1, true, 12), HeroDataChange.createForRune(2, 0, 8))
         ..setIntData(DAMAGE, 300)
         ..setIntData(BURNING_GROUND_DURATION, 700)
         ..setRealData(BURNING_GROUND_DAMAGE_PERC, 0.7)
@@ -64,16 +64,16 @@ public class SpellFlameStrike extends SpellActionTarget
 
     private static function createTooltipLines(SpellLevel level, HasHeroStats stats) returns LinkedList<string>
         return new LinkedList<string>
-        ..add(KStringUtils.stat("Target", "Area"))
-        ..add(KStringUtils.stat("Damage", calculateDamage(level, stats).toColoredText()))
+        ..add(KStringUtils.data("Target", "Area"))
+        ..add(KStringUtils.data("Damage", calculateDamage(level, stats).toColoredText()))
         ..add("")
         ..add("Conjures a pillar of fire which damages all targets in an area.")
         ..add("Leaves a trail of burning ground which deals "
          + KStringUtils.primaryPercent(level.getRealData(BURNING_GROUND_DAMAGE_PERC))
          + " each time a unit enters it.")
         ..add("The Burning Ground fizzles in "
-         + KStringUtils.primaryString(level.getIntData(BURNING_GROUND_DURATION).toString())
-         + " " + KStringUtils.secondaryString("timeunits") + ".")
+         + KStringUtils.primary(level.getIntData(BURNING_GROUND_DURATION))
+         + " " + KStringUtils.secondary("timeunits") + ".")
 
     private static function createObstacleData(SpellLevel level, BoardEntity source, DamageInstance rolledDamage) returns CellObstacleData
         let previewCopy = damagePreview.copy()

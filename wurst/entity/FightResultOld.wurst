@@ -1,10 +1,10 @@
-package FightResult
+package FightResultOld
 import LinkedList
 import StackType
 import Stack
 import initlater Hero
 import Abilities
-
+/*
 public enum FIGHT_RESULT
     WON
     LOST
@@ -92,3 +92,4 @@ public class FightResultStack
 
     function getAfter() returns int
         return after
+*/

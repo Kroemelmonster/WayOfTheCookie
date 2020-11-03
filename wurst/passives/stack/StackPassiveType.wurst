@@ -1,12 +1,10 @@
 package StackPassiveType
 import Icon
-import Passive
-import BoardEntity
 import initlater PassiveTalentType
-import BoardStack
 import Data
 import StackPassive
 import StackType
+import Stats
 
 interface StackPassiveCreateListener
     function create(BoardStack stack, StackPassiveData data) returns StackPassive
@@ -30,9 +28,19 @@ public class StackPassiveType extends PassiveType
     protected StackPassiveCreateTooltipLinesListener tooltipLinesListener
     protected StackPassiveCreateDataListener dataListener
 
+    protected LinkedList<Tag> tags
+
     construct(string name, string icon)
         super(name, icon)
-    
+        tags = new LinkedList<Tag>
+
+    function setTags(vararg Tag newTags)
+        for tag in newTags
+            tags.add(tag)
+
+    function getTags() returns LinkedList<Tag>
+        return tags
+
     function onCreate(StackPassiveCreateListener listener)
         this.listener = listener
 
@@ -49,8 +57,11 @@ public class StackPassiveType extends PassiveType
         return "StackPassiveType '"+name+"'"
 
     function createTooltipLines(StackPassiveData data, HasEntityStats stats) returns LinkedList<string>
-        return new LinkedList<string>()
-        ..addAllAndDestroy(tooltipLinesListener.create(data, stats))
+        let list = new LinkedList<string>()
+        if tags.size() > 0
+            list.add(KStringUtils_data("Tags", tags))
+        list.addAllAndDestroy(tooltipLinesListener.create(data, stats))
+        return list
 
     function createBaseData() returns StackPassiveData
         if dataListener != null

@@ -3,7 +3,6 @@ package UIMenuWorldConsole
 import PlayerData
 
 import initlater Hero
-import FightResult
 import UIWindow
 import UIHandle
 import UIProgressBar
@@ -72,7 +71,7 @@ public class UIMenuWorldConsole
         menu.show(p)
         update(p)
 
-    static function showFightResult(Player p, FightResult result, SequenzListener listener)
+    //static function showFightResult(Player p, FightResult result, SequenzListener listener)
         // TODO fightResultDialog.show(p, result, listener)
 
     private static function update(Player p)
@@ -88,7 +87,7 @@ public class UIMenuWorldConsole
 
         let hero = p.hero
         let lvl = hero.getLevel()
-        expBar.setValue(hero.getExp(), Hero.LEVELS[lvl])
+        expBar.setValue(hero.data.getExp(), Hero.LEVELS[lvl])
         expBar.setText("Level "+(lvl + 1).toString())
 
         let mana = hero.stats.getMana()

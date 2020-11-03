@@ -36,14 +36,15 @@ public class ActionSpiritLink extends StackActionTarget
     private static constant RANGE = intRange(1, 3)
 
     private static function createStatusData(StackActionData _data, HasEntityStats stats) returns StatusData
-        let multi = stats.getStatusEffectivness(TYPE.getTags()) * 0.5
+        let baseMulti = stats.getStatusEffectivness(TYPE.getTags()) - 1.0
+        let multi = (baseMulti * 0.5) + 1.0
         return StatusData.create(3)
         ..setRealData(StatusSpiritLink.DAMAGE_TRANSFER, 0.5 * multi)
         ..setRealData(StatusSpiritLink.DAMAGE_REDUCE, 1 - (0.12 * multi))
 
     private static function createTooltipLines(StackActionData data, HasEntityStats stats) returns LinkedList<string>
         return new LinkedList<string>
-        ..add(KStringUtils.stat("Target", "Ally"))
+        ..add(KStringUtils.data("Target", "Ally"))
         ..add("")
         ..add("just lul")
         ..add(KStringUtils.line())
@@ -60,7 +61,7 @@ public class ActionSpiritLink extends StackActionTarget
         return false
 
     private function createStatusData(BoardStack potentialTarget) returns StatusData
-        return createStatusData(potentialTarget)
+        return createStatusData(data, stack.stats)
         ..setEntityData(potentialTarget)
 
     protected override function getTargetRange() returns intRange

@@ -26,13 +26,13 @@ public class SpellRallingCry extends WarcrySpellAction
         STATUS = StatusRallingCry.TYPE
         TYPE = WarcrySpellAction.createType("Rallying Cry", "Icons\\BTNAbilityWarriorWarCry.blp")
         ..setTags(Tag.WARCRY)
-        TYPE.addLevel(ActionCostPreset.create(0, false, 3), HeroDataChange.create(1, 0, 1))
+        TYPE.addLevel(ActionCostPreset.create(0, false, 3), HeroDataChange.createForRune(1, 0, 1))
         ..setIntData(ATTACK_BONUS, 3)
         ..setRealData(ATTACK_PERC, 0.5)
-        TYPE.addLevel(ActionCostPreset.create(0, false, 2), HeroDataChange.create(2, 0, 1))
+        TYPE.addLevel(ActionCostPreset.create(0, false, 2), HeroDataChange.createForRune(2, 0, 1))
         ..setIntData(ATTACK_BONUS, 5)
         ..setRealData(ATTACK_PERC, 0.6)
-        TYPE.addLevel(ActionCostPreset.create(0, false, 1), HeroDataChange.create(3, 0, 2))
+        TYPE.addLevel(ActionCostPreset.create(0, false, 1), HeroDataChange.createForRune(3, 0, 2))
         ..setIntData(ATTACK_BONUS, 7)
         ..setRealData(ATTACK_PERC, 0.7)
         TYPE.onActionCreate() (hero, spell) -> 
@@ -47,7 +47,7 @@ public class SpellRallingCry extends WarcrySpellAction
 
     private static function createTooltipLines(SpellLevel level, HasHeroStats stats) returns LinkedList<string>
         return new LinkedList<string>
-        ..add(KStringUtils.stat("Target", "Allies/Self"))
+        ..add(KStringUtils.data("Target", "Allies/Self"))
         ..add("")
         ..add("Gives your self temporary Attack Bonus. Then Gives all your troops "
          + KStringUtils.primaryPercent(getAtackPerc(level, stats))

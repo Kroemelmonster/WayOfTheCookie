@@ -24,29 +24,16 @@ public class KStringUtils
     static constant COLOR_POSITIVE = color(75, 214, 19).toColorString()
 
     static constant string array ICONS = [
-        coloredString(colorA(248, 149, 0, 255).toColorString(), "🔥"),
-        coloredString(colorA(252, 255, 67, 255).toColorString(), "⚡"),
-        coloredString(colorA(124, 237, 252, 255).toColorString(), "❄"),
-        coloredString(colorA(179, 179, 179, 255).toColorString(), "⚔"),
-        coloredString(colorA(163, 64, 255, 255).toColorString(), "✨"),
-        coloredString(colorA(255, 255, 255, 255).toColorString(), "☠"),
-        coloredString(colorA(21, 255, 0, 255).toColorString(), "💀")
+        colored(colorA(248, 149, 0, 255).toColorString(), "🔥"),
+        colored(colorA(252, 255, 67, 255).toColorString(), "⚡"),
+        colored(colorA(124, 237, 252, 255).toColorString(), "❄"),
+        colored(colorA(179, 179, 179, 255).toColorString(), "⚔"),
+        colored(colorA(163, 64, 255, 255).toColorString(), "✨"),
+        colored(colorA(255, 255, 255, 255).toColorString(), "☠"),
+        colored(colorA(21, 255, 0, 255).toColorString(), "💀")
     ]
        // "🔥","⚡❄🌊🌪⚔🗡🏹🛡☄✨💀☠"]
     static constant string array ROMAN_LETTERS = ["I", "II", "III", "IV", "V"]
-
-    static function coloredRange(string color, intRange r) returns string
-        var str = color + r.min.toString()
-        if r.min < r.max
-            str +=  "|r - " + color + r.max.toString()
-        str += "|r"
-        return str
-
-    static function range(intRange r) returns string
-        var str = r.min.toString()
-        if r.min < r.max
-            str +=  " - " + r.max.toString()
-        return str
 
     static function icon(IconName name) returns string
         return ICONS[name castTo int]
@@ -54,65 +41,118 @@ public class KStringUtils
     static function line() returns string
         return "----------"
 
-    static function coloredInt(string color, int value) returns string
-        return color + value.toString() + "|r"
-
-    static function coloredString(string color, string value) returns string
+    static function colored(string color, string value) returns string
         return color + value + "|r"
 
-    static function primaryString(string value) returns string
+    static function colored(string color, int value) returns string
+        return color + value.toString() + "|r"
+
+    static function colored(string color, intRange r) returns string
+        var str = color + r.min.toString()
+        if r.min < r.max
+            str +=  "|r - " + color + r.max.toString()
+        str += "|r"
+        return str
+
+    static function primary(string value) returns string
         return COLOR_PRIMARY + value + "|r"
 
-    static function secondaryString(string value) returns string
+    static function primary(int value) returns string
+        return COLOR_PRIMARY + value.toString() + "|r"
+
+    static function primary(real value) returns string
+        return COLOR_PRIMARY + value.toString(1) + "|r"
+
+    static function secondary(string value) returns string
         return COLOR_SECONDARY + value + "|r"
 
-    private static function statInner(string prefix, string data) returns string
+    static function secondary(int value) returns string
+        return COLOR_SECONDARY + value.toString() + "|r"
+
+    static function secondary(real value) returns string
+        return COLOR_SECONDARY + value.toString(1) + "|r"
+
+    static function dataInner(string prefix, string data) returns string
         return prefix + " : " + data
 
-    static function stat(string prefix, string color, intRange value) returns string
-        return statInner(prefix, coloredRange(color, value))
+    static function data(string prefix, intRange value) returns string
+        return dataInner(prefix, colored(COLOR_PRIMARY, value))
 
-    static function stat(string prefix, intRange value) returns string
-        return statInner(prefix, coloredRange(COLOR_PRIMARY, value))
+    static function data(string prefix, string color, string value) returns string
+        return dataInner(prefix, colored(color, value))
 
-    static function stat(string prefix, string color, string value) returns string
-        return statInner(prefix, coloredString(color, value))
+    static function data(string prefix, string color, int value) returns string
+        return dataInner(prefix, colored(color, value))
 
-    static function stat(string prefix, string color, int value) returns string
-        return statInner(prefix, coloredInt(color, value))
+    static function data(string prefix, int value) returns string
+        return dataInner(prefix, colored(COLOR_PRIMARY, value))
 
-    static function stat(string prefix, int value) returns string
-        return statInner(prefix, coloredInt(COLOR_PRIMARY, value))
+    static function data(string prefix, string value) returns string
+        return dataInner(prefix, colored(COLOR_PRIMARY, value))
 
-    static function stat(string prefix, string value) returns string
-        return statInner(prefix, coloredString(COLOR_PRIMARY, value))
+    private static function statInner(string suffix, string data) returns string
+        return data + " " + suffix
 
-    static function coloredModiInt(int value) returns string
+    static function stat(string suffix, intRange value) returns string
+        return statInner(suffix, colored(COLOR_PRIMARY, value))
+
+    static function stat(string suffix, string color, string value) returns string
+        return statInner(suffix, colored(color, value))
+
+    static function stat(string suffix, string color, int value) returns string
+        return statInner(suffix, colored(color, value))
+
+    static function stat(string suffix, int value) returns string
+        return statInner(suffix, colored(COLOR_PRIMARY, value))
+
+    static function stat(string suffix, string value) returns string
+        return statInner(suffix, colored(COLOR_PRIMARY, value))
+
+    static function signedStat(string suffix, int value) returns string
+        return statInner(suffix, signed(value))
+
+    static function signedPercentStat(string suffix, int value) returns string
+        return statInner(suffix, signedPercent(value))
+
+    static function signed(int value) returns string
         if value > 0
-            return coloredString(COLOR_POSITIVE, " +" + value.toString())
+            return colored(COLOR_POSITIVE, " +" + value.toString())
         else if value < 0
-            return coloredString(COLOR_NEGATIVE, " " + value.toString())
+            return colored(COLOR_NEGATIVE, " " + value.toString())
         return ""
 
-    static function coloredModiReal(real value, int precision) returns string
+    static function signed(real value, int precision) returns string
         if value > 0.0
-            return coloredString(COLOR_POSITIVE, " +" + value.toString(precision))
+            return colored(COLOR_POSITIVE, " +" + value.toString(precision))
         else if value < 0.0
-            return coloredString(COLOR_NEGATIVE, " " + value.toString(precision))
+            return colored(COLOR_NEGATIVE, " " + value.toString(precision))
         return ""
 
     static function percent(real perc) returns string
         return (perc * 100).toString(1) + "%"
 
-    static function coloredPercent(real perc) returns string
+    static function percent(int perc) returns string
+        return perc.toString() + "%"
+
+    static function signedPercent(real perc) returns string
         if perc > 0
-            return coloredString(COLOR_POSITIVE, "+" + percent(perc))
+            return colored(COLOR_POSITIVE, " +" + percent(perc))
         else if perc < 0
-            return coloredString(COLOR_NEGATIVE, percent(perc))
-        return coloredString(COLOR_SECONDARY, percent(perc))
+            return colored(COLOR_NEGATIVE, " " + percent(perc))
+        return colored(COLOR_SECONDARY, percent(perc))
+
+    static function signedPercent(int perc) returns string
+        if perc > 0
+            return colored(COLOR_POSITIVE, " +" + percent(perc))
+        else if perc < 0
+            return colored(COLOR_NEGATIVE, " " + percent(perc))
+        return colored(COLOR_SECONDARY, percent(perc))
+
+    static function primaryPercent(int perc) returns string
+        return colored(COLOR_PRIMARY, percent(perc))
 
     static function primaryPercent(real perc) returns string
-        return coloredString(COLOR_PRIMARY, percent(perc))
+        return colored(COLOR_PRIMARY, percent(perc))
 
 public function int.toRomanLetters() returns string
     return KStringUtils.ROMAN_LETTERS[this - 1]

@@ -142,6 +142,8 @@ public class UITooltip
             switch anchor
                 case RIGHT_BOTTOM
                     self.setPoint(FRAMEPOINT_TOPLEFT, reference, FRAMEPOINT_TOPRIGHT)
+                case BOTTOM_RIGHT
+                    self.setPoint(FRAMEPOINT_TOPLEFT, reference, FRAMEPOINT_BOTTOMLEFT)
                 default
                     self.setPoint(FRAMEPOINT_TOPRIGHT, reference, FRAMEPOINT_TOPLEFT)
 

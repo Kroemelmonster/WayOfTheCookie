@@ -3,8 +3,6 @@ import initlater Cell
 import initlater Board
 import HexagonalGridUtil
 import initlater CellObstacleType
-import BoardTrigger
-import BoardStack
 import BoardListenerOnCellMove
 
 public abstract class CellObstacle

@@ -75,13 +75,13 @@ public class ActionCostPreset implements ActionCostData
         return maxCharges > 0
 
     function setupTooltipCost(Tooltip tt)
-        tt.addIcon(KStringUtils.primaryString(getAPAsText())
+        tt.addIcon(KStringUtils.primary(getAPAsText())
         , "UI/Tooltip/TooltipAddonAPIcon.dds")
         if hasMana()
-            tt.addIcon(KStringUtils.primaryString(mana.toString())
+            tt.addIcon(KStringUtils.primary(mana)
             , "UI/Tooltip/TooltipAddonManaIcon.dds")
         if hasCooldown()
-            tt.addIcon(KStringUtils.primaryString(maxCooldown.toString())
+            tt.addIcon(KStringUtils.primary(maxCooldown)
             , "UI/Tooltip/TooltipAddonCooldownIcon.dds")
 
     function createTooltipLines() returns LinkedList<string>
@@ -89,9 +89,9 @@ public class ActionCostPreset implements ActionCostData
 
     protected function createTooltipLines(ActionCost used) returns LinkedList<string>
         let lines = new LinkedList<string>()
-        ..add(KStringUtils.stat("Cost", getAPAsText()))
+        ..add(KStringUtils.data("Cost", getAPAsText()))
         if hasMana()
-            lines.add(KStringUtils.stat("Mana", mana.toString()))
+            lines.add(KStringUtils.data("Mana", mana.toString()))
         if hasCooldown()
             var str = ""
             if used != null
@@ -101,14 +101,14 @@ public class ActionCostPreset implements ActionCostData
                     str = used.cooldown.toString()
                 str += " | "
             str += maxCooldown.toString()
-            lines.add(KStringUtils.stat("Cooldown", str))
+            lines.add(KStringUtils.data("Cooldown", str))
         if hasCharges()
             var str = ""
             if used != null
                 str = used.getCurrentCharges().toString()
                 str += " / "
             str += maxCharges.toString()
-            lines.add(KStringUtils.stat("Charges", str))
+            lines.add(KStringUtils.data("Charges", str))
         return lines
 
 public class ActionCost implements ActionCostData

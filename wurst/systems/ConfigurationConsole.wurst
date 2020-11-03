@@ -1,0 +1,42 @@
+package ConfigurationConsole
+import ClosureEvents
+import PlayerData
+
+init
+    Initializer.register(InitializerNames.WORLD)-> 
+        consoleSetup()
+
+
+public function string.split() returns LinkedList<string>
+    let splits = new LinkedList<string>()
+
+    var index = -1
+    let length = this.length()
+    while index < length
+        var newIndex = this.indexOf(" ", index + 1)
+        if newIndex == -1
+            newIndex = length
+        splits.add(this.substring(index + 1, newIndex))
+        index = newIndex
+
+    return splits
+
+function consoleSetup()
+    EventListener.add(EVENT_PLAYER_CHAT_FILTER) ->
+        let p = GetTriggerPlayerData()
+        if p == Player.ME
+            let commands = GetEventPlayerChatString().trim().split()
+            if commands.getFirst() == "-debug"
+                if commands.size() >= 4
+                    commandDebug(commands.get(1), commands.get(2), commands.get(3))
+            destroy commands
+
+function commandDebug(string cmd, string second, string value)
+    Log.trace("cmd["+cmd+"]["+second+"]["+value+"]")
+
+    if cmd == "real"
+        let confi = Configurations.getReal(second)
+        if confi != null
+            let realRealValue = confi.getValue()
+            realRealValue.self = value.toRealNumber()
+            confi.setValue(realRealValue)

@@ -71,8 +71,8 @@ public class UIDialogSplitStack
     
         if p.isLocal()
             slider.setMinMax(1, info.maxAmount)
-            handleIconLeft.setTexture(info.stack.getStackType().getIcon())
-            handleIconRight.setTexture(info.stack.getStackType().getIcon())
+            handleIconLeft.setTexture(info.stack.typ.getIcon())
+            handleIconRight.setTexture(info.stack.typ.getIcon())
             
         dia.open(p)
         update(p)

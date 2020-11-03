@@ -45,13 +45,13 @@ public class ActionSummonSkeleton extends StackActionTargetCell
 
     private static function createTooltipLines(StackActionData data, HasEntityStats stats) returns LinkedList<string>
         return new LinkedList<string>
-        ..add(KStringUtils.stat("Target", "Empty Cell"))
-        ..add(KStringUtils.stat("Range", TARGET_RANGE))
+        ..add(KStringUtils.data("Target", "Empty Cell"))
+        ..add(KStringUtils.data("Range", TARGET_RANGE))
         ..add("")
         ..add("Summon "
-         + KStringUtils.coloredRange(KStringUtils.COLOR_PRIMARY, getSummonAmount(data, stats))
+         + KStringUtils.colored(KStringUtils.COLOR_PRIMARY, getSummonAmount(data, stats))
          + " Stacks of "
-         + KStringUtils.coloredString(KStringUtils.COLOR_SECONDARY, SUMMONED_TYPE.getName()))
+         + KStringUtils.colored(KStringUtils.COLOR_SECONDARY, SUMMONED_TYPE.getName()))
       
 /* -------------------------------------------------------------------------- */
 

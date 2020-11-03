@@ -9,6 +9,7 @@ public interface GeneratesTooltip
 public enum TooltipAnchor
     RIGHT_BOTTOM
     LEFT_BOTTOM
+    BOTTOM_RIGHT
 
 class TooltipLine
     protected string text
@@ -89,7 +90,7 @@ public class Tooltip
     function convertUIHeader() returns string
         var str = header
         if key != ""
-            str += " [" + KStringUtils.primaryString(key) + "]"
+            str += " [" + KStringUtils.primary(key) + "]"
         return str
 
     function getIcons() returns LinkedList<TooltipIcon>

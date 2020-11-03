@@ -1,25 +1,29 @@
 package HeroData
 
 import initlater Hero
-import PlayerData
 import Tooltip
-import KStringUtils
 import MainController
 
 public abstract class AbstractHeroData
-    protected int might = 0
-    protected int mind = 0
-    protected int magic = 0
+    protected int might
+    protected int mind
+    protected int magic
+    protected int gold
+    protected int leadership
+    protected int exp
 
-    construct(int might, int mind, int magic)
+    construct(int might, int mind, int magic, int gold, int leadership, int exp)
         this.might = might
         this.mind = mind
         this.magic = magic
+        this.gold = gold
+        this.leadership = leadership
+        this.exp = exp
 
 
 public class HeroData extends AbstractHeroData
-    construct(int might, int mind, int magic)
-        super(might, mind, magic)
+    construct(int might, int mind, int magic, int gold, int leadership, int exp)
+        super(might, mind, magic, gold, leadership, exp)
 
     function getMight() returns int
         return might
@@ -30,29 +34,46 @@ public class HeroData extends AbstractHeroData
     function getMagic() returns int
         return magic
 
+    function getGold() returns int
+        return gold
+
+    function getLeadership() returns int
+        return leadership
+
+    function getExp() returns int
+        return exp
 
 public class HeroDataChange extends AbstractHeroData
-    static function create(int might, int mind, int magic) returns HeroDataChange
-        return new HeroDataChange(might, mind, magic)
+    static function createForRune(int might, int mind, int magic) returns HeroDataChange
+        return new HeroDataChange(might, mind, magic, 0, 0, 0)
 
-    construct(int might, int mind, int magic)
-        super(might, mind, magic)
+    static function createForGold(int gold) returns HeroDataChange
+        return new HeroDataChange(0, 0, 0, gold, 0, 0)
 
-    function canPay(Hero h) returns boolean
-        let data = h.getData()
-        if data.might < might
+    construct(int might, int mind, int magic, int gold, int leadership, int exp)
+        super(might, mind, magic, gold, leadership, exp)
+
+    function canPay(Hero h, int amount) returns boolean
+        let data = h.data
+        if data.might < might * amount
             return false
-        if data.mind < mind
+        if data.mind < mind * amount
             return false
-        if data.magic < magic
+        if data.magic < magic * amount
+            return false
+        if data.gold < gold * amount
             return false
         return true
+
+    function canPay(Hero h) returns boolean
+        return canPay(h, 1)
     
     function pay(Hero h)
-        let data = h.getData()
+        let data = h.data
         data.might -= might
         data.mind -= mind
         data.magic -= magic
+        data.gold -= gold
 
         MainController.updateHeroData(h, this)
     
@@ -60,12 +81,26 @@ public class HeroDataChange extends AbstractHeroData
         if cost <= 0
             return
         if has >= cost
-            tt.addIcon(KStringUtils.primaryString(cost.toString()), icon)
+            tt.addIcon(KStringUtils.primary(cost), icon)
         else
-            tt.addIcon(KStringUtils.coloredInt(KStringUtils.COLOR_NEGATIVE, cost), icon)
+            tt.addIcon(KStringUtils.colored(KStringUtils.COLOR_NEGATIVE, cost), icon)
+
+    private function addIconToTooltipCost(Tooltip tt, int cost, string icon)
+        addIconToTooltipCost(tt, INT_MAX, cost, icon)
 
     function setupTooltipCost(Tooltip tt, Hero h)
-        let data = h.getData()
+        let data = h.data
         addIconToTooltipCost(tt, data.might, might, "UI/Console/IconMight.dds")
         addIconToTooltipCost(tt, data.mind, mind, "UI/Console/IconMind.dds")
         addIconToTooltipCost(tt, data.magic, magic, "UI/Console/IconMagic.dds")
+        addIconToTooltipCost(tt, data.gold, gold, "UI/Console/IconGold.dds")
+        // TODO this should be based on stackType
+        addIconToTooltipCost(tt, data.leadership, leadership, "UI/Console/IconLeadership.dds")
+
+    function setupTooltipCost(Tooltip tt)
+        addIconToTooltipCost(tt, might, "UI/Console/IconMight.dds")
+        addIconToTooltipCost(tt, mind, "UI/Console/IconMind.dds")
+        addIconToTooltipCost(tt, magic, "UI/Console/IconMagic.dds")
+        addIconToTooltipCost(tt, gold, "UI/Console/IconGold.dds")
+        // TODO this should be based on stackType
+        addIconToTooltipCost(tt, leadership, "UI/Console/IconLeadership.dds")

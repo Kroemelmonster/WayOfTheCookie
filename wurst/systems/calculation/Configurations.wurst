@@ -4,6 +4,7 @@ import NoWurst
 import public TypeCasting
 import LinkedList
 import Initializer
+import HashMap
 
 public interface ChangeListener<T>
     function onChange(T value)
@@ -61,11 +62,11 @@ class Configurations
         debugReal2 = new Configuration<Real>(new Real(0.0))
         debugReal3 = new Configuration<Real>(new Real(0.0))
 
-
-    
-    
-
-
-    
-
-
+    static function getReal(string str) returns Configuration<Real>
+        if str == "1"
+            return debugReal1
+        if str == "2"
+            return debugReal2
+        if str == "3"
+            return debugReal3
+        return null

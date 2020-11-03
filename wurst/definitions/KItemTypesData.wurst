@@ -1,0 +1,35 @@
+package KItemTypesData
+import initlater KItemType
+
+public interface ItemTypeFilter
+    function filter(KItemType itemType) returns boolean
+
+public function LinkedList<KItemType>.getRandom() returns KItemType
+    return this.get(GetRandomInt(0, this.size() - 1))
+
+public class KItemTypes
+    static LinkedList<KItemType> all = new LinkedList<KItemType>
+
+    protected static LinkedList<KItemType> array groupedByLevel
+
+    static function getAllOfLevel(int level) returns LinkedList<KItemType>
+        if groupedByLevel[level] == null
+            groupedByLevel[level] = getFilteredList() (KItemType stackType) ->
+                return stackType.getLevel() == level
+        return groupedByLevel[level]
+
+    static function getFilteredList(ItemTypeFilter filter) returns LinkedList<KItemType>
+        let itr = all.iterator()
+        let list = new LinkedList<KItemType>
+        while itr.hasNext()
+            let sType = itr.next()
+            if filter.filter(sType)
+                list.add(sType)
+
+        destroy itr
+        return list
+
+    static function forEach(LLItrClosure<KItemType> itr)
+        all.forEach() (KItemType value) ->
+            itr.run(value)
+        destroy itr

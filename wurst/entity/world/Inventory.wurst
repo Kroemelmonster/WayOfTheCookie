@@ -1,0 +1,133 @@
+package Inventory
+import KItem
+import initlater Hero
+import KItemType
+import Stack
+
+public constant MAX_ACTIVE_ITEMS = 6
+public constant MAX_BACKPACK_ITEMS = 24
+
+public class KItemPlaceholder
+    KItemClass upper
+    KItemClass lower
+
+    protected KItem kitem
+
+    construct(KItemClass upper)
+        this.upper = upper
+        this.lower = upper
+
+    construct(KItemClass upper, KItemClass down)
+        this.upper = upper
+        this.lower = down
+
+    function isBackPack() returns boolean
+        return upper == KItemClass.BACKPACK
+
+    function doesFit(KItem kitem) returns boolean
+        if kitem == null
+            return false
+        if isBackPack()
+            return true
+        return kitem.getClass() == upper or kitem.getClass() == lower
+
+    function get() returns KItem
+        return kitem
+
+    function isEmpty() returns boolean
+        return kitem == null
+
+    protected function equip(Hero hero, KItem kitem)
+        if doesFit(kitem) and this.kitem == null
+            this.kitem = kitem
+            if isBackPack()
+                return
+            kitem.onEquip(hero, true)
+            hero.army.forEach() (ArmyStack stack) ->
+                kitem.onStackUpdate(stack, true)
+
+    protected function unquip(Hero hero) returns KItem
+        if kitem == null
+            return null
+        let save = kitem
+        
+        if not isBackPack()
+            kitem.onEquip(hero, false)
+            hero.army.forEach() (ArmyStack stack) ->
+                kitem.onStackUpdate(stack, false)
+        kitem = null
+        return save
+
+    function isDifference() returns boolean
+        return upper != lower
+
+public class Inventory
+
+    protected Hero hero
+    protected LinkedList<KItemPlaceholder> inventory
+    protected LinkedList<KItemPlaceholder> backpack
+
+    construct(Hero hero)
+        this.hero = hero
+
+        inventory = new LinkedList<KItemPlaceholder>
+        ..add(new KItemPlaceholder(KItemClass.WEAPON))
+        ..add(new KItemPlaceholder(KItemClass.WEAPON, KItemClass.SHIELD))
+        ..add(new KItemPlaceholder(KItemClass.CHEST))
+        ..add(new KItemPlaceholder(KItemClass.GLOVES, KItemClass.BOOTS))
+        ..add(new KItemPlaceholder(KItemClass.BELT, KItemClass.AMULET))
+
+        while inventory.size() < MAX_ACTIVE_ITEMS
+            inventory.add(new KItemPlaceholder(KItemClass.TRINKET))
+
+        backpack = new LinkedList<KItemPlaceholder>
+        for i = 0 to MAX_BACKPACK_ITEMS
+            backpack.add(new KItemPlaceholder(KItemClass.BACKPACK))
+
+    function get(int index, boolean inBackPack) returns KItemPlaceholder
+        if inBackPack
+            return backpack.get(index)
+        return inventory.get(index)
+
+    function getItem(int index, boolean inBackPack) returns KItem
+        let place = get(index, inBackPack)
+        if place != null
+            return place.get()
+        return null
+
+    function equip(int index, boolean inBackPack, KItem kitem)
+        let place = get(index, inBackPack)
+        if place != null
+            place.equip(hero, kitem)
+
+    function unquip(int index, boolean inBackPack) returns KItem
+        let place = get(index, inBackPack)
+        if place != null
+            return place.unquip(hero)
+        return null
+
+    function pickup(KItem kitem)
+        var placed = false
+        var itr = inventory.iterator()
+        while not placed and itr.hasNext()
+            let place = itr.next()
+            if place.isEmpty() and place.doesFit(kitem)
+                place.equip(hero, kitem)
+                placed = true
+        destroy itr
+        if placed
+            return
+        itr = backpack.iterator()
+        while not placed and itr.hasNext()
+            let place = itr.next()
+            if place.isEmpty() and place.doesFit(kitem)
+                place.equip(hero, kitem)
+                placed = true
+        destroy itr
+
+    function updateArmyStackStats(ArmyStack armyStack)
+        for place in inventory
+            let kitem = place.get()
+            if kitem != null
+                kitem.onStackUpdate(armyStack, true)
+        

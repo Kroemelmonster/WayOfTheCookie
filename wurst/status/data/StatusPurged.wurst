@@ -30,14 +30,14 @@ public class StatusPurged extends Status
     private static function createTooltipBaseLines(int slowValue) returns LinkedList<string>
         return new LinkedList<string>
         ..add("Reduces the available ActionPoints for moving by "
-         + KStringUtils.coloredInt(KStringUtils.COLOR_NEGATIVE, slowValue))
+         + KStringUtils.colored(KStringUtils.COLOR_NEGATIVE, slowValue))
         
     private static function createTooltipBaseLines(StatusData data) returns LinkedList<string>
         return createTooltipBaseLines(data.getIntData(SLOW))
 
     private static function createTooltip(StatusPurged b) returns Tooltip
         return Tooltip.create(TYPE.getName())
-        ..addLine(KStringUtils.stat("Duration", b.duration))
+        ..addLine(KStringUtils.data("Duration", b.duration))
         ..addLine("")
         ..addLines(createTooltipBaseLines(b.slow))
 

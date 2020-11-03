@@ -66,16 +66,6 @@ public class BoardStackStats implements HasEntityStats, HasBoardEntityStats, Has
             if tags[i] == null
                 tags[i] = new StatTag(basis.forTag((i castTo Tag)))
 
-                
-        Configurations.debugReal1.addListener() (Real value) ->
-            forTag(Tag.SPELL).modifyDamageAdditive(value.self.round(), true)
-
-        Configurations.debugReal2.addListener() (Real value) ->
-            forTag(Tag.SPELL).modifyStatusEffectivness(value.self.round(), true)
-        
-        Configurations.debugReal3.addListener() (Real value) ->
-            forTag(Tag.SPELL).modifySummonEffectivness(value.self.round(), true)
-
 /* ---------------------------------- Stats --------------------------------- */
 
     override function getIcon() returns string

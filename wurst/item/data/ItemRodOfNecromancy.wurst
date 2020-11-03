@@ -1,0 +1,65 @@
+package ItemRodOfNecromancy
+
+import Stack
+import KItem
+import Hero
+import KItemType
+import HeroData
+import Stats
+
+init
+    Initializer.register(InitializerNames.ITEMS) -> 
+        ItemRodOfNecromancy.setup()
+
+public class ItemRodOfNecromancy extends KItem
+    static KItemType TYPE
+    static constant POWER = 0
+    static constant WISDOM = 1
+    static constant EFFECTIVNESS = 2
+    static constant EFFECTIVNESS_UNITS = 3
+
+    protected static function setup()
+        TYPE = new KItemType("Rod of Necromancy", Icons.bTNRodOfNecromancy, 4, KItemClass.WEAPON)
+        TYPE.onCreate() data ->
+            return new ItemRodOfNecromancy(TYPE, data)
+        TYPE.onTooltipCreate() data ->
+            return createTooltipLines(data)
+        TYPE.onCreateData() -> 
+            return KItemData.create(HeroDataChange.createForGold(34000))
+                ..setIntData(POWER, GetRandomInt(2, 4))
+                ..setIntData(WISDOM, GetRandomInt(1, 2))
+                ..setIntData(EFFECTIVNESS, GetRandomInt(20, 30))
+                ..setIntData(EFFECTIVNESS_UNITS, GetRandomInt(15, 20))
+
+    private static function createTooltipLines(KItemData data) returns LinkedList<string>
+        return new LinkedList<string>
+        ..add(KStringUtils.signedStat("Power", data.getIntData(POWER)))
+        ..add(KStringUtils.signedStat("Wisdom", data.getIntData(WISDOM)))
+        ..add(KStringUtils.signedPercentStat("Effectivness of " + KStringUtils.secondary("Dark") + " Spells", 
+            data.getIntData(EFFECTIVNESS)))
+        ..add(KStringUtils.signedPercentStat("Effectivness of " + KStringUtils.secondary("Light") + " Spells", 
+            data.getIntData(EFFECTIVNESS) * -1))
+        ..add(KStringUtils.signedPercentStat("Effectivness of all " + KStringUtils.secondary("Dark") + " Stack Abilities", 
+            data.getIntData(EFFECTIVNESS_UNITS)))
+        ..add(KStringUtils.signedPercentStat("Effectivness of all " + KStringUtils.secondary("Light") + " Stack Abilities", 
+            data.getIntData(EFFECTIVNESS_UNITS) * -1))
+        
+/* -------------------------------------------------------------------------- */
+
+    construct(KItemType itemType, KItemData data)
+        super(itemType, data)
+
+    override function onEquip(Hero h, boolean add)
+        h.stats.power.modify(data.getIntData(POWER), add)
+        h.stats.wisdom.modify(data.getIntData(WISDOM), add)
+        let effectivness = data.getIntData(EFFECTIVNESS)
+        h.stats.forTag(Tag.DARK).modifyEffectivness(effectivness, add)
+        h.stats.forTag(Tag.LIGHT).modifyEffectivness(effectivness, not add)
+
+    override function onStackUpdate(ArmyStack armyStack, boolean add)
+        let effectivness = data.getIntData(EFFECTIVNESS_UNITS)
+        armyStack.stats.forTag(Tag.DARK).modifyEffectivness(effectivness, add)
+        armyStack.stats.forTag(Tag.LIGHT).modifyEffectivness(effectivness, not add)
+
+    override function createTooltipLines() returns LinkedList<string>
+        return createTooltipLines(this.data)

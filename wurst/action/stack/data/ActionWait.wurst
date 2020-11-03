@@ -48,8 +48,8 @@ public class ActionWait extends InstantStackAction
         let tt = createBasicTooltip()
         if canActivate()
             // TODO maybe do this better ? idont know
-            let str = KStringUtils.primaryString((InitiativeList.initiativeToTime(stack.stats.getInitiative()) / 2.0).round().toString())
-            + " " + KStringUtils.secondaryString("timeunits")
+            let str = KStringUtils.primary((InitiativeList.initiativeToTime(stack.stats.getInitiative()) / 2.0).round())
+            + " " + KStringUtils.secondary("timeunits")
             tt.addLine("Postpone the turn by "+str)
         else
             tt.addLine("You cant postpone again")

@@ -1,28 +1,45 @@
 package KItem
-import Stack
 
 import initlater Hero
 import initlater KItemType
 import Tooltip
-
-public constant MAX_ACTIVE_ITEMS = 6
-public constant MAX_BACKPACK_ITEMS = 20
+import Stack
 
 public abstract class KItem
-    protected KItemType itemType
+    protected KItemType typ
+    protected KItemData data
 
-    construct(KItemType itemType)
-        this.itemType = itemType
+    construct(KItemType itemType, KItemData data)
+        this.typ = itemType
+        this.data = data
 
-    abstract function onStackUpdate(ArmyStack armyStack, boolean equiped)
+    function onStackUpdate(ArmyStack _armyStack, boolean _equiped)
 
-    abstract function onEquip(Hero h, boolean equiped)
+    function onEquip(Hero _h, boolean _equiped)
 
     function getIcon() returns string
-        return itemType.getIcon()
+        return typ.getIcon()
+
+    function getClass() returns KItemClass
+        return typ.getClass()
 
     function toString() returns string
-        return "Item [" + itemType.getName() + "]"
+        return "Item [" + typ.getName() + "]"
+
+    abstract function createTooltipLines() returns LinkedList<string>
+
+    function createTooltipCost(Hero h) returns Tooltip
+        let tt = Tooltip.create(typ.getName())
+        ..addLines(createTooltipLines())
+
+        data.getCost().setupTooltipCost(tt, h)
+        return tt
 
     function createTooltip() returns Tooltip
-        return itemType.createTooltip()
+        let tt = Tooltip.create(typ.getName())
+        ..addLine(KStringUtils.data("Level", typ.getLevel()))
+        ..addLine(typ.getClass().toString())
+        ..addLines(createTooltipLines())
+
+        data.getCost().setupTooltipCost(tt)
+        return tt

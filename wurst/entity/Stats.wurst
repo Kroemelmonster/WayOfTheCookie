@@ -115,14 +115,15 @@ public constant TAG_AMOUNT = 10
 public function damageType2Tag(DamageType damageType) returns Tag
     return (((damageType castTo int) + 2) castTo Tag)
 
-public function tags2String(LinkedList<Tag> tags) returns string
+public function KStringUtils_data(string prefix, LinkedList<Tag> tags) returns string
     var str = ""
     let itr = tags.iterator()
     while itr.hasNext()
-        str += TAG_NAMES[itr.next() castTo int]
+        str += KStringUtils.primary(TAG_NAMES[itr.next() castTo int])
         if itr.hasNext()
             str += ", "
-    return str
+
+    return KStringUtils.dataInner(prefix, str)
 
 public function tagsGetDamageMulti(HasTags tagContainter, LinkedList<Tag> tags) returns real
     var multi = 1.0
@@ -156,14 +157,10 @@ public interface IsTagStat
 public abstract class StatTagAbstract
     protected int damageAdditive
     protected int damageMultiplicative
-    protected int statusEffectivness
-    protected int summonEffectivness
 
     construct()
         damageAdditive = 0
         damageMultiplicative = 0
-        statusEffectivness = 0
-        summonEffectivness = 0
 
     function modifyDamageAdditive(int value, boolean add)
         damageAdditive += value * (add ? 1 : -1)
@@ -171,14 +168,17 @@ public abstract class StatTagAbstract
     function modifyDamageMultiplicative(int value, boolean add)
         damageMultiplicative += value * (add ? 1 : -1)
 
-    function modifyStatusEffectivness(int value, boolean add)
-        statusEffectivness += value * (add ? 1 : -1)
+    function getDamageAdditivePerc() returns real
+        return damageAdditive / 100.0
 
-    function modifySummonEffectivness(int value, boolean add)
-        summonEffectivness += value * (add ? 1 : -1)
+    function getDamageMultiPerc() returns real
+        return (100.0 + damageMultiplicative) / 100.0
 
 
 public class StatTag extends StatTagAbstract implements IsTagStat
+    protected int statusEffectivness
+    protected int summonEffectivness
+
     construct()
         super()
 
@@ -190,13 +190,23 @@ public class StatTag extends StatTagAbstract implements IsTagStat
         summonEffectivness = basis.summonEffectivness
 
     override function getDamageAdditivePerc() returns real
-        return damageAdditive / 100.0
-
+        return super.getDamageAdditivePerc()
+    
     override function getDamageMultiPerc() returns real
-        return (100.0 + damageMultiplicative) / 100.0
+        return super.getDamageMultiPerc()
 
     override function getStatusEffectivness() returns real
         return (100.0 + statusEffectivness) / 100.0
 
     override function getSummonEffectivness() returns real
         return (100.0 + summonEffectivness) / 100.0
+
+    function modifySummonEffectivness(int value, boolean add)
+        summonEffectivness += value * (add ? 1 : -1)
+
+    function modifyStatusEffectivness(int value, boolean add)
+        statusEffectivness += value * (add ? 1 : -1)
+
+    function modifyEffectivness(int value, boolean add)
+        modifySummonEffectivness(value, add)
+        modifyStatusEffectivness(value, add)

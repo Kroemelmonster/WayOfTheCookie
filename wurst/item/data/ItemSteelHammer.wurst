@@ -1,9 +1,9 @@
 package ItemSteelHammer
 
-import initlater Stack
-import initlater KItem
-import initlater Hero
-import initlater KItemType
+import KItem
+import Hero
+import KItemType
+import HeroData
 
 init
     Initializer.register(InitializerNames.ITEMS) -> 
@@ -11,25 +11,27 @@ init
 
 public class ItemSteelHammer extends KItem
     static KItemType TYPE
+    static constant ATTACK = 0
 
     protected static function setup()
-        TYPE = new KItemType("Steel Hammer", Icons.bTNHammer)
-        TYPE.setCreationListener()() ->
-            return new ItemSteelHammer(TYPE)
-        TYPE.setTooltipListener() () ->
-            return createTooltipBaseLines()
+        TYPE = new KItemType("Steel Hammer", Icons.bTNHammer, 1, KItemClass.WEAPON)
+        TYPE.onCreate() data ->
+            return new ItemSteelHammer(TYPE, data)
+        TYPE.onTooltipCreate() data ->
+            return createTooltipLines(data)
+        TYPE.onCreateData() -> 
+            return KItemData.create(HeroDataChange.createForGold(200))
+                ..setIntData(ATTACK, GetRandomInt(4, 7))
 
-    private static constant int VALUE = 5
-
-    private static function createTooltipBaseLines() returns LinkedList<string>
+    private static function createTooltipLines(KItemData data) returns LinkedList<string>
         return new LinkedList<string>
-        ..add("Adds " + KStringUtils.primaryString(VALUE.toString()) + " Attack")
+        ..add(KStringUtils.signedStat("Attack", data.getIntData(ATTACK)))
 
-    construct(KItemType itemType)
-        super(itemType)
+    construct(KItemType itemType, KItemData data)
+        super(itemType, data)
 
     override function onEquip(Hero h, boolean add)
-        h.stats.attack.modify(VALUE, add)
+        h.stats.attack.modify(data.getIntData(ATTACK), add)
 
-    override function onStackUpdate(ArmyStack armyStack, boolean add)
-        
+    override function createTooltipLines() returns LinkedList<string>
+        return createTooltipLines(this.data)

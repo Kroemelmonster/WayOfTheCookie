@@ -1,0 +1,21 @@
+package SpellBook
+import initlater Hero
+import initlater SpellType
+
+public class SpellBook
+    protected LinkedList<Spell> spells
+    protected Hero hero
+
+    construct(Hero hero)
+        this.hero = hero
+        spells = new LinkedList<Spell>
+
+    function forEach(LLItrClosure<Spell> itr)
+        spells.forEach(itr)
+
+    function iterator() returns LLIterator<Spell>
+        return spells.iterator()
+
+    function learn(SpellType spellType)
+        // TODO need to make sure there is not allready such spell
+        spells.add(spellType.create(hero))

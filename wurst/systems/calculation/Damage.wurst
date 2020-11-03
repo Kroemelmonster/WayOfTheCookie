@@ -101,12 +101,12 @@ public class DamagePreview extends Damage
 
     function extendTooltipWithSpecific(Tooltip tooltip, BoardEntity source, BoardStack target)
         let preview = new SpecificDamagePreview(this, source, target)
-        tooltip.addLine(KStringUtils.coloredString(target.getPlayer().toColor(), target.getName())
+        tooltip.addLine(KStringUtils.colored(target.getPlayer().toColor(), target.getName())
             + " : "
             + Damage.type2Icon(preview.damagePreview.damageType)
-            + " " + KStringUtils.coloredRange(KStringUtils.COLOR_PRIMARY, preview.damage)
+            + " " + KStringUtils.colored(KStringUtils.COLOR_PRIMARY, preview.damage)
             + "   " + KStringUtils.icon(IconName.DEATH)
-            + " " + KStringUtils.coloredRange(KStringUtils.COLOR_NEGATIVE, preview.amount))
+            + " " + KStringUtils.colored(KStringUtils.COLOR_NEGATIVE, preview.amount))
 
         /*
         tooltip.addLine(KStringUtils.coloredString(colorA(202, 34, 34, 20).toColorString(), target.getName() + " : ")
@@ -116,7 +116,7 @@ public class DamagePreview extends Damage
         destroy preview
 
     function toColoredText() returns string
-        return Damage.type2Icon(damageType) + " " + KStringUtils.range(dmg.round())
+        return Damage.type2Icon(damageType) + " " + dmg.round().toString()
 
 public class SpecificDamageInstance
     protected boolean applied
@@ -201,9 +201,9 @@ public class SpecificDamageInstance
         var dmgStr = overKillDamage.toString()
         if damageInstance.hasFlag(DamageFlags.CRIT)
             dmgStr += "!"
-        var str = KStringUtils.primaryString(dmgStr)
+        var str = KStringUtils.primary(dmgStr)
         if kills > 0
-            str +=  "  " + KStringUtils.coloredInt(KStringUtils.COLOR_NEGATIVE, kills)
+            str +=  "  " + KStringUtils.colored(KStringUtils.COLOR_NEGATIVE, kills)
         return str 
 
     ondestroy
@@ -223,7 +223,6 @@ public class SpecificDamagePreview
 
     ondestroy
         destroy damagePreview
-
 
 public function calculateAttackVsDefencePercentage(int attack, int defence) returns real
     let difference = attack - defence
@@ -245,7 +244,7 @@ function calculateDamageFactor(BoardEntity source, Damage dmg, BoardStack target
     let resistanceFactor = (1 - (target.stats.getResistance(dmg.damageType) / 100.0))
     if dmg.sourceType == ATTACK and source.getType() == EntityType.STACK
         let sourceAttacker = source.toStack()
-        let attackFactor = (1 + calculateAttackVsDefencePercentage(sourceAttacker.stats.getAttack(), target.stats.getDefence()) / 100)
+        let attackFactor = (1 + calculateAttackVsDefencePercentage(sourceAttacker.stats.getAttack(), target.stats.getDefence()))
         return resistanceFactor * attackFactor
     // TODO here could be more triggers for calulating specific dmg
     return resistanceFactor

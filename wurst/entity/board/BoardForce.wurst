@@ -56,7 +56,7 @@ public class BoardForce
         this.hostileArmy = null
 
         p = hero.getPlayer()
-        army = hero.getArmy()
+        army = hero.army
 
         boardHero = new BoardHero(hero, heroPlace, this)
         board.getInitiative().addHeroInitital(boardHero)
@@ -68,7 +68,7 @@ public class BoardForce
         this.hostileArmy = hostileArmy
 
         this.p = hostileArmy.getPlayer()
-        this.army = hostileArmy.getArmy()
+        this.army = hostileArmy.army
 
         placeArmy()
     
@@ -78,9 +78,9 @@ public class BoardForce
     function createSummon(StackType stackType, int amount) returns BoardStack
         ArmyStack armyStack = null
         if hero != null
-            armyStack = hero.createSummon(stackType, amount)
+            armyStack = hero.army.createSummon(stackType, amount)
         else if hostileArmy != null
-            armyStack = hostileArmy.createSummon(stackType, amount)
+            armyStack = hostileArmy.army.createSummon(stackType, amount)
 
         if armyStack != null
             return new BoardStack(this, armyStack)
@@ -104,7 +104,7 @@ public class BoardForce
         var rowChange = 1
         
         for i = 0 to Army.MAX_SIZE - 1
-            let armyStack = army.getStack(i)
+            let armyStack = army.getAt(i)
             if armyStack != null
                 placeStack(new BoardStack(this, armyStack), hex(col, row))
             

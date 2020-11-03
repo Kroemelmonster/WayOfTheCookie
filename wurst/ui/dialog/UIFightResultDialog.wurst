@@ -5,7 +5,7 @@ import ClosureFrames
 import PlayerData
 
 import BoardTrigger
-import FightResult
+//import FightResult
 
 
 /*

@@ -31,14 +31,14 @@ public class StatusRallingCry extends SharedStatus
     protected static function createTooltipBaseLinesHero(int attackHero, int attackUnits) returns LinkedList<string>
         return new LinkedList<string>
         ..add("Increases the Attack by "
-            + KStringUtils.coloredInt(KStringUtils.COLOR_POSITIVE, attackHero))
+            + KStringUtils.colored(KStringUtils.COLOR_POSITIVE, attackHero))
         ..add("Also increases the Attack of your trops by "
-            + KStringUtils.coloredInt(KStringUtils.COLOR_POSITIVE, attackUnits))
+            + KStringUtils.colored(KStringUtils.COLOR_POSITIVE, attackUnits))
 
     protected static function createTooltipBaseLinesUnits(int attack) returns LinkedList<string>
         return new LinkedList<string>
         ..add("You have increased Attack of "
-            + KStringUtils.coloredInt(KStringUtils.COLOR_POSITIVE, attack))
+            + KStringUtils.colored(KStringUtils.COLOR_POSITIVE, attack))
 
     protected static function createTooltipBaseLines(StatusData data) returns LinkedList<string>
         return createTooltipBaseLinesHero(data.getIntData(ATTACK_BONUS), data.getIntData(ATTACK_BONUS_UNITS))

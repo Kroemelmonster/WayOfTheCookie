@@ -1,11 +1,10 @@
 package ItemSimpleAxe
 
-import initlater Stack
-import initlater KItem
-import initlater Hero
+import Stack
+import KItem
 import StackType
-import initlater KItemType
-import Tooltip
+import KItemType
+import HeroData
 
 init
     Initializer.register(InitializerNames.ITEMS) -> 
@@ -13,45 +12,45 @@ init
 
 public class ItemSimpleAxe extends KItem
     static KItemType TYPE
+    static constant DAMAGE = 0
+    static constant FAMILY = 1
 
     protected static function setup()
-        TYPE = new KItemType("Simple Axe",  Icons.bTNOrcMeleeUpOne)
-        TYPE.setCreationListener()() ->
-            return new ItemSimpleAxe(TYPE)
-        TYPE.setTooltipListener() () ->
-            return createTooltipBaseLines()
+        TYPE = new KItemType("Simple Axe",  Icons.bTNOrcMeleeUpOne, 1, KItemClass.WEAPON)
+        TYPE.onCreate() data ->
+            return new ItemSimpleAxe(TYPE, data)
+        TYPE.onTooltipCreate() data ->
+            return createTooltipLines(data)
+        TYPE.onCreateData() -> 
+            return KItemData.create(HeroDataChange.createForGold(100))
+                ..setIntData(DAMAGE, GetRandomInt(5, 8))
+                ..setIntData(FAMILY, GetRandomInt(0, 2))
 
-    private static function createTooltipBaseLines() returns LinkedList<string>
+                
+    private static function createTooltipLines(KItemData data) returns LinkedList<string>
         return new LinkedList<string>
-        ..add("TODO this item just gives damage to a random entiy family")
+        ..add(KStringUtils.signedStat("Damage of " + KStringUtils.secondary(getFamily(data).name) + " Stacks", 
+            data.getIntData(DAMAGE)))
 
-    private static function createSpecificTooltip(ItemSimpleAxe i) returns Tooltip
-        return Tooltip.create(TYPE.getName())
-        ..addLine("Adds " + KStringUtils.primaryString(i.value.toString())
-        + " Damage to all " + i.family.name)
+    private static function getFamily(KItemData data) returns Family
+        let i = data.getIntData(FAMILY)
+        if i == 0
+            return Family.TROLL
+        else if i == 1
+            return Family.SKELTON
+        return Family.GNOLL
 
-    private int value
     private Family family
 
-    construct(KItemType itemType)
-        super(itemType)
-        value = GetRandomInt(3, 8)
-        let i = GetRandomInt(0, 2)
-        if i == 0
-            family = Family.TROLL
-        else if i == 1
-            family = Family.SKELTON
-        else
-            family = Family.GNOLL
-
-
-    override function onEquip(Hero h, boolean add)
+    construct(KItemType itemType, KItemData data)
+        super(itemType, data)
+        family = getFamily(data)
 
     override function onStackUpdate(ArmyStack armyStack, boolean add)
-        if armyStack.getStackType().isFamily(family) == false
+        if not armyStack.typ.isFamily(family)
             return
-        armyStack.stats.baseDamage.modify(value, add)
+        armyStack.stats.baseDamage.modify(data.getIntData(DAMAGE), add)
    
-    override function createTooltip() returns Tooltip
-        return createSpecificTooltip(this)
+    override function createTooltipLines() returns LinkedList<string>
+        return createTooltipLines(this.data)
         

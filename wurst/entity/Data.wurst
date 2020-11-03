@@ -1,5 +1,4 @@
 package Data
-import Damage
 
 public interface HasData
     function setIntData(int where, int value)

@@ -116,7 +116,7 @@ public class Skill
         this.y = y
 
     function addLevel(int costMight, int costMind, int costMagic) returns SkillLevel
-        let cost = new HeroDataChange(costMight, costMind, costMagic)
+        let cost = HeroDataChange.createForRune(costMight, costMind, costMagic)
         let newLevel = new SkillLevel(this, levels.size(), cost)
         levels.add(newLevel)
         return newLevel
@@ -136,12 +136,12 @@ public class Skill
     function dolevelUp()
         if not canLevelUp()
             return
-        let army = tree.hero.getArmy()
+        let army = tree.hero.army
         if level > 0
             let earlierStackListener = levels.get(level - 1).stackListener
             if earlierStackListener != null
                 for int i = 0 to Army.MAX_SIZE - 1
-                    let stack = army.getStack(i)
+                    let stack = army.getAt(i)
                     if stack != null
                         earlierStackListener.onStackUpdate(stack, false)
 
@@ -150,7 +150,7 @@ public class Skill
         let stackListener = levels.get(level).stackListener
         if stackListener != null
             for int i = 0 to Army.MAX_SIZE - 1
-                let stack = army.getStack(i)
+                let stack = army.getAt(i)
                 if stack != null
                     stackListener.onStackUpdate(stack, true)
         
@@ -167,31 +167,31 @@ public class Skill
         if level > 0
             tt.addLine("")
 
-        tt.addLine(KStringUtils.secondaryString("Next Level"))
+        tt.addLine(KStringUtils.secondary("Next Level"))
         let nextLevel = levels.get(level)
         nextLevel.cost.setupTooltipCost(tt, tree.hero)
         
         if nextLevel.skillTreeLevelRequirment > 0
             if tree.level >= nextLevel.skillTreeLevelRequirment 
-                tt.addLine(KStringUtils.stat("Requires Level", KStringUtils.COLOR_POSITIVE, nextLevel.skillTreeLevelRequirment))
+                tt.addLine(KStringUtils.data("Requires Level", KStringUtils.COLOR_POSITIVE, nextLevel.skillTreeLevelRequirment))
             else
-                tt.addLine(KStringUtils.stat("Requires Level", KStringUtils.COLOR_NEGATIVE, nextLevel.skillTreeLevelRequirment))
+                tt.addLine(KStringUtils.data("Requires Level", KStringUtils.COLOR_NEGATIVE, nextLevel.skillTreeLevelRequirment))
 
         if nextLevel.requirements != null
             for requirement in nextLevel.requirements
                 let txt = requirement.skill.name + " ["+(requirement.level + 1).toString() + "]"
                 if requirement.learned
-                    tt.addLine(KStringUtils.stat("Requires", KStringUtils.COLOR_POSITIVE, txt))
+                    tt.addLine(KStringUtils.data("Requires", KStringUtils.COLOR_POSITIVE, txt))
                 else
-                    tt.addLine(KStringUtils.stat("Requires", KStringUtils.COLOR_NEGATIVE, txt))
+                    tt.addLine(KStringUtils.data("Requires", KStringUtils.COLOR_NEGATIVE, txt))
 
         if nextLevel.blockedBySkill != null
             for blockingSkill in nextLevel.blockedBySkill
                 let txt = blockingSkill.name
                 if blockingSkill.level == 0
-                    tt.addLine(KStringUtils.stat("Blocked by", KStringUtils.COLOR_POSITIVE, txt))
+                    tt.addLine(KStringUtils.data("Blocked by", KStringUtils.COLOR_POSITIVE, txt))
                 else
-                    tt.addLine(KStringUtils.stat("Blocked by", KStringUtils.COLOR_NEGATIVE, txt))
+                    tt.addLine(KStringUtils.data("Blocked by", KStringUtils.COLOR_NEGATIVE, txt))
 
         tt.addLine("")
         for line in nextLevel.desc

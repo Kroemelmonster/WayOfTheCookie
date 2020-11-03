@@ -30,13 +30,13 @@ public class CounterAttackPassive extends StackPassive
         let lines = new LinkedList<string>
         if counter == -1
             lines.add("Every round this unit will counter up to "
-             + KStringUtils.primaryString(maxCounter.toString()) 
+             + KStringUtils.primary(maxCounter) 
              + " attacks, with a basic attack.")
         else
             lines.add("Every round this unit will counter up to "
-             + KStringUtils.primaryString(counter.toString())
+             + KStringUtils.primary(counter)
              + " / "
-             + KStringUtils.primaryString(maxCounter.toString())
+             + KStringUtils.primary(maxCounter)
              + " attacks, with a basic attack.")
         return lines
 
@@ -75,5 +75,5 @@ public class CounterAttackPassive extends StackPassive
         let distance = attackerEntity.getCell().getDistanceTo(stack.getCell())
         return distance.isBetween(stack.stats.getAttackRange())
 
-    override function createTooltipLines() returns LinkedList<string>
+    override function createBasicTooltipLines() returns LinkedList<string>
         return createTooltipLines(this)

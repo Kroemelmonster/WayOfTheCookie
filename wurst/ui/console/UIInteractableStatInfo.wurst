@@ -50,15 +50,15 @@ public class UIInteractableStatInfo extends UIInteractable
         handleText.setText(txt)
 
     function setTextBasedOnStats(IsIntStat stat)
-        handleText.setText(stat.getBasis().toString() + KStringUtils.coloredModiInt(stat.value() - stat.getBasis()))
+        handleText.setText(stat.getBasis().toString() + KStringUtils.signed(stat.value() - stat.getBasis()))
 
     function setTextBasedOnStats(IsRealRangeStat stat)
         let basisDmg = stat.getBasis()
         let dmgDifference = stat.value().avg() - basisDmg.avg()
         let roundedBasisDmg = basisDmg.round()
-        handleText.setText(roundedBasisDmg.min.toString() + " - " + roundedBasisDmg.max.toString() + KStringUtils.coloredModiReal(dmgDifference, 1))
+        handleText.setText(roundedBasisDmg.min.toString() + " - " + roundedBasisDmg.max.toString() + KStringUtils.signed(dmgDifference, 1))
 
     function setTextBasedOnStats(realRange basisDmg, realRange modifiedDmg)
         let dmgDifference = modifiedDmg.avg() - basisDmg.avg()
         let roundedBasisDmg = basisDmg.round()
-        handleText.setText(roundedBasisDmg.min.toString() + " - " + roundedBasisDmg.max.toString() + KStringUtils.coloredModiReal(dmgDifference, 1))
+        handleText.setText(roundedBasisDmg.min.toString() + " - " + roundedBasisDmg.max.toString() + KStringUtils.signed(dmgDifference, 1))

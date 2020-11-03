@@ -11,28 +11,22 @@ import World
 
 constant HashMap<unit, HostileArmy> map = new HashMap<unit, HostileArmy>
 
-public class HostileArmy
-    protected Army army
-    protected unit u
-    protected Player p
+public class HostileArmy implements OnArmyStackChange
+    Army army
 
+    protected Player p
+    protected unit u
     protected EventListener damagedListener
 
     construct()
-        this.p = Player.NEUTRAL_AGGRESIVE
-        this.army = new Army(null)
+        p = Player.NEUTRAL_AGGRESIVE
+        army = new Army(null, this)
 
     function getPlayer() returns Player
         return p
 
     static function getFromUnit(unit u) returns HostileArmy
         return map.get(u)
-
-    function createSummon(StackType stackType, int amount) returns ArmyStack
-        return new ArmyStack(stackType, amount, true, null)
-
-    function getArmy() returns Army
-        return army
 
     function enable(boolean flag)
         if flag == false
@@ -44,27 +38,20 @@ public class HostileArmy
             u.setInvulnerable(false)
             u.removeAbility(LOCUST_ID)
 
-    function addStackAtFree(StackType stackType, int amount)
-        army.addStackAtFree(stackType, amount)
-
-    function addStackWithLeadershipAtFree(StackType stackType, int leaderhsip)
-        army.addStackWithLeadershipAtFree(stackType, leaderhsip)
-
-    function addStack(StackType stackType, int amount)
-        army.addStack(stackType, amount)
-
     function toString() returns string
         return "Hostile "+army.toString()
 
     function placeWorld(unit chicken)
         let pos = chicken.getPos()
         chicken.remove()
-        u = createUnit(p.blzPlayer, army.getFirstStack().getStackType().getArmyUnitId(), pos, angle(GetRandomReal(0, PI2)))
+        u = createUnit(p.blzPlayer, army.getFirst().typ.getArmyUnitId(), pos, angle(GetRandomReal(0, PI2)))
         map.put(u, this)
 
         damagedListener = EventListener.add(u, EVENT_PLAYER_UNIT_DAMAGED) ->
             if u.isInvulnerable() == false
                 World.onHostileArmyDamaged(this, GetEventDamageSource())
+    
+    protected override function onArmyStackChange(ArmyStack armyStack)
 
     function kill()
         map.remove(u)

@@ -4,54 +4,37 @@ import HashMap
 
 import Stack
 import PlayerData
-import StackType
 import UnitDefinition
 import ClosureEvents
 import World
 import Orders
 import NPC
-import KItem
 import SkillTree
-import FightResult
 import HeroType
 import HeroStats
-import initlater SpellAction
 import HeroData
+import Inventory
+import SpellBook
 
 
 
-public class Hero
+public class Hero implements OnArmyStackChange
     static constant int array LEVELS = [1000, 2000, 3500, 6000]
     protected static constant HashMap<unit, Hero> unitHash = new HashMap<unit, Hero>
-
-    protected unit u
-    protected HeroType heroType
+    
+    HeroType typ
+    Army army
+    Inventory inventory
+    SpellBook spellBook
     HeroStats stats
-
-    protected string icon
-    protected Player p
-    protected int gold
-    protected int mana = 10
-    protected int maxMana = 20
-    protected int leadership
-
-    protected int exp = 0
+    HeroData data
     Int level = new Int(0)
-
-    protected int attack = 0
-    protected int defence = 0
-
-    protected LinkedList<Spell> spells
-    protected SkillTree array[3] skillTrees
-
-    protected KItem array[MAX_ACTIVE_ITEMS] items
-    protected KItem array[MAX_BACKPACK_ITEMS] backpack
-
-    protected Army army
-    protected HeroData data
 
     protected NPC currentInteract
 
+    protected Player p
+    protected SkillTree array[3] skillTrees
+    protected unit u
     protected EventListener damagedListener
     protected EventListener orderUnitListener
     protected EventListener orderPointListener
@@ -59,13 +42,15 @@ public class Hero
 
     construct(Player p, HeroType heroType)
         this.p = p
-        this.heroType = heroType
-        this.stats = new HeroStats(this, heroType)
-        spells = new LinkedList<Spell>()
+        this.typ = heroType
+
+        stats = new HeroStats(this, heroType)
+        army = new Army(stats, this)
+        data = new HeroData(10, 10, 10, 9500, 4000, 15)
+        inventory = new Inventory(this)
+        spellBook = new SpellBook(this)
 
         u = createUnit(playerData[0].blzPlayer, heroType.getArmyUnitId(), playerData[0].blzPlayer.getStartLocation(), angle(0))
-        army = new Army(stats)
-        data = new HeroData(10, 10, 10)
         unitHash.put(u, this)
         for i = 0 to skillTrees.length - 1
             skillTrees[i] = heroType.getSkillTreeType(i).createNew(this)
@@ -85,14 +70,9 @@ public class Hero
         interactWithNPCListener = EventListener.onCast(u, AbilityTypesIds.TARGET_UNIT_SPELL) cb ->
             World.onHeroInteractWithNPC(this, GetSpellTargetUnit())
 
-        gold = 9500
-        leadership = 4000
 
         p.hero = this
         select()
-
-    function getType() returns HeroType
-        return heroType
 
     private function select()
         p.blzPlayer.selectSingle(u)
@@ -101,52 +81,16 @@ public class Hero
     static function getFromUnit(unit u) returns Hero
         return unitHash.get(u)
 
-    function createSummon(StackType stackType, int amount) returns ArmyStack
-        let summon = new ArmyStack(stackType, amount, true, stats)
-        updateArmyStackStats(summon)
-        return summon
-    
-    function addStack(StackType stackType, int amount)
-        let armyStack = army.addStack(stackType, amount)
-        updateArmyStackStats(armyStack)
-
-    function addStackAtFree(StackType stackType, int amount)
-        let armyStack = army.addStackAtFree(stackType, amount)
-        updateArmyStackStats(armyStack)
-
-    function addStackWithLeadershipAtFree(StackType stackType, int amount)
-        let armyStack = army.addStackWithLeadershipAtFree(stackType, amount)
-        updateArmyStackStats(armyStack)
-
-    function forEachSpell(LLItrClosure<Spell> itr)
-        spells.forEach() spell ->
-            itr.run(spell)
-        destroy itr
-
-    function spellIterator() returns LLIterator<Spell>
-        return spells.iterator()
-
-    function getArmy() returns Army
-        return army
-
-    function getData() returns HeroData
-        return data
-
     function getPlayer() returns Player
         return p
 
     function getCoord() returns vec2
         return u.getPos()
-        
-    function getGold() returns int
-        return gold
 
     function getLevel() returns int
         return level.self
 
-    function getExp() returns int
-        return exp
-
+        /*
     function addExp(Reward reward)
         exp += reward.exp
         while exp >= LEVELS[level.self]
@@ -168,15 +112,6 @@ public class Hero
         //mind += reward.mind
         //magic += reward.magic
 
-    function addGold(int amount)
-        gold += amount
-
-    function getLeadership() returns int
-        return leadership
-
-    function getMaxAmountOfStackTypeBasedOnGold(StackType stackType) returns int
-        return (gold / stackType.getValue()).floor()
-
     function getCurrentLeadershipRequirementOfStackType(StackType stackType) returns int
         var req = 0
         for i = 0 to Army.MAX_SIZE - 1
@@ -188,6 +123,7 @@ public class Hero
 
     function getMaxAmountOfStackTypeRemainingBasedOnLeadership(StackType stackType) returns int
         return ((leadership - getCurrentLeadershipRequirementOfStackType(stackType)) / stackType.getLeadership().toReal()).floor()
+        */
 
     function setVulnearble(boolean flag)
         if not flag
@@ -207,15 +143,10 @@ public class Hero
     function issueNPC(NPC npc)
         u.issueTargetOrder(AbilityTypesIds.TARGET_UNIT_SPELL_ORDER, npc.getUnit())
 
-    private function updateArmyStackStats(ArmyStack armyStack)
-        if armyStack == null
-            return
+    override protected function onArmyStackChange(ArmyStack armyStack)
+        inventory.updateArmyStackStats(armyStack)
 
-        for int i = 0 to items.length - 1
-            if items[i] != null
-                items[i].onStackUpdate(armyStack, true)
-
-        for int i = 0 to skillTrees.length - 1
+        for i = 0 to skillTrees.length - 1
             skillTrees[i].onStackUpdate(armyStack, true)
             for skill in skillTrees[i].skills
                 skill.onStackUpdate(armyStack, true)
@@ -240,48 +171,6 @@ public class Hero
 
         return result
 
-    function learnSpell(SpellType spellType)
-        // TODO need to make sure there is not allready such spell
-        spells.add(spellType.create(this))
-
-    function getActiveItem(int index) returns KItem
-        if index < 0 or index >= items.length
-            return null
-        return items[index]
-
-    function equiqItemAt(int index, KItem kItem)
-        if kItem == null
-            unequipItemAt(index)
-            return
-        items[index] = kItem
-        kItem.onEquip(this, true)
-        for i = 0 to Army.MAX_SIZE - 1
-            let armyStack = army.getStack(i)
-            if armyStack != null
-                kItem.onStackUpdate(armyStack, true)
-        
-    function unequipItemAt(int index)
-        let kItem = items[index]
-        if kItem == null
-            return
-        kItem.onEquip(this, false)
-        for int i = 0 to Army.MAX_SIZE - 1
-            let armyStack = army.getStack(i)
-            if armyStack != null
-                kItem.onStackUpdate(armyStack, false)
-        items[index] = null
-
-    function getBackPackItem(int index) returns KItem
-        if index < 0 or index >= backpack.length
-            return null
-        return backpack[index]
-    
-    function setBackPackItem(int index, KItem kItem)
-        backpack[index] = kItem
-        
-    function removeBackPackItem(int index)
-        backpack[index] = null
-
     function toString() returns string
         return "Hero [" + u.getName() +"]"
 
@@ -291,4 +180,5 @@ public class Hero
         destroy orderPointListener
         destroy interactWithNPCListener
         destroy army
+        destroy inventory
         unitHash.remove(u)

@@ -34,9 +34,9 @@ public class ActionMultiStrike extends StackActionTarget
 
     private static function createTooltipLines(StackActionData data, HasEntityStats _stats) returns LinkedList<string>
         return new LinkedList<string>
-        ..add(KStringUtils.stat("Target", "Enemy"))
+        ..add(KStringUtils.data("Target", "Enemy"))
         ..add("")
-        ..add("Striking one foe " + KStringUtils.primaryString(data.getIntData(TIMES).toString()) 
+        ..add("Striking one foe " + KStringUtils.primary(data.getIntData(TIMES)) 
          + " times each dealing " + KStringUtils.primaryPercent(data.getRealData(PERC)) + " dmg.")
 
     private static function createDamagePreview(BoardStack stack, StackActionData data) returns DamagePreview

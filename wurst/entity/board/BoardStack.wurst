@@ -25,7 +25,7 @@ public class BoardStack extends BoardEntity
         super(EntityType.STACK, boardForce)
         this.passiveActions = new LinkedList<Passive>
         this.armyStack = stack
-        stackType = stack.getStackType()
+        stackType = stack.typ
         stats = new BoardStackStats(this, stack.stats, stack.getAmount())
         stack.representive = this
 

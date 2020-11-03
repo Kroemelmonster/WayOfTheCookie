@@ -15,7 +15,6 @@ import UIWindowConfiguration
 public class UIMenuConsoleInfo
     UIWindowSkillTreeInfo skillTreeInfo = new UIWindowSkillTreeInfo()
     UIWindowEntityInfo entityInfo = new UIWindowEntityInfo()
-    UIWindowHeroInfo heroInfo = new UIWindowHeroInfo()
 
 class UIRessource extends UIHandle
     protected static function create(UIHandle parent, real height, real width, string icon) returns UIRessource
@@ -115,19 +114,18 @@ public class UIMenuConsole
     static function initHero(Hero hero)
         menu.show(hero.getPlayer())
         if hero.getPlayer().isLocal()
-            ressourceLeadership.setValue(hero.getLeadership())
-            ressourceGold.setValue(hero.getGold())
-       
-        updateHeroDataInner(hero.getData())
+            updateHeroDataInner(hero.data)
 
         UIWindowSkillTree.initHero(hero)
 
     static function updateHeroData(Hero hero, HeroDataChange _changedData)
         if not hero.getPlayer().isLocal()
             return
-        updateHeroDataInner(hero.getData())
+        updateHeroDataInner(hero.data)
 
     static function updateHeroDataInner(HeroData data)
         ressourceMight.setValue(data.getMight())
         ressourceMind.setValue(data.getMind())
         ressourceMagic.setValue(data.getMagic())
+        ressourceGold.setValue(data.getGold())
+        ressourceLeadership.setValue(data.getLeadership())

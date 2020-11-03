@@ -10,6 +10,7 @@ import BoardListenerOnCellMove
 import StatusController
 import Status
 import StackType
+import Stats
 
 init
     Initializer.register(InitializerNames.PASSIVES) -> 
@@ -20,6 +21,7 @@ public class PassiveDevotionAura extends StackPassive
     protected static function setup()
         BUFF = StatusDevotionAura.TYPE
         TYPE = new StackPassiveType("Devotion Aura", Icons.bTNDevotion)
+        ..setTags(Tag.LIGHT)
         TYPE.onCreate() (BoardStack stack, StackPassiveData data) -> 
             return new PassiveDevotionAura(stack, data)
         TYPE.onCreateTooltipLines() (data, stats) -> 
@@ -30,32 +32,28 @@ public class PassiveDevotionAura extends StackPassive
 
     static constant DEFENCE = 0
     static constant AREA = intRange(0, 1)
-    private static StatusType BUFF 
+    private static StatusType BUFF
 
-    private static function createTooltipLines(int defence, HasEntityStats stats) returns LinkedList<string>
-        let lines = new LinkedList<string>
-        ..add("yuhu massig armor brah "+defence.toString())
-        return lines
+    private static function getDefence(StackPassiveData data, HasEntityStats stats) returns int
+        return (data.getIntData(DEFENCE) * stats.getStatusEffectivness(TYPE.getTags())).round()
 
     private static function createTooltipLines(StackPassiveData data, HasEntityStats stats) returns LinkedList<string>
-        return createTooltipLines(data.getIntData(DEFENCE), stats)
-      
-    private static function createTooltipLines(PassiveDevotionAura action) returns LinkedList<string>
-        return createTooltipLines(action.defence, action.stack.stats)
+        return new LinkedList<string>
+        ..add("Aura wow so much defence")
+        ..add(KStringUtils.line())
+        ..addAllAndDestroy(BUFF.createTooltipLines(createStatusData(data, stats)))
 
-    private static function createStatusData(int defence) returns StatusData
+    private static function createStatusData(StackPassiveData data, HasEntityStats stats) returns StatusData
         return StatusData.create()
-        ..setIntData(StatusDevotionAura.DEFENCE, defence)
+        ..setIntData(StatusDevotionAura.DEFENCE, getDefence(data, stats))
 
 /* -------------------------------------------------------------------------- */
 
-    private LinkedList<BoardStack> affected 
-    private int defence
+    private LinkedList<BoardStack> affected
 
     construct(BoardStack stack, StackPassiveData data)
         super(stack, TYPE, data)
         affected = new LinkedList<BoardStack>()
-        defence = data.getIntData(DEFENCE)
 
         stack.listeners().addOnAnyCellEnter() (BoardListenerOnCellMoveData data) ->
             let movingStack = data.getStack()
@@ -83,12 +81,12 @@ public class PassiveDevotionAura extends StackPassive
     private function doesApply(BoardStack movingStack) returns boolean
         return stack.isAlly(movingStack)
 
-    private function checkOthers(BoardStack movingStack, BoardListenerOnCellMoveData data)
+    private function checkOthers(BoardStack movingStack, BoardListenerOnCellMoveData cellMoveData)
         if not doesApply(movingStack)
             return
         let cell = stack.getCell()
-        let fromCell = data.getCellFrom()
-        let toCell = data.getCellTo()
+        let fromCell = cellMoveData.getCellFrom()
+        let toCell = cellMoveData.getCellTo()
         let fromInRange = fromCell != null and cell.isInRange(fromCell, AREA)
         let toInRange = cell.isInRange(toCell, AREA)
         if not fromInRange and toInRange
@@ -101,22 +99,19 @@ public class PassiveDevotionAura extends StackPassive
             return
         affected.add(movingStack)
 
-        let data = createStatusData(defence)
+        let statusData = createStatusData(data, stack.stats)
         ..setAura(true, (this castTo int))
         ..setBoolData(StatusDevotionAura.MAIN, movingStack == stack)
-        StatusController.applyNoListener(BUFF, movingStack, data)
+        StatusController.applyNoListener(BUFF, movingStack, statusData)
 
     private function removeStatus(BoardStack movingStack)
         if not affected.has(movingStack)
             return
         affected.remove(movingStack)
 
-        let data = createStatusData(defence)
+        let statusData = createStatusData(data, stack.stats)
         ..setAura(false, (this castTo int))
-        StatusController.applyNoListener(BUFF, movingStack, data)
+        StatusController.applyNoListener(BUFF, movingStack, statusData)
 
-
-    override function createTooltipLines() returns LinkedList<string>
-        return createTooltipLines(this)
-
-    
+    override function createBasicTooltipLines() returns LinkedList<string>
+        return createTooltipLines(data, stack.stats)

@@ -25,7 +25,7 @@ public class SkillTreeChieftain extends SkillTree
         skill.addLevel(2, 0, 0)
         ..addSpellTypeAsLines(spellType, 0)
         ..addLevelListener() ->
-            hero.learnSpell(spellType)
+            hero.spellBook.learn(spellType)
 
         /*
         var skill = new Skill(this, "AttackUpgrade", Icons.bTNIllidanPrisonWagon, 0, 0)

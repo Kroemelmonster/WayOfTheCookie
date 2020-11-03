@@ -62,7 +62,7 @@ public class StatusType
 
     function createTooltipLines(StatusData data) returns LinkedList<string>
         let lines = new LinkedList<string>()
-        ..add(KStringUtils.stat("Status", KStringUtils.secondaryString(name)))
+        ..add(KStringUtils.data("Status", KStringUtils.secondary(name)))
         ..addAllAndDestroy(tooltipLinesListener.create(data))
         if data != null
             destroy data

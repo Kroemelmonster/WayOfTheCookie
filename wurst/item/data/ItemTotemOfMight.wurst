@@ -1,0 +1,45 @@
+package ItemTotemOfMight
+
+import KItem
+import Hero
+import KItemType
+import HeroData
+import Stats
+
+init
+    Initializer.register(InitializerNames.ITEMS) -> 
+        ItemTotemOfMight.setup()
+
+public class ItemTotemOfMight extends KItem
+    static KItemType TYPE
+    static constant DEFENCE = 0
+    static constant WARCRY_EFFECT = 1
+
+    protected static function setup()
+        TYPE = new KItemType("Totem of Might", "ReplaceableTextures\\CommandButtons\\btntotemofmight.dds", 3, KItemClass.TRINKET)
+        TYPE.onCreate() data ->
+            return new ItemTotemOfMight(TYPE, data)
+        TYPE.onTooltipCreate() data ->
+            return createTooltipLines(data)
+        TYPE.onCreateData() -> 
+            return KItemData.create(HeroDataChange.createForGold(9000))
+                ..setIntData(DEFENCE, GetRandomInt(3, 5))
+                ..setIntData(WARCRY_EFFECT, GetRandomInt(25, 45))
+
+    private static function createTooltipLines(KItemData data) returns LinkedList<string>
+        return new LinkedList<string>
+        ..add(KStringUtils.signedStat("Defence", data.getIntData(DEFENCE)))
+        ..add(KStringUtils.signedPercentStat("Effectivness of " + KStringUtils.secondary("Warcry") + " Spells", 
+            data.getIntData(WARCRY_EFFECT)))
+        
+/* -------------------------------------------------------------------------- */
+
+    construct(KItemType itemType, KItemData data)
+        super(itemType, data)
+
+    override function onEquip(Hero h, boolean add)
+        h.stats.defence.modify(data.getIntData(DEFENCE), add)
+        h.stats.forTag(Tag.WARCRY).modifyEffectivness(data.getIntData(WARCRY_EFFECT), add)
+
+    override function createTooltipLines() returns LinkedList<string>
+        return createTooltipLines(this.data)

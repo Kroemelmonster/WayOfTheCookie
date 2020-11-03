@@ -356,13 +356,13 @@ public class UIWindowEntity
         return attackRange.min.toString() + " - " + attackRange.max.toString() 
 
     private static function apToText(int basisAP, int modifiedAP, int modifiedMoveAP) returns string
-        var str = basisAP.toString() + KStringUtils.coloredModiInt(basisAP - modifiedAP)
+        var str = basisAP.toString() + KStringUtils.signed(basisAP - modifiedAP)
         if modifiedMoveAP > 0 and modifiedMoveAP != modifiedAP
             str += " | "
             if modifiedMoveAP > modifiedAP
-                str += KStringUtils.coloredString(KStringUtils.COLOR_POSITIVE, " " + modifiedMoveAP.toString())
+                str += KStringUtils.colored(KStringUtils.COLOR_POSITIVE, " " + modifiedMoveAP.toString())
             else
-                str += KStringUtils.coloredString(KStringUtils.COLOR_NEGATIVE, " " + modifiedMoveAP.toString())
+                str += KStringUtils.colored(KStringUtils.COLOR_NEGATIVE, " " + modifiedMoveAP.toString())
         return str
 
     /*

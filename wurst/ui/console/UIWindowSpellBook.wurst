@@ -223,7 +223,7 @@ public class UIWindowSpellBook
         let hero = p.hero
         
         var index = 0
-        let spellIterator = hero.spellIterator()
+        let spellIterator = hero.spellBook.iterator()
         while spellIterator.hasNext()
             let spell = spellIterator.next()
             spells[index].setSpell(spell)

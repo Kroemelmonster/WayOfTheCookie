@@ -8,42 +8,42 @@ init
 class WorldArmies
     protected static LinkedList<HostileArmy> all = new LinkedList<HostileArmy>
     protected static function create() returns HostileArmy
-        let army = new HostileArmy()
-        all.add(army)
-        return army
+        let hostile = new HostileArmy()
+        all.add(hostile)
+        return hostile
 
     protected static function initialize() 
         Initializer.register(InitializerNames.WORLD_ARMIES) -> 
-            create()
-            ..addStackAtFree(StackTypes.getAllOfLevel(5).getRandom(), 1)
-            ..addStackWithLeadershipAtFree(StackTypes.getAllOfLevel(4).getRandom(), GetRandomInt(600, 1200))
-            ..addStackWithLeadershipAtFree(StackTypes.getAllOfLevel(1).getRandom(), GetRandomInt(400, 600))
-            ..addStackWithLeadershipAtFree(StackTypes.getAllOfLevel(1).getRandom(), GetRandomInt(400, 600))
-            ..placeWorld(gg_unit_n001_0003)
+            let hostile = create()
+            hostile.army.addAtFree(StackTypes.getAllOfLevel(5).getRandom(), 1)
+            hostile.army.addAtFreeWithLeadership(StackTypes.getAllOfLevel(4).getRandom(), GetRandomInt(600, 1200))
+            hostile.army.addAtFreeWithLeadership(StackTypes.getAllOfLevel(1).getRandom(), GetRandomInt(400, 600))
+            hostile.army.addAtFreeWithLeadership(StackTypes.getAllOfLevel(1).getRandom(), GetRandomInt(400, 600))
+            hostile.placeWorld(gg_unit_n001_0003)
 
         Initializer.register(InitializerNames.WORLD_ARMIES) -> 
-            create()
-            ..addStackWithLeadershipAtFree(StackTypes.getAllOfLevel(3).getRandom(), GetRandomInt(600, 1200))
-            ..addStackWithLeadershipAtFree(StackTypes.getAllOfLevel(2).getRandom(), GetRandomInt(400, 600))
-            ..addStackWithLeadershipAtFree(StackTypes.getAllOfLevel(2).getRandom(), GetRandomInt(400, 600))
-            ..placeWorld(gg_unit_n001_0008)
+            let hostile = create()
+            hostile.army.addAtFreeWithLeadership(StackTypes.getAllOfLevel(3).getRandom(), GetRandomInt(600, 1200))
+            hostile.army.addAtFreeWithLeadership(StackTypes.getAllOfLevel(2).getRandom(), GetRandomInt(400, 600))
+            hostile.army.addAtFreeWithLeadership(StackTypes.getAllOfLevel(2).getRandom(), GetRandomInt(400, 600))
+            hostile.placeWorld(gg_unit_n001_0008)
         
         Initializer.register(InitializerNames.WORLD_ARMIES) -> 
-            create()
-            ..addStackWithLeadershipAtFree(StackTypes.find("Necromancer"), GetRandomInt(300, 500))
-            ..addStackWithLeadershipAtFree(StackTypes.find("Necromancer"), GetRandomInt(300, 500))
-            ..addStackWithLeadershipAtFree(StackTypes.find("Skeletal Orc"), GetRandomInt(300, 500))
-            ..placeWorld(gg_unit_n001_0009)
+            let hostile = create()
+            hostile.army.addAtFreeWithLeadership(StackTypes.find("Necromancer"), GetRandomInt(300, 500))
+            hostile.army.addAtFreeWithLeadership(StackTypes.find("Necromancer"), GetRandomInt(300, 500))
+            hostile.army.addAtFreeWithLeadership(StackTypes.find("Skeletal Orc"), GetRandomInt(300, 500))
+            hostile.placeWorld(gg_unit_n001_0009)
 
         Initializer.register(InitializerNames.WORLD_ARMIES) -> 
-            create()
-            ..addStackWithLeadershipAtFree(StackTypes.find("Gnoll Warden"), GetRandomInt(300, 500))
-            ..addStackWithLeadershipAtFree(StackTypes.find("Gnoll Poacher"), GetRandomInt(300, 500))
-            ..addStackWithLeadershipAtFree(StackTypes.find("Gnoll"), GetRandomInt(300, 600))
-            ..placeWorld(gg_unit_n001_0010)
+            let hostile = create()
+            hostile.army.addAtFreeWithLeadership(StackTypes.find("Gnoll Warden"), GetRandomInt(300, 500))
+            hostile.army.addAtFreeWithLeadership(StackTypes.find("Gnoll Poacher"), GetRandomInt(300, 500))
+            hostile.army.addAtFreeWithLeadership(StackTypes.find("Gnoll"), GetRandomInt(300, 600))
+            hostile.placeWorld(gg_unit_n001_0010)
 
         Initializer.register(InitializerNames.WORLD_ARMIES) -> 
-            create()
-            ..addStackWithLeadershipAtFree(StackTypes.getAllOfLevel(1).getRandom(), GetRandomInt(600, 1200))
-            ..addStackWithLeadershipAtFree(StackTypes.getAllOfLevel(1).getRandom(), GetRandomInt(600, 1200))
-            ..placeWorld(gg_unit_n001_0011)
+            let hostile = create()
+            hostile.army.addAtFreeWithLeadership(StackTypes.getAllOfLevel(1).getRandom(), GetRandomInt(600, 1200))
+            hostile.army.addAtFreeWithLeadership(StackTypes.getAllOfLevel(1).getRandom(), GetRandomInt(600, 1200))
+            hostile.placeWorld(gg_unit_n001_0011)

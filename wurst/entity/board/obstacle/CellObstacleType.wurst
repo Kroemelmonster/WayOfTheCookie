@@ -4,7 +4,6 @@ import CellObstacle
 import initlater Board
 import initlater ObstacleBlocker
 import initlater ObstacleDifficultTerrain
-import HexagonalGridUtil
 import Data
 import BoardEntity
 import Damage

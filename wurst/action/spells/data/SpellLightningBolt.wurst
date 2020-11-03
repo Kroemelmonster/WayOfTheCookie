@@ -32,13 +32,13 @@ public class SpellLightningBolt extends SpellActionTarget
         damagePreview = DamagePreview.create(SourceType.SPELL, DamageType.MAGIC)
         TYPE = SpellActionTarget.createType("Lightning Bolt", "Icons\\BTNLightningBolt.blp")
         ..setTags(Tag.SPELL, Tag.MAGIC, Tag.LIGHTNING)
-        TYPE.addLevel(ActionCostPreset.createWithMana(1, true, 4), HeroDataChange.create(0, 0, 1))
+        TYPE.addLevel(ActionCostPreset.createWithMana(1, true, 4), HeroDataChange.createForRune(0, 0, 1))
         ..setIntData(DAMAGE, 60)
         ..setIntData(SLOW, 1)
-        TYPE.addLevel(ActionCostPreset.createWithMana(1, true, 5), HeroDataChange.create(0, 0, 2))
+        TYPE.addLevel(ActionCostPreset.createWithMana(1, true, 5), HeroDataChange.createForRune(0, 0, 2))
         ..setIntData(DAMAGE, 130)
         ..setIntData(SLOW, 1)
-        TYPE.addLevel(ActionCostPreset.createWithMana(1, true, 6), HeroDataChange.create(0, 0, 3))
+        TYPE.addLevel(ActionCostPreset.createWithMana(1, true, 6), HeroDataChange.createForRune(0, 0, 3))
         ..setIntData(DAMAGE, 210)
         ..setIntData(SLOW, 2)
         TYPE.onActionCreate() (hero, spell) -> 
@@ -62,8 +62,8 @@ public class SpellLightningBolt extends SpellActionTarget
 
     private static function createTooltipLines(SpellLevel level, HasHeroStats stats) returns LinkedList<string>
         return new LinkedList<string>
-        ..add(KStringUtils.stat("Target", "Enemy"))
-        ..add(KStringUtils.stat("Damage", calculateDamage(level, stats).toColoredText()))
+        ..add(KStringUtils.data("Target", "Enemy"))
+        ..add(KStringUtils.data("Damage", calculateDamage(level, stats).toColoredText()))
         ..add("")
         ..add("Lightning strikes from above and purges one Enemy.")
         ..add(KStringUtils.line())

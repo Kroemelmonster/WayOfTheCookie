@@ -10,7 +10,6 @@ import initlater Board
 import PlayerData
 import initlater UIMenuWorldConsole
 import ClosureTimers
-import FightResult
 import initlater UIWindow
 import initlater HeroData
 
@@ -63,18 +62,23 @@ public class MainController
     static function interact(Hero hero, NPC npc)
         hero.startInteract(npc)
 
-    static function payGold(Hero hero, int amount)
-        hero.addGold(-amount)
-
+    // TODO old
+    /*
     static function addStack(Hero hero, Stack stack, int amount)
         hero.addStack(stack.getStackType(), amount)
         stack.setAmount(stack.getAmount() - amount)
 
+    
+    static function payGold(Hero hero, int amount)
+        hero.addGold(-amount)
+
+
     static function buyStack(Hero hero, Stack stack, int amount, int cost)
         payGold(hero, amount * cost)
         addStack(hero, stack, amount)
+        */
 
     static function splitStack(Hero hero, Stack stack, int intoAmount)
-        if hero.getArmy().hasStack(stack)
-            stack.setAmount(stack.getAmount() - intoAmount)
-            hero.addStackAtFree(stack.getStackType(), intoAmount)
+        if hero.army.has(stack)
+            stack.addAmount(-intoAmount)
+            hero.army.addAtFree(stack.typ, intoAmount)

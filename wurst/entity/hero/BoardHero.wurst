@@ -2,17 +2,11 @@ package BoardHero
 
 import Hero
 import PlayerData
-import BoardEntity
-import Action
-import Cell
-import initlater Board
 import initlater HeroActionAttack
 import initlater HeroActionSkip
 import initlater BoardHeroStats
 import HeroType
 import initlater SpellAction
-import ActionType
-import Spell
 import initlater BoardForce
 
 public class BoardHero extends BoardEntity
@@ -20,29 +14,27 @@ public class BoardHero extends BoardEntity
     Hero hero
 
     BoardHeroStats stats
-    private HeroType heroType
 
     protected LinkedList<SpellAction> quickCastSpells = new LinkedList<SpellAction>
     
     construct(Hero hero, vec2 coord, BoardForce boardForce)
         super(EntityType.HERO, boardForce)
         this.hero = hero
-        this.stats = new BoardHeroStats(this, hero.stats)
-        this.heroType = hero.getType()
+        stats = new BoardHeroStats(this, hero.stats)
 
         createBLZUnit(coord)
 
         addAction(HeroActionSkip.TYPE.create(this))
         addAction(HeroActionAttack.TYPE.create(this))
 
-        hero.forEachSpell() spell ->
+        hero.spellBook.forEach() spell ->
             addAction(spell.create(this))
 
         resetAP()
         resetCurrentSelectedAction()
 
     private function createBLZUnit(vec2 coord)
-        u = createUnit(DUMMY_PLAYER, heroType.getUnitId(), coord , boardForce.getSide().toAngle())
+        u = createUnit(DUMMY_PLAYER, hero.typ.getUnitId(), coord , boardForce.getSide().toAngle())
         ..setColor(hero.getPlayer().blzPlayer.getColor())
 
         placeEntity()
@@ -54,10 +46,10 @@ public class BoardHero extends BoardEntity
         return hero.getPlayer()
 
     override function getIcon() returns string
-        return hero.getType().getIcon()
+        return hero.typ.getIcon()
 
     override function getName() returns string
-        return hero.getType().getName()
+        return hero.typ.getName()
 
     override protected function hasPath() returns boolean
         return false

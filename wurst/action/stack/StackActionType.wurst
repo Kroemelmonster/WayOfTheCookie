@@ -81,7 +81,7 @@ public class StackActionType extends ActionType
             lines = data.getCost().createTooltipLines()
         else
             lines = baseCost.createTooltipLines()
-        lines.add(KStringUtils.stat("Tags", tags2String(tags)))
+        lines.add(KStringUtils_data("Tags", tags))
         lines.addAllAndDestroy(tooltipLinesListener.create(data, stats))
         return lines
 

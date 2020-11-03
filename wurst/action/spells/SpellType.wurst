@@ -77,6 +77,7 @@ public class SpellType extends ActionType
             tt.addLines(level.getUsageCost().createTooltipLines())
         else
             level.getUsageCost().setupTooltipCost(tt)
+        tt.addLine(KStringUtils_data("Tags", tags))
         tt.addLines(createTooltipLines(level, stats))
         return tt
 

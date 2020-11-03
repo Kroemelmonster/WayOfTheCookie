@@ -2,31 +2,86 @@ package KItemType
 
 import Tooltip
 import KItem
+import HeroData
+import Data
+import KItemTypesData
 
 interface KItemCreateListener
-    function create() returns KItem
+    function create(KItemData data) returns KItem
 
 interface KItemCreateTooltipLinesListener
-    function create() returns LinkedList<string>
+    function create(KItemData data) returns LinkedList<string>
+
+interface KItemCreateDataListener
+    function create() returns KItemData
+
+public class KItemData extends Data
+    private HeroDataChange cost
+
+    static function create(HeroDataChange cost) returns KItemData
+        return new KItemData(cost)
+        
+    private construct(HeroDataChange cost)
+        this.cost = cost
+
+    function getCost() returns HeroDataChange
+        return cost
+
+public enum KItemClass
+    NONE
+    BACKPACK
+    AMULET
+    BELT
+    BOOTS
+    CHEST
+    GLOVES
+    TRINKET
+    SHIELD
+    WEAPON
+
+constant kItemClassNames = [
+    "None",
+    "BackPack",
+    "Amulet",
+    "Belt",
+    "Boots",
+    "Chest",
+    "Gloves",
+    "Trinket",
+    "Shield",
+    "Weapon"
+]
+
+public function KItemClass.toString() returns string
+    return kItemClassNames[this castTo int]
 
 public class KItemType
     protected string name
     protected string icon
+    protected KItemClass itemClass
+    protected int level
     protected KItemCreateListener listener
+    protected KItemCreateDataListener dataListener
     protected KItemCreateTooltipLinesListener tooltipLinesListener
 
-    construct(string name, string icon)
+    construct(string name, string icon, int level, KItemClass itemClass)
         this.icon = icon
         this.name = name
+        this.itemClass = itemClass
+        this.level = level
+        KItemTypes.all.add(this)
         
-    function setCreationListener(KItemCreateListener listener)
+    function onCreate(KItemCreateListener listener)
         this.listener = listener
 
-    function setTooltipListener(KItemCreateTooltipLinesListener listener)
+    function onTooltipCreate(KItemCreateTooltipLinesListener listener)
         this.tooltipLinesListener = listener
 
-    function createNew() returns KItem
-        return listener.create()
+    function onCreateData(KItemCreateDataListener dataListener)
+        this.dataListener = dataListener
+
+    function createRandom() returns KItem
+        return listener.create(dataListener.create())
 
     function getIcon() returns string
         return icon
@@ -34,9 +89,15 @@ public class KItemType
     function getName() returns string
         return name
 
-    function createTooltip() returns Tooltip
+    function getLevel() returns int
+        return level
+
+    function getClass() returns KItemClass
+        return itemClass
+
+    function createTooltip(KItemData data) returns Tooltip
         return Tooltip.create(name)
-        ..addLines(tooltipLinesListener.create())
+        ..addLines(tooltipLinesListener.create(data))
 
     function toString() returns string
         return "KItemType '"+name+"'"

@@ -26,11 +26,11 @@ public class SpellDivineShield extends SpellActionTarget
         BUFF = StatusDivineShield.TYPE
         TYPE = SpellActionTarget.createType("Divine Shield", Icons.bTNDivineIntervention)
         ..setTags(Tag.SPELL, Tag.LIGHT)
-        TYPE.addLevel(ActionCostPreset.createWithMana(1, true, 4), HeroDataChange.create(1, 0, 1))
+        TYPE.addLevel(ActionCostPreset.createWithMana(1, true, 4), HeroDataChange.createForRune(1, 0, 1))
         ..setIntData(ABSORD, 300)
-        TYPE.addLevel(ActionCostPreset.createWithMana(1, true, 5), HeroDataChange.create(2, 0, 2))
+        TYPE.addLevel(ActionCostPreset.createWithMana(1, true, 5), HeroDataChange.createForRune(2, 0, 2))
         ..setIntData(ABSORD, 500)
-        TYPE.addLevel(ActionCostPreset.createWithMana(1, true, 6), HeroDataChange.create(3, 0, 3))
+        TYPE.addLevel(ActionCostPreset.createWithMana(1, true, 6), HeroDataChange.createForRune(3, 0, 3))
         ..setIntData(ABSORD, 700)
         TYPE.onActionCreate() (hero, spell) -> 
             return new SpellDivineShield(hero, spell)
@@ -48,7 +48,7 @@ public class SpellDivineShield extends SpellActionTarget
 
     private static function createTooltipLines(SpellLevel level, HasHeroStats stats) returns LinkedList<string>
         return new LinkedList<string>
-        ..add(KStringUtils.stat("Target", "Ally"))
+        ..add(KStringUtils.data("Target", "Ally"))
         ..add("")
         ..add("Enlightens one Ally with a bla bla")
         ..add(KStringUtils.line())
