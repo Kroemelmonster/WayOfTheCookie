@@ -15,8 +15,7 @@ public enum NPCType
 
 public abstract class NPC
     private unit u
-    protected NPCType npcType
-    protected NPCShopData npcShopData
+    NPCType typ
 
     construct(unit u)
         this.u = u
@@ -28,12 +27,6 @@ public abstract class NPC
     function getUnit() returns unit
         return u
 
-    function getType() returns NPCType
-        return npcType
-
-    function getShopData() returns NPCShopData
-        return npcShopData
-
     abstract function startInteraction(Hero h)
 
     abstract function endInteraction(Hero h)
@@ -42,18 +35,19 @@ public abstract class NPC
         map.remove(u)
 
 public class NPCShop extends NPC
+    NPCShopData data
+
     construct(unit u)
         super(u)
-        this.npcType = SHOP
-        this.npcShopData = new NPCShopData()
+        this.typ = SHOP
+        this.data = new NPCShopData()
 
     function addStock(StackType stackType, int amount)
-        npcShopData.stock.add(new Stack(stackType, amount))
+        data.stock.add(new Stack(stackType, amount))
 
     override function startInteraction(Hero h)
         h.setVulnearble(false)
         UIWindowNPC.open(h.getPlayer(), this)
-
 
     override function endInteraction(Hero h)
         h.setVulnearble(true)
@@ -61,7 +55,7 @@ public class NPCShop extends NPC
     
 
 public class NPCShopData
-    protected LinkedList<Stack> stock = new LinkedList<Stack>
-    
-    function getStock() returns LinkedList<Stack>
-        return stock
+    LinkedList<Stack> stock = new LinkedList<Stack>
+
+    function unitIterator() returns LLIterator<Stack>
+        return stock.iterator()

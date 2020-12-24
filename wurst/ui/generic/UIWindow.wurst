@@ -164,6 +164,12 @@ public class UIWindow extends UIMouseBlockElement
         if p.isLocal() and btnToOpen != null
             btnToOpen.disable()
 
+    function setEnabled(Player p, boolean flag)
+        if flag
+            enable(p)
+        else
+            disable(p)
+
     function open(Player p)
         if isVisible(p)
             return
@@ -209,11 +215,12 @@ public class UIWindowBasic extends UIWindow
         return new UIWindowBasic(name, small)
 
     protected framehandle innerFrame
+    protected real padding
 
     private construct(string name, boolean small)
         super(name)
         var frameName = "WindowBasic"
-        var padding = 0.03
+        padding = 0.03
         if small
             frameName += "Small"
             padding = 0.015
@@ -223,6 +230,9 @@ public class UIWindowBasic extends UIWindow
         innerFrame = createUIFrame("FRAME", self)
         ..setPoint(FRAMEPOINT_TOPLEFT, self, FRAMEPOINT_TOPLEFT, padding, -padding)
         ..setPoint(FRAMEPOINT_BOTTOMRIGHT, self, FRAMEPOINT_BOTTOMRIGHT, -padding, padding)
+
+    function getInnerWidth() returns real
+        return self.getWidth() - (padding * 2)
 
 public function framehandle.setInnerPoint(framepointtype point, UIWindowBasic relative, framepointtype relativePoint)
     this.setPoint(point, relative.innerFrame, relativePoint)

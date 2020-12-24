@@ -10,6 +10,7 @@ import UIButtonIcon
 import UIDialogSplitStack
 import initlater Scheduler
 import initlater UIWindowEntity
+import UIWindowDropdown
 
 public class UIExtensionArmyPanelInfo
     protected int startDragMousePressedIndex = -1
@@ -39,18 +40,12 @@ public class UIExtensionArmyPanelInfo
         dragEnd = i
 
 class UIExtensionArmyButton extends UIButtonIcon
-    protected framehandle textHandle
     protected int index
 
     construct(UIHandle parent, int index)
-        super(parent.self, true, false, false)
+        super(parent.self, true, false, false, true)
         setSize(0.0413, 0.0413)
         this.index = index
-
-        textHandle = createUIFrame("TEXT", self)
-        ..setPoint(FRAMEPOINT_TOPLEFT, self, FRAMEPOINT_BOTTOMLEFT, 0, 0.002)
-        ..setPoint(FRAMEPOINT_BOTTOMRIGHT, self, FRAMEPOINT_BOTTOMRIGHT, -0.002, -0.009)
-        ..setTextAlignment(TEXT_JUSTIFY_TOP, TEXT_JUSTIFY_RIGHT)
 
         onClick() ->
             let p = GetTriggerPlayerData()
@@ -74,10 +69,14 @@ class UIExtensionArmyButton extends UIButtonIcon
             if mouseBtn == MOUSE_BUTTON_TYPE_LEFT
                 UIExtensionArmyPanel.dragEnd(p)
                 info.startDragMousePressedIndex  = -1
-            else if mouseBtn == MOUSE_BUTTON_TYPE_RIGHT 
+            else if mouseBtn == MOUSE_BUTTON_TYPE_RIGHT
+                openDropDown(GetTriggerPlayerData(), info.army.getAt(index))
+                    
+                /*
                 let stack = info.army.getAt(index)
                 if stack != null
                     UIDialogSplitStack.open(p, stack)
+                    */
             
         onMouseEnter() -> 
             let p = GetTriggerPlayerData()
@@ -86,14 +85,19 @@ class UIExtensionArmyButton extends UIButtonIcon
             if info.dragStart >= 0
                 info.setupDragEnd(index)
 
-    private function setText(string text)
-        textHandle.setText(text)
-        textHandle.setVisible(true)
-
     override function disable()
         super.disable()
-        textHandle.setVisible(false)
         setBackground("Icons/BTNDotted.dds")
+
+    protected function openDropDown(Player p, ArmyStack stack)
+        if stack == null
+            return
+        let dropDown = UIWindowDropdown.start(p, this.self)
+        dropDown.addOption("Split", stack.getAmount() > 1) ->
+            UIDialogSplitStack.open(p, stack)
+        dropDown.addOption("Delete", true) ->
+            p.hero.army.remove(stack)
+        dropDown.open()
     
     protected function draw(UIExtensionArmyPanelInfo info)
         let stack = info.army.getAt(index)
@@ -104,7 +108,7 @@ class UIExtensionArmyButton extends UIButtonIcon
             // zeige das an was auf dragEnd ist an
             if info.stackDragEnd != null
                 setBackground(info.stackDragEnd.typ.getIcon())
-                setText(info.stackDragEnd.getAmount().toString())
+                setAmount(info.stackDragEnd.getAmount())
                 // sind die nicht identisch wird es ein swap ansonten haben wir gerade einfach nur den normalen status angezeigt
                 if info.stackDragEnd != info.stackDragStart
                     setAlpha(80)
@@ -115,12 +119,12 @@ class UIExtensionArmyButton extends UIButtonIcon
             // zeige das was auf dragStart ist an außer das sind wir selber
             if info.stackDragStart != info.stackDragEnd
                 setBackground(info.stackDragStart.typ.getIcon())
-                setText(info.stackDragStart.getAmount().toString())
+                setAmount(info.stackDragStart.getAmount())
                 setAlpha(80)
         else if stack != null
             // there is not drag but maybe there is astack to show
             setBackground(stack.typ.getIcon())
-            setText(stack.getAmount().toString())
+            setAmount(stack.getAmount())
         else
             // there is nothing sooo ?
             disable()

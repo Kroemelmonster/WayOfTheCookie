@@ -3,7 +3,6 @@ package BitSet
 import NoWurst
 import Integer
 import Annotations
-import Printing
 
 public constant BITSET_SIZE = 32
 

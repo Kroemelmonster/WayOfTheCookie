@@ -26,4 +26,4 @@ public class PassiveTalent extends Talent
         ..addLines(passive.createTooltipLines())
 
     override function isHidden() returns boolean
-        return talentType.isHidden()
+        return typ.isHidden()

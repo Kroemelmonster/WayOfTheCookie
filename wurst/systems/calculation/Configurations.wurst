@@ -4,7 +4,6 @@ import NoWurst
 import public TypeCasting
 import LinkedList
 import Initializer
-import HashMap
 
 public interface ChangeListener<T>
     function onChange(T value)

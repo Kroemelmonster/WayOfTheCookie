@@ -1,13 +1,10 @@
 package SharedStatus
-import LinkedList
 
 import initlater StatusType
 import Status
 import BoardEntity
-import BoardTrigger
 
 public abstract class SharedStatus extends Status
-
     protected LinkedList<SharedStatus> secondaryStati
     protected SharedStatus primary
 
@@ -44,7 +41,7 @@ public abstract class SharedStatus extends Status
     /** this will !not destroy the statusData **/
     protected function applySecondary(BoardEntity target, StatusData data)
         data.setSecondary(this)
-        statusType.applyNewStatusAndKeepData(target, data)
+        typ.applyNewStatusAndKeepData(target, data)
 
     override protected function removeInner(SequenzListener next)
         if isPrimary()

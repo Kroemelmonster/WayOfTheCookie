@@ -3,6 +3,7 @@ package StatusType
 import Status
 import BoardEntity
 import Tooltip
+import Icon
 
 interface StatusCreateListener
     function create(BoardEntity entity, StatusData data) returns Status
@@ -13,16 +14,13 @@ interface StatusCreateTooltipLinesListener
 interface StatusCanApplyListener
     function canApply(BoardEntity entity, StatusData data) returns boolean
 
-public class StatusType
-    protected string name
-    protected string icon
+public class StatusType extends Icon
     protected StatusCreateListener listener
     protected StatusCreateTooltipLinesListener tooltipLinesListener
     protected StatusCanApplyListener canApplyListener
 
     construct(string name, string icon)
-        this.icon = icon
-        this.name = name
+        super(name, icon)
         
     function setCreationListener(StatusCreateListener listener)
         this.listener = listener
@@ -50,12 +48,6 @@ public class StatusType
         let status = listener.create(entity, data)
         entity.addStatus(status)
         return status
-
-    function getIcon() returns string
-        return icon
-    
-    function getName() returns string
-        return name
 
     function createTooltipLines() returns LinkedList<string>
         return createTooltipLines(null)

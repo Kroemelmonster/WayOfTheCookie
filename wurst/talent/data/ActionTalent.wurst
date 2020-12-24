@@ -25,4 +25,4 @@ public class ActionTalent extends Talent
         ..addLines(action.createTooltipLines())
 
     override function isHidden() returns boolean
-        return talentType.isHidden()
+        return typ.isHidden()

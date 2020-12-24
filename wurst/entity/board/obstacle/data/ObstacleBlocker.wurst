@@ -5,7 +5,6 @@ import CellObstacleType
 import Doodads
 import Cell
 import Board
-import HexagonalGridUtil
 
 init
     Initializer.register(InitializerNames.DOODADS) -> 

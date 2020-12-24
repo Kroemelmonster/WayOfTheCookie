@@ -1,17 +1,16 @@
 package Talent
 
 import Tooltip
-import Icon
 import BoardEntity
 import initlater TalentType
 import StackType
 
 public abstract class Talent implements TalentStats
-    protected TalentType talentType
+    protected TalentType typ
     protected BoardEntity entity
 
-    construct(TalentType talentType, BoardEntity entity)
-        this.talentType = talentType
+    construct(TalentType typ, BoardEntity entity)
+        this.typ = typ
         this.entity = entity
 
     abstract override function createTooltip(HasEntityStats stats) returns Tooltip
@@ -20,10 +19,10 @@ public abstract class Talent implements TalentStats
         return Tooltip.create(getName())
 
     override function getName() returns string
-        return talentType.getName()
+        return typ.getName()
 
     override function getIcon() returns string
-        return talentType.getIcon()
+        return typ.getIcon()
 
     function isHidden() returns boolean
         return getIcon() == ""

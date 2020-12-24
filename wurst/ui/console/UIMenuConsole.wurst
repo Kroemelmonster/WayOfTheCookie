@@ -42,7 +42,7 @@ class UIRessource extends UIHandle
         handleText.setText(value.toString())
 
 init
-    Initializer.register(InitializerNames.UI) -> 
+    Initializer.register(InitializerNames.UI, 0) -> 
         UIMenuConsole.create()
 
 public class UIMenuConsole

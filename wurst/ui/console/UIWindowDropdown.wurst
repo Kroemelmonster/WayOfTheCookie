@@ -1,0 +1,83 @@
+package UIWindowDropdown
+import UIWindow
+import UIButtonMenu
+import PlayerData
+import ClosureFrames
+
+init
+    Initializer.register(InitializerNames.UI) -> 
+        UIWindowDropdown.create()
+
+class UIWindowDropdownOption
+    protected Player p
+    protected int index
+    construct(Player p)
+        this.p = p
+        index = 0
+
+    function addOption(string btn, boolean isEnabled, FrameHandleListener listener)
+        if p.isLocal()
+            UIWindowDropdown.btns[index].setText(btn)
+            UIWindowDropdown.btns[index].setEnabled(isEnabled)
+            UIWindowDropdown.btns[index].onClick() -> 
+                listener.onEvent()
+                UIWindowDropdown.close(GetTriggerPlayerData())
+
+            UIWindowDropdown.btns[index].setVisible(true)
+            UIWindowDropdown.window.setHeight(((index + 1) * 0.02) + (index * UIWindowDropdown.padding))
+        index ++
+
+    function open()
+        UIWindowDropdown.window.open(p)
+        destroy this
+
+public enum DropDownAnchor
+    TOP
+    DOWN
+
+public class UIWindowDropdown
+    protected static UIWindow window
+    protected static UIButtonMenu array[4] btns
+    protected static real padding = 0.001
+
+    static function create()
+        window = UIWindow.create("DropDown")
+        ..setPointToConsoleUI(FRAMEPOINT_TOP, FRAMEPOINT_TOP)
+        ..setWidth(0.07)
+        ..setLevel(101)
+
+        window.onClose() (Player p) ->
+            if p.isLocal()
+                for i = 0 to 4
+                    btns[0].setVisible(false)
+
+        btns[0] = UIButtonMenu.create(window, "")
+        ..setPoint(FRAMEPOINT_BOTTOMLEFT, window, FRAMEPOINT_BOTTOMLEFT)
+        ..setPoint(FRAMEPOINT_BOTTOMRIGHT, window, FRAMEPOINT_BOTTOMRIGHT)
+        ..setHeight(0.02)
+
+        for i = 1 to 4
+            btns[i] = UIButtonMenu.create(window, "")
+            ..setPoint(FRAMEPOINT_BOTTOMLEFT, btns[i - 1], FRAMEPOINT_TOPLEFT, 0, padding)
+            ..setPoint(FRAMEPOINT_BOTTOMRIGHT, btns[i - 1], FRAMEPOINT_BOTTOMRIGHT, 0, padding)
+            ..setVisible(false)
+            ..setHeight(0.02)
+                
+
+    static function start(Player p, framehandle reference) returns UIWindowDropdownOption
+        return start(p, reference, DropDownAnchor.TOP)
+
+    static function start(Player p, framehandle reference, DropDownAnchor anchor) returns UIWindowDropdownOption
+        if p.isLocal()
+            window.clearAllPoints()
+            if anchor == TOP
+                window.setPoint(FRAMEPOINT_BOTTOM, reference, FRAMEPOINT_TOP, 0, 0.003)
+            else
+                window.setPoint(FRAMEPOINT_TOP, reference, FRAMEPOINT_BOTTOM, 0, -0.003)
+        return new UIWindowDropdownOption(p)
+
+    static function close(Player p)
+        window.close(p)
+
+
+        

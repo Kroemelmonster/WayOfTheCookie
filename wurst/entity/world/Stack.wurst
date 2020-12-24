@@ -43,7 +43,7 @@ public interface OnArmyStackChange
 
 public class Army
     static constant MAX_SIZE = 5
-    protected ArmyStack array[MAX_SIZE] stacks
+    protected ArmyStack array[MAX_SIZE + 1] stacks
     protected HeroStats heroStats
     protected OnArmyStackChange onChange
 
@@ -73,6 +73,11 @@ public class Army
             destroy stacks[i]
             stacks[i] = null
 
+    function remove(ArmyStack stack)
+        let index = getIndex(stack)
+        if index > 0
+            remove(index)
+
     function getAt(int i) returns ArmyStack
         if i >= 0 and i < stacks.length - 1
             return stacks[i]
@@ -83,6 +88,12 @@ public class Army
             if stacks[i] != null
                 itr.run(stacks[i])
         destroy itr
+
+    function getIndex(Stack stack) returns int
+        for i = 0 to stacks.length - 1
+            if stack == stacks[i]
+                return i
+        return -1
 
     function has(Stack stack) returns boolean
         for i = 0 to stacks.length - 1
@@ -122,25 +133,25 @@ public class Army
 
     function toString() returns string
         var str = "Army [ "
-        for i = 0 to MAX_SIZE -1
+        for i = 0 to stacks.length - 1
             if stacks[i] != null
                 str += stacks[i].toString() +", "
         str += " ]"
         return str
 
     private function getNextFreeIndex() returns int
-        for i = 0 to MAX_SIZE - 1
+        for i = 0 to stacks.length - 1
             if stacks[i] == null
                 return i
         return -1
 
     private function getNextStackWithStackType(StackType stackType) returns ArmyStack
-        for i = 0 to MAX_SIZE - 1
+        for i = 0 to stacks.length - 1
             if stacks[i] != null and stacks[i].typ == stackType
                 return stacks[i]
         return null
     
     ondestroy
-        for i = 0 to MAX_SIZE -1
+        for i = 0 to stacks.length - 1
             if stacks[i] != null
                 destroy stacks[i]

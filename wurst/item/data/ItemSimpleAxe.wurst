@@ -26,7 +26,6 @@ public class ItemSimpleAxe extends KItem
                 ..setIntData(DAMAGE, GetRandomInt(5, 8))
                 ..setIntData(FAMILY, GetRandomInt(0, 2))
 
-                
     private static function createTooltipLines(KItemData data) returns LinkedList<string>
         return new LinkedList<string>
         ..add(KStringUtils.signedStat("Damage of " + KStringUtils.secondary(getFamily(data).name) + " Stacks", 

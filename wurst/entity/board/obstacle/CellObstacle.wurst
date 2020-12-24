@@ -6,14 +6,14 @@ import initlater CellObstacleType
 import BoardListenerOnCellMove
 
 public abstract class CellObstacle
-    private CellObstacleType obstacleType
+    CellObstacleType typ
     private LinkedList<Cell> cells = new LinkedList<Cell>
     
     private BoardListenerOnCellMove onAnyCellEnter
     private BoardListenerOnCellMove onAnyCellLeave
 
-    construct(CellObstacleType obstacleType)
-        this.obstacleType = obstacleType
+    construct(CellObstacleType typ)
+        this.typ = typ
 
     protected function placeRandom(Board board, Variation vari, int minCol, int maxCol)
         int angle = 0
@@ -80,7 +80,7 @@ public abstract class CellObstacle
         return cells.size()
 
     function doesBlock() returns boolean
-        return obstacleType.doesBlock()
+        return typ.doesBlock()
 
     function getAdditionalMoveIntoCost(Cell _fromCell, Cell _toCell) returns int
         return 0

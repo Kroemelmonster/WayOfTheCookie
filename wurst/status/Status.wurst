@@ -2,11 +2,9 @@ package Status
 
 import initlater BoardEntity
 import initlater StatusType
-import initlater BoardTrigger
 import initlater SharedStatus
 import Tooltip
 import Icon
-import LinkedList
 import Data
 
 public interface StatusStats extends GeneratesTooltip, HasIcon
@@ -67,21 +65,19 @@ public class StatusData extends Data
             entityData = null
 
 public abstract class Status implements StatusStats
-    protected StatusType statusType
+    StatusType typ
+
     protected BoardEntity entity
 
-    construct(StatusType statusType, BoardEntity entity)
-        this.statusType = statusType
+    construct(StatusType typ, BoardEntity entity)
+        this.typ = typ
         this.entity = entity
 
-    function getType() returns StatusType
-        return statusType
-
     override function getIcon() returns string
-        return statusType.getIcon()
+        return typ.getIcon()
 
     override function getName() returns string
-        return statusType.getName()
+        return typ.getName()
     
     function refresh(StatusData data)
         onRefresh(data)

@@ -111,7 +111,7 @@ class UIController
         UIMenuWorldConsole.hide(p)
         UIMenuBoardConsole.show(p)
         UIWindowSkillTree.get().disable(p)
-        UIWindowHero.get().disable(p)
+        UIWindowHero.setEnabled(p, false)
 
     static function switchToCombat(Board b)
         switchToCombat(b.getPlayer(0))
@@ -124,4 +124,4 @@ class UIController
         UIMenuBoardConsole.hide(p)
         UIMenuWorldConsole.show(p)
         UIWindowSkillTree.get().enable(p)
-        UIWindowHero.get().enable(p)
+        UIWindowHero.setEnabled(p, true)

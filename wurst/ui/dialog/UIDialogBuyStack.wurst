@@ -1,0 +1,115 @@
+package UIDialogBuyStack
+
+import PlayerData
+import UISlider
+
+import initlater MainController
+import initlater Stack
+import UIDialog
+import UIHandle
+import UIWindow
+import UIEditBox
+import initlater UIWindowNPC
+
+init
+    Initializer.register(InitializerNames.UI) -> 
+        Player.forEachActive() (Player p) ->
+            UIDialogBuyStackInfo.create(p)
+        UIDialogBuyStack.create()
+
+class UIDialogBuyStackInfo
+    static UIDialogBuyStackInfo array data
+    static function get(Player p) returns UIDialogBuyStackInfo
+        return data[p castTo int]
+
+    protected static function create(Player p)
+        data[p castTo int] = new UIDialogBuyStackInfo(p)
+
+    protected Player p
+    protected Stack stack
+    protected int cost
+    protected int amount
+    protected int maxAmount
+    protected int maxAmountGold
+    protected int maxAmountLeaderShip
+
+    private construct(Player p)
+        this.p = p
+
+public class UIDialogBuyStack
+    private static UIDialog dia
+    private static UISlider slider
+    private static UIEditBoxInt editBox
+
+    private static UIWindowNPCSellButton disabledBtnSell
+
+    static function create()
+        dia = UIDialog.create("BuyStack")
+        ..setHeader("Buy")
+        ..onAccept() -> 
+            let p = GetTriggerPlayerData()
+            Log.trace("buy this shit")
+
+        let paddingH = 0.035
+
+        let dogo = createUIHandle("FRAME", dia)
+        dogo.setInnerPoint(FRAMEPOINT_BOTTOMLEFT, dia, FRAMEPOINT_BOTTOMLEFT, 0, 0.035)
+        dogo.setInnerPoint(FRAMEPOINT_BOTTOMRIGHT, dia, FRAMEPOINT_BOTTOMRIGHT, 0, 0.035)
+        Log.trace("dogo with" + dogo.self.getWidth().toString())
+
+        slider = UISlider.create(dogo)
+        Log.trace(slider.self.getWidth().toString())
+        slider.clearAllPoints()
+        slider.setInnerPoint(FRAMEPOINT_BOTTOMLEFT, dia, FRAMEPOINT_BOTTOMLEFT, 0, 0.035)
+        //slider.setInnerPoint(FRAMEPOINT_BOTTOMRIGHT, dia, FRAMEPOINT_BOTTOMRIGHT, 0, 0.035)
+        slider.setWidth(dia.getInnerWidth())
+
+        Log.trace("dogo from parent" + slider.self.getParent().getWidth().toString())
+        
+        Log.trace(slider.self.getWidth().toString())
+        //slider.setWidth(0.4)
+        slider.onValueChange() -> 
+            setStackValues(GetTriggerPlayerData(), slider.getValue())
+
+        editBox = UIEditBoxInt.create(dia)
+        ..setInnerPoint(FRAMEPOINT_TOP, dia, FRAMEPOINT_TOP, 0, -0.005)
+        ..onValueChange() (int value) ->
+            let info = UIDialogBuyStackInfo.get(GetTriggerPlayerData())
+            setStackValues(info.p, value)
+
+        disabledBtnSell = new UIWindowNPCSellButton(dia)
+        ..setInnerPoint(FRAMEPOINT_TOPLEFT, dia, FRAMEPOINT_TOPLEFT, 0.005, -0.005)
+        ..setVisible(true)
+        ..setEnabled(false)
+
+    
+    static function open(Player p, Stack stack, int cost)
+        let info = UIDialogBuyStackInfo.get(p)
+        info.stack = stack
+        info.amount = 1
+        info.maxAmount = stack.getAmount()
+        info.cost = cost
+    
+        if p.isLocal()
+            slider.setMinMax(1, info.maxAmount)
+            disabledBtnSell.setBackground(info.stack.typ.getIcon())
+            disabledBtnSell.setText(info.maxAmount, info.cost)
+            
+        dia.open(p)
+        update(p)
+
+    private static function setStackValues(Player p, int amount)
+        let info = UIDialogBuyStackInfo.get(p)
+        info.amount = amount
+        if amount > info.maxAmount
+            info.amount = info.maxAmount
+        if amount < 1
+            info.amount = 1
+
+        update(p)
+
+    private static function update(Player p)
+        let info = UIDialogBuyStackInfo.get(p)
+        if p.isLocal()
+            slider.setValue(info.amount)
+            editBox.setValue(info.amount)

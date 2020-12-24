@@ -6,17 +6,17 @@ import public Tooltip
 
 public abstract class Passive
     protected BoardEntity entity
-    protected PassiveType typ
+    protected PassiveType baseTyp
     
-    construct(BoardEntity entity, PassiveType passiveType)
+    construct(BoardEntity entity, PassiveType baseTyp)
         this.entity = entity
-        this.typ = passiveType
+        this.baseTyp = baseTyp
 
     function getName() returns string
-        return typ.getName()
+        return baseTyp.getName()
 
     function getIcon() returns string
-        return typ.getIcon()
+        return baseTyp.getIcon()
 
     function toString() returns string
         return "Passive '"+getName()+"'"

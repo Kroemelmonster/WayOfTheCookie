@@ -22,8 +22,6 @@ init
         Player.forEachActive() (Player p) ->
             UIWindowHeroInfo.create(p)
 
-        
-
 tuple itemDrag(int pos, KItem kitem)
 
 class UIWindowHeroInfo
@@ -94,7 +92,7 @@ class UIWindowHeroItem extends UIButtonIcon
     protected framehandle handleBackground3
 
     construct(UIHandle parent, int index, boolean active)
-        super(parent.self, true, false, false)
+        super(parent.self, true, false, false, false)
         handleBackground2 = createUIFrame("BACKDROP", handleBackground)
         ..setAllPoints(handleBackground)
         handleBackground3 = createUIFrame("BACKDROP", handleBackground)
@@ -196,9 +194,6 @@ public class UIWindowHero
         ..setPointToConsoleUI(FRAMEPOINT_TOPLEFT, FRAMEPOINT_TOPLEFT, UIWindowSkillTree.WIDTH + 0.01, 0)
         ..setSize(0.25, 0.35)
 
-        window.onOpen() (Player p) ->
-            update(p)
-
         items[0] = new UIWindowHeroItem(window, 0, false)
         ..setInnerPoint(FRAMEPOINT_TOPLEFT, window, FRAMEPOINT_TOPLEFT)
         for i = 1 to MAX_ACTIVE_ITEMS - 1
@@ -272,11 +267,11 @@ public class UIWindowHero
             Description.extendTooltip(tt, "Defence")
             UITooltip.display(GetTriggerPlayerData(), tt, TooltipAnchor.BOTTOM_RIGHT, defenceInfo)
 
-        Configurations.debugReal1.addListener() (Real value) ->
-            Log.trace("real1 changed to "+value.self.toString())
-
         window.onClose() p ->
             UIWindowHeroInfo.cancelDrag(p)
+
+        window.onOpen() (Player p) ->
+            update(p)
 
         Scheduler.onTime() p ->
             if window.isVisible(p)
@@ -284,8 +279,8 @@ public class UIWindowHero
 
         return window
 
-    static function get() returns UIWindowBasic
-        return window
+    static function setEnabled(Player p, boolean flag)
+        window.setEnabled(p, flag)
 
     protected static function update(Player p)
         if not p.isLocal()

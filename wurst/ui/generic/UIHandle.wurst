@@ -36,7 +36,7 @@ public function createUIHandleByName(string name, UIHandle parent, boolean isSim
     return new UIHandle(createUIFrameByName(name, parent, isSimple))
 
 public class UIHandle
-    protected framehandle self
+    framehandle self
 
     construct(framehandle self)
         this.self = self
@@ -79,6 +79,9 @@ public class UIHandle
 
     function setLevel(int level)
         self.setLevel(level)
+
+    function setEnabled(boolean flag)
+        self.setEnabled(flag)
 
     function enable()
         self.setEnabled(true)

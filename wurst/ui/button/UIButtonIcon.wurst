@@ -10,11 +10,11 @@ public enum BorderColor
     NONE
 
 public class UIButtonIcon extends UIButton
-    static function create(framehandle parent, boolean automaticHighlight, boolean hasBorder, boolean hasCounter) returns UIButtonIcon
-        return new UIButtonIcon(parent, automaticHighlight, hasBorder, hasCounter)
+    static function create(framehandle parent, boolean automaticHighlight, boolean hasBorder, boolean hasCounter, boolean hasAmount) returns UIButtonIcon
+        return new UIButtonIcon(parent, automaticHighlight, hasBorder, hasCounter, hasAmount)
     
-    static function create(UIHandle parent, boolean automaticHighlight, boolean hasBorder, boolean hasCounter) returns UIButtonIcon
-        return new UIButtonIcon(parent.self, automaticHighlight, hasBorder, hasCounter)
+    static function create(UIHandle parent, boolean automaticHighlight, boolean hasBorder, boolean hasCounter, boolean hasAmount) returns UIButtonIcon
+        return new UIButtonIcon(parent.self, automaticHighlight, hasBorder, hasCounter, hasAmount)
 
 
     private framehandle counterFrame
@@ -23,8 +23,12 @@ public class UIButtonIcon extends UIButton
     private framehandle borderFrame
     private framehandle highlightFrame
     private framehandle glowFrame
+    private framehandle numberBackdrop
+    private framehandle amountFrame
+    private framehandle amountIconFrame
 
-    construct(framehandle parent, boolean automaticHighlight, boolean hasBorder, boolean hasCounter)
+
+    construct(framehandle parent, boolean automaticHighlight, boolean hasBorder, boolean hasCounter, boolean hasAmount)
         super(createBasicButtonFrame(automaticHighlight, parent))
 
         if hasCounter
@@ -53,6 +57,26 @@ public class UIButtonIcon extends UIButton
             ..setAlpha(200)
             ..setVisible(false)
 
+        if hasAmount
+            let padding = 0.002
+            let numberBackdropHeight = 0.009
+            numberBackdrop = createUIFrame("BACKDROP", self)
+            ..setPoint(FRAMEPOINT_BOTTOMLEFT, self, FRAMEPOINT_BOTTOMLEFT, padding, padding)
+            ..setPoint(FRAMEPOINT_BOTTOMRIGHT, self, FRAMEPOINT_BOTTOMRIGHT, -padding, padding)
+            ..setHeight(numberBackdropHeight)
+            ..setTexture("UI/Button/BTNExtensionAmountBackground.dds")
+
+            amountFrame = createUIFrame("TEXT", self)
+            ..setAllPoints(numberBackdrop)
+            ..setTextAlignment(TEXT_JUSTIFY_MIDDLE, TEXT_JUSTIFY_RIGHT)
+
+            let innerIconPadding = 0.0
+            amountIconFrame = createUIFrame("BACKDROP", self)
+            ..setPoint(FRAMEPOINT_TOPRIGHT, numberBackdrop, FRAMEPOINT_TOPRIGHT, -innerIconPadding, -innerIconPadding)
+            ..setPoint(FRAMEPOINT_BOTTOMRIGHT, numberBackdrop, FRAMEPOINT_BOTTOMRIGHT, -innerIconPadding, innerIconPadding)
+            ..setWidth(numberBackdropHeight - (innerIconPadding * 2))
+            ..setVisible(false)
+
         glowFrame = createUIFrame("SPRITE", self)
         ..setAllPoints(self)
         ..setModel("ui/feedback/commandbutton/ui-commandbuttonhighlight.mdx", 0)
@@ -62,9 +86,22 @@ public class UIButtonIcon extends UIButton
         counterFrame.setVisible(amount > 0)
         counterTextFrame.setText(amount.toString())
 
+    function setAmount(int amount)
+        amountFrame.setText(amount.toString())
+        amountIconFrame.setVisible(false)
+
+    function setAmountIcon(string icon)
+        amountFrame.setText("")
+        amountIconFrame.setTexture(icon)
+        amountIconFrame.setVisible(true)
+
     override function enable()
         self.setEnabled(true)
         blockFrame.setVisible(false)
+        if numberBackdrop != null
+            numberBackdrop.setVisible(true)
+        if amountFrame != null
+            amountFrame.setVisible(true)
 
     function disable(string blockingTexture)
         disable()
@@ -74,6 +111,10 @@ public class UIButtonIcon extends UIButton
     override function disable()
         self.setEnabled(false)
         blockFrame.setVisible(false)
+        if numberBackdrop != null
+            numberBackdrop.setVisible(false)
+        if amountFrame != null
+            amountFrame.setVisible(false)
 
     override function setSize(real width, real height)
         super.setSize(width, height)

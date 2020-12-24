@@ -58,18 +58,3 @@ public class TalentType extends Icon implements TalentStats
 
     override function createTooltip(HasEntityStats stats) returns Tooltip
         return tooltipListener.createTooltip(stats)
-
-    //static function setup()
-        /*WaitAction.setup()
-        DefendAction.setup()
-        WalkAndAttackAction.setup()
-        SlamAction.setup()
-        ChainLightningAction.setup()
-        SummonLesserSkeletonAction.setup()
-
-
-        HeroSkipAction.setup()
-        HeroAttackAction.setup()
-        ChainLightningSpell.setup()
-        LightningBoltSpell.setup()
-        RallingCrySpell.setup()*/

@@ -75,7 +75,7 @@ public class UIWindowSkillTree
         ..setPoint(FRAMEPOINT_LEFT, tabs[1], FRAMEPOINT_RIGHT, tabPaddingH, 0)
 
         for i = 0 to skills.length - 1
-            skills[i] = UIButtonIcon.create(window, true, false, true)
+            skills[i] = UIButtonIcon.create(window, true, false, true, false)
             ..setSize(0.035, 0.035)
             skills[i].onClick() -> 
                 UIWindowSkillTreeInfo.getCurrentSkillTree(GetTriggerPlayerData())

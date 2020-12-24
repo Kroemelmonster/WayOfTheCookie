@@ -14,34 +14,11 @@ import initlater UIMenuActionConsole
 
 class InitiativeCommandButton extends UIButtonIcon
     protected framehandle handleTime
-    protected framehandle handleNumber
-    protected framehandle handleInnerIcon
     protected BoardEntity entity
 
     construct(UIHandle parent, boolean withTime, real size)
-        super(parent.self, false, true, false)
+        super(parent.self, false, true, false, true)
         setSize(size, size)
-
-        let padding = 0.002
-        let numberBackdropHeight = 0.009
-        let numberBackdrop = createUIFrame("BACKDROP", self)
-        ..setPoint(FRAMEPOINT_BOTTOMLEFT, self, FRAMEPOINT_BOTTOMLEFT, padding, padding)
-        ..setPoint(FRAMEPOINT_BOTTOMRIGHT, self, FRAMEPOINT_BOTTOMRIGHT, -padding, padding)
-        ..setHeight(numberBackdropHeight)
-        ..setTexture("UI/glues/singleplayer/humancampaign3d/black32.dds")
-        ..setAlpha(190)
-
-        handleNumber = createUIFrame("TEXT", self)
-        ..setAllPoints(numberBackdrop)
-        ..setTextAlignment(TEXT_JUSTIFY_MIDDLE, TEXT_JUSTIFY_RIGHT)
-
-        let innerIconPadding = 0.0
-        handleInnerIcon = createUIFrame("BACKDROP", self)
-        ..setPoint(FRAMEPOINT_TOPRIGHT, numberBackdrop, FRAMEPOINT_TOPRIGHT, -innerIconPadding, -innerIconPadding)
-        ..setPoint(FRAMEPOINT_BOTTOMRIGHT, numberBackdrop, FRAMEPOINT_BOTTOMRIGHT, -innerIconPadding, innerIconPadding)
-        ..setWidth(numberBackdropHeight - (innerIconPadding * 2))
-        ..setTexture("UI/BoardConsole/HeroIcon.dds")
-        ..setVisible(false)
 
         onClick() () ->
             onClickInner(GetTriggerPlayerData())
@@ -73,11 +50,9 @@ class InitiativeCommandButton extends UIButtonIcon
 
         switch(entity.getType())
             case STACK
-                handleNumber.setText(entity.toStack().stats.getAmount().toString())
-                handleInnerIcon.setVisible(false)
+                setAmount(entity.toStack().stats.getAmount())
             case HERO
-                handleNumber.setText("")
-                handleInnerIcon.setVisible(true)
+                setAmountIcon("UI/BoardConsole/HeroIcon.dds")
 
     protected function showHighlightBasedOnEntity(BoardEntity entity)
         showHighlight(entity == this.entity)

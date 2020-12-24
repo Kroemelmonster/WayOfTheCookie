@@ -7,17 +7,17 @@ import Stats
 
 public abstract class StackPassive extends Passive
     protected BoardStack stack
-    protected StackPassiveType passiveType
+    protected StackPassiveType typ
     protected StackPassiveData data
 
-    construct(BoardStack stack, StackPassiveType passiveType, StackPassiveData data)
-        super(stack, passiveType)
+    construct(BoardStack stack, StackPassiveType typ, StackPassiveData data)
+        super(stack, typ)
         this.data = data
-        this.passiveType = passiveType
+        this.typ = typ
         this.stack = stack
 
     function createTooltipLines() returns LinkedList<string>
         return createBasicTooltipLines()
-        ..addtoStart(KStringUtils_data("Tags", passiveType.getTags()))
+        ..addtoStart(KStringUtils_data("Tags", typ.getTags()))
         
     protected abstract function createBasicTooltipLines() returns LinkedList<string>

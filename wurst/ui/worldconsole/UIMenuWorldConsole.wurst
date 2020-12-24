@@ -12,7 +12,6 @@ import UIWindowNPC
 
 public class UIMenuWorldConsoleInfo
     UIExtensionArmyPanelInfo armyInfo = new UIExtensionArmyPanelInfo()
-    UIWindowNPCInfo npcInfo = new UIWindowNPCInfo()
 
 init
     Initializer.register(InitializerNames.UI) -> 

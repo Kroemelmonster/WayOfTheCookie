@@ -8,8 +8,6 @@ import initlater Hero
 import initlater HostileArmy
 import initlater Board
 import PlayerData
-import initlater UIMenuWorldConsole
-import ClosureTimers
 import initlater UIWindow
 import initlater HeroData
 

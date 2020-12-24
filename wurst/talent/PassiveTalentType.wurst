@@ -1,13 +1,11 @@
 package PassiveTalentType
 
-import PassiveType
 import Tooltip
 import BoardEntity
 import TalentType
 import PassiveTalent
 import StackPassiveType
 import Data
-import Damage
 import StackType
 
 public class PassiveTalentType extends TalentType implements HasData

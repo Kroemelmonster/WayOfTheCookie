@@ -3,14 +3,12 @@ package UISlider
 import ClosureFrames
 import UIHandle
 import UIInteractable
-import PlayerData
 
 public class UISlider extends UIInteractable
     static function create(UIHandle parent) returns UISlider
         return new UISlider(parent.self)
 
     private boolean manual = true
-
     private construct(framehandle parent)
         super(createUIFrameByName("SliderHorizontalBasic", parent, false), false)
         UIInteractable.create(getFrame("SliderHorizontalBasicThumb"))

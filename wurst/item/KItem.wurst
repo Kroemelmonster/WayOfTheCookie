@@ -6,7 +6,7 @@ import Tooltip
 import Stack
 
 public abstract class KItem
-    protected KItemType typ
+    KItemType typ
     protected KItemData data
 
     construct(KItemType itemType, KItemData data)
@@ -20,25 +20,31 @@ public abstract class KItem
     function getIcon() returns string
         return typ.getIcon()
 
+    function getName() returns string
+        return typ.getName()
+
     function getClass() returns KItemClass
         return typ.getClass()
 
+    function getLevel() returns int
+        return typ.getLevel()
+
     function toString() returns string
-        return "Item [" + typ.getName() + "]"
+        return "Item [" + getName() + "]"
 
     abstract function createTooltipLines() returns LinkedList<string>
 
     function createTooltipCost(Hero h) returns Tooltip
-        let tt = Tooltip.create(typ.getName())
+        let tt = Tooltip.create(getName())
         ..addLines(createTooltipLines())
 
         data.getCost().setupTooltipCost(tt, h)
         return tt
 
     function createTooltip() returns Tooltip
-        let tt = Tooltip.create(typ.getName())
-        ..addLine(KStringUtils.data("Level", typ.getLevel()))
-        ..addLine(typ.getClass().toString())
+        let tt = Tooltip.create(getName())
+        ..addLine(KStringUtils.data("Level", getLevel()))
+        ..addLine(getClass().toString())
         ..addLines(createTooltipLines())
 
         data.getCost().setupTooltipCost(tt)

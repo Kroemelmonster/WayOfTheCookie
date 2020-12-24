@@ -59,8 +59,7 @@ public class UIButton extends UIInteractable
             onMouseUp.onEvent()
 
     function onClick(FrameHandleListener listener)
-        if listener != null
-            onClickListener = listener
+        onClickListener = listener
 
     function onMouseDown(FrameHandleListener listener)
         if listener != null

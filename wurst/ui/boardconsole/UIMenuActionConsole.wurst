@@ -17,7 +17,7 @@ class UIBoardActionButton extends UIButtonIcon
     private Action action
 
     construct(UIHandle parent)
-        super(parent.self, true, false, true)
+        super(parent.self, true, false, true, false)
         setSize(0.037, 0.037)
 
         onClick() () -> 

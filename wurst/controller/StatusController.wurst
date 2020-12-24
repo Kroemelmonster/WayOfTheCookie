@@ -16,7 +16,7 @@ public class StatusController
         let itr = entity.statusIterator()
         while itr.hasNext() and result == null
             let b = itr.next()
-            if b.getType() == statusType
+            if b.typ == statusType
                 result = b
         destroy itr
         return result

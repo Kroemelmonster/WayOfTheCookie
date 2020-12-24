@@ -1,3 +1,5 @@
+IncludeFile "UI\FrameDef\UI\EscMenuTemplates.fdf",
+
 Frame "BACKDROP" "BACKDROP_IGNORE_EVENTS" {
 	LayerStyle "IGNORETRACKEVENTS",
 }
@@ -27,8 +29,36 @@ Frame "BACKDROP" "WindowBasicSmall" INHERITS "WindowBasic" {
 }
 
 Frame "SLIDER" "SliderHorizontalBasic" {
+    Height 0.032,
+
+    SliderMinValue 0,
+    SliderMaxValue 2,
+    SliderInitialValue 2,
+    SliderStepSize 1,
+    SliderLayoutHorizontal,
+
+    SliderThumbButtonFrame "SliderHorizontalBasicThumb",
+    Frame "BUTTON" "SliderHorizontalBasicThumb" {
+        Width 0.016,
+        Height 0.016,
+
+        ControlBackdrop "CreateGameSpeedThumbButtonBackdrop",
+        Frame "BACKDROP" "CreateGameSpeedThumbButtonBackdrop" {
+            BackdropBlendAll,
+            BackdropBackground  "UI\Widgets\Glues\SinglePlayerSkirmish-ScrollBarKnob.blp",
+        }
+
+        ControlDisabledBackdrop "CreateGameSpeedThumbButtonDisabledBackdrop",
+        Frame "BACKDROP" "CreateGameSpeedThumbButtonDisabledBackdrop" {
+            BackdropBlendAll,
+            BackdropBackground  "UI\Widgets\Glues\SinglePlayerSkirmish-ScrollBarKnobDisabled.blp",
+        }
+    }
+}
+
+Frame "SLIDER" "SliderHorizontalBasicOld" {
+    Width 0.05,
     Height 0.017,
-    Width 0.17,
     SliderLayoutHorizontal,
     SliderStepSize 1,
 
