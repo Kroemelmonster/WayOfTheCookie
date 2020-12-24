@@ -1,0 +1,6 @@
+/_build
+wurst.dependencies
+.vscode/settings.json
+*.w3x
+objectEditingOutput/
+/archive
