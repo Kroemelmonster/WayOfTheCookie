@@ -2,54 +2,97 @@ package UIInteractable
 
 import ClosureFrames
 
-import UI
 import PlayerData
 
 import initlater MouseContext
-import initlater Action
 import UIHandle
+import initlater UIWindowDropdown
+
+public abstract class InteractableListener
+    abstract function onEvent(Player p)
+
+public abstract class InteractableMouseListener
+    abstract function onEvent(Player p, mousebuttontype btnType)
 
 public class UIInteractable extends UIHandle
     static function create(framehandle self) returns UIInteractable
         return new UIInteractable(self, true)
 
-    private FrameHandleListener onMouseEnterListener
-    private FrameHandleListener onMouseLeaveListener
-    private FrameHandleListener onMouseUpListener
+    private InteractableListener onMouseEnterListener
+    private InteractableListener onMouseLeaveListener
+    private InteractableMouseListener onMouseUpListener
+    private InteractableMouseListener onMouseDownListener
+    private InteractableMouseListener onClickListener
+
+    private boolean preventBug
+    private boolean allowClickLeft = false
+    private boolean allowClickRight = false
+    private boolean allowClickMiddle = false
 
     private construct(framehandle self, boolean preventBug)
         super(self)
+        this.preventBug = preventBug
         self.onMouseEnter() () ->
             let p = GetTriggerPlayerData()
             MouseContext.enableMouseMovement(p, false)
-            onMouseEnterInner(p)
+            p.mouseOverUI = this
             if onMouseEnterListener != null
-                onMouseEnterListener.onEvent()
+                onMouseEnterListener.onEvent(p)
+                
         self.onMouseLeave() () ->
             let p = GetTriggerPlayerData()
             MouseContext.enableMouseMovement(p, true)
-            onMouseLeaveInner(p)
+            p.mouseOverUI = null
             if onMouseLeaveListener != null
-                onMouseLeaveListener.onEvent()
+                onMouseLeaveListener.onEvent(p)
 
-        
         self.onMouseUp() -> 
             if preventBug
                 preventFocusBug(GetTriggerPlayerData())
-            if onMouseUpListener != null
-                onMouseUpListener.onEvent()
 
-    protected function onMouseEnterInner(Player _p)
-    protected function onMouseLeaveInner(Player _p)
+    function triggerOnMouseDown(Player p, mousebuttontype btnType)
+        if preventBug
+            preventFocusBug(p)
+        p.mouseDownUI = this
+        if onMouseDownListener != null
+            onMouseDownListener.onEvent(p, btnType)
 
-    function onMouseEnter(FrameHandleListener listener)
+    function triggerOnMouseUp(Player p, mousebuttontype btnType)
+        if onMouseUpListener != null
+            onMouseUpListener.onEvent(p, btnType)
+        UIWindowDropdown.closeOnClick(this, p)
+        if p.mouseOverUI == this and p.mouseDownUI == this and onClickListener != null and self.isEnabled()
+            if btnType == MOUSE_BUTTON_TYPE_LEFT and allowClickLeft
+                onClickListener.onEvent(p, btnType)
+            else if btnType == MOUSE_BUTTON_TYPE_RIGHT and allowClickRight
+                onClickListener.onEvent(p, btnType)
+            else if btnType == MOUSE_BUTTON_TYPE_MIDDLE and allowClickMiddle
+                onClickListener.onEvent(p, btnType)
+
+    function enableClick(mousebuttontype btnType, boolean enable)
+        if btnType == MOUSE_BUTTON_TYPE_LEFT
+            allowClickLeft = enable
+        else if btnType == MOUSE_BUTTON_TYPE_RIGHT
+            allowClickRight = enable
+        else if btnType == MOUSE_BUTTON_TYPE_MIDDLE
+            allowClickMiddle = enable
+
+    function onMouseEnter(InteractableListener listener)
         if listener != null
             onMouseEnterListener = listener
 
-    function onMouseLeave(FrameHandleListener listener)
+    function onMouseLeave(InteractableListener listener)
         if listener != null
             onMouseLeaveListener = listener
 
-    function onMouseUp(FrameHandleListener listener)
+    function onMouseDown(InteractableMouseListener listener)
+        if listener != null
+            onMouseDownListener = listener
+
+    function onMouseUp(InteractableMouseListener listener)
         if listener != null
             onMouseUpListener = listener
+
+    function onClick(InteractableMouseListener listener)
+        if listener != null
+            onClickListener = listener

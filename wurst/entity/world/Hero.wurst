@@ -15,6 +15,7 @@ import HeroStats
 import HeroData
 import Inventory
 import SpellBook
+import StackType
 
 
 
@@ -70,7 +71,6 @@ public class Hero implements OnArmyStackChange
         interactWithNPCListener = EventListener.onCast(u, AbilityTypesIds.TARGET_UNIT_SPELL) cb ->
             World.onHeroInteractWithNPC(this, GetSpellTargetUnit())
 
-
         p.hero = this
         select()
 
@@ -89,6 +89,9 @@ public class Hero implements OnArmyStackChange
 
     function getLevel() returns int
         return level.self
+
+    function getMaxAllowedControllableStackType(StackType typ) returns int
+        return (data.getLeadership() / typ.getLeadership()).floor()
 
         /*
     function addExp(Reward reward)

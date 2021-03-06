@@ -27,8 +27,8 @@ public class UIInteractableStatInfo extends UIInteractable
         ..setPoint(FRAMEPOINT_BOTTOMRIGHT, self, FRAMEPOINT_BOTTOMRIGHT)
         ..setTextAlignment(TEXT_JUSTIFY_MIDDLE, TEXT_JUSTIFY_LEFT)
 
-        onMouseLeave() () ->
-            UITooltip.hide(GetTriggerPlayerData())
+        onMouseLeave() (p) ->
+            UITooltip.hide(p)
 
     function setIcon(string str)
         handleIcon.setTexture(str)

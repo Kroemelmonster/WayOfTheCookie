@@ -144,32 +144,12 @@ public class BoardController
 
         if entity.getConntrollingPlayer().isConntrolledByKI()
             KISystem.executeTurn(entity)
-            
-        
-    private static function getWonnedSide(Board board) returns int
-        var sideWon = -2
-        // let list = board.getAllStacks()
-        // let itr = list.iterator()
-        // TODO
-        return -1
-        /*
-        while itr.hasNext() and sideWon != -1
-            let stack = itr.next()
-            let side = board.getPlayerIndex(stack.getPlayer())
-            if sideWon == -2
-                sideWon = side
-            else if sideWon != side
-                sideWon = -1
-
-        destroy itr
-        destroy list
-        return sideWon*/
 
     static function onTurnStart(BoardEntity entity, boolean wasWaiting)
         nullTimer() ->
             let board = entity.getBoard()
-            let side = getWonnedSide(board)
-            if side == -1
+            let currentWinner = board.calculateCurrentOutcome()
+            if currentWinner == UNDECIDED
                 if wasWaiting
                     turnStartContinue(entity)
                 else
@@ -181,7 +161,7 @@ public class BoardController
                         else
                             board.getInitiative().next()
             else
-                MainController.endFight(board, side)
+                MainController.endFight(board, currentWinner)
 
     static function triggerOnCellEnterForBoardPlacement(Board board, SequenzListener next)
         let copy = board.getACopyOfAllStacks()

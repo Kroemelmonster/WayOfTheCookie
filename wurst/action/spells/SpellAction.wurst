@@ -22,19 +22,23 @@ public abstract class SpellAction extends Action
     construct(BoardHero hero, Spell spell)
         super(hero, spell.getType())
         this.spell = spell
-        setLevelTo(spell.getMaxLevel())
+        scaleLevelTo(spell.getLevel())
         this.hero = hero
         activateQuickcast(true)
 
-    function setLevelTo(int newLevel) returns boolean
+    function canScaleLevel(int newLevel) returns boolean
         if currentlyActive
             return false
-        if not newLevel.isBetween(0, spell.getMaxLevel())
+        if not newLevel.isBetween(0, spell.getLevel())
             return false
+        return true
+
+    function scaleLevelTo(int newLevel)
+        if not canScaleLevel(newLevel)
+            return
         levelIndex = newLevel
         level = spell.getLevelData(levelIndex)
         cost.setBasic(level.getUsageCost())
-        return true
 
     function getLevelIndex() returns int
         return levelIndex

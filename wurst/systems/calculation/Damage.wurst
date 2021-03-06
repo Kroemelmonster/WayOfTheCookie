@@ -104,9 +104,9 @@ public class DamagePreview extends Damage
         tooltip.addLine(KStringUtils.colored(target.getPlayer().toColor(), target.getName())
             + " : "
             + Damage.type2Icon(preview.damagePreview.damageType)
-            + " " + KStringUtils.colored(KStringUtils.COLOR_PRIMARY, preview.damage)
+            + " " + KStringUtils.colored(KStringUtils.COLOR_PRIMARY_TEXT, preview.damage)
             + "   " + KStringUtils.icon(IconName.DEATH)
-            + " " + KStringUtils.colored(KStringUtils.COLOR_NEGATIVE, preview.amount))
+            + " " + KStringUtils.colored(KStringUtils.COLOR_NEGATIVE_TEXT, preview.amount))
 
         /*
         tooltip.addLine(KStringUtils.coloredString(colorA(202, 34, 34, 20).toColorString(), target.getName() + " : ")
@@ -203,7 +203,7 @@ public class SpecificDamageInstance
             dmgStr += "!"
         var str = KStringUtils.primary(dmgStr)
         if kills > 0
-            str +=  "  " + KStringUtils.colored(KStringUtils.COLOR_NEGATIVE, kills)
+            str +=  "  " + KStringUtils.colored(KStringUtils.COLOR_NEGATIVE_TEXT, kills)
         return str 
 
     ondestroy

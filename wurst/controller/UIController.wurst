@@ -26,6 +26,7 @@ import PlayerBoardHelper
 import initlater UIWindowSkillTree
 import initlater UIWindowHero
 import initlater UIWindowSpellBook
+import UIBoardResultWindow
 
 class UIController
     static function initHero(Hero hero)
@@ -125,3 +126,13 @@ class UIController
         UIMenuWorldConsole.show(p)
         UIWindowSkillTree.get().enable(p)
         UIWindowHero.setEnabled(p, true)
+
+    static function showFightResult(Board board, BoardForceSide winner, SequenzListener next)
+        // TODO currently we only show this for the hero side
+        let leftForce = board.getBoardForce(BoardForceSide.LEFT)
+        let p = leftForce.getPlayer()
+        UIWindow.closeAll(p)
+        UIBoardResultWindow.showResult(board, winner) ->
+            Log.trace("now switch to world")
+            UIController.switchToWorld(p)
+            next.continue()

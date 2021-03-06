@@ -3,81 +3,184 @@ import UIWindow
 import UIButtonMenu
 import PlayerData
 import ClosureFrames
+import UIHandle
+import UIButton
+import UIInteractable
 
 init
     Initializer.register(InitializerNames.UI) -> 
+        Player.forEachActive() (Player p) ->
+            UIWindowDropdownOptions.create(p)
         UIWindowDropdown.create()
 
-class UIWindowDropdownOption
+constant MAX_OPTIONS = 4
+
+class UIWindowDropdownOptions
+    static UIWindowDropdownOptions array data
+    static function get(Player p) returns UIWindowDropdownOptions
+        return data[p castTo int]
+
+    static function get() returns UIWindowDropdownOptions
+        return get(GetTriggerPlayerData())
+
+    protected static function create(Player p)
+        data[p castTo int] = new UIWindowDropdownOptions(p)
+
     protected Player p
     protected int index
+
+    protected InteractableListener array[MAX_OPTIONS] onClickListener
+    protected InteractableListener array[MAX_OPTIONS] onMouseEnterListener
+    protected InteractableListener array[MAX_OPTIONS] onMouseLeaveListener
+
     construct(Player p)
         this.p = p
-        index = 0
+       
+    function reset()
+        index = -1
+        for i = 0 to MAX_OPTIONS -1
+            if onClickListener[i] != null
+                destroy onClickListener[i]
+                onClickListener[i] = null
 
-    function addOption(string btn, boolean isEnabled, FrameHandleListener listener)
-        if p.isLocal()
-            UIWindowDropdown.btns[index].setText(btn)
-            UIWindowDropdown.btns[index].setEnabled(isEnabled)
-            UIWindowDropdown.btns[index].onClick() -> 
-                listener.onEvent()
-                UIWindowDropdown.close(GetTriggerPlayerData())
+            if onMouseEnterListener[i] != null
+                destroy onMouseEnterListener[i]
+                onMouseEnterListener[i] = null
 
-            UIWindowDropdown.btns[index].setVisible(true)
-            UIWindowDropdown.window.setHeight(((index + 1) * 0.02) + (index * UIWindowDropdown.padding))
+            if onMouseLeaveListener[i] != null
+                destroy onMouseLeaveListener[i]
+                onMouseLeaveListener[i] = null
+
+    function addOption(string btn, boolean isEnabled, InteractableListener listener)
+        addOption(btn, "", isEnabled, listener)
+
+    function addOption(string btn, string shortcut, boolean isEnabled, InteractableListener listener)
         index ++
+        onClickListener[index] = listener
+        if p.isLocal()
+            UIWindowDropdown.btns[index].setText(btn, shortcut)
+            UIWindowDropdown.btns[index].setEnabled(isEnabled)
+            UIWindowDropdown.btns[index].setVisible(true)
+            UIWindowDropdown.window.setHeight((index + 1) * UIWindowDropdown.BUTTON_HEIGHT)
+        
+        onClickListener[index] = listener
 
+    function onMouseEnter(InteractableListener listener)
+        onMouseEnterListener[index] = listener
+        
+    function onMouseLeave(InteractableListener listener)
+        onMouseLeaveListener[index] = listener
+    
     function open()
         UIWindowDropdown.window.open(p)
-        destroy this
 
 public enum DropDownAnchor
     TOP
     DOWN
 
+class UIDropDownButton extends UIButton
+    protected static real buttonHeight = 0.02
+
+    protected int index
+    protected framehandle handleTextName
+    protected framehandle handleTextShortCut
+
+    construct(UIHandle parent, int index)
+        super(createUIFrameByName("DropDownButton", parent, false))
+        setHeight(buttonHeight)
+        setVisible(false)
+
+        this.index = index
+
+        onClick() (Player p, mousebuttontype btnType) ->
+            let options = UIWindowDropdownOptions.get(p)
+            options.onClickListener[index].onEvent(p)
+
+        onMouseEnter() (Player p) ->
+            if p.isLocal()
+                setTexture("UI/Button/DropDownBackgroundHighlight.dds")
+            let options = UIWindowDropdownOptions.get(p)
+            if options.onMouseEnterListener[index] != null
+                options.onMouseEnterListener[index].onEvent(p)
+
+        onMouseLeave() (Player p) ->
+            if p.isLocal()
+                setTexture("UI/Button/DropDownBackground.dds")
+            let options = UIWindowDropdownOptions.get(p)
+            if options.onMouseLeaveListener[index] != null
+                options.onMouseLeaveListener[index].onEvent(p)
+
+        handleTextShortCut = createUIFrame("TEXT", this)
+        ..setPoint(FRAMEPOINT_BOTTOMLEFT, self, FRAMEPOINT_BOTTOMRIGHT, -0.03, 0)
+        ..setPoint(FRAMEPOINT_TOPRIGHT, self, FRAMEPOINT_TOPRIGHT, -0.004, 0)
+        ..setTextColor(colorA(150,150,150,255))
+        ..setTextAlignment(TEXT_JUSTIFY_MIDDLE, TEXT_JUSTIFY_RIGHT)
+        ..setText("Click")
+        ..setScale(0.7)
+
+        handleTextName = createUIFrame("TEXT", this)
+        ..setPoint(FRAMEPOINT_TOPLEFT, self, FRAMEPOINT_TOPLEFT, 0.001, 0)
+        ..setPoint(FRAMEPOINT_BOTTOMRIGHT, handleTextShortCut, FRAMEPOINT_BOTTOMLEFT, -0.001, 0)
+        ..setText("Actionhere")
+        ..setTextAlignment(TEXT_JUSTIFY_MIDDLE, TEXT_JUSTIFY_LEFT)
+        
+    function setText(string text, string shortcut)
+        handleTextName.setText(text)
+        handleTextShortCut.setText(shortcut)
+
 public class UIWindowDropdown
     protected static UIWindow window
-    protected static UIButtonMenu array[4] btns
-    protected static real padding = 0.001
+    protected static UIDropDownButton array[MAX_OPTIONS] btns
+
+    protected static constant real BUTTON_HEIGHT = 0.02
+    protected static constant real BUTTON_WIDTH = 0.1
+    protected static constant real DISTANCE_TO_ANCHOR = 0.00
 
     static function create()
         window = UIWindow.create("DropDown")
         ..setPointToConsoleUI(FRAMEPOINT_TOP, FRAMEPOINT_TOP)
-        ..setWidth(0.07)
+        ..setWidth(BUTTON_WIDTH)
         ..setLevel(101)
 
-        window.onClose() (Player p) ->
-            if p.isLocal()
-                for i = 0 to 4
-                    btns[0].setVisible(false)
-
-        btns[0] = UIButtonMenu.create(window, "")
+        btns[0] = new UIDropDownButton(window, 0)
         ..setPoint(FRAMEPOINT_BOTTOMLEFT, window, FRAMEPOINT_BOTTOMLEFT)
         ..setPoint(FRAMEPOINT_BOTTOMRIGHT, window, FRAMEPOINT_BOTTOMRIGHT)
-        ..setHeight(0.02)
 
         for i = 1 to 4
-            btns[i] = UIButtonMenu.create(window, "")
-            ..setPoint(FRAMEPOINT_BOTTOMLEFT, btns[i - 1], FRAMEPOINT_TOPLEFT, 0, padding)
-            ..setPoint(FRAMEPOINT_BOTTOMRIGHT, btns[i - 1], FRAMEPOINT_BOTTOMRIGHT, 0, padding)
-            ..setVisible(false)
-            ..setHeight(0.02)
-                
+            btns[i] = new UIDropDownButton(window, i)
+            ..setPoint(FRAMEPOINT_BOTTOMLEFT, btns[i - 1], FRAMEPOINT_TOPLEFT)
+            ..setPoint(FRAMEPOINT_BOTTOMRIGHT, btns[i - 1], FRAMEPOINT_BOTTOMRIGHT)
 
-    static function start(Player p, framehandle reference) returns UIWindowDropdownOption
+        let padding = 0.002
+        createUIFrameByName("DropDownBackground", window, false)
+        ..setPoint(FRAMEPOINT_TOPLEFT, window, FRAMEPOINT_TOPLEFT, -padding, padding)
+        ..setPoint(FRAMEPOINT_BOTTOMRIGHT, window, FRAMEPOINT_BOTTOMRIGHT, padding, -padding)
+
+    static function start(Player p, framehandle reference) returns UIWindowDropdownOptions
         return start(p, reference, DropDownAnchor.TOP)
 
-    static function start(Player p, framehandle reference, DropDownAnchor anchor) returns UIWindowDropdownOption
+    static function start(Player p, framehandle reference, DropDownAnchor anchor) returns UIWindowDropdownOptions
         if p.isLocal()
             window.clearAllPoints()
             if anchor == TOP
-                window.setPoint(FRAMEPOINT_BOTTOM, reference, FRAMEPOINT_TOP, 0, 0.003)
+                window.setPoint(FRAMEPOINT_BOTTOM, reference, FRAMEPOINT_TOP, 0, DISTANCE_TO_ANCHOR)
             else
-                window.setPoint(FRAMEPOINT_TOP, reference, FRAMEPOINT_BOTTOM, 0, -0.003)
-        return new UIWindowDropdownOption(p)
+                window.setPoint(FRAMEPOINT_TOP, reference, FRAMEPOINT_BOTTOM, 0, -DISTANCE_TO_ANCHOR)
+            for i = 0 to 4
+                btns[i].setVisible(false)
+
+        let options = UIWindowDropdownOptions.get(p)
+        options.reset()
+        return options
+
+    /** DONT USE THIS!
+        This will try to close the DropDown Popup when you click on anything
+    **/
+    static function closeOnClick(UIInteractable _clickedOnThis, Player p)
+        // TODO with the _clickedOnThis we can sometimes allow to not close the popup
+        close(p)
 
     static function close(Player p)
         window.close(p)
-
 
         

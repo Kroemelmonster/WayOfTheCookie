@@ -98,6 +98,9 @@ public class UIHandle
     function isVisible() returns boolean
         return self.isVisible()
 
+    function isEnabled() returns boolean
+        return self.isEnabled()
+
     ondestroy
         Log.error("DONT DESTROY SUCH A THING WTF ?")
 

@@ -1,14 +1,14 @@
-package UIProgressBar
+package UISimpleProgressBar
 import UIWindow
 import UIHandle
 
-public class UIProgressBar extends UIHandle
-    static function create(string bar, UIMenu parent) returns UIProgressBar
-        return new UIProgressBar(bar, parent)
+public class UISimpleProgressBar extends UIHandle
+    static function create(string bar, UIMouseBlockElement parent) returns UISimpleProgressBar
+        return new UISimpleProgressBar(bar, parent)
 
     private framehandle textHandle
 
-    construct(string bar, UIMenu parent)
+    construct(string bar, UIMouseBlockElement parent)
         super(createUIFrameByName(bar, parent, true))
         parent.addSimpleFrame(self)
 

@@ -7,6 +7,8 @@ import Cell
 
 import MouseContext
 import UIWindow
+import UIDialog
+import UIWindowDropdown
 
 init
     Initializer.register(InitializerNames.SYSTEM) -> 
@@ -25,8 +27,9 @@ class Mouse3DPositionSystem
         EventListener.add(EVENT_PLAYER_MOUSE_DOWN)  ->
             let p = GetTriggerPlayerData()
             p.mousePressed = true
-            if p.mouseOverButton != null
-                p.mouseOverButton.triggerOnMouseDown()
+            p.mousePressedOverSmth = p.mouseOverUI != null
+            if p.mousePressedOverSmth
+                p.mouseOverUI.triggerOnMouseDown(p, BlzGetTriggerPlayerMouseButton())
 
         EventListener.add(EVENT_PLAYER_MOUSE_UP)  ->
             let x = BlzGetTriggerPlayerMouseX()
@@ -38,8 +41,8 @@ class Mouse3DPositionSystem
                 if p.mousePressedIndex > 10000
                     p.mousePressedIndex = 0
 
-            if p.mouseOverButton != null
-                p.mouseOverButton.triggerOnMouseUp()
+            if p.mouseOverUI != null
+                p.mouseOverUI.triggerOnMouseUp(p, BlzGetTriggerPlayerMouseButton())
             else if x != 0.0 and y != 0.0
                 onMouseEvent(vec2(x, y), p, true)
         
@@ -58,11 +61,19 @@ class Mouse3DPositionSystem
         if not canPlayerInteract(p)
             return
     
-        mousebuttontype btn = null
+        let btn = BlzGetTriggerPlayerMouseButton()
         if isClickEvent
-            btn = BlzGetTriggerPlayerMouseButton()
-            if btn == MOUSE_BUTTON_TYPE_LEFT
-                UIWindow.closeAll(GetTriggerPlayerData())
+            if not p.mousePressedOverSmth
+                /* when we click outside of a window AND the mouse Down Event was not inside one interactable
+                    this helps in this scenario : mouse down on a slider, you can now copntroll the value 
+                    relative to where your mouse is. EVEN if your mouse is outside the slider.null
+                    This means if you would not check for p.mousePressedOverSmth
+                    And move your mouse outside of a window while changing a slider the window will close.. */
+                /*
+                if btn == MOUSE_BUTTON_TYPE_LEFT 
+                    TODO do we still need to check for this ?   
+                */
+                UIWindow.closeAll(p)
 
         if not p.isPlayingOnABoard()
             return

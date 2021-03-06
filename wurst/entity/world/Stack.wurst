@@ -41,9 +41,10 @@ public class ArmyStack extends Stack
 public interface OnArmyStackChange
     function onArmyStackChange(ArmyStack stack)
 
+public constant ARMY_SIZE = 5
+
 public class Army
-    static constant MAX_SIZE = 5
-    protected ArmyStack array[MAX_SIZE + 1] stacks
+    protected ArmyStack array[ARMY_SIZE] stacks
     protected HeroStats heroStats
     protected OnArmyStackChange onChange
 
@@ -130,6 +131,20 @@ public class Army
             if stacks[i] != null
                 return stacks[i]
         return null
+
+    function countCurrentAmountOfControlledStackType(StackType stackTyp) returns int
+        var count = 0
+        for i = 0 to stacks.length - 1
+            if stacks[i] != null and stacks[i].typ == stackTyp
+                count += stacks[i].amount
+        return count
+
+    function canAddStackType(StackType stackType) returns boolean
+        var count = 0
+        for i = 0 to stacks.length - 1
+            if stacks[i] != null and stacks[i].typ != stackType
+                count ++
+        return count < ARMY_SIZE
 
     function toString() returns string
         var str = "Army [ "

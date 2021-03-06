@@ -7,3 +7,14 @@ Frame "TEXT" "SpellBookBigText" {
     LayerStyle "IGNORETRACKEVENTS",
 	FrameFont "Fonts\frizqt__.ttf", 0.02, "",
 }
+
+Frame "SIMPLESTATUSBAR" "BigLevelProgressBar" {
+    BarTexture "UI\Console\BigLevelProgressFill.dds",
+    Width 0.07,
+    Height 0.012,
+    Layer "BACKGROUND" {
+        Texture "CustomBarBackground" {
+            File "UI\Console\BigLevelProgressBackground.dds",
+        }
+    }
+}

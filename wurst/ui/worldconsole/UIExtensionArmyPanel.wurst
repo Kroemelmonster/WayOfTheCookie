@@ -46,31 +46,28 @@ class UIExtensionArmyButton extends UIButtonIcon
         super(parent.self, true, false, false, true)
         setSize(0.0413, 0.0413)
         this.index = index
+        enableClick(MOUSE_BUTTON_TYPE_RIGHT, true)
 
-        onClick() ->
-            let p = GetTriggerPlayerData()
+        onClick() (p, mouseBtn) -> 
             // TODO auslagern
             let stack = p.worldConsoleInfo.armyInfo.army.getAt(index)
             if stack != null
-                UIWindowEntity.open(p, stack)
+                if mouseBtn == MOUSE_BUTTON_TYPE_LEFT
+                    actionOpenStackInfo(p, stack)
+                else if mouseBtn == MOUSE_BUTTON_TYPE_RIGHT
+                    openDropDown(p, stack)
 
-        onMouseDown() -> 
-            let mouseBtn = BlzGetTriggerPlayerMouseButton()
+        onMouseDown() (p, mouseBtn) -> 
             if mouseBtn == MOUSE_BUTTON_TYPE_LEFT
-                let p = GetTriggerPlayerData()
                 let info = p.worldConsoleInfo.armyInfo
                 info.setupDragStart(index)
                 info.startDragMousePressedIndex = p.mousePressedIndex
 
-        onMouseUp() -> 
-            let p = GetTriggerPlayerData()
+        onMouseUp() (p, mouseBtn) -> 
             let info = p.worldConsoleInfo.armyInfo
-            let mouseBtn = BlzGetTriggerPlayerMouseButton()
             if mouseBtn == MOUSE_BUTTON_TYPE_LEFT
                 UIExtensionArmyPanel.dragEnd(p)
                 info.startDragMousePressedIndex  = -1
-            else if mouseBtn == MOUSE_BUTTON_TYPE_RIGHT
-                openDropDown(GetTriggerPlayerData(), info.army.getAt(index))
                     
                 /*
                 let stack = info.army.getAt(index)
@@ -78,8 +75,7 @@ class UIExtensionArmyButton extends UIButtonIcon
                     UIDialogSplitStack.open(p, stack)
                     */
             
-        onMouseEnter() -> 
-            let p = GetTriggerPlayerData()
+        onMouseEnter() (p) -> 
             let info = p.worldConsoleInfo.armyInfo
 
             if info.dragStart >= 0
@@ -87,16 +83,27 @@ class UIExtensionArmyButton extends UIButtonIcon
 
     override function disable()
         super.disable()
-        setBackground("Icons/BTNDotted.dds")
+        setTexture("Icons/BTNDotted.dds")
+
+    protected function actionOpenStackInfo(Player p, ArmyStack stack)
+        UIWindowEntity.open(p, stack)
+
+    protected function actionSplitStack(Player p, ArmyStack stack)
+        UIDialogSplitStack.open(p, stack)
+
+    protected function actionDeleteStack(Player p, ArmyStack stack)
+        p.hero.army.remove(stack)
 
     protected function openDropDown(Player p, ArmyStack stack)
         if stack == null
             return
         let dropDown = UIWindowDropdown.start(p, this.self)
-        dropDown.addOption("Split", stack.getAmount() > 1) ->
-            UIDialogSplitStack.open(p, stack)
-        dropDown.addOption("Delete", true) ->
-            p.hero.army.remove(stack)
+        dropDown.addOption("Info", true) (p) ->
+            actionOpenStackInfo(p, stack)
+        dropDown.addOption("Split", stack.getAmount() > 1) (p) ->
+            actionSplitStack(p, stack)
+        dropDown.addOption("Delete", true) (p) ->
+            actionDeleteStack(p, stack)
         dropDown.open()
     
     protected function draw(UIExtensionArmyPanelInfo info)
@@ -107,7 +114,7 @@ class UIExtensionArmyButton extends UIButtonIcon
         if info.dragStart == index
             // zeige das an was auf dragEnd ist an
             if info.stackDragEnd != null
-                setBackground(info.stackDragEnd.typ.getIcon())
+                setTexture(info.stackDragEnd.typ.getIcon())
                 setAmount(info.stackDragEnd.getAmount())
                 // sind die nicht identisch wird es ein swap ansonten haben wir gerade einfach nur den normalen status angezeigt
                 if info.stackDragEnd != info.stackDragStart
@@ -118,12 +125,12 @@ class UIExtensionArmyButton extends UIButtonIcon
         else if info.dragEnd == index
             // zeige das was auf dragStart ist an außer das sind wir selber
             if info.stackDragStart != info.stackDragEnd
-                setBackground(info.stackDragStart.typ.getIcon())
+                setTexture(info.stackDragStart.typ.getIcon())
                 setAmount(info.stackDragStart.getAmount())
                 setAlpha(80)
         else if stack != null
             // there is not drag but maybe there is astack to show
-            setBackground(stack.typ.getIcon())
+            setTexture(stack.typ.getIcon())
             setAmount(stack.getAmount())
         else
             // there is nothing sooo ?
@@ -131,15 +138,13 @@ class UIExtensionArmyButton extends UIButtonIcon
 
 
 public class UIExtensionArmyPanel
-    protected static UIExtensionArmyButton array[5] btns
+    protected static UIExtensionArmyButton array[ARMY_SIZE] btns
     // protected static UIStackSplitDialog dialogStackSplit
 
     static function create(UIMenu leftMenu) returns UIMenu
         let element = UIMenu.create(leftMenu)
         ..setPoint(FRAMEPOINT_BOTTOMLEFT, leftMenu, FRAMEPOINT_BOTTOMRIGHT)
         ..setSize(0.258, 0.076)
-
-        UIDialogSplitStack.create()
         
         createUIFrame("BACKDROP", element)
         ..setAllPoints(element)
@@ -148,7 +153,7 @@ public class UIExtensionArmyPanel
         btns[0] = new UIExtensionArmyButton(element, 0)
         ..setPoint(FRAMEPOINT_BOTTOMLEFT, element, FRAMEPOINT_BOTTOMLEFT, 0.011, 0.007)
         
-        for int i = 1 to Army.MAX_SIZE - 1
+        for i = 1 to ARMY_SIZE - 1
             btns[i] = new UIExtensionArmyButton(element, i)
             ..setPoint(FRAMEPOINT_LEFT, btns[i - 1], FRAMEPOINT_RIGHT, 0.002, 0)
 
@@ -181,7 +186,7 @@ public class UIExtensionArmyPanel
         if not p.isLocal()
             return
 
-        for i = 0 to Army.MAX_SIZE - 1
+        for i = 0 to ARMY_SIZE - 1
             btns[i].draw(info)
         
     protected static function dragEnd(Player p)

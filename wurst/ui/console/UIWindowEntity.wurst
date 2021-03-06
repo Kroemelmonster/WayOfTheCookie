@@ -100,12 +100,11 @@ class UITalent extends UIInteractable
         hanldeIcon = createUIFrame("BACKDROP", self)
         ..setAllPoints(self)
 
-        onMouseEnter() () ->
-            let p = GetTriggerPlayerData()
+        onMouseEnter() (p) ->
             UITooltip.display(p, 
                 talent.createTooltip(UIWindowEntityInfo.getEntityStats(p)), TooltipAnchor.LEFT_BOTTOM , self)
-        onMouseLeave() ->
-            UITooltip.hide(GetTriggerPlayerData())
+        onMouseLeave() (p) ->
+            UITooltip.hide(p)
 
     protected function setStat(TalentStats talent)
         setVisible(true)
@@ -128,11 +127,11 @@ class UIStatus extends UIInteractable
         hanldeIcon = createUIFrame("BACKDROP", self)
         ..setAllPoints(self)
 
-        onMouseEnter() () ->
-            UITooltip.display(GetTriggerPlayerData(), 
+        onMouseEnter() (p) ->
+            UITooltip.display(p, 
                 status.createTooltip(), TooltipAnchor.LEFT_BOTTOM , self)
-        onMouseLeave() ->
-            UITooltip.hide(GetTriggerPlayerData())
+        onMouseLeave() (p) ->
+            UITooltip.hide(p)
 
     protected function setStat(StatusStats status)
         setVisible(true)
@@ -176,49 +175,47 @@ public class UIWindowEntity
         ..setInnerPoint(FRAMEPOINT_TOPLEFT, window, FRAMEPOINT_TOPLEFT, 0, -(iconSize + infoPadding))
         ..setInnerPoint(FRAMEPOINT_TOPRIGHT, window, FRAMEPOINT_TOP, 0,  -(iconSize + infoPadding))
         ..setIcon("ICONS/STATAttack.dds")
-        ..onMouseEnter() -> 
+        ..onMouseEnter() (p) -> 
             let tt = Tooltip.create("Attack")
             Description.extendTooltip(tt, "Attack")
-            UITooltip.display(GetTriggerPlayerData(), tt, TooltipAnchor.LEFT_BOTTOM , infoAttack)
+            UITooltip.display(p, tt, TooltipAnchor.LEFT_BOTTOM , infoAttack)
 
         infoDefence = UIInteractableStatInfo.create(window)
         ..setInnerPoint(FRAMEPOINT_TOPLEFT, window, FRAMEPOINT_TOP, 0,  -(iconSize + infoPadding))
         ..setInnerPoint(FRAMEPOINT_TOPRIGHT, window, FRAMEPOINT_TOPRIGHT, 0,  -(iconSize + infoPadding))
         ..setIcon("ICONS/STATDefence.dds")
-        ..onMouseEnter() -> 
+        ..onMouseEnter() (p) -> 
             let tt = Tooltip.create("Defence")
             Description.extendTooltip(tt, "Defence")
             tt.addLine("-----")
-            let p = GetTriggerPlayerData()
             UIWindowEntityInfo.getResistance(p).extendTooltip(tt)
             UITooltip.display(p, tt, TooltipAnchor.LEFT_BOTTOM , infoDefence)
 
         infoDamage = UIInteractableStatInfo.create(window)
         ..setPoint(FRAMEPOINT_TOPLEFT, infoAttack, FRAMEPOINT_BOTTOMLEFT, 0, -infoPadding)
         ..setPoint(FRAMEPOINT_TOPRIGHT, infoAttack, FRAMEPOINT_BOTTOMRIGHT, 0, -infoPadding)
-        ..onMouseEnter() -> 
+        ..onMouseEnter() (p) -> 
             let tt = Tooltip.create("Damage")
             Description.extendTooltip(tt, "Damage")
-            UITooltip.display(GetTriggerPlayerData(), tt, TooltipAnchor.LEFT_BOTTOM , infoDamage)
+            UITooltip.display(p, tt, TooltipAnchor.LEFT_BOTTOM , infoDamage)
 
         infoRange = UIInteractableStatInfo.create(window)
         ..setPoint(FRAMEPOINT_TOPLEFT, infoDefence, FRAMEPOINT_BOTTOMLEFT, 0, -infoPadding)
         ..setPoint(FRAMEPOINT_TOPRIGHT, infoDefence, FRAMEPOINT_BOTTOMRIGHT, 0, -infoPadding)
         ..setIcon("ICONS/STATRange.dds")
-        ..onMouseEnter() -> 
+        ..onMouseEnter() (p) -> 
             let tt = Tooltip.create("Range")
             Description.extendTooltip(tt, "Range")
-            UITooltip.display(GetTriggerPlayerData(), tt, TooltipAnchor.LEFT_BOTTOM , infoRange)
+            UITooltip.display(p, tt, TooltipAnchor.LEFT_BOTTOM , infoRange)
 
         infoInititaive = UIInteractableStatInfo.create(window)
         ..setPoint(FRAMEPOINT_TOPLEFT, infoDamage, FRAMEPOINT_BOTTOMLEFT, 0, -infoPadding)
         ..setPoint(FRAMEPOINT_TOPRIGHT, infoDamage, FRAMEPOINT_BOTTOMRIGHT, 0, -infoPadding)
         ..setIcon("ICONS/STATInitiative.dds")
-        ..onMouseEnter() -> 
+        ..onMouseEnter() (p) -> 
             let tt = Tooltip.create("Initiative")
             Description.extendTooltip(tt, "Initiative")
             tt.addLine("-----")
-            let p = GetTriggerPlayerData()
             InitiativeList.extendTooltip(tt, UIWindowEntityInfo.getInitiative(p).value())
             UITooltip.display(p, tt, TooltipAnchor.LEFT_BOTTOM , infoInititaive)
 
@@ -226,25 +223,25 @@ public class UIWindowEntity
         ..setPoint(FRAMEPOINT_TOPLEFT, infoRange, FRAMEPOINT_BOTTOMLEFT, 0, -infoPadding)
         ..setPoint(FRAMEPOINT_TOPRIGHT, infoRange, FRAMEPOINT_BOTTOMRIGHT, 0, -infoPadding)
         ..setIcon("ICONS/STATActionpoints.dds")
-        ..onMouseEnter() -> 
+        ..onMouseEnter() (p) -> 
             let tt = Tooltip.create("ActionPoints")
             Description.extendTooltip(tt, "ActionPoints")
-            UITooltip.display(GetTriggerPlayerData(), tt, TooltipAnchor.LEFT_BOTTOM , infoAP)
+            UITooltip.display(p, tt, TooltipAnchor.LEFT_BOTTOM , infoAP)
 
         infoHP = UIInteractableStatInfo.create(window)
         ..setPoint(FRAMEPOINT_TOPLEFT, infoInititaive, FRAMEPOINT_BOTTOMLEFT, 0, -infoPadding)
         ..setPoint(FRAMEPOINT_TOPRIGHT, infoInititaive, FRAMEPOINT_BOTTOMRIGHT, 0, -infoPadding)
         ..setIcon("ICONS/STATHp.dds")
-        ..onMouseEnter() -> 
+        ..onMouseEnter() (p) -> 
             let tt = Tooltip.create("HitPoints")
             Description.extendTooltip(tt, "HitPoints")
-            UITooltip.display(GetTriggerPlayerData(), tt, TooltipAnchor.LEFT_BOTTOM , infoHP)
+            UITooltip.display(p, tt, TooltipAnchor.LEFT_BOTTOM , infoHP)
 
         infoLeadership = UIInteractableStatInfo.create(window)
         ..setPoint(FRAMEPOINT_TOPLEFT, infoAP, FRAMEPOINT_BOTTOMLEFT, 0, -infoPadding)
         ..setPoint(FRAMEPOINT_TOPRIGHT, infoAP, FRAMEPOINT_BOTTOMRIGHT, 0, -infoPadding)
         ..setIcon("ICONS/STATLeadership.dds")
-        ..onMouseEnter() -> 
+        ..onMouseEnter() (p) ->  
             let tt = Tooltip.create("Leadership")
             Description.extendTooltip(tt, "Leadership")
             // TODO advanced like this :
@@ -260,7 +257,7 @@ public class UIWindowEntity
             stackInfoLeadership.setTooltipLine(3, "You can still controll "
              + Tooltip.primaryString(p.hero.getMaxAmountOfStackTypeRemainingBasedOnLeadership(stackType).toString())
              + " more Stacks of " + Tooltip.secondaryString(stackType.name) + ".")*/
-            UITooltip.display(GetTriggerPlayerData(), tt, TooltipAnchor.LEFT_BOTTOM , infoLeadership)
+            UITooltip.display(p, tt, TooltipAnchor.LEFT_BOTTOM , infoLeadership)
         
         let paddingSmallerIcons = 0.002
 
@@ -360,9 +357,9 @@ public class UIWindowEntity
         if modifiedMoveAP > 0 and modifiedMoveAP != modifiedAP
             str += " | "
             if modifiedMoveAP > modifiedAP
-                str += KStringUtils.colored(KStringUtils.COLOR_POSITIVE, " " + modifiedMoveAP.toString())
+                str += KStringUtils.colored(KStringUtils.COLOR_POSITIVE_TEXT, " " + modifiedMoveAP.toString())
             else
-                str += KStringUtils.colored(KStringUtils.COLOR_NEGATIVE, " " + modifiedMoveAP.toString())
+                str += KStringUtils.colored(KStringUtils.COLOR_NEGATIVE_TEXT, " " + modifiedMoveAP.toString())
         return str
 
     /*

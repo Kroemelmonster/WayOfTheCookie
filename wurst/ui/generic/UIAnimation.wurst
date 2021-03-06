@@ -1,0 +1,63 @@
+package UIAnimation
+
+import Scheduler
+import UIHandle
+import PlayerData
+import BoardTrigger
+import Animation
+
+init
+    Initializer.register(InitializerNames.UI) -> 
+        Scheduler.onAnimTick() (Player p) ->
+            UIAnimation.tickAll(ANIMATION_PERIOD)
+
+public abstract class AnimationListener
+    abstract function onEvent(Player p, Animation anim)
+
+public class UIAnimation
+    private static LinkedList<UIAnimation> currentAnims = new LinkedList<UIAnimation>
+
+    protected Player p
+    protected real cur1
+    protected real max1
+
+    protected real time
+    protected AnimationListener onTick
+
+    static function createForOne(Player p, real cur1, real max1, AnimationListener onTick) returns UIAnimation
+        if not p.isActive()
+            Log.error("tried to create an UIAnimation for an non active player")
+            return null
+        let anim = new UIAnimation(p, onTick)
+        anim.cur1 = cur1
+        anim.max1 = max1
+        return anim
+
+    static function tickAll(real delta)
+        let itr = currentAnims.iterator()
+        while itr.hasNext()
+            let next = itr.next()
+            if next.tick(delta)
+                itr.remove()
+
+        destroy itr
+
+    construct (Player p, AnimationListener onTick)
+        this.p = p
+        this.onTick = onTick
+
+    function start(real timeToFinish)
+        if currentAnims.has(this)
+            Log.error("tried to start an UIAnimation but it is allready started")
+        time = timeToFinish
+        currentAnims.add(this)
+    
+    protected function tick(real delta) returns boolean
+        time -= delta
+
+        return time < delta
+        
+        
+    ondestroy
+        currentAnims.remove(this)
+        destroy onTick

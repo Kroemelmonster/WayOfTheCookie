@@ -26,28 +26,31 @@ public class Spell
     static function getBaseMultiFromPower(int power) returns real
         return (power * DAMAGE_PER_SPELLPOWER / 100.0)
 
-    protected SpellType spellType
+    protected SpellType typ
     protected Hero hero
 
     protected int level = 0
     
     protected boolean quickCast = false
 
-    construct(SpellType spellType, Hero hero)
-        this.spellType = spellType
+    construct(SpellType typ, Hero hero)
+        this.typ = typ
         this.hero = hero
 
     function create(BoardHero hero) returns SpellAction
-        return spellType.createAction(hero, this)
+        return typ.createAction(hero, this)
 
-    function getMaxLevel() returns int
+    function getLevel() returns int
         return level
 
+    function getMaxLevel() returns int
+        return typ.getMaxLevel()
+
     function getLevelData(int level) returns SpellLevel
-        return spellType.getLevel(level)
+        return typ.getLevel(level)
 
     function canLevelUp() returns boolean
-        if level >= spellType.getMaxLevel()
+        if level >= typ.getMaxLevel()
             return false
         return getLevelData(level + 1).levelCost.canPay(hero)
 
@@ -59,21 +62,21 @@ public class Spell
         return true
 
     function getName() returns string
-        return spellType.getName()
+        return typ.getName()
 
     function getIcon() returns string
-        return spellType.getIcon()
+        return typ.getIcon()
 
     function getExtendedName() returns string
         return getName() + " [" + (level + 1).toString() + "]"
 
     function getType() returns SpellType
-        return spellType
+        return typ
 
 /* -------------------------------------------------------------------------- */
 
     function createTooltip(int level, HasHeroStats stats, boolean showLevelCost) returns Tooltip
-        return spellType.createTooltip(hero, stats, level, showLevelCost)
+        return typ.createTooltip(hero, stats, level, showLevelCost)
 
     function createTooltip(int level, boolean showLevelCost) returns Tooltip
         return createTooltip(level, hero.stats, showLevelCost)
@@ -82,7 +85,7 @@ public class Spell
         return createTooltip(level, hero.stats, showLevelCost)
 
     function createTooltipLines(SpellLevel level) returns LinkedList<string>
-        return spellType.createTooltipLines(level, hero.stats)
+        return typ.createTooltipLines(level, hero.stats)
 
 
 

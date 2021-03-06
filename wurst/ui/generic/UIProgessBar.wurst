@@ -1,0 +1,91 @@
+package UIProgessBar
+import UIInteractable
+import UIHandle
+import PlayerData
+import UIButton
+import UIAnimation
+import Animation
+
+public enum UIProgressType
+    REWARD_EXPBAR
+
+public class UIProgressBar extends UIButton
+    static function create(framehandle parent, UIProgressType typ, real width, real height) returns UIProgressBar
+        return new UIProgressBar(parent, typ, width, height)
+
+    private real value = 0.5
+
+    private real width
+    private real paddingX
+    private framehandle handleBlackMask
+    private framehandle handleText
+
+    private static function createBase(framehandle parent, UIProgressType _typ, real width, real height) returns framehandle
+        return UIButton.createBasicButtonFrame(false, parent)
+        ..setSize(width, height)
+        ..setPoint(FRAMEPOINT_BOTTOM, parent, FRAMEPOINT_BOTTOM, 0, 0.15)
+
+    private construct(framehandle parent, UIProgressType _typ, real width, real height)
+        super(createBase(parent, _typ, width, height))
+        setTexture("UI/Console/BigLevelProgressFill.dds")
+
+        this.width = width
+        paddingX = 0.004
+        handleBlackMask = createUIFrame("BACKDROP", self)
+        ..setPoint(FRAMEPOINT_TOPRIGHT, self, FRAMEPOINT_TOPRIGHT, -paddingX, -0.002)
+        ..setPoint(FRAMEPOINT_BOTTOMRIGHT, self, FRAMEPOINT_BOTTOMRIGHT, -paddingX, 0.003)
+        ..setTexture("ui/glues/singleplayer/humancampaign3d/black32.dds")
+
+        createUIFrame("BACKDROP", self)
+        ..setAllPoints(self)
+        ..setTexture("UI/Console/BigLevelProgressBackground.dds")
+
+        handleText = createUIFrame("TEXT", self)
+        ..setAllPoints(self)
+        ..setTextAlignment(TEXT_JUSTIFY_MIDDLE, TEXT_JUSTIFY_CENTER)
+        ..setText("Level 2")
+
+        onClick() (Player p, mousebuttontype btnType) ->
+            Log.trace("hello")
+
+        /*
+        let dude = createUIFrame("BACKDROP", parent, true)
+        ..setSize(width, height)
+        ..setPoint(FRAMEPOINT_BOTTOM, parent, FRAMEPOINT_BOTTOM, 0, 0.15)
+        ..setTexture("UI/Console/BigLevelProgressFill.dds")
+
+        let blackMask = createUIFrame("BACKDROP", parent)
+        ..setPoint(FRAMEPOINT_TOPRIGHT, dude, FRAMEPOINT_TOPRIGHT, -paddingX, -0.003)
+        ..setPoint(FRAMEPOINT_BOTTOMRIGHT, dude, FRAMEPOINT_BOTTOMRIGHT, -paddingX, 0.005)
+        ..setWidth(0.2)
+        ..setTexture("ui/glues/singleplayer/humancampaign3d/black32.dds")
+
+        createUIFrame("BACKDROP", parent)
+        ..setAllPoints(dude)
+        ..setTexture("UI/Console/BigLevelProgressBackground.dds")
+        */
+
+    function setValue(real percentage)
+        this.value = percentage
+        updateBlackMask()
+
+    override function setWidth(real w)
+        this.width = w
+        super.setWidth(w)
+        updateBlackMask()
+
+    override function setSize(real w, real h)
+        this.width = w
+        super.setSize(w, h)
+        updateBlackMask()
+
+    function playFillAnimation(Player p, real endPercentage) returns UIAnimation
+        return UIAnimation.createForOne(p, value, endPercentage) (Player p, Animation anim) ->
+            Log.trace("hier gehts los")
+
+            
+          
+
+    private function updateBlackMask()
+        handleBlackMask.setWidth((1.0 - value) * (width - paddingX * 2))
+        handleBlackMask.setVisible(value < 0.999)

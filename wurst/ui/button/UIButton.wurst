@@ -1,12 +1,5 @@
 package UIButton
 
-import ClosureFrames
-
-import UI
-import PlayerData
-
-import initlater MouseContext
-import initlater Action
 import UIHandle
 import UIInteractable
 
@@ -26,45 +19,12 @@ public class UIButton extends UIInteractable
     static function createByName(string name, framehandle parent) returns UIButton
         return new UIButton(createUIFrameByName(name, parent, false))
 
-        
     protected framehandle handleBackground
-
-    private FrameHandleListener onClickListener
-    private FrameHandleListener onMouseDown
-    private FrameHandleListener onMouseUp
 
     private construct(framehandle self)
         super(self, true)
         handleBackground = getFrame("Texture")
-        self.onClick() () ->
-            if onClickListener != null
-                onClickListener.onEvent()
+        enableClick(MOUSE_BUTTON_TYPE_LEFT, true)
 
-    protected override function onMouseEnterInner(Player p)
-        p.mouseOverButton = this  
-    
-    protected override function onMouseLeaveInner(Player p)
-        p.mouseOverButton = null  
-
-    function setBackground(string str)
+    override function setTexture(string str)
         handleBackground.setTexture(str)
-
-    function triggerOnMouseDown()
-        preventFocusBug(GetTriggerPlayerData())
-        if onMouseDown != null
-            onMouseDown.onEvent()
-
-    function triggerOnMouseUp()
-        if onMouseUp != null
-            onMouseUp.onEvent()
-
-    function onClick(FrameHandleListener listener)
-        onClickListener = listener
-
-    function onMouseDown(FrameHandleListener listener)
-        if listener != null
-            onMouseDown = listener
-
-    override function onMouseUp(FrameHandleListener listener)
-        if listener != null
-            onMouseUp = listener

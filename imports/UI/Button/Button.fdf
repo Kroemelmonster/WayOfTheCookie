@@ -87,3 +87,21 @@ Frame "GLUEBUTTON" "LevelUpBTN" {
     }
 }
 
+Frame "GLUETEXTBUTTON" "DropDownButton" {
+    Width 0.16,
+    Height 0.033,
+    ControlStyle "AUTOTRACK",
+
+    ControlBackdrop "Texture",
+    Frame "BACKDROP" "Texture" {
+        BackdropBackground "UI\Button\DropDownBackground.dds",
+        BackdropBlendAll,
+    }
+
+    ControlDisabledBackdrop "MenuBTNIconDisabled",
+    Frame "BACKDROP" "MenuBTNIconDisabled" {
+        BackdropBackground "UI\Button\DropDownBackgroundDisabled.dds",
+        BackdropBlendAll,
+    }
+}
+

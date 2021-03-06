@@ -3,13 +3,12 @@ package UIDialogBuyStack
 import PlayerData
 import UISlider
 
-import initlater MainController
 import initlater Stack
 import UIDialog
 import UIHandle
 import UIWindow
-import UIEditBox
-import initlater UIWindowNPC
+import UIButtonIconWithCost
+import HeroData
 
 init
     Initializer.register(InitializerNames.UI) -> 
@@ -22,6 +21,9 @@ class UIDialogBuyStackInfo
     static function get(Player p) returns UIDialogBuyStackInfo
         return data[p castTo int]
 
+    static function get() returns UIDialogBuyStackInfo
+        return get(GetTriggerPlayerData())
+
     protected static function create(Player p)
         data[p castTo int] = new UIDialogBuyStackInfo(p)
 
@@ -30,7 +32,6 @@ class UIDialogBuyStackInfo
     protected int cost
     protected int amount
     protected int maxAmount
-    protected int maxAmountGold
     protected int maxAmountLeaderShip
 
     private construct(Player p)
@@ -39,77 +40,83 @@ class UIDialogBuyStackInfo
 public class UIDialogBuyStack
     private static UIDialog dia
     private static UISlider slider
-    private static UIEditBoxInt editBox
 
-    private static UIWindowNPCSellButton disabledBtnSell
+    private static UIButtonIconWithCost previewBtn
+    private static framehandle infoText
 
     static function create()
         dia = UIDialog.create("BuyStack")
-        ..setHeader("Buy")
-        ..onAccept() -> 
-            let p = GetTriggerPlayerData()
-            Log.trace("buy this shit")
+        ..onAccept() (p) -> 
+            buy(UIDialogBuyStackInfo.get(p))
 
-        let paddingH = 0.035
+        dia.addButton(FRAMEPOINT_BOTTOM, "Max") (p) ->
+            maximizeValue(UIDialogBuyStackInfo.get(p))
 
-        let dogo = createUIHandle("FRAME", dia)
-        dogo.setInnerPoint(FRAMEPOINT_BOTTOMLEFT, dia, FRAMEPOINT_BOTTOMLEFT, 0, 0.035)
-        dogo.setInnerPoint(FRAMEPOINT_BOTTOMRIGHT, dia, FRAMEPOINT_BOTTOMRIGHT, 0, 0.035)
-        Log.trace("dogo with" + dogo.self.getWidth().toString())
-
-        slider = UISlider.create(dogo)
-        Log.trace(slider.self.getWidth().toString())
-        slider.clearAllPoints()
-        slider.setInnerPoint(FRAMEPOINT_BOTTOMLEFT, dia, FRAMEPOINT_BOTTOMLEFT, 0, 0.035)
-        //slider.setInnerPoint(FRAMEPOINT_BOTTOMRIGHT, dia, FRAMEPOINT_BOTTOMRIGHT, 0, 0.035)
-        slider.setWidth(dia.getInnerWidth())
-
-        Log.trace("dogo from parent" + slider.self.getParent().getWidth().toString())
-        
-        Log.trace(slider.self.getWidth().toString())
-        //slider.setWidth(0.4)
-        slider.onValueChange() -> 
-            setStackValues(GetTriggerPlayerData(), slider.getValue())
-
-        editBox = UIEditBoxInt.create(dia)
-        ..setInnerPoint(FRAMEPOINT_TOP, dia, FRAMEPOINT_TOP, 0, -0.005)
-        ..onValueChange() (int value) ->
-            let info = UIDialogBuyStackInfo.get(GetTriggerPlayerData())
-            setStackValues(info.p, value)
-
-        disabledBtnSell = new UIWindowNPCSellButton(dia)
-        ..setInnerPoint(FRAMEPOINT_TOPLEFT, dia, FRAMEPOINT_TOPLEFT, 0.005, -0.005)
-        ..setVisible(true)
+        previewBtn = UIButtonIconWithCost.create(dia, 1.2)
+        ..setInnerPoint(FRAMEPOINT_TOPLEFT, dia, FRAMEPOINT_TOPLEFT, 0.005, -0.018)
         ..setEnabled(false)
 
+        slider = UISlider.create(dia)
+        ..setPoint(FRAMEPOINT_LEFT, previewBtn, FRAMEPOINT_RIGHT, 0.005, 0.0)
+        ..setWidth(dia.getInnerWidth() - (previewBtn.self.getWidth() + 0.01))
+        ..onValueChange() (p) -> 
+            setStackValues(UIDialogBuyStackInfo.get(p), slider.getValue())
+
+        infoText = createUIFrame("TEXT", dia)
+        ..setInnerPoint(FRAMEPOINT_TOP, dia, FRAMEPOINT_TOP, 0, -0.08)
+        ..setSize(0.15, 0.008)
+        ..setTextAlignment(TEXT_JUSTIFY_MIDDLE, TEXT_JUSTIFY_CENTER)
+        ..setTextColor(KStringUtils.COLOR_NEGATIVE)
     
     static function open(Player p, Stack stack, int cost)
-        let info = UIDialogBuyStackInfo.get(p)
+        openInner(UIDialogBuyStackInfo.get(p), stack, cost)
+
+    private static function openInner(UIDialogBuyStackInfo info, Stack stack, int cost)
         info.stack = stack
         info.amount = 1
         info.maxAmount = stack.getAmount()
+        info.maxAmountLeaderShip = info.p.hero.getMaxAllowedControllableStackType(stack.typ) - info.p.hero.army.countCurrentAmountOfControlledStackType(stack.typ)
         info.cost = cost
-    
-        if p.isLocal()
-            slider.setMinMax(1, info.maxAmount)
-            disabledBtnSell.setBackground(info.stack.typ.getIcon())
-            disabledBtnSell.setText(info.maxAmount, info.cost)
-            
-        dia.open(p)
-        update(p)
 
-    private static function setStackValues(Player p, int amount)
-        let info = UIDialogBuyStackInfo.get(p)
+        if info.p.isLocal()
+            slider.setMinMax(1, info.maxAmount)
+            previewBtn.setTexture(info.stack.typ.getIcon())
+            dia.setHeader("Buy  "+stack.typ.getName())
+            
+        dia.open(info.p)
+        update(info)
+
+    private static function buy(UIDialogBuyStackInfo info)
+        HeroDataChange.pay(info.cost, info.p.hero, info.amount)
+        info.stack.addAmount(-info.amount)
+        info.p.hero.army.add(info.stack.typ, info.amount)
+        dia.close(info.p)
+
+    private static function maximizeValue(UIDialogBuyStackInfo info) 
+        let maxAmountGold = (info.p.hero.data.getGold() / info.cost).floor()
+        setStackValues(info, min(maxAmountGold, info.maxAmountLeaderShip))
+
+    private static function setStackValues(UIDialogBuyStackInfo info, int amount)
         info.amount = amount
         if amount > info.maxAmount
             info.amount = info.maxAmount
         if amount < 1
             info.amount = 1
 
-        update(p)
+        update(info)
 
-    private static function update(Player p)
-        let info = UIDialogBuyStackInfo.get(p)
-        if p.isLocal()
+    private static function update(UIDialogBuyStackInfo info)
+        if info.p.isLocal()
+            previewBtn.setAmount(info.amount, info.maxAmount)
+            previewBtn.setCost(info.cost, info.p.hero, info.amount)
             slider.setValue(info.amount)
-            editBox.setValue(info.amount)
+            var disableText = ""
+            if not info.cost * info.amount <= info.p.hero.data.getGold()
+                disableText = "Not enough Gold"
+            if not info.amount <= info.maxAmountLeaderShip
+                disableText = "Not enough Leadership"
+            if not info.p.hero.army.canAddStackType(info.stack.typ)
+                disableText = "Not enough Place"
+
+            dia.enableAccept(disableText == "")
+            infoText.setText(disableText)

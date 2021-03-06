@@ -270,7 +270,7 @@ public class Cell
 
        // innerModel.setColor(innerColor)
         //innerModel.setAlpha(alpha)
-
+        
 public class SingleCellIterator implements LinkedListIterator<Cell>
     private Cell cell
 

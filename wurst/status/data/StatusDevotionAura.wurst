@@ -38,7 +38,7 @@ public class StatusDevotionAura extends Status
     private static function createTooltipBaseLines(int defence) returns LinkedList<string>
         return new LinkedList<string>
         ..add("You are affected by Devotion Aura and gain "
-         + KStringUtils.colored(KStringUtils.COLOR_POSITIVE, defence)
+         + KStringUtils.colored(KStringUtils.COLOR_POSITIVE_TEXT, defence)
          + " Defence")
         
     private static function createTooltipBaseLines(StatusData data) returns LinkedList<string>

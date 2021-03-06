@@ -1,8 +1,5 @@
 wurst.dependencies
 .vscode/settings.json
 .VSCodeCounter
-*.j
-/_build/*.w3x
-/_build/.*j
-/_build/*.j.txt
-/_build/objectEditingOutput
+/_build/*
+!/_build/dependencies/wurstStdlib2/wurst

@@ -49,9 +49,9 @@ public class ActionSummonSkeleton extends StackActionTargetCell
         ..add(KStringUtils.data("Range", TARGET_RANGE))
         ..add("")
         ..add("Summon "
-         + KStringUtils.colored(KStringUtils.COLOR_PRIMARY, getSummonAmount(data, stats))
+         + KStringUtils.colored(KStringUtils.COLOR_PRIMARY_TEXT, getSummonAmount(data, stats))
          + " Stacks of "
-         + KStringUtils.colored(KStringUtils.COLOR_SECONDARY, SUMMONED_TYPE.getName()))
+         + KStringUtils.colored(KStringUtils.COLOR_SECONDARY_TEXT, SUMMONED_TYPE.getName()))
       
 /* -------------------------------------------------------------------------- */
 

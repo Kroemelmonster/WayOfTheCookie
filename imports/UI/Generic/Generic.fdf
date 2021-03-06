@@ -28,7 +28,7 @@ Frame "BACKDROP" "WindowBasicSmall" INHERITS "WindowBasic" {
     BackdropBackgroundInsets 0.005 0.005 0.005 0.005,
 }
 
-Frame "SLIDER" "SliderHorizontalBasic" {
+Frame "SLIDER" "SliderHorizontalBasicNew" {
     Height 0.032,
 
     SliderMinValue 0,
@@ -56,7 +56,7 @@ Frame "SLIDER" "SliderHorizontalBasic" {
     }
 }
 
-Frame "SLIDER" "SliderHorizontalBasicOld" {
+Frame "SLIDER" "SliderHorizontalBasic" {
     Width 0.05,
     Height 0.017,
     SliderLayoutHorizontal,
@@ -68,9 +68,9 @@ Frame "SLIDER" "SliderHorizontalBasicOld" {
         BackdropTileBackground,
         BackdropBackground "EscMenuSliderBackground",
         BackdropCornerFlags "UL|UR|BL|BR|T|L|B|R",
-        BackdropCornerSize  0.006,
-        BackdropBackgroundSize 0.006,
-        BackdropBackgroundInsets 0.0025 0.0025 0.0025 0.0025,
+        BackdropCornerSize  0.009,
+        BackdropBackgroundSize 0.009,
+        BackdropBackgroundInsets 0.006 0.006 0.006 0.006,
         BackdropEdgeFile "EscMenuSliderBorder",
         BackdropBlendAll,
     }
@@ -213,6 +213,16 @@ Frame "GLUETEXTBUTTON" "CheckBoxBasic" {
         HighlightAlphaFile "EscMenuCheckBoxCheckHighlight",
         HighlightAlphaMode "BLEND",
     }
+}
+
+Frame "BACKDROP" "DropDownBackground" {
+	BackdropTileBackground,
+	BackdropBackground  "UI\Tooltip\Transparent.dds",
+	BackdropEdgeFile "UI\Tooltip\TooltipBackground.dds",
+	BackdropCornerFlags "UL|UR|BL|BR|T|L|B|R",
+	BackdropCornerSize  0.008,
+	BackdropBackgroundInsets 0.0022 0.0022 0.0022 0.0022,
+	BackdropBlendAll,
 }
 
 //Fonts\BLQ55Web.ttf

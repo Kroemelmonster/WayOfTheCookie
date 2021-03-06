@@ -10,6 +10,7 @@ import Scheduler
 import UIInteractable
 import PlayerBoardHelper
 import UIButton
+import UIWindowDropdown
 
 class UIElementSpell extends UIButton
     static function create(framehandle parent) returns UIElementSpell
@@ -19,7 +20,6 @@ class UIElementSpell extends UIButton
     protected framehandle handleSelect
     protected framehandle handleName
     protected framehandle handleLevel
-    protected UIButton btnLevel
 
     protected SpellAction spellAction
     protected Spell spell
@@ -28,6 +28,7 @@ class UIElementSpell extends UIButton
         super(UIButton.createBasicButtonFrame(false, parent))
         setHeight(0.0585)
         setVisible(false)
+        enableClick(MOUSE_BUTTON_TYPE_RIGHT, true)
 
         let paddingH = 0.01
         handleIcon = createUIFrame("BACKDROP", self)
@@ -46,60 +47,34 @@ class UIElementSpell extends UIButton
         ..setPoint(FRAMEPOINT_BOTTOMLEFT, handleIcon, FRAMEPOINT_BOTTOMRIGHT)
         ..setPoint(FRAMEPOINT_RIGHT, self, FRAMEPOINT_RIGHT, -paddingH, 0)
         ..setTextAlignment(TEXT_JUSTIFY_CENTER, TEXT_JUSTIFY_MIDDLE)
-
-        btnLevel = UIButton.createByName("LevelUpBTN", self)
-        ..setPoint(FRAMEPOINT_BOTTOMLEFT, self, FRAMEPOINT_TOPRIGHT, -0.015, -0.015)
-        ..setSize(0.02, 0.02)
-        btnLevel.onClick() -> 
-            if spell != null
-                payToNextLevel()
-
-        btnLevel.onMouseEnter() -> 
-            if spell != null
-                mouseEnterLevelUpInner(GetTriggerPlayerData())
-        btnLevel.onMouseLeave() -> 
-            UITooltip.hide(GetTriggerPlayerData())
                 
-
-
         handleSelect = handleBackground
         ..setAlpha(150)
         ..setTexture("UI/Console/SelectedSpell.dds")
 
         self.onMouseWheel() -> 
             if spellAction != null
-                switchLevel(BlzGetTriggerFrameValue() > 0)
+                actionScaleLevel(BlzGetTriggerFrameValue() > 0)
 
 
-        onClick() -> 
-            interact(GetTriggerPlayerData())
-        onMouseEnter() -> 
-            mouseEnterInner(GetTriggerPlayerData())
-        onMouseLeave() -> 
-            UITooltip.hide(GetTriggerPlayerData())
-
-    protected function payToNextLevel()
-        if spell.levelUp()
-            updateLevel(spell.getMaxLevel())
-            mouseEnterLevelUpInner(GetTriggerPlayerData())
-
-    protected function switchLevel(boolean add)
-        if spellAction.setLevelTo(spellAction.getLevelIndex() + (add ? 1 : -1))
-            updateLevel(spellAction.getLevelIndex())
-            mouseEnterInner(GetTriggerPlayerData())
+        onClick() (p, mouseBtn) -> 
+            if mouseBtn == MOUSE_BUTTON_TYPE_LEFT
+                leftClick(p)
+            else if mouseBtn == MOUSE_BUTTON_TYPE_RIGHT
+                rightClick(p)
+        onMouseEnter() (p) -> 
+            mouseEnterInner(p)
+        onMouseLeave() (p) -> 
+            UITooltip.hide(p)
 
     protected function highlightSelect(boolean flag)
         if flag
-            handleSelect.setAlpha(170)
+            handleSelect.setAlpha(200)
         else
-            handleSelect.setAlpha(80)
+            handleSelect.setAlpha(130)
 
     protected function updateLevel(int level)
         handleLevel.setText((level + 1).toRomanLetters())
-        if spell != null and spell.canLevelUp()
-            btnLevel.enable()
-        else
-            btnLevel.disable()
 
     function setSpellAction(SpellAction spellaction)
         this.spellAction = spellaction
@@ -118,7 +93,7 @@ class UIElementSpell extends UIButton
         handleIcon.setTexture(spell.getIcon())
         
         highlightSelect(false)
-        updateLevel(spell.getMaxLevel())
+        updateLevel(spell.getLevel())
 
     protected function createTooltip() returns Tooltip
         if spellAction != null
@@ -128,24 +103,56 @@ class UIElementSpell extends UIButton
         return null
 
     function mouseEnterLevelUpInner(Player p)
-        if spell != null
-            var tt = spell.createTooltip(spell.getMaxLevel() + 1, true)
-            if tt == null
-                tt = spell.createTooltip(spell.getMaxLevel(), false)
-            if tt != null
-                UITooltip.display(p, tt, TooltipAnchor.RIGHT_BOTTOM, self)
+        if spell.getLevel() < spell.getMaxLevel()
+            let tt = spell.createTooltip(spell.getLevel() + 1, true)
+            UITooltip.display(p, tt, TooltipAnchor.RIGHT_BOTTOM, self)
 
     function mouseEnterInner(Player p)
         let tt = createTooltip()
         if tt != null
             UITooltip.display(p, tt, TooltipAnchor.RIGHT_BOTTOM, self)
 
-    private function interact(Player p)
+    private function leftClick(Player p)
         if spellAction != null
-            spellAction.toggleQuickcast()
-            // this just updates this spell
-            setSpellAction(spellAction)
-            UIMenuActionConsole.update(p)
+            actionAddToQuickcast(p)
+
+    private function rightClick(Player p)
+        if spell != null
+            let dropDown = UIWindowDropdown.start(p, self, DropDownAnchor.DOWN)
+            dropDown.addOption("Level Up", spell.canLevelUp()) (p) ->
+                actionPayToNextLevel()
+            dropDown.onMouseEnter() (p) ->
+                mouseEnterLevelUpInner(p)
+            dropDown.onMouseLeave() (Player p) ->
+                UITooltip.hide(p)
+            dropDown.open()
+        else if spellAction != null
+            let dropDown = UIWindowDropdown.start(p, self, DropDownAnchor.DOWN)
+            dropDown.addOption("Add to Quickcast", true) (p) ->
+                actionAddToQuickcast(p)
+            dropDown.addOption("Scale Up", "Scroll+", spellAction.canScaleLevel(spellAction.getLevelIndex() + 1)) (p) ->
+                actionScaleLevel(true)
+            dropDown.addOption("Scale Down", "Scroll-", spellAction.canScaleLevel(spellAction.getLevelIndex() - 1)) (p) ->
+                actionScaleLevel(false)
+            dropDown.open()
+
+    private function actionAddToQuickcast(Player p)
+        spellAction.toggleQuickcast()
+        // this just updates this spell
+        setSpellAction(spellAction)
+        UIMenuActionConsole.update(p)
+
+    private function actionPayToNextLevel()
+        if spell.levelUp()
+            updateLevel(spell.getLevel())
+
+    private function actionScaleLevel(boolean add)
+        let newLevel = spellAction.getLevelIndex() + (add ? 1 : -1)
+        if not spellAction.canScaleLevel(newLevel)
+            return
+        spellAction.scaleLevelTo(newLevel)
+        updateLevel(spellAction.getLevelIndex())
+        mouseEnterInner(GetTriggerPlayerData())
 
 public class UIWindowSpellBook
     private static UIWindow window

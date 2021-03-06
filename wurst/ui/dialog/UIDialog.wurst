@@ -1,26 +1,22 @@
 package UIDialog
 
-import ClosureFrames
-
 import PlayerData
 
 import UIWindow
 import UIButtonMenu
-import initlater UIDialogSplitStack
 import UIHandle
-
-public class DialogInfo
-    DialogInfoSplitStack splitInfo = new DialogInfoSplitStack()
+import UIInteractable
 
 public class UIDialog extends UIWindowBasic
     static function create(string name) returns UIDialog
         return new UIDialog(name)
 
-    private FrameHandleListener onAccept
+    private InteractableListener onAccept
+    private UIButtonMenu acceptBtn
     private framehandle handleHeader
 
     private construct(string name)
-        super(name, true)
+        super(name, true, true)
         setPointToConsoleUI(FRAMEPOINT_CENTER, FRAMEPOINT_CENTER)
         setSize(0.35, 0.15)
         // TODO dynamicly change level depning on last clicked dilaog / window
@@ -29,28 +25,32 @@ public class UIDialog extends UIWindowBasic
         handleHeader = createUIFrameByName("TextDialogHeader", self, false)
         ..setInnerPoint(FRAMEPOINT_TOP, this, FRAMEPOINT_TOP)
         ..setTextAlignment(TEXT_JUSTIFY_TOP, TEXT_JUSTIFY_CENTER)
-        ..setSize(0.1, 0.2)
+        ..setSize(0.3, 0.08)
 
-        addButton(FRAMEPOINT_BOTTOMLEFT, "Accept") ->
+        acceptBtn = addButton(FRAMEPOINT_BOTTOMLEFT, "Accept") (p) ->
             if onAccept != null
-                onAccept.onEvent()
-            closeWithoutTrigger(GetTriggerPlayerData())
+                onAccept.onEvent(p)
+            closeWithoutTrigger(p)
 
-        addButton(FRAMEPOINT_BOTTOMRIGHT, "Cancel")  -> 
-            close(GetTriggerPlayerData())
+        addButton(FRAMEPOINT_BOTTOMRIGHT, "Cancel") (p) -> 
+            close(p)
 
-    function onAccept(FrameHandleListener onAccept)
+    function onAccept(InteractableListener onAccept)
         this.onAccept = onAccept
 
     function setHeader(string text)
         handleHeader.setText(text)
 
-    function addButton(framepointtype framepoint, string text, FrameHandleListener onClick) returns UIButtonMenu
+    function enableAccept(boolean enable)
+        acceptBtn.setEnabled(enable)
+
+    function addButton(framepointtype framepoint, string text, InteractableListener onClick) returns UIButtonMenu
         return UIButtonMenu.create(this, text)
         ..setInnerPoint(framepoint, this, framepoint)
         ..setScale(0.8)
         ..setWidth(0.1)
-        ..onClick(onClick)
+        ..onClick() (p, mouseBtn) -> 
+            onClick.onEvent(p) // TODO this should maybe not triger an event
 
 
         

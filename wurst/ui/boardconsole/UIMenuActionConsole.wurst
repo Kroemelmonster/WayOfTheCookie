@@ -6,8 +6,6 @@ import UIWindow
 import UIHandle
 import UIButtonIcon
 import Action
-import BoardEntity
-import ActionCost
 import OrderSystem
 import PlayerBoardHelper
 import MouseContext
@@ -20,12 +18,12 @@ class UIBoardActionButton extends UIButtonIcon
         super(parent.self, true, false, true, false)
         setSize(0.037, 0.037)
 
-        onClick() () -> 
-            tryToActivate(GetTriggerPlayerData())
-        onMouseEnter() -> 
+        onClick() (p, mouseBtn) -> 
+            tryToActivate(p)
+        onMouseEnter() (p) ->  
             if action != null
                 action.onUIMouseEnter()
-        onMouseLeave() -> 
+        onMouseLeave() (p) -> 
             if action != null
                 action.onUIMouseLeave()
 
@@ -50,7 +48,7 @@ class UIBoardActionButton extends UIButtonIcon
     function setAction(Action action, boolean showHighlight, string key)
         this.action = action
         setVisible(true)
-        setBackground(action.getIcon())
+        setTexture(action.getIcon())
         action.setKey(key)
 
         let cost = action.getCost()

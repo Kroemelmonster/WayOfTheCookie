@@ -20,14 +20,13 @@ class InitiativeCommandButton extends UIButtonIcon
         super(parent.self, false, true, false, true)
         setSize(size, size)
 
-        onClick() () ->
-            onClickInner(GetTriggerPlayerData())
-        onMouseEnter() -> 
-            onEnterInner(GetTriggerPlayerData())
-        onMouseLeave() -> 
-            onLeaveInner(GetTriggerPlayerData())
+        onClick() (p, mouseBtn) -> 
+            onClickInner(p)
+        onMouseEnter() (p) -> 
+            onEnterInner(p)
+        onMouseLeave() (p) -> 
+            onLeaveInner(p)
         
-
         if withTime
             handleTime = createUIFrame("TEXT", self)
             ..setPoint(FRAMEPOINT_BOTTOMLEFT, self, FRAMEPOINT_TOPLEFT)
@@ -40,7 +39,7 @@ class InitiativeCommandButton extends UIButtonIcon
         if time >= 0
             handleTime.setText(time.toString())
 
-        setBackground(entity.getIcon())
+        setTexture(entity.getIcon())
         let player1 = entity.getBoard().getPlayer(0)
         if player1.isLocal()
             setBorderBasedOnPlayerRelationship(player1.getRelationshipStatusTo(entity.getPlayer()))

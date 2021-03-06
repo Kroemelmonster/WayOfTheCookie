@@ -140,7 +140,7 @@ public class Skill
         if level > 0
             let earlierStackListener = levels.get(level - 1).stackListener
             if earlierStackListener != null
-                for int i = 0 to Army.MAX_SIZE - 1
+                for int i = 0 to ARMY_SIZE - 1
                     let stack = army.getAt(i)
                     if stack != null
                         earlierStackListener.onStackUpdate(stack, false)
@@ -149,7 +149,7 @@ public class Skill
         tree.level ++
         let stackListener = levels.get(level).stackListener
         if stackListener != null
-            for int i = 0 to Army.MAX_SIZE - 1
+            for int i = 0 to ARMY_SIZE - 1
                 let stack = army.getAt(i)
                 if stack != null
                     stackListener.onStackUpdate(stack, true)
@@ -173,25 +173,25 @@ public class Skill
         
         if nextLevel.skillTreeLevelRequirment > 0
             if tree.level >= nextLevel.skillTreeLevelRequirment 
-                tt.addLine(KStringUtils.data("Requires Level", KStringUtils.COLOR_POSITIVE, nextLevel.skillTreeLevelRequirment))
+                tt.addLine(KStringUtils.data("Requires Level", KStringUtils.COLOR_POSITIVE_TEXT, nextLevel.skillTreeLevelRequirment))
             else
-                tt.addLine(KStringUtils.data("Requires Level", KStringUtils.COLOR_NEGATIVE, nextLevel.skillTreeLevelRequirment))
+                tt.addLine(KStringUtils.data("Requires Level", KStringUtils.COLOR_NEGATIVE_TEXT, nextLevel.skillTreeLevelRequirment))
 
         if nextLevel.requirements != null
             for requirement in nextLevel.requirements
                 let txt = requirement.skill.name + " ["+(requirement.level + 1).toString() + "]"
                 if requirement.learned
-                    tt.addLine(KStringUtils.data("Requires", KStringUtils.COLOR_POSITIVE, txt))
+                    tt.addLine(KStringUtils.data("Requires", KStringUtils.COLOR_POSITIVE_TEXT, txt))
                 else
-                    tt.addLine(KStringUtils.data("Requires", KStringUtils.COLOR_NEGATIVE, txt))
+                    tt.addLine(KStringUtils.data("Requires", KStringUtils.COLOR_NEGATIVE_TEXT, txt))
 
         if nextLevel.blockedBySkill != null
             for blockingSkill in nextLevel.blockedBySkill
                 let txt = blockingSkill.name
                 if blockingSkill.level == 0
-                    tt.addLine(KStringUtils.data("Blocked by", KStringUtils.COLOR_POSITIVE, txt))
+                    tt.addLine(KStringUtils.data("Blocked by", KStringUtils.COLOR_POSITIVE_TEXT, txt))
                 else
-                    tt.addLine(KStringUtils.data("Blocked by", KStringUtils.COLOR_NEGATIVE, txt))
+                    tt.addLine(KStringUtils.data("Blocked by", KStringUtils.COLOR_NEGATIVE_TEXT, txt))
 
         tt.addLine("")
         for line in nextLevel.desc

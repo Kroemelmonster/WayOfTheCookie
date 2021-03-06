@@ -1,0 +1,151 @@
+package UIBoardResultWindow
+import UIWindow
+import UIHandle
+import initlater Board
+import UIButtonMenu
+import PlayerData
+import UIButtonIcon
+import Stack
+import Scheduler
+import UIProgessBar
+
+init
+    Initializer.register(InitializerNames.UI) -> 
+        UIBoardResultWindow.create()
+        Player.forEachActive() (Player p) ->
+            UIBoardResultWindowInfo.create(p)
+
+class UIBoardResultWindowInfo
+    static UIBoardResultWindowInfo array data
+    static function get(Player p) returns UIBoardResultWindowInfo
+        return data[p castTo int]
+
+    static function get() returns UIBoardResultWindowInfo
+        return get(GetTriggerPlayerData())
+
+    protected static function create(Player p)
+        data[p castTo int] = new UIBoardResultWindowInfo(p)
+
+    protected Player p
+    protected SequenzListener next
+    protected int testValue = 0
+
+    private construct(Player p)
+        this.p = p
+
+public class UIBoardResultWindow
+
+    protected static UIWindowBasic window
+
+    protected static framehandle handleHeader
+    protected static UIButtonMenu btnAccept
+    protected static UIButtonIcon array[ARMY_SIZE] btnLeftForce
+    protected static UIButtonIcon array[ARMY_SIZE] btnRightForce
+
+    protected static function create()
+        window = UIWindowBasic.createNonCloseAble("Result", true)
+        ..setPointToConsoleUI(FRAMEPOINT_CENTER, FRAMEPOINT_CENTER, 0, 0)
+        ..setSize(0.7, 0.3)
+
+        handleHeader = createUIFrameByName("TextDialogHeader", window, false)
+        ..setInnerPoint(FRAMEPOINT_TOP, window, FRAMEPOINT_TOP)
+        ..setTextAlignment(TEXT_JUSTIFY_TOP, TEXT_JUSTIFY_CENTER)
+        ..setSize(0.3, 0.08)
+
+        btnAccept = UIButtonMenu.create(window, "continue")
+        ..setInnerPoint(FRAMEPOINT_BOTTOMRIGHT, window, FRAMEPOINT_BOTTOMRIGHT)
+        ..setScale(0.95)
+        ..setWidth(0.12)
+        ..onClick() (p, mouseBtn) -> 
+            window.forceClose(p)
+            UIBoardResultWindowInfo.get(p).next.continue()
+
+        let paddingTop = 0.02
+        let paddingBetween = 0.002
+        btnLeftForce[0] = createForceBtn()
+        ..setInnerPoint(FRAMEPOINT_TOPLEFT, window, FRAMEPOINT_TOPLEFT, 0, -paddingTop)
+        for i = 1 to ARMY_SIZE - 1
+            btnLeftForce[i] = createForceBtn()
+            ..setPoint(FRAMEPOINT_TOPLEFT, btnLeftForce[i-1], FRAMEPOINT_TOPRIGHT, paddingBetween, 0)
+
+        btnRightForce[0] = createForceBtn()
+        ..setInnerPoint(FRAMEPOINT_TOPRIGHT, window, FRAMEPOINT_TOPRIGHT, 0, -paddingTop)
+        for i = 1 to ARMY_SIZE - 1
+            btnRightForce[i] = createForceBtn()
+            ..setPoint(FRAMEPOINT_TOPRIGHT, btnRightForce[i-1], FRAMEPOINT_TOPLEFT, -paddingBetween, 0)
+
+        let bar = UIProgressBar.create(window.self, UIProgressType.REWARD_EXPBAR, 0.4, 0.032)
+        ..setPoint(FRAMEPOINT_BOTTOM, window, FRAMEPOINT_BOTTOM, 0, 0.08)
+
+        Configurations.debugInt1.addListener() (integer value) ->
+            bar.setValue(value / 100.0)
+
+        Configurations.debugReal1.addListener() (Real value) ->
+            bar.setSize(Configurations.debugReal1.getValue().self, Configurations.debugReal2.getValue().self)
+
+        Configurations.debugReal2.addListener() (Real value) ->
+            bar.setSize(Configurations.debugReal1.getValue().self, Configurations.debugReal2.getValue().self)
+        
+        Scheduler.onTime() (Player p) ->
+            if window.isVisible(p)
+                let info = UIBoardResultWindowInfo.get(p)
+                info.testValue ++
+                if info.testValue >= 100
+                    info.testValue = 0
+
+    protected static function createForceBtn() returns UIButtonIcon
+        return UIButtonIcon.create(window, false, false, false, true)
+        ..setSize(0.045, 0.045)
+        ..setEnabled(false)
+        ..setVisible(false)
+
+    static function showResult(Board board, BoardForceSide winner, SequenzListener next)
+        let p = board.getBoardForce(BoardForceSide.LEFT).getPlayer()
+        let info = UIBoardResultWindowInfo.get(p)
+        info.next = next
+        
+        if p.isLocal()
+            if winner == BoardForceSide.RIGHT
+                Log.info("Yeah so this would be the time where you loose, but I am generous :)")
+            if winner == BoardForceSide.LEFT
+                handleHeader.setText("Fight won")
+            else if winner == BoardForceSide.RIGHT
+                handleHeader.setText("Fight lost")
+            else if winner == BoardForceSide.NEUTRAL
+                handleHeader.setText("Noone won ? (how did ya doo that ?)")
+
+            var index = 0
+            var army = board.getBoardForce(BoardForceSide.LEFT).getHero().army
+            for i = 0 to ARMY_SIZE - 1
+                let stack = army.getAt(i) 
+                if stack != null
+                    btnLeftForce[index].setVisible(true)
+                    btnLeftForce[index].setAmount(stack.representive.stats.getAmount(), stack.getAmount())
+                    btnLeftForce[index].setTexture(stack.typ.getIcon())
+                    index++
+            
+            while index < ARMY_SIZE - 1
+                btnLeftForce[index].setVisible(false)
+                index++
+
+            index = 0
+            army = board.getBoardForce(BoardForceSide.RIGHT).getHostileArmy().army
+            for i = 0 to ARMY_SIZE - 1
+                let stack = army.getAt(i) 
+                if stack != null
+                    btnRightForce[index].setVisible(true)
+                    btnRightForce[index].setAmount(stack.representive.stats.getAmount(), stack.getAmount())
+                    btnRightForce[index].setTexture(stack.typ.getIcon())
+                    index++
+            
+            while index < ARMY_SIZE - 1
+                btnRightForce[index].setVisible(false)
+                index++
+                
+
+        window.open(p)
+
+        
+
+
+

@@ -77,17 +77,16 @@ public class UIWindowSkillTree
         for i = 0 to skills.length - 1
             skills[i] = UIButtonIcon.create(window, true, false, true, false)
             ..setSize(0.035, 0.035)
-            skills[i].onClick() -> 
-                UIWindowSkillTreeInfo.getCurrentSkillTree(GetTriggerPlayerData())
+            skills[i].onClick() (p, mouseBtn) -> 
+                UIWindowSkillTreeInfo.getCurrentSkillTree(p)
                 .skills.get(i).dolevelUp()
 
-            skills[i].onMouseEnter() -> 
-                let p = GetTriggerPlayerData()
+            skills[i].onMouseEnter() (p) -> 
                 let skill = UIWindowSkillTreeInfo.getCurrentSkillTree(p).skills.get(i)
                 UITooltip.display(p, skill.createTooltip(), TooltipAnchor.RIGHT_BOTTOM, skills[i])
 
-            skills[i].onMouseLeave() -> 
-                UITooltip.hide(GetTriggerPlayerData())
+            skills[i].onMouseLeave() (p) ->
+                UITooltip.hide(p)
 
         Scheduler.onTime() (Player p) ->
             if window.isVisible(p)
@@ -108,9 +107,9 @@ public class UIWindowSkillTree
     private static function createTab(int index, real width, real height) returns UIButton
         tabs[index] = UIButton.create(true, window)
         ..setSize(width, height)
-        ..setBackground("UI/Console/WoodPlanket.dds")
-        ..onClick() -> 
-            changeToTab(GetTriggerPlayerData(), index)
+        ..setTexture("UI/Console/WoodPlanket.dds")
+        ..onClick() (p, mouseBtn) -> 
+            changeToTab(p, index)
 
         handleTabNames[index] = createUIFrame("TEXT", tabs[index])
         ..setAllPoints(tabs[index])
@@ -146,7 +145,7 @@ public class UIWindowSkillTree
                 skills[i].setPoint(FRAMEPOINT_CENTER, handlInnerFrame, FRAMEPOINT_TOPLEFT, innerWidth * skill.x, innerHeight * -skill.y)
                 skills[i].setVisible(true)
                 skills[i].setCounter(skill.level)
-                skills[i].setBackground(skill.icon)
+                skills[i].setTexture(skill.icon)
                 skills[i].setGlowVisible(skill.canLevelUp())
             else
                 skills[i].setVisible(false)

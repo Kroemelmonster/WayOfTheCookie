@@ -1,0 +1,75 @@
+package UIButtonIconWithCost
+
+import UIButtonIcon
+import UIHandle
+import HeroData
+import Hero
+
+public class UIButtonIconWithCost extends UIButtonIcon
+    static function create(UIHandle parent) returns UIButtonIconWithCost
+        return create(parent, 1.0)
+        
+    static function create(UIHandle parent, real sizePerc) returns UIButtonIconWithCost
+        return new UIButtonIconWithCost(parent, sizePerc)
+
+    static constant ICON_SIZE = 0.04
+    static constant HEIGHT = ICON_SIZE + 0.012
+    
+    protected framehandle array[3] handleCostText
+    protected framehandle array[3] handleCostIcon
+
+    construct(UIHandle parent, real sizePerc)
+        super(parent.self, true, false, false, true)
+        setSize(ICON_SIZE * sizePerc, ICON_SIZE * sizePerc)
+
+        for i = 0 to handleCostText.length - 1
+            createCostLine(i)
+
+    private function createCostLine(int index)
+        let size = 0.008
+        handleCostIcon[index] = createUIFrame("BACKDROP", self)
+        ..setPoint(FRAMEPOINT_TOPRIGHT, this, FRAMEPOINT_BOTTOMRIGHT, 0, -0.003 + (index * size + 0.003))
+        ..setSize(size, size)
+    
+        handleCostText[index] = createUIFrame("TEXT", self)
+        ..setTextAlignment(TEXT_JUSTIFY_MIDDLE, TEXT_JUSTIFY_RIGHT)
+        ..setHeight(size)
+        ..setScale(0.8)
+        ..setPoint(FRAMEPOINT_TOPLEFT, this, FRAMEPOINT_BOTTOMLEFT, 0, -0.003 + (index * size + 0.003))
+        ..setPoint(FRAMEPOINT_TOPRIGHT, handleCostIcon[index], FRAMEPOINT_TOPLEFT, -0.002, 0)
+
+    private function setupCost(int index, int cost, int has, string icon)
+        handleCostText[index].setVisible(true)
+        handleCostIcon[index].setVisible(true)
+        handleCostText[index].setText(cost.toFormatString())
+        if cost > has
+            handleCostText[index].setTextColor(KStringUtils.COLOR_NEGATIVE)
+        else
+            handleCostText[index].setTextColor(COLOR_WHITE)
+        handleCostIcon[index].setTexture(icon)
+
+    function setCost(int gold, Hero h, int amount)
+        setupCost(0, gold * amount, h.data.getGold(), HeroDataChange.ICON_GOLD)
+        for i = 1 to handleCostText.length - 1
+            handleCostText[i].setVisible(false)
+            handleCostIcon[i].setVisible(false)
+
+    function setCost(HeroDataChange data, Hero h, int amount)
+        var index = 0
+        if data.getGold() > 0
+            setupCost(index, data.getGold() * amount, h.data.getGold(), HeroDataChange.ICON_GOLD)
+            index++
+        if data.getMight() > 0
+            setupCost(index, data.getMight() * amount, h.data.getMight(), HeroDataChange.ICON_MIGHT)
+            index++
+        if data.getMind() > 0
+            setupCost(index, data.getMind() * amount, h.data.getMind(), HeroDataChange.ICON_MIND)
+            index++
+        if data.getMagic() > 0
+            setupCost(index, data.getMagic() * amount, h.data.getMagic(), HeroDataChange.ICON_MAGIC)
+            index++
+
+        while index < handleCostText.length - 1
+            handleCostText[index].setVisible(false)
+            handleCostIcon[index].setVisible(false)
+            index++

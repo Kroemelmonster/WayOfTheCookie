@@ -17,7 +17,6 @@ public class UIButtonMenu extends UIButton
 
     function setText(string text)
         textFrame.setText(text)
-        
 
 public class UIButtonMenuToWindow extends UIButtonMenu
     static function create(UIHandle parent, UIWindow window) returns UIButtonMenu
@@ -30,5 +29,5 @@ public class UIButtonMenuToWindow extends UIButtonMenu
         this.window = window
         window.setBtnToOpen(this)
 
-        onClick() -> 
-            window.toggle(GetTriggerPlayerData())
+        onClick() (p, mouseBtn) -> 
+            window.toggle(p)

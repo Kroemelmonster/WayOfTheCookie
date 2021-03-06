@@ -30,7 +30,6 @@ public class BoardForce
     private int colLimit
     boolean shouldRedraw = false
 
-
     construct(Board board, BoardForceSide side, vec2 heroPlace)
         this.board = board
         this.heroPlace = heroPlace
@@ -47,6 +46,12 @@ public class BoardForce
 
     function getBoardHero() returns BoardHero
         return boardHero
+
+    function getHero() returns Hero
+        return hero
+
+    function getHostileArmy() returns HostileArmy
+        return hostileArmy
 
     function forEachStack(LLItrClosure<BoardStack> itr)
         livingStacks.forEach(itr)
@@ -103,7 +108,7 @@ public class BoardForce
         var row = (board.getRows() / 2).floor()
         var rowChange = 1
         
-        for i = 0 to Army.MAX_SIZE - 1
+        for i = 0 to ARMY_SIZE - 1
             let armyStack = army.getAt(i)
             if armyStack != null
                 placeStack(new BoardStack(this, armyStack), hex(col, row))
@@ -137,8 +142,10 @@ public class BoardForce
         board.getInitiative().removeStack(stack)
         graveyard.add(stack)
 
+    function canStillFight() returns boolean
+        return not livingStacks.isEmpty()
+
     function remove()
-        p.playingBoard = null
         visibleModi.destr()
 
         if boardHero != null
@@ -151,4 +158,7 @@ public class BoardForce
         for stack in graveyard
             destroy stack
         graveyard.clear()
+
+        
+        p.playingBoard = null
 

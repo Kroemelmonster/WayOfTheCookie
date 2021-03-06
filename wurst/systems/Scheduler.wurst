@@ -13,6 +13,7 @@ class Scheduler
     private static timer realTime
     private static int gameTime
     private static LinkedList<SequenzPlayerListener> registeredListener = new LinkedList<SequenzPlayerListener>
+    private static LinkedList<SequenzPlayerListener> registeredAnimListener = new LinkedList<SequenzPlayerListener>
 
     static private function tick()
         gameTime += 1
@@ -37,6 +38,9 @@ class Scheduler
     static function onTime(SequenzPlayerListener listener)
         registeredListener.add(listener)
 
+    static function onAnimTick(SequenzPlayerListener listener)
+        registeredAnimListener.add(listener)
+
     private static function doPeriodicallyInner(Player p, LLIterator<SequenzPlayerListener> listenerItr)
         if listenerItr.hasNext()
             listenerItr.next().onEvent(p)
@@ -53,6 +57,10 @@ class Scheduler
 
             doPeriodically(0.2) cb ->
                 doPeriodicallyInner(p, registeredListener.staticItr())
+
+            doPeriodically(ANIMATION_PERIOD) cb ->
+                doPeriodicallyInner(p, registeredAnimListener.staticItr())
+                
                 
                 
                 

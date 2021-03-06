@@ -3,6 +3,7 @@ package UISlider
 import ClosureFrames
 import UIHandle
 import UIInteractable
+import PlayerData
 
 public class UISlider extends UIInteractable
     static function create(UIHandle parent) returns UISlider
@@ -13,10 +14,10 @@ public class UISlider extends UIInteractable
         super(createUIFrameByName("SliderHorizontalBasic", parent, false), false)
         UIInteractable.create(getFrame("SliderHorizontalBasicThumb"))
 
-    function onValueChange(FrameHandleListener innerFrameHandleListener)
+    function onValueChange(InteractableListener innerFrameHandleListener)
         self.onSliderValueChange() -> 
             if manual
-                innerFrameHandleListener.onEvent()
+                innerFrameHandleListener.onEvent(GetTriggerPlayerData())
             else
                 // TODO this could potential be not multiplayer possible
                 manual = true

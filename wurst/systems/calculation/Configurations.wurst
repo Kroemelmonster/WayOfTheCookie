@@ -50,6 +50,7 @@ class Configurations
     static Configuration<boolean> kiControlled
 
     static Configuration<int> debugInt1
+    static Configuration<int> debugInt2
     static Configuration<Real> debugReal1
     static Configuration<Real> debugReal2
     static Configuration<Real> debugReal3
@@ -57,6 +58,7 @@ class Configurations
     static function setup()
         kiControlled = new Configuration<boolean>(false)
         debugInt1 = new Configuration<int>(0)
+        debugInt2 = new Configuration<int>(0)
         debugReal1 = new Configuration<Real>(new Real(0.0))
         debugReal2 = new Configuration<Real>(new Real(0.0))
         debugReal3 = new Configuration<Real>(new Real(0.0))

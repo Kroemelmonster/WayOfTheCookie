@@ -3,13 +3,13 @@ package PlayerData
 import initlater Cell
 import initlater Board
 import initlater Hero
-import initlater UIButton
 import initlater UIMenuWorldConsole
 import initlater UIDialog
 import initlater PlayerTrigger
 import initlater BoardEntity
 import initlater UIWindow
 import initlater UIMenuConsole
+import initlater UIInteractable
 
 init
     Initializer.register(InitializerNames.SYSTEM) -> 
@@ -42,9 +42,9 @@ public class Player
 
     boolean mousePressed = false
     int mousePressedIndex = 0
-    UIButton mouseOverButton = null
-
-    DialogInfo dialogInfo = new DialogInfo()
+    boolean mousePressedOverSmth = false
+    UIInteractable mouseOverUI = null
+    UIInteractable mouseDownUI = null
 
     UIMenuWorldConsoleInfo worldConsoleInfo = new UIMenuWorldConsoleInfo()
     UIMenuConsoleInfo menuConsoleInfo = new UIMenuConsoleInfo()
@@ -126,6 +126,9 @@ public class Player
 
     function isPlayingOnABoard() returns boolean
         return playingBoard != null
+
+    function isActive() returns boolean
+        return not doesNotNeedVisuals
 
     static function forEachActive(LLItrClosure<Player> itr)
         activePlayers.forEach(itr)

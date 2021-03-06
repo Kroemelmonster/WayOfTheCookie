@@ -5,7 +5,7 @@ import PlayerData
 import initlater Hero
 import UIWindow
 import UIHandle
-import UIProgressBar
+import UISimpleProgressBar
 import UIExtensionArmyPanel
 import initlater Scheduler
 import UIWindowNPC
@@ -21,8 +21,8 @@ public class UIMenuWorldConsole
     protected static UIMenu menu
 
     protected static framehandle portrait
-    protected static UIProgressBar expBar
-    protected static UIProgressBar manaBar
+    protected static UISimpleProgressBar expBar
+    protected static UISimpleProgressBar manaBar
 
     //protected static UIFightResultDialog fightResultDialog
 
@@ -44,11 +44,11 @@ public class UIMenuWorldConsole
         ..setHeight(0.103)
         menu.addSimpleFrame(portrait)
 
-        expBar = UIProgressBar.create("WorldConsoleExpBar", menu)
+        expBar = UISimpleProgressBar.create("WorldConsoleExpBar", menu)
         ..setSize(0.09, 0.014)
         ..setPoint(FRAMEPOINT_BOTTOMLEFT, menu, FRAMEPOINT_BOTTOMLEFT, 0.033, 0.022)
 
-        manaBar = UIProgressBar.create("WorldConsoleManaBar", menu)
+        manaBar = UISimpleProgressBar.create("WorldConsoleManaBar", menu)
         ..setSize(0.09, 0.014)
         ..setPoint(FRAMEPOINT_BOTTOMLEFT, menu, FRAMEPOINT_BOTTOMLEFT, 0.033, 0.0045)
         

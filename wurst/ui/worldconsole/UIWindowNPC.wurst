@@ -11,6 +11,7 @@ import ClosureFrames
 import UIWindowDropdown
 import Stack
 import UIDialogBuyStack
+import UIButtonIconWithCost
 
 init
     Initializer.register(InitializerNames.UI) -> 
@@ -54,27 +55,9 @@ class UIWindowNPCStockInfo
 interface OnStockClick
     function onEvent(UIWindowNPCInfo npc, mousebuttontype mtype, int index)
 
-public class UIWindowNPCSellButton extends UIButtonIcon
-    protected framehandle handleGoldText
-    protected static constant ICON_SIZE = 0.035
-    protected static constant HEIGHT = ICON_SIZE + 0.012
-
-    construct(UIHandle parent)
-        super(parent.self, true, false, false, true)
-        setSize(ICON_SIZE, ICON_SIZE)
-        setVisible(false)
-
-        handleGoldText = createUIFrame("TEXT", self)
-        ..setPoint(FRAMEPOINT_TOPLEFT, this, FRAMEPOINT_BOTTOMLEFT, 0, -0.002)
-        ..setPoint(FRAMEPOINT_BOTTOMRIGHT, this, FRAMEPOINT_BOTTOMRIGHT, 0, -0.012)
-        ..setTextAlignment(TEXT_JUSTIFY_TOP, TEXT_JUSTIFY_RIGHT)
-
-    function setText(int amount, int gold)
-        setAmount(amount)
-        handleGoldText.setText(gold.toString())
 
 class Stock extends UIHandle
-    protected UIWindowNPCSellButton array[6] btnSell
+    protected UIButtonIconWithCost array[5] btnSell
     protected UIButton btnRight
     protected UIButton btnLeft
     protected int stockIndex
@@ -82,43 +65,42 @@ class Stock extends UIHandle
     construct(UIWindowBasic parent, int stockIndex)
         super(createUIFrame("FRAME", parent))
         this.stockIndex = stockIndex
-        setHeight(UIWindowNPCSellButton.HEIGHT)
+        setHeight(UIButtonIconWithCost.HEIGHT)
 
     protected function initWithListener(OnStockClick onClickListener)
-        let scrollBtnWidth = 0.006
+        let scrollBtnWidth = 0.012
         let padding = 0.002
-        btnSell[0] = new UIWindowNPCSellButton(this)
+        btnSell[0] = UIButtonIconWithCost.create(this)
         ..setPoint(FRAMEPOINT_TOPLEFT, this, FRAMEPOINT_TOPLEFT, padding + scrollBtnWidth, 0)
-        ..onMouseUp() -> 
-            let info = UIWindowNPCInfo.get(GetTriggerPlayerData())
-            onClickListener.onEvent(info, BlzGetTriggerPlayerMouseButton(), 0)
-
+    
         for i = 1 to btnSell.length - 1
-            btnSell[i] = new UIWindowNPCSellButton(this)
+            btnSell[i] = UIButtonIconWithCost.create(this)
             ..setPoint(FRAMEPOINT_TOPLEFT, btnSell[i - 1], FRAMEPOINT_TOPRIGHT, padding, 0)
-            ..onMouseUp() -> 
-                let info = UIWindowNPCInfo.get(GetTriggerPlayerData())
-                onClickListener.onEvent(info, BlzGetTriggerPlayerMouseButton(), i)
+
+        for i = 0 to btnSell.length - 1
+            btnSell[i].onMouseUp() (p, mouseBtn) -> 
+                let info = UIWindowNPCInfo.get(p)
+                onClickListener.onEvent(info, mouseBtn, i)
 
         btnRight = UIButton.create(false, this)
         ..setPoint(FRAMEPOINT_RIGHT, btnSell[0], FRAMEPOINT_LEFT, -padding, 0)
-        ..setSize(scrollBtnWidth, 0.01)
-        ..setBackground("ui\\feedback\\checkpointpopup\\checkpoint-arrow-right.dds")
-        ..onClick() -> 
-            let info = UIWindowNPCInfo.get(GetTriggerPlayerData())
+        ..setSize(scrollBtnWidth, 0.02)
+        ..setTexture("ui\\feedback\\checkpointpopup\\checkpoint-arrow-right.dds")
+        ..onClick() (p, mouseBtn) -> 
+            let info = UIWindowNPCInfo.get(p)
             info.stockInfo[stockIndex].index--
             UIWindowNPC.update(info.p)
 
         btnLeft = UIButton.create(false, this)
         ..setPoint(FRAMEPOINT_LEFT, btnSell[btnSell.length - 1], FRAMEPOINT_RIGHT, padding, 0)
-        ..setSize(scrollBtnWidth, 0.01)
-        ..setBackground("ui\\feedback\\checkpointpopup\\checkpoint-arrow-left.dds")
-        ..onClick() -> 
-            let info = UIWindowNPCInfo.get(GetTriggerPlayerData())
+        ..setSize(scrollBtnWidth, 0.02)
+        ..setTexture("ui\\feedback\\checkpointpopup\\checkpoint-arrow-left.dds")
+        ..onClick() (p, mouseBtn) -> 
+            let info = UIWindowNPCInfo.get(p)
             info.stockInfo[stockIndex].index++
             UIWindowNPC.update(info.p)
 
-        setWidth((UIWindowNPCSellButton.ICON_SIZE + padding) * btnSell.length + padding + 2 * scrollBtnWidth)
+        setWidth((UIButtonIconWithCost.ICON_SIZE + padding) * btnSell.length + padding + 2 * scrollBtnWidth)
             
 public class UIWindowNPC
     protected static UIWindowBasic window
@@ -136,19 +118,20 @@ public class UIWindowNPC
         ..initWithListener() (UIWindowNPCInfo info, mousebuttontype mtype, int index) ->
             let stack = info.getShop().data.stock.get(info.stockInfo[0].index + index)
             if mtype == MOUSE_BUTTON_TYPE_LEFT
-                buyStack(info.p, stack)
+                actionBuyStack(info.p, stack)
             else if mtype == MOUSE_BUTTON_TYPE_RIGHT
                 let dropDown = UIWindowDropdown.start(info.p, stockUnits.btnSell[index].self, DropDownAnchor.DOWN)
-                dropDown.addOption("Buy", stack.getAmount() > 0) ->
-                    buyStack(info.p, stack)
-                dropDown.addOption("Info", true) ->
-                    Log.trace("open info")
+                dropDown.addOption("Buy", stack.getAmount() > 0) (p) ->
+                    actionBuyStack(info.p, stack)
+                dropDown.addOption("Info", true) (p) ->
+                    actionInfoStack(info.p, stack)
                 dropDown.open()
 
-    protected static function buyStack(Player p, Stack stack)
-        Log.trace("Buy "+stack.toString())
+    protected static function actionBuyStack(Player p, Stack stack)
         UIDialogBuyStack.open(p, stack, stack.typ.getValue())
-            
+
+    protected static function actionInfoStack(Player p, Stack stack)
+        // TODO
 
     static function open(Player p, NPC npc)
         UIWindowNPCInfo.get(p).openNPC(npc)
@@ -178,8 +161,9 @@ public class UIWindowNPC
             stockUnits.btnSell[i].setVisible(unitItr.hasNext())
             if unitItr.hasNext()
                 let stack = unitItr.next()
-                stockUnits.btnSell[i].setBackground(stack.typ.getIcon())
-                stockUnits.btnSell[i].setText(stack.getAmount(), stack.typ.getValue())
+                stockUnits.btnSell[i].setTexture(stack.typ.getIcon())
+                stockUnits.btnSell[i].setAmount(stack.getAmount())
+                stockUnits.btnSell[i].setCost(stack.typ.getValue(), info.p.hero, 1)
                     
                 
 

@@ -195,7 +195,10 @@ public class PathFinding
     
     ondestroy
         if paths != null
-            for path in paths
+            for path in openCells
                 destroy path
+            destroy openCells
+            openCells = null
+            paths.flush()
             destroy paths
             paths = null

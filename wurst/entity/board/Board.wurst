@@ -18,6 +18,7 @@ public enum BoardForceSide
     LEFT
     RIGHT
     NEUTRAL
+    UNDECIDED
 
 public function BoardForceSide.toAngle() returns angle
     if this == NEUTRAL
@@ -100,6 +101,18 @@ public class Board
             return forceRight
         return null
 
+    function calculateCurrentOutcome() returns BoardForceSide
+        let left = forceLeft.canStillFight()
+        let right = forceRight.canStillFight()
+
+        if left and right
+            return BoardForceSide.UNDECIDED
+        else if left and not right
+            return BoardForceSide.LEFT
+        else if not left and right
+            return BoardForceSide.RIGHT
+        return BoardForceSide.NEUTRAL
+
     function placeCombat(Hero hero, HostileArmy army, SequenzListener next)
         forceLeft.place(hero)
         forceRight.place(army)
@@ -112,10 +125,13 @@ public class Board
             forceLeft.makeVisible(visibleArea, dummyCam)
             forceRight.makeVisible(visibleArea, dummyCam)
             BoardController.triggerOnCellEnterForBoardPlacement(this) ->
+                
+                isInteractAble = true
                 next.continue()
 
     function endFight()
         initiative.reset()
+        enableInteraction(false)
 
         forceLeft.remove()
         forceRight.remove()

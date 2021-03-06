@@ -4,7 +4,6 @@ import UIHandle
 import ClosureFrames
 import initlater MouseContext
 import PlayerData
-import LinkedList
 import initlater UIButtonMenu
 
 public framehandle CONSOLE_UI
@@ -125,10 +124,14 @@ public class UIMenu extends UIMouseBlockElement
 
 public class UIWindow extends UIMouseBlockElement
     protected string name
+    protected boolean isCloseAble
     protected UIButtonMenuToWindow btnToOpen
 
     static function create(string name) returns UIWindow
-        return new UIWindow(name)
+        return new UIWindow(name, true)
+
+    static function createNonCloseAble(string name) returns UIWindow
+        return new UIWindow(name, false)
 
     static function closeCurrent(Player p)
         let lastWindow = p.uiMenuPlayerInfo.currentOpenWindows.peek()
@@ -140,11 +143,11 @@ public class UIWindow extends UIMouseBlockElement
         while backItr.hasNext()
             backItr.next().close(p)
         
-        
-    private construct(string name)
+    private construct(string name, boolean isCloseAble)
         super(GAME_UI)
         super.setVisible(false)
         this.name = name
+        this.isCloseAble = isCloseAble
         setLevel(100)
 
     function getName() returns string
@@ -180,7 +183,15 @@ public class UIWindow extends UIMouseBlockElement
             super.setVisible(true)
 
     function close(Player p)
+        closeInner(p, true)
+
+    function forceClose(Player p)
+        closeInner(p, false)
+
+    private function closeInner(Player p, boolean checkClosable)
         if not isVisible(p)
+            return
+        if checkClosable and not isCloseAble
             return
         p.uiMenuPlayerInfo.currentOpenWindows.remove(this)
         if onHideListener != null
@@ -212,13 +223,16 @@ public class UIWindow extends UIMouseBlockElement
 
 public class UIWindowBasic extends UIWindow
     static function create(string name, boolean small) returns UIWindowBasic
-        return new UIWindowBasic(name, small)
+        return new UIWindowBasic(name, small, true)
+
+    static function createNonCloseAble(string name, boolean small) returns UIWindowBasic
+        return new UIWindowBasic(name, small, false)
 
     protected framehandle innerFrame
     protected real padding
 
-    private construct(string name, boolean small)
-        super(name)
+    private construct(string name, boolean small, boolean isCloseAble)
+        super(name, isCloseAble)
         var frameName = "WindowBasic"
         padding = 0.03
         if small

@@ -36,9 +36,16 @@ public class MainController
             board.startCombat()
 
 
-    static function endFight(Board board, int side)
-            // TODO
-        Log.info("yo end fight needs some dooing")
+    static function endFight(Board board, BoardForceSide winner)
+        let hero = board.getBoardForce(BoardForceSide.LEFT).getHero()
+        let enemy = board.getBoardForce(BoardForceSide.RIGHT).getHostileArmy()
+        UIController.showFightResult(board, winner) ->
+            Log.trace("now end the fight for real")
+            board.endFight()
+            nullTimer() ->
+                Log.trace("enable the hero and such thing")
+                hero.enable(true)
+                enemy.kill()
             /*
         let hero = board.getHero(0)
         let enemy = board.getHostileArmy()
@@ -59,22 +66,6 @@ public class MainController
 
     static function interact(Hero hero, NPC npc)
         hero.startInteract(npc)
-
-    // TODO old
-    /*
-    static function addStack(Hero hero, Stack stack, int amount)
-        hero.addStack(stack.getStackType(), amount)
-        stack.setAmount(stack.getAmount() - amount)
-
-    
-    static function payGold(Hero hero, int amount)
-        hero.addGold(-amount)
-
-
-    static function buyStack(Hero hero, Stack stack, int amount, int cost)
-        payGold(hero, amount * cost)
-        addStack(hero, stack, amount)
-        */
 
     static function splitStack(Hero hero, Stack stack, int intoAmount)
         if hero.army.has(stack)

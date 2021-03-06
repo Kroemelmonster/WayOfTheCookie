@@ -20,7 +20,7 @@ public class UIWindowMenu
         let btnEnd = UIButtonMenu.create(window, "End Game")
         ..setInnerPoint(FRAMEPOINT_BOTTOMLEFT, window, FRAMEPOINT_BOTTOMLEFT)
         ..setInnerPoint(FRAMEPOINT_BOTTOMRIGHT, window, FRAMEPOINT_BOTTOMRIGHT)
-        ..onClick() ->
+        ..onClick() (p, mouseBtn) -> 
             EndGame(false)
         
         return window

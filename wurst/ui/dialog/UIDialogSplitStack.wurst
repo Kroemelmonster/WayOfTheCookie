@@ -8,57 +8,68 @@ import initlater Stack
 import UIDialog
 import UIHandle
 import UIWindow
-import UIEditBox
+import UIButtonIcon
 
-public class DialogInfoSplitStack
+init
+    Initializer.register(InitializerNames.UI) -> 
+        Player.forEachActive() (Player p) ->
+            DialogInfoSplitStackInfo.create(p)
+        UIDialogSplitStack.create()
+
+class DialogInfoSplitStackInfo
+    static DialogInfoSplitStackInfo array data
+    static function get(Player p) returns DialogInfoSplitStackInfo
+        return data[p castTo int]
+
+    static function get() returns DialogInfoSplitStackInfo
+        return get(GetTriggerPlayerData())
+
+    protected static function create(Player p)
+        data[p castTo int] = new DialogInfoSplitStackInfo(p)
+
+    protected Player p
     protected Stack stack
     protected int amount
     protected int maxAmount
 
+    private construct(Player p)
+        this.p = p
+
 public class UIDialogSplitStack
     private static UIDialog dia
     private static UISlider slider
-    private static UIEditBoxInt editBoxLeft
-    private static UIEditBoxInt editBoxRight
 
-    private static framehandle handleIconLeft
-    private static framehandle handleIconRight
+    private static UIButtonIcon previewBtnLeft
+    private static UIButtonIcon previewBtnRight
 
-    static function create()
+    protected static function create()
         dia = UIDialog.create("Split")
-        ..setHeader("Split")
-        ..onAccept() -> 
-            let p = GetTriggerPlayerData()
-            let info = p.dialogInfo.splitInfo
-            MainController.splitStack(p.hero, info.stack, info.amount)
+        ..onAccept() (p) -> 
+            split(DialogInfoSplitStackInfo.get(p))
 
-        let paddingH = 0.035
+        previewBtnLeft = UIButtonIcon.create(dia, false, false, true, true)
+        ..setSize(0.048, 0.048)
+        ..setInnerPoint(FRAMEPOINT_TOPLEFT, dia, FRAMEPOINT_TOPLEFT, 0.005, -0.018)
+        ..setEnabled(false)
+
+        previewBtnRight = UIButtonIcon.create(dia, false, false, false, true)
+        ..setSize(0.048, 0.048)
+        ..setInnerPoint(FRAMEPOINT_TOPRIGHT, dia, FRAMEPOINT_TOPRIGHT, -0.005, -0.018)
+        ..setEnabled(false)
+
         slider = UISlider.create(dia)
-        ..setInnerPoint(FRAMEPOINT_BOTTOM, dia, FRAMEPOINT_BOTTOM, 0, paddingH + 0.005)
-        ..onValueChange() -> 
-            setStackValues(GetTriggerPlayerData(), slider.getValue())
+        ..setPoint(FRAMEPOINT_LEFT, previewBtnLeft, FRAMEPOINT_RIGHT, 0.005, 0.0)
+        ..setWidth(dia.getInnerWidth() - (previewBtnLeft.self.getWidth() * 2 + 0.02))
+        ..onValueChange() (p) -> 
+            setStackValues(DialogInfoSplitStackInfo.get(p), slider.getValue())
 
-        editBoxLeft = UIEditBoxInt.create(dia)
-        ..setInnerPoint(FRAMEPOINT_BOTTOMLEFT, dia, FRAMEPOINT_BOTTOMLEFT, 0, paddingH)
-        ..onValueChange() (integer value) ->
-            let p = GetTriggerPlayerData()
-            setStackValues(p, p.dialogInfo.splitInfo.maxAmount - value)
-
-        handleIconLeft = createUIFrame("BACKDROP", dia)
-        ..setPoint(FRAMEPOINT_BOTTOM, editBoxLeft, FRAMEPOINT_TOP)
-        ..setSize(0.04, 0.04)
-
-        editBoxRight = UIEditBoxInt.create(dia)
-        ..setInnerPoint(FRAMEPOINT_BOTTOMRIGHT, dia, FRAMEPOINT_BOTTOMRIGHT, 0, paddingH)
-        ..onValueChange()  (integer value) ->
-            setStackValues(GetTriggerPlayerData(), value)
-
-        handleIconRight = createUIFrame("BACKDROP", dia)
-        ..setPoint(FRAMEPOINT_BOTTOM, editBoxRight, FRAMEPOINT_TOP)
-        ..setSize(0.04, 0.04)
-    
     static function open(Player p, Stack stack)
-        let info = p.dialogInfo.splitInfo
+        openInner(DialogInfoSplitStackInfo.get(p), stack)
+
+    static function split(DialogInfoSplitStackInfo info)
+        MainController.splitStack(info.p.hero, info.stack, info.amount)
+    
+    private static function openInner(DialogInfoSplitStackInfo info, Stack stack)
         let startAmount = stack.getAmount()
         if startAmount < 2
             return // TODO this is an error give info to player maybe
@@ -67,27 +78,27 @@ public class UIDialogSplitStack
         info.amount = (startAmount / 2).round()
         info.maxAmount = startAmount - 1
     
-        if p.isLocal()
+        if info.p.isLocal()
             slider.setMinMax(1, info.maxAmount)
-            handleIconLeft.setTexture(info.stack.typ.getIcon())
-            handleIconRight.setTexture(info.stack.typ.getIcon())
+            previewBtnLeft.setTexture(info.stack.typ.getIcon())
+            previewBtnRight.setTexture(info.stack.typ.getIcon())
             
-        dia.open(p)
-        update(p)
+            dia.setHeader("Split  "+stack.typ.getName())
+            
+        dia.open(info.p)
+        update(info)
 
-    private static function setStackValues(Player p, int amount)
-        let info = p.dialogInfo.splitInfo
+    private static function setStackValues(DialogInfoSplitStackInfo info, int amount)
         info.amount = amount
         if amount > info.maxAmount
             info.amount = info.maxAmount
         if amount < 1
             info.amount = 1
 
-        update(p)
+        update(info)
 
-    private static function update(Player p)
-        let info = p.dialogInfo.splitInfo
-        if p.isLocal()
+    private static function update(DialogInfoSplitStackInfo info)
+        if info.p.isLocal()
             slider.setValue(info.amount)
-            editBoxLeft.setValue(info.maxAmount + 1 - info.amount)
-            editBoxRight.setValue(info.amount)
+            previewBtnLeft.setAmount(info.maxAmount - info.amount + 1, info.maxAmount)
+            previewBtnRight.setAmount(info.amount, info.maxAmount)

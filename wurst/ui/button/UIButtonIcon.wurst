@@ -27,7 +27,6 @@ public class UIButtonIcon extends UIButton
     private framehandle amountFrame
     private framehandle amountIconFrame
 
-
     construct(framehandle parent, boolean automaticHighlight, boolean hasBorder, boolean hasCounter, boolean hasAmount)
         super(createBasicButtonFrame(automaticHighlight, parent))
 
@@ -87,7 +86,13 @@ public class UIButtonIcon extends UIButton
         counterTextFrame.setText(amount.toString())
 
     function setAmount(int amount)
-        amountFrame.setText(amount.toString())
+        setAmount(amount.toFormatString())
+
+    function setAmount(int amount, int maxAmount)
+        setAmount(amount.toFormatString() + " / " + maxAmount.toFormatString())
+
+    private function setAmount(string amount)
+        amountFrame.setText(amount)
         amountIconFrame.setVisible(false)
 
     function setAmountIcon(string icon)
